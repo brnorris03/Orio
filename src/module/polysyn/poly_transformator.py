@@ -48,7 +48,7 @@ class PolyTransformator:
                 sys.exit(1)
                 
         # write the annotation body code into a file
-        fname = '_annot_polysyn.c'
+        fname = '_orio_polysyn.c'
         try:
             f = open(fname, 'w')
             f.write(code)

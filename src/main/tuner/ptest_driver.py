@@ -13,7 +13,7 @@ class PerfTestDriver:
     '''
 
     # the file names of the testing code (i.e. source and executable)
-    __PTEST_SRC_FNAME = '_annot_perftest.c'
+    __PTEST_SRC_FNAME = '_orio_perftest.c'
 
     # types of performance-counting methods
     __PCOUNT_BASIC = 'basic timer'
@@ -39,7 +39,7 @@ class PerfTestDriver:
             self.srcname = self.__PTEST_SRC_FNAME
             if self.batch: 
                 import random
-                self.srcname = '_annot_perftest' + str(random.randint(1, 14141)) + '.c'
+                self.srcname = '_orio_perftest' + str(random.randint(1, 14141)) + '.c'
             self.gendriver = True
         self.execname = self.srcname[:self.srcname.find('.')] + '.exe'
         self.run_cmd = run_cmd
