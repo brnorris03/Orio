@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# A Python script used for installing the annotation tool
+# A Python script used for installing the Orio tool
 
 #-----------------------------------------------------------
 
@@ -22,9 +22,9 @@ for root, dirs, files in os.walk(src_dir, topdown=True):
 #-----------------------------------------------------------
 
 # make a call to the setup function
-setup(name = 'annotations',
+setup(name = 'orio',
       version = '0.0.1',
-      description = 'An Annotation-Based Performance Tuning Tool',
+      description = 'ORIO -- An Annotation-Based Performance Tuning Tool',
       author = 'Albert Hartono',
       author_email = 'hartonoa@cse.ohio-state.edu',
       maintainer = 'Albert Hartono',
