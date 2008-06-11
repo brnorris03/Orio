@@ -17,7 +17,7 @@ for root, dirs, files in os.walk(src_dir, topdown=True):
     if '__init__.py' in files:
         rel_dir = root[len(cur_dir)+1:]
         dir_names = rel_dir.split(os.sep)
-        py_packages.append('.'.join([orio] + dir_names[1:]))
+        py_packages.append('.'.join(['orio'] + dir_names[1:]))
 
 #-----------------------------------------------------------
 
