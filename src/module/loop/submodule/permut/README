@@ -1,0 +1,11 @@
+This directory contains code that implements loop
+permutation/interchange. It identifies permutable loops (i.e. loops
+that are perfectly nested) then performs permutation based on the
+given permutation sequence. it complains if the provided sequence
+cannot initiate loop permutation.
+
+Assumptions:
+  There is no detection mechanism implemented to detect if a
+  permutation is legal. So, the permuted loops might result in
+  incorrect code. It's the user's responsibility to know if the
+  resulting permutation is legal or not.

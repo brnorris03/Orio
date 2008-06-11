@@ -1,0 +1,10 @@
+This directory contains code that implements scalar replacement
+optimizations. It identifies common references to arrays, and then
+stores common references in intermediates for future reuse. The place
+to create intermediates is somewhere between the loops and determined
+by the referenced iterators and loop structure.
+
+Assumptions:
+  The variables used in all array references (except the array
+  variables) are assumed to be loop indexes (i.e loop iteration
+  variables).

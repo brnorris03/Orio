@@ -1,0 +1,167 @@
+Last change: March 4, 2008
+
+=====================================================
+  TSpec = Tuning Specifier
+=====================================================
+
+1. Introduction
+   
+   TSpec is a simple language used to specify all the information needed by the
+   annotation tool software to perform an empirical performance tuning.
+
+====================================================================================
+
+2. Example
+
+   Consider the following simple example of performance-tuning specifications.
+
+   spec my_first_tspec
+   {
+     # the number of available registers in the underlying machine
+     let REGS = 32;  
+
+     # unrolling factors used to transform the code
+     def performance_params 
+     { 
+       param Ua[] = range(1,9); 
+       param Ub[] = range(1,17); 
+       constraint reg_capacity = Ua*Ub <= REGS; 
+     } 
+
+     # compiler information used for compiling the transformed code
+     def compilers  
+     { 
+       arg command = 'gcc'; 
+       arg options = '-O3'; 
+     }
+
+     # different sizes of the input problem 
+     def input_params 
+     { 
+       param SIZE1[] = [10] + range(100,600,200);
+       param SIZE2[] = [10] + range(100,600,200);   
+       constraint rectangular_shape = (SIZE1 == SIZE2); 
+       decl in double X[SIZE1][SIZE2] = random;
+       decl out double Y[SIZE1][SIZE2] = 0;   
+     } 
+   }
+
+====================================================================================
+
+3. Language Grammar
+
+   <program>                 ::= (<let-statement>|<specification-statement>)*
+   <specification-statement> ::= 'spec' <var-name> '{' (<let-statement>|<definition-statement>)* '}'
+   <definition-statement>    ::= 'def' <var-name> '{' <definition-body> '}'
+   <definition-body>         ::= <let-statement>* <argument-statement>* <parameter-statement>* 
+                                 <constraint-statement>* <declaration-statement>*
+   <let-statement>           ::= 'let' <var-name> '=' <expression> ';'
+   <argument-statement>      ::= 'arg' <var-name> '=' <expression> ';'
+   <parameter-statement>     ::= 'param' <var-name> ('[]')? = <expression> ';'
+   <constraint-statement>    ::= 'constraint' <var-name> '=' <expression> ';'
+   <declaration-statement>   ::= 'decl' ('in'|'out') <type-name> <var-name> ('[' <expression> ']')* 
+                                 '=' <expression> ';'
+
+   where:
+     <expression> is a Python expression
+     <var-name> is a string representing a valid C/C++ variable name
+     <type-name> is a string representing a valid C/C++ type
+
+   a. Program: a TSpec program contains a sequence of let statements and specification statements.
+
+      <program>                 ::= (<let-statement>|<specification-statement>)*
+
+
+   b. Specification Statement: full specifications of information required to perform an empirical
+      performance tuning.
+
+      <specification-statement> ::= 'spec' <var-name> 
+                                    '{' (<let-statement>|<definition-statement>)* '}'
+
+      Each specification can be named differently, thus can be referenced at different places.
+      For instance, the previous example names the specification with "my_first_tspec".
+
+
+   c. Let Statement: used to assign a variable to a value.
+
+      <let-statement>          ::= 'let' <var-name> '=' <expression> ';'
+ 
+      Example:  "let REGS = 32;" is used to specify the number of available registers of the
+      underlying machine.
+      
+
+   d. Definition Statement: used to define a collection of information that are related to 
+      each other.
+
+      <definition-statement>   ::= 'def' <var-name> '{' <definition-body> '}'
+      <definition-body>        ::= <let-statement>* <argument-statement>* <parameter-statement>* 
+                                   <constraint-statement>* <declaration-statement>*
+
+      The body of a definition statement consists of let statements, argument statements, 
+      parameter statements, constraint statements, and declaration statements, which all are
+      specified in a fixed order (e.g. declaration statements must be placed after other kinds of
+      statements).
+
+      An example of definition statement is below, used to specify the compiler command and 
+      options for compiling the generated code.
+
+        def compilers  
+        { 
+          arg command = 'gcc'; 
+          arg options = '-O3'; 
+        }
+
+
+   e. Argument Statement: used to define an argument that is important for a specific module.
+
+      <argument-statement>     ::= 'arg' <var-name> '=' <expression> ';'
+
+      In the above 'compilers' definition, it has two arguments: 'command' and 'options'.
+
+
+   f. Parameter Statement: used to declare parameters.
+
+      <parameter-statement>    ::= 'param' <var-name> ('[]')? = <expression> ';'
+
+      Below is an example of specifying the unrolling factors used in the loop unrolling
+      transformations.
+
+        def performance_params 
+        { 
+          param Ua[] = range(1,9); 
+          param Ub[] = range(1,17); 
+          constraint reg_capacity = Ua*Ub <= REGS; 
+        } 
+
+      Note that the square brackets that follows the variable name indicate that the parameter
+      value is a range of simple values. The tuning will determine which value produces the best-
+      performing code variant.
+
+
+   g. Constraint Statement: for specifying constraints on the specified parameters.
+
+      <constraint-statement>   ::= 'constraint' <var-name> '=' <expression> ';'
+
+      The above example shows a constraint that limits the combination of unrolling factors that 
+      may cause register spills.
+
+
+   h. Declaration Statement: used to specify the declarations of input parameters.
+
+      <declaration-statement>   ::= 'decl' ('in'|'out') <type-name> <var-name> 
+                                    ('[' <expression> ']')* '=' <expression> ';'
+
+      Note that a declaration statement requires specifications of the variable type, dimension
+      sizes, and its initial value. If the initial value is specified as 'random', it means
+      that the parameter will be assigned to a randomly generated integer value.
+      Also, 'in' and 'out' denote if the parameter is an input or output, respectively. It is 
+      important that at least one of the parameters is to be specified as output. The reason is
+      to avoid dead code elimination at the generation of the testing code.
+
+
+
+
+
+
+
+

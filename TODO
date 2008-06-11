@@ -1,0 +1,21 @@
+- add an option to enable "best" time to return a list instead of a single value, e.g., 
+  the list ot best times within epsilon of each other, or the top 5%, etc.
+- in batch systems, submit all jobs and then process results (currently it's one 
+  job at a time).  -- Boyana
+- make python modules for different batch queue systems, starting with Cobalt -- Boyana
+- come up with some way to allow num. repetitions to be related to problem sizes
+- allow input parameter ranges and specialization of tuned version based on current
+  parameter values, e.g., if m < 10 use one tuned version, else use another.
+- allow user to specify dynamic allocation for arrays
+- allow user to specify initialization functions for arrays and other input variables
+- add max. number of processors parameter to the spec
+- create setup.py for installing in standard python locations (Boyana)
+
+- integrate Pluto (polyhedral-based source-to-source transformation tool) into the 
+  annotations tool -- Albert
+- rewrite the Loop module's parser with ZestyParser implementation, to avoid implementing
+  a complete grammar for Python expression -- Albert
+- allow user to insert additional preprocessor directives -- Albert
+
+
+
