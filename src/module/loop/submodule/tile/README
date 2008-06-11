@@ -1,0 +1,29 @@
+This directory contains code that implements loop tiling
+optimization. Such optimization partitions a loop iteration space into
+smaller tiles to maximize cache reuse. The original loop is split into
+two resulting loops: one inter-tile loop and one intra-tile loop.
+
+For example, the following loop: 
+
+ /* The original loop */ 
+ for (i = LB; i <= UB; i += ST) 
+   S(i); 
+
+that can be annotated as follows: 
+
+ /* The annotated loop */ 
+ transform Tile(tsize=T, tindex=ti) 
+ for (i = LB; i <= UB; i += ST) 
+   S(i); 
+
+is tiled with T as the tile size and 'ti' as the inter-tile index,
+resulting in the following generated loop.
+
+ /* The tiled loop */ 
+ for (ti = LB; ti <= UB; ti += T) 
+   for (i = ti; i <= min(UB, ti+T-ST); i += ST) 
+     S(i); 
+
+Notes:
+  tsize % ST = 0 must hold 
+

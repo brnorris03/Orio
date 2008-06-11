@@ -1,0 +1,66 @@
+This directory contains code that implements unroll and jam optimizations. Such optimization
+is equivalent to a combined transformation of loop unrolling, loop permutation, and loop fusion.
+The example below describes such combined transformation.
+
+For example, the following loop: 
+
+ /* The original loop */ 
+ for (i = LBi; i <= UBi; i += STi) 
+ { 
+   S1(i); 
+   for (j = LBj; j <= UBj; j += STj) 
+     S2(i,j); 
+   S3(i); 
+ } 
+
+that can be annotated as follows: 
+
+ /* The annotated loop */ 
+ transform UnrollJam(ufactor=N) 
+ for (i = LBi; i <= UBi; i += STi) 
+ { 
+   S1(i); 
+   for (j = LBj; j <= UBj; j += STj) 
+     S2(i,j); 
+   S3(i); 
+ } 
+
+is unrolled N times, and then its unrolled body is jammed/fused together whenever possible, 
+resulting in the following loop. 
+
+ /* The main unrolled loop */ 
+ for (i = LBi; i <= UBi-(N-1)*STi; i += N*STi) 
+ { 
+   S1(i); 
+   S1(i + STi); 
+   S1(i + 2*STi); 
+   ... 
+   S1(i + (N-1)*STi); 
+   for (j = LBj; j <= UBj; j += STj) 
+   { 
+     S2(i, j); 
+     S2(i + STi, j); 
+     S2(i + 2*STi, j); 
+     ... 
+     S2(i + (N-1)*STi, j); 
+   } 
+   S3(i); 
+   S3(i + STi); 
+   S3(i + 2*STi); 
+   ... 
+   S3(i + (N-1)*STi); 
+ } 
+ /* The cleanup loop */ 
+ for (; i <= UBi; i += STi) 
+ { 
+   S1(i); 
+   for (j = LBj; j <= UBj; j += STj) 
+     S(i,j); 
+   S3(i); 
+ } 
+
+Notes: 
+ 1. The value of 'ufactor' (unroll factor) must be a positive integer. 
+ 2. For-loop structure must be in the form of: 
+      for (i = LB; i <= UB; i += ST) 
+        S(i) 
