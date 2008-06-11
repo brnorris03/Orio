@@ -24,8 +24,8 @@ class SynTransformator:
         '''To execute the annotation tool to perform syntactic code transformations'''
         
         # the used filenames
-        ifname = '_annot_unroll_code.i'
-        ofname = '_annot_unroll_code.o'
+        ifname = '_orio_unroll_code.i'
+        ofname = '_orio_unroll_code.o'
         
         # write the given code into a file
         try:

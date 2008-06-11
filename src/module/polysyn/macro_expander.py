@@ -122,8 +122,8 @@ class MacroExpander:
         code += '\n'
 
         # set the used file names
-        src_fname = '_annot_macro_expand.c'
-        out_fname = '_annot_macro_expand.out'
+        src_fname = '_orio_macro_expand.c'
+        out_fname = '_orio_macro_expand.out'
         
         # write the code into a C file
         try:
