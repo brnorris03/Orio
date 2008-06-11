@@ -3,9 +3,9 @@
 # orf - Compile shell for Orio (Fortran source code)
 #
 
-import src.main.main, sys
-src.main.main.start(sys.argv, src.main.main.FORTRAN)
+#import src.main.main, sys
+#src.main.main.start(sys.argv, src.main.main.FORTRAN)
 
-#import orio.main.main, sys
-#orio.main.main.start(sys.argv, orio.main.main.FORTRAN)
+import orio.main.main, sys
+orio.main.main.start(sys.argv, orio.main.main.FORTRAN)
 
