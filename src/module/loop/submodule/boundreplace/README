@@ -1,0 +1,37 @@
+This directory contains code that implements loop-bound replacement
+optimizations. Such optimization replaces complex (lower and upper)
+bounds of for-loops with scalar intermediates. 
+
+The implemented optimization is enhanced with hoisting. The loop
+bounds initializations are hoisted out of the affecting loops to
+improve run-time performance by executing the initializations once
+rather than at each iteration.
+
+Assumptions: 
+  All variables inside the loop bound expressions are either global or
+  loop-variant variables. This implies that the variables used in the
+  loop bound expressions are never modified by assignments inside any
+  loops.
+ 
+For example, the following loop:
+
+ /* The original loop */ 
+ for (i=max(M,N); i<=min(X,Y); i+=ST) 
+  S(i) 
+
+can be annotated as follows: 
+
+ /* The annotated loop */ 
+ transform BoundReplace() 
+ for (i=max(M,N); i<=min(X,Y); i+=ST) 
+  S(i) 
+
+to replace the loop bounds, resulting in the following loop. 
+
+ /* Bound-replaced loop */ 
+ int LB, UB; 
+ LB = max(M,N); 
+ UB = min(X,Y); 
+ for (i=LB; i<=UB; i+=ST) 
+  S(i) 
+
