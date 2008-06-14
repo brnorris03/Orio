@@ -10,12 +10,12 @@ import codegen, module.module, parser, transformator
 class Loop(module.module.Module):
     '''Loop transformation module'''
     
-    def __init__(self, cmd_line_opts, perf_params, module_code, line_no,
-                 indent_size, annot_body_code):
+    def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
+                 line_no, indent_size):
         '''To instantiate a loop transformation module'''
         
-        module.module.Module.__init__(self, cmd_line_opts, perf_params, module_code, line_no,
-                                      indent_size, annot_body_code)
+        module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
+                                      cmd_line_opts, line_no, indent_size)
 
     #---------------------------------------------------------------------
     
@@ -23,7 +23,7 @@ class Loop(module.module.Module):
         '''To apply loop transformations on the annotated code'''
 
         # parse the code to get the AST
-        stmts = parser.getParser(self.line_no).parse(self.module_code)
+        stmts = parser.getParser(self.line_no).parse(self.module_body_code)
 
         # apply transformations
         t = transformator.Transformator(self.perf_params, self.verbose)

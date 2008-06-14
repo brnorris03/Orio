@@ -110,12 +110,12 @@ class OptDriver:
 
                 # apply code transformations
                 try:
-                    transformator = mod_class(self.cmd_line_opts,
-                                              perf_params,
+                    transformator = mod_class(perf_params,
                                               cfrag.leader_ann.mod_code,
+                                              optimized_body_code,
+                                              self.cmd_line_opts,
                                               cfrag.leader_ann.mod_code_line_no,
-                                              cfrag.leader_ann.indent_size,
-                                              optimized_body_code)
+                                              cfrag.leader_ann.indent_size)
                     optimized_code = transformator.transform()
                 except Exception, e:
                     print ('error:%s: encountered an error when transforming annotation "%s"' %
