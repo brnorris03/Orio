@@ -11,12 +11,12 @@ import syn_transformator, transf_info
 class PolySyn(module.module.Module):
     '''Polyhedral-syntactic combined transformation module'''
 
-    def __init__(self, cmd_line_opts, perf_params, module_code, line_no,
-                 indent_size, annot_body_code):
+    def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
+                 line_no, indent_size):
         '''To instantiate a polyhedral-syntactic combined transformation module'''
 
-        module.module.Module.__init__(self, cmd_line_opts, perf_params, module_code, line_no,
-                                      indent_size, annot_body_code)
+        module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
+                                      cmd_line_opts, line_no, indent_size)
 
     #---------------------------------------------------------------------
 
@@ -28,7 +28,7 @@ class PolySyn(module.module.Module):
         self.annot_body_code = re.sub(annot_re, '', self.annot_body_code)
         
         # parse the module body code
-        assigns = parser.Parser().parse(self.module_code, self.line_no)
+        assigns = parser.Parser().parse(self.module_body_code, self.line_no)
 
         # extract transformation information from the specified assignments
         tinfo = transf_info.TransfInfoGen().generate(assigns, self.perf_params)

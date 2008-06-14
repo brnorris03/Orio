@@ -10,12 +10,12 @@ import codegen, module.module, parser
 class Align(module.module.Module):
     '''Memory-alignment transformation module'''
 
-    def __init__(self, cmd_line_opts, perf_params, module_code, line_no,
-                 indent_size, annot_body_code):
+    def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
+                 line_no, indent_size):
         '''To instantiate a memory-alignment transformation module'''
         
-        module.module.Module.__init__(self, cmd_line_opts, perf_params, module_code, line_no,
-                                      indent_size, annot_body_code)
+        module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
+                                      cmd_line_opts, line_no, indent_size)
 
     #---------------------------------------------------------------------
     
@@ -23,7 +23,7 @@ class Align(module.module.Module):
         '''To apply a memory-alignment transformation on the annotated code'''
 
         # parse the annotation module code to get the variables to be checked
-        vars = parser.getParser(self.line_no).parse(self.module_code)
+        vars = parser.getParser(self.line_no).parse(self.module_body_code)
 
         # perform a semantic check
         for v in vars:

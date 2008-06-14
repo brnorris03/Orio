@@ -152,14 +152,14 @@ class PerfTuner:
         
     #-------------------------------------------------
 
-    def tune(self, module_code, line_no, cfrags):
+    def tune(self, module_body_code, line_no, cfrags):
         '''
         Perform empirical performance tuning on the given annotated code. And return the best
         optimized code variant.
         '''
         
         # extract the tuning information specified from the given annotation
-        tinfo = self.__extractTuningInfo(module_code, line_no)
+        tinfo = self.__extractTuningInfo(module_body_code, line_no)
 
         # create a performance-testing code generator for each distinct problem size
         ptcodegens = []
