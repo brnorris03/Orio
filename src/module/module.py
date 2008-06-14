@@ -1,45 +1,44 @@
 #
-# The abstract class of the transformation module
+# File: src/module/module.py
 #
 
 class Module:
-    '''Transformation module'''
+    '''The abstract class of Orio's code transformation module'''
     
-    def __init__(self, cmd_line_opts, perf_params, module_code, line_no,
-                 indent_size, annot_body_code):
+    def __init__(self, perf_params, module_body_code, annot_body_code,
+                 cmd_line_opts, line_no, indent_size):
         '''
-        To instantiate a transformation module used to transform the annotated code.
-
-        The class variables consist of the following:
-           cmd_line_opts      an object representing the command line options
-                              (see src/cmd_line_opts.py for more details)
-           perf_params        a table/mapping that maps each performance parameter to its value
-           module_code        the code of annotation module body
-           line_no            the starting line position of the module code in the source code
-           indent_size        an integer representing the number of space characters used in the
-                              indentation of the leader annotation
-           annot_body_code    the transformed/optimized code of the annotation body
-           verbose            to show details of the results of the running transformation modules
+        The class constructor used to instantiate a program transformation module.
+        
+        The following are the class attributes:
+          perf_params         a table that maps each performance parameter to its value
+          module_body_code    the code inside the module body block
+          annot_body_code     the code contained in the annotation body block
+          cmd_line_opts       information about the command line options
+                              (see src/main/cmd_line_opts.py for more details)
+          line_no             the starting line position of the module code in the source code
+          indent_size         an integer representing the number of whitespace characters that
+                              preceed the leader annotation
         '''
 
-        self.cmd_line_opts = cmd_line_opts
         self.perf_params = perf_params
-        self.module_code = module_code
+        self.module_body_code = module_body_code
+        self.annot_body_code = annot_body_code
+        self.cmd_line_opts = cmd_line_opts
         self.line_no = line_no
         self.indent_size = indent_size
-        self.annot_body_code = annot_body_code
-
-        # other derived class variables
+        
+        # a boolean value to indicate if the results of the running transformation need to be shown
         self.verbose = self.cmd_line_opts.verbose
 
-    #--------------------------------------------------------------------
-        
+    #--------------------------------------------------------
+
     def transform(self):
         '''
-        The transformation procedure used to transform the annotated code.
-        The returned value is a string that represents the transformed/optimized code.
+        The main code transformation procedure. The returned value is a string value that
+        represents the transformed/optimized code.
         '''
 
         raise NotImplementedError('%s: unimplemented abstract function "transform"' %
-                                  (self.__class__.__name__))
+                                  (self.__class__.__name__)) 
 
