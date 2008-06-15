@@ -35,7 +35,7 @@ def start(argv, lang):
     # need to be verbose?
     verbose = cline_opts.verbose
 
-    if verbose: print '\n====== BEGIN ANNOTATIONS TOOL ======'
+    if verbose: print '\n====== START ORIO ======'
 
     # read source code
     if verbose: print '\n----- begin reading the source file: %s -----' % cline_opts.src_filename
@@ -101,4 +101,4 @@ def start(argv, lang):
             sys.exit(1)
     if verbose: print '----- finish writing the output file(s) -----'
 
-    if verbose: print '\n====== END ANNOTATIONS TOOL ======'
+    if verbose: print '\n====== END ORIO ======'
