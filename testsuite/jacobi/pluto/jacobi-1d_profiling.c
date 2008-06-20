@@ -1,8 +1,8 @@
 #include <stdio.h> 
 #include <stdlib.h> 
 
-#define T 100
-#define N 1000
+#define T 1000
+#define N 10000
 double a[T][N];
 
 void init_array()  
