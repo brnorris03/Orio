@@ -13,36 +13,39 @@
  
   def performance_params  
   { 
-#    param T1_1[] = [1,16,32,64,128]; 
-#    param T1_2[] = [1,16,32,64,128];
-#    param T2_1[] = [1,4,8,16,32]; 
-#    param T2_2[] = [1,4,8,16,32]; 
+#    param T1_1[] = [1,16,32,64,128,256];
+#    param T1_2[] = [1,16,32,64,128,256];
+#    param T2_1[] = [1,2,4,8,16,32];
+#    param T2_2[] = [1,2,4,8,16,32];
 
-    param T1_1[] = [1]; 
-    param T1_2[] = [1];
+    param T1_1[] = [32]; 
+    param T1_2[] = [128];
     param T2_1[] = [1]; 
-    param T2_2[] = [1]; 
+    param T2_2[] = [8]; 
  
-#    param U1[] = [1,2,4,8];
-#    param U2[] = [1,2,4,8];
+#    constraint tile_size1 = (T1_1*T2_1) <= 513;
+#    constraint tile_size2 = (T1_2*T2_2) <= 513;
 
-    param U1[] = [1];
-    param U2[] = [1];
+#    param U1[] = [1,2,4,6,8];
+#    param U2[] = [1,2,4,6,8];
+
+    param U1[] = [2];
+    param U2[] = [8];
 
     param PERM[] = [
      [0,1],
 #     [1,0],
     ];
 
-    param PAR[] = [False]; 
+    param PAR[] = [True]; 
     param SCREP[] = [False]; 
-    param IVEC[] = [False]; 
+    param IVEC[] = [True]; 
   } 
  
   def input_params
   {
-    param N[] = [100];
-    param T[] = [10000];
+    param T[] = [100];
+    param N[] = [2500000];
   }
 
   def input_vars
@@ -51,11 +54,16 @@
    arg init_file = 'jacobi-1d_init_code.c';
   } 
 
+  def performance_test_code 
+  {
+    arg skeleton_code_file = 'jacobi-1d_skeleton_code.c';
+  }
+
   def search  
   {
     arg algorithm = 'Exhaustive';  
 #    arg algorithm = 'Simplex';  
-    arg time_limit = 1;
+#    arg time_limit = 1;
 #    arg total_runs = 1; 
   }
 ) @*/  
