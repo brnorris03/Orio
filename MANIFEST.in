@@ -1,5 +1,3 @@
-
 recursive-include src/tool *
-
 recursive-include testsuite *
 
