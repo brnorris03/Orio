@@ -17,21 +17,21 @@ int main()
 {   
   /*@ prologue @*/ 
 
-  double annot_t_start=0, annot_t_end=0, annot_t_total=0;
-  int annot_i; 
+  double orio_t_start=0, orio_t_end=0, orio_t_total=0;
+  int orio_i; 
 
-  for (annot_i=0; annot_i<REPS; annot_i++)
+  for (orio_i=0; orio_i<REPS; orio_i++)
 { 
-  annot_t_start = rtclock();
+  orio_t_start = rtclock();
 
   /*@ tested code @*/
 
-  annot_t_end = rtclock();  
-  annot_t_total += annot_t_end - annot_t_start;
+  orio_t_end = rtclock();  
+  orio_t_total += orio_t_end - orio_t_start;
 } 
 
-  annot_t_total = annot_t_total / REPS;   
-  printf("%f\n", annot_t_total);  
+  orio_t_total = orio_t_total / REPS;   
+  printf("%f\n", orio_t_total);  
 
   /*@ epilogue @*/ 
 
