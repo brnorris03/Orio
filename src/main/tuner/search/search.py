@@ -44,7 +44,7 @@ class Search:
 
     def searchBestCoord(self):
         '''
-        To explore the search space and retun the coordinate that yields the best performance
+        To explore the search space and return the coordinate that yields the best performance
         (i.e. minimum performance cost).
         This is the function that needs to be created in each new search engine subclass.
         '''
