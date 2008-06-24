@@ -29,7 +29,7 @@ class TuningInfo:
         self.run_cmd = run_cmd            # command for running the test driver (no executable name)
 
         # performance counter arguments
-        self.pcount_method = pcount_method             # default: 'basic timer'
+        self.pcount_method = pcount_method             # default: 'total time'
         self.pcount_reps = pcount_reps                 # default: 1
 
         # search arguments
@@ -601,7 +601,7 @@ class TuningInfoGen:
 
         # all expected definition information
         build_info = None
-        pcount_info = ('basic timer', 1)
+        pcount_info = ('total time', 1)
         search_info = ('Exhaustive', -1, -1, [])
         pparam_info = ([], [])
         iparam_info = ([], [])
