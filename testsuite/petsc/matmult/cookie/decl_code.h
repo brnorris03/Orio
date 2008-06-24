@@ -5,5 +5,5 @@
 double yt[NROWS];
 double x[NCOLS*STRETCH];
 double v1[NROWS*NCOLS];
-double idx[NCOLS];
+int idx[NCOLS];
 
