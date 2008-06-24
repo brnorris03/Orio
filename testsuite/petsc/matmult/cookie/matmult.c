@@ -13,12 +13,14 @@
  } 
 
  def performance_params { 
-   param UI[] = [1,2,4,8]; 
+   param U1[] = [1] + range(2,13); 
+   param U2[] = [1] + range(2,13); 
+   param SREP[] = [True, False];
  } 
  
  def input_params { 
    param NROWS[] = [4];
-   param NCOLS[] = [20];
+   param NCOLS[] = [200];
  } 
  
  def input_vars { 
@@ -38,8 +40,8 @@ int nsz = NROWS;
 int sz = NCOLS;
 
 /*@ begin Loop (
-transform ScalarReplace(dtype='double')
-transform RegTile(loops=['i1','i2'], ufactors=[4,4])
+transform Composite(scalarreplace = (SREP, 'double'))
+transform RegTile(loops=['i1','i2'], ufactors=[U1,U2])
  for (i1=0; i1<=nsz-1; i1++)
    {
      yt[i1] = 0;
@@ -55,5 +57,6 @@ for (i1=0; i1<=nsz-1; i1++)
       yt[i1] = yt[i1] + v1[i1*sz+i2] * x[idx[i2]];
   }
 
+/*@ end @*/
 /*@ end @*/
 
