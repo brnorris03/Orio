@@ -44,7 +44,7 @@ class ScalarReplace(module.loop.submodule.submodule.SubModule):
                 dtype = (rhs, line_no)
 
             # prefix name for scalars
-            if aname in PREFIX:
+            elif aname in PREFIX:
                 prefix = (rhs, line_no)
 
             # unknown argument name
