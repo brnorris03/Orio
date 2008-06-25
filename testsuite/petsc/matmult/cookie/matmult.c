@@ -5,22 +5,25 @@
 //  v1 = the input matrix (represented in 1-d array)
 // idx = the index vector (to indicate the index position of non-zero elements stored in vector x)
 
-
 /*@ begin PerfTuning (  
  def build { 
    arg command = 'gcc'; 
-   arg options = ''; 
+   arg options = '-I/disks/fast/papi/include -L/disks/fast/papi/lib -lpapi';
  } 
 
+ def performance_counter {
+   arg repetitions = 1000;
+ }
+
  def performance_params { 
-   param U1[] = [1] + range(2,13); 
-   param U2[] = [1] + range(2,13); 
+   param U1[] = [1]+range(2,10);
+   param U2[] = [1]+range(2,10);
    param SREP[] = [True, False];
  } 
  
  def input_params { 
    param NROWS[] = [4];
-   param NCOLS[] = [200];
+   param NCOLS[] = [16];
  } 
  
  def input_vars { 

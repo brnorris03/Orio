@@ -54,7 +54,7 @@ tuner.
  
    def performance_counter  
    { 
-     arg method = 'basic timer'; 
+     arg method = 'total time'; 
      arg repetitions = 10; 
    } 
 
