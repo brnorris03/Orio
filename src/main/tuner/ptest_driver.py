@@ -16,7 +16,7 @@ class PerfTestDriver:
     __PTEST_SRC_FNAME = '_orio_perftest.c'
 
     # types of performance-counting methods
-    __PCOUNT_BASIC = 'basic timer'
+    __PCOUNT_BASIC = 'total time'
     
     #-----------------------------------------------------
     

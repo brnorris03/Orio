@@ -1,39 +1,51 @@
 #include <stdio.h>  
 #include <stdlib.h> 
 #include <sys/time.h>   
+
+#include <papi.h>
  
 /*@ global @*/  
- 
-double rtclock()    
-{    
-  struct timezone tzp;  
-  struct timeval tp;    
-  int stat; 
-  gettimeofday (&tp, &tzp); 
-  return (tp.tv_sec + tp.tv_usec*1.0e-6);  
-}    
  
 int main()  
 {    
   /*@ prologue @*/  
  
-  double orio_t_start=0, orio_t_end=0, orio_t_total=0; 
-  int orio_i;  
- 
+  long long orio_total_cycles = 0;
+  long long orio_avg_cycles;
+  int orio_i;
+
   for (orio_i=0; orio_i<REPS; orio_i++) 
     {  
-      orio_t_start = rtclock(); 
- 
+      int err, EventSet = PAPI_NULL;
+      long long CtrValues[1];
+      err = PAPI_library_init(PAPI_VER_CURRENT);
+      if (err != PAPI_VER_CURRENT) {
+	printf("PAPI library initialization error!\n");
+	exit(1);
+      }
+      if (PAPI_create_eventset(&EventSet) != PAPI_OK) {
+	printf("Failed to create PAPI Event Set\n");
+	exit(1);
+      }
+      if (PAPI_query_event(PAPI_TOT_CYC) == PAPI_OK)
+	err = PAPI_add_event(EventSet, PAPI_TOT_CYC);
+      if (err != PAPI_OK) {
+	printf("Failed to add PAPI event\n");
+	exit(1);
+      }
+      PAPI_start(EventSet);
+      
       /*@ tested code @*/ 
- 
-      orio_t_end = rtclock();   
-      orio_t_total += orio_t_end - orio_t_start; 
+      
+      PAPI_stop(EventSet, &CtrValues[0]);
+      orio_total_cycles += CtrValues[0];
     }  
- 
-  orio_t_total = orio_t_total / REPS;    
-  printf("%f\n", orio_t_total);   
- 
+  
+  orio_avg_cycles = orio_total_cycles / REPS;
+  printf("%ld\n", orio_avg_cycles);
+
   /*@ epilogue @*/  
+
  
   return yt[0]; // to avoid the dead code elimination
 }   
