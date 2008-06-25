@@ -1,4 +1,4 @@
-#define STRETCH 100
+#define STRETCH 1
 #define COEF 1
 #define STEP 0
 
