@@ -1,9 +1,8 @@
-#define STRETCH 1
-#define COEF 1
-#define STEP 0
+#define ADD_ELMS 500
 
-double yt[NROWS];
-double x[NCOLS*STRETCH];
-double v1[NROWS*NCOLS];
-int idx[NCOLS];
+double y[NROWS];
+double x[NCOLS+ADD_ELMS];
+double aa[NROWS*NCOLS];
+int aj[NROWS*NCOLS];
+int ii[NROWS+1];
 

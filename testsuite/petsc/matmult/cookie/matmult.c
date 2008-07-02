@@ -1,29 +1,24 @@
-// nsz = the number of rows of matrix v1
-//  sz = the number of columns of matrix v1
-//  yt = the output vector
-//   x = the input vector
-//  v1 = the input matrix (represented in 1-d array)
-// idx = the index vector (to indicate the index position of non-zero elements stored in vector x)
-
 /*@ begin PerfTuning (  
  def build { 
    arg command = 'gcc'; 
-   arg options = '-I/disks/fast/papi/include -L/disks/fast/papi/lib -lpapi';
+   arg options = ' -fopenmp -I/disks/fast/papi/include -L/disks/fast/papi/lib -lpapi';
  } 
 
  def performance_counter {
-   arg repetitions = 1000;
+   arg repetitions = 10;
  }
 
- def performance_params { 
+ def performance_params {
    param U1[] = [1]+range(2,10);
    param U2[] = [1]+range(2,10);
-   param SREP[] = [True, False];
- } 
- 
- def input_params { 
-   param NROWS[] = [4];
-   param NCOLS[] = [16];
+   param OMP[] = [False];
+   param SREP[] = [False,True];
+   constraint par_loop = ((not OMP) or (OMP and U1==1));
+ }
+
+ def input_params {
+   param NROWS[] = [750];
+   param NCOLS[] = [6];
  } 
  
  def input_vars { 
@@ -36,30 +31,30 @@
  } 
 ) @*/ 
 
-
-int i1,i2;
-int i1t,i2t;
-int nsz = NROWS;
-int sz = NCOLS;
+int i,j,it,jt;
+int m = NROWS;
+int newlb_j, newub_j;
 
 /*@ begin Loop (
+transform Composite(openmp = (OMP, 'omp parallel for private(i,j,it,jt)'))
 transform Composite(scalarreplace = (SREP, 'double'))
-transform RegTile(loops=['i1','i2'], ufactors=[U1,U2])
- for (i1=0; i1<=nsz-1; i1++)
-   {
-     yt[i1] = 0;
-     for (i2=0; i2<=sz-1; i2++)
-       yt[i1] = yt[i1] + v1[i1*sz+i2] * x[idx[i2]];
-   }
+transform RegTile(loops=['i','j'], ufactors=[U1,U2])
+for (i=0; i<=m-1; i++)
+  {
+    y[i] = 0.0;
+    for (j=ii[i]; j<=ii[i+1]-1; j++)
+      y[i] = y[i] + aa[j] * x[aj[j]];
+  }
 ) @*/
 
-for (i1=0; i1<=nsz-1; i1++) 
+for (i=0; i<=m-1; i++)
   {
-    yt[i1] = 0;
-    for (i2=0; i2<=sz-1; i2++)
-      yt[i1] = yt[i1] + v1[i1*sz+i2] * x[idx[i2]];
+    y[i] = 0.0;
+    for (j=ii[i]; j<=ii[i+1]-1; j++)
+      y[i] = y[i] + aa[j] * x[aj[j]];
   }
 
 /*@ end @*/
+
 /*@ end @*/
 
