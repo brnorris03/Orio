@@ -2,7 +2,11 @@
 #include <stdlib.h> 
 #include <sys/time.h>   
 
+#include <omp.h>
 #include <papi.h>
+
+#define max(x,y)    ((x) > (y)? (x) : (y))
+#define min(x,y)    ((x) < (y)? (x) : (y))
  
 /*@ global @*/  
  
@@ -46,7 +50,6 @@ int main()
 
   /*@ epilogue @*/  
 
- 
-  return yt[0]; // to avoid the dead code elimination
+  return y[0]; // to avoid the dead code elimination
 }   
 

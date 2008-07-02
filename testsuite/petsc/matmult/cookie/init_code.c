@@ -3,15 +3,15 @@ void init_input_vars()
 {
   int i,j;
   for (i=0; i<=NROWS-1; i++) {
-    yt[i] = 5;
+    y[i] = 0.0;
+    ii[i] = i*NCOLS;
     for (j=0; j<=NCOLS-1; j++) {
-      v1[i*NCOLS+j] = (i+j+5) % 5 + 1;
+      aa[i*NCOLS+j] = 1.0 * ((i+j+5) % 5 + 1);
+      aj[i*NCOLS+j] = j;
     }
   }
-  for (j=0; j<=NCOLS-1; j++) {
-    idx[j] = j + COEF*STEP;
-  }
-  for (j=0; j<=(NCOLS*STRETCH)-1; j++) {
-    x[j] = j % 10 + 1;
+  ii[NROWS] = NROWS*NCOLS;
+  for (i=0; i<=NCOLS+ADD_ELMS-1; i++) {
+    x[i] = 1.0 * ((i+5) % 10 + 1);
   }
 }
