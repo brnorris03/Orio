@@ -10,7 +10,8 @@ class ArgInfo:
     '''Input argument information'''
 
     # SpMV options
-    INODE = 'INODE'
+    DEFAULT = 'DEFAULT'   # general assumption: compressed sparse row matrix
+    INODE = 'INODE'       # assumption: use inode format, where rows have identical nonzero structure
 
     #---------------------------------------------------------------------
 
@@ -34,7 +35,7 @@ class ArgInfo:
         self.in_unroll_factor = in_unroll_factor
 
         # check for unknown SpMV option
-        if self.option not in (self.INODE,):
+        if self.option not in (self.DEFAULT, self.INODE):
             print 'error:SpMV: unknown SpMV option. got: %s' % self.option
             sys.exit(1)
 
@@ -96,7 +97,7 @@ class ArgInfoGen:
         IUFAC = 'in_unroll_factor'
 
         # argument information
-        option = 'INODE'
+        option = 'DEFAULT'
         num_rows = None
         out_vector = None
         in_vector = None
