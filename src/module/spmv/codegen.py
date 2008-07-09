@@ -97,8 +97,11 @@ class CodeGen:
 
         ops = []
         for i1,(ov,a) in enumerate(zip(ovecs, iarrs)):
+            o = '%s += ' % ov
             for i2,iv in enumerate(ivecs):
-                ops.append('%s = %s + %s[%s] * %s;' % (ov,ov,a,i2,iv))
+                if i2 > 0: o += ' + '
+                o += '%s[%s]*%s' % (a,i2,iv)
+            ops.append(o + ';')
         arr_incs = [('%s+=%s;' % (a, len(ivecs))) if len(ivecs)>1 else ('%s++;' % a) for a in iarrs]
         ops.append(' '.join(arr_incs))
         return ops
