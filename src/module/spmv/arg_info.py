@@ -15,12 +15,14 @@ class ArgInfo:
 
     #---------------------------------------------------------------------
 
-    def __init__(self, option, num_rows, out_vector, in_vector, in_matrix, row_inds, col_inds,
-                 out_loop_var, in_loop_var, elm_type, init_val, out_unroll_factor, in_unroll_factor):
+    def __init__(self, option, num_rows, num_cols, out_vector, in_vector, in_matrix, row_inds,
+                 col_inds, out_loop_var, in_loop_var, elm_type, init_val,
+                 out_unroll_factor, in_unroll_factor):
         '''To instantiate input argument information'''
 
         self.option = option
         self.num_rows = num_rows
+        self.num_cols = num_cols
         self.out_vector = out_vector
         self.in_vector = in_vector
         self.in_matrix = in_matrix
@@ -54,6 +56,7 @@ class ArgInfo:
         s += '-------------------------------\n'
         s += '  option = %s \n' % self.option
         s += '  num_rows = %s \n' % self.num_rows
+        s += '  num_cols = %s \n' % self.num_cols
         s += '  out_vector = %s \n' % self.out_vector
         s += '  in_vector = %s \n' % self.in_vector
         s += '  in_matrix = %s \n' % self.in_matrix
@@ -84,6 +87,7 @@ class ArgInfoGen:
         # expected argument names
         OPT = 'option'
         NROWS = 'num_rows'
+        NCOLS = 'num_cols'
         OVEC = 'out_vector'
         IVEC = 'in_vector'
         IMAT = 'in_matrix'
@@ -99,6 +103,7 @@ class ArgInfoGen:
         # argument information
         option = 'DEFAULT'
         num_rows = None
+        num_cols = None
         out_vector = None
         in_vector = None
         in_matrix = None
@@ -127,6 +132,8 @@ class ArgInfoGen:
                 option = rhs
             elif vname == NROWS:
                 num_rows = rhs
+            elif vname == NCOLS:
+                num_cols = rhs
             elif vname == OVEC:
                 out_vector = rhs
             elif vname == IVEC:
@@ -172,12 +179,12 @@ class ArgInfoGen:
         in_unroll_factor = eval(in_unroll_factor, perf_params)
 
         # list of all expected argument names
-        arg_names = [OPT, NROWS, OVEC, IVEC, IMAT, RINDS, CINDS, OLVAR, ILVAR, ETYPE, INITVAL,
-                     OUFAC, IUFAC]
+        arg_names = [OPT, NROWS, NCOLS, OVEC, IVEC, IMAT, RINDS, CINDS, OLVAR, ILVAR, ETYPE,
+                     INITVAL, OUFAC, IUFAC]
 
         # list of all argument information
-        arg_infos = [option, num_rows, out_vector, in_vector, in_matrix, row_inds, col_inds,
-                     out_loop_var, in_loop_var, elm_type, init_val, out_unroll_factor,
+        arg_infos = [option, num_rows, num_cols, out_vector, in_vector, in_matrix, row_inds,
+                     col_inds, out_loop_var, in_loop_var, elm_type, init_val, out_unroll_factor,
                      in_unroll_factor]
         
         # check for undefined arguments
@@ -187,10 +194,10 @@ class ArgInfoGen:
             sys.exit(1)
         
         # generate and return the input argument information
-        return ArgInfo(option, num_rows, out_vector, in_vector, in_matrix, row_inds, col_inds,
-                       out_loop_var, in_loop_var, elm_type, init_val, out_unroll_factor,
-                       in_unroll_factor)
-                    
+        return ArgInfo(option, num_rows, num_cols, out_vector, in_vector, in_matrix, row_inds,
+                       col_inds, out_loop_var, in_loop_var, elm_type, init_val,
+                       out_unroll_factor, in_unroll_factor)
+
 
 
 
