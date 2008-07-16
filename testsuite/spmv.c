@@ -1,25 +1,26 @@
 
-/*@ begin SpMV(
+/*@ begin SpMV (
 
-  # SpMV option
-  option = INODE;
+ # SpMV option
+ option = INODE;
 
-  # high-level description of the SpMV computation
-  num_rows = rlength;
-  out_vector = y;
-  in_vector = x;
-  in_matrix = aa;
-  row_inds = ai;
-  col_inds = aj;
-  out_loop_var = i;
-  in_loop_var = j;
-  elm_type = PetscScalar;
-  init_val = 0.0;
+ # high-level description of the SpMV computation
+ num_rows = rlength;
+ num_cols = clength;
+ out_vector = y;
+ in_vector = x;
+ in_matrix = aa;
+ row_inds = ai;
+ col_inds = aj;
+ out_loop_var = i;
+ in_loop_var = j;
+ elm_type = double;
+ init_val = 0.0;
 
-  # transformation parameters
-  out_unroll_factor = 4;
-  in_unroll_factor = 2;
-
+ # transformation parameters
+ out_unroll_factor = 1;
+ in_unroll_factor = 1;
+  
 ) @*/
 
 for (i=0; i<=m-1; i++) 
@@ -29,7 +30,7 @@ for (i=0; i<=m-1; i++)
       y[i] = y[i] + aa[j] * x[aj[j]]; 
   } 
 
-
 /*@ end @*/
+
 
 
