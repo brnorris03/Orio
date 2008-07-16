@@ -1,7 +1,7 @@
 /*@ begin PerfTuning (  
  def build { 
    arg command = 'gcc'; 
-   arg options = -O -I/disks/fast/papi/include -L/disks/fast/papi/lib -lpapi';
+   arg options = '-O -I/disks/fast/papi/include -L/disks/fast/papi/lib -lpapi';
  }
 
  def performance_counter {
@@ -43,6 +43,7 @@ while (n--) {
     
     # high-level description of the SpMV computation 
     num_rows = rlength; 
+    num_cols = clength; 
     out_vector = y; 
     in_vector = x; 
     in_matrix = aa; 
@@ -51,7 +52,7 @@ while (n--) {
     out_loop_var = i; 
     in_loop_var = j;
     elm_type = double;
-    init_val = 0;
+    init_val = 0.0;
     
     # transformation parameters 
     out_unroll_factor = 1; 
