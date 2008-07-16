@@ -22,9 +22,9 @@ int main()
   double *y = (double *) malloc(trows*sizeof(double));
   double *x = (double *) malloc(tcols*sizeof(double));
   double *aa = (double *) malloc(trows*(bcols+stride)*sizeof(double));
-  int *ai = (int *) malloc(trows*sizeof(double));
-  int *aj = (int *) malloc(trows*(bcols+stride)*sizeof(double));
-  int *node_sizes = (int *) malloc(trows*sizeof*(double));
+  int *ai = (int *) malloc(trows*sizeof(int));
+  int *aj = (int *) malloc(trows*(bcols+stride)*sizeof(int));
+  int *node_sizes = (int *) malloc(trows*sizeof(int));
   int node_max = 0;
   {
     int i,j,k,ind;
@@ -51,6 +51,12 @@ int main()
       }
     }
   }
+  double *y_o = y;
+  double *x_o = x;
+  double *aa_o = aa;
+  int *ai_o = ai;
+  int *aj_o = aj;
+  int *node_sizes_o = node_sizes;
 
   long long orio_total_cycles = 0;
   long long orio_avg_cycles;
@@ -58,6 +64,8 @@ int main()
 
   for (orio_i=0; orio_i<REPS; orio_i++) 
     {  
+      y=y_o; x=x_o; aa=aa_o; ai=ai_o; aj=aj_o; node_sizes=node_sizes_o;
+      
       int err, EventSet = PAPI_NULL;
       long long CtrValues[1];
       err = PAPI_library_init(PAPI_VER_CURRENT);

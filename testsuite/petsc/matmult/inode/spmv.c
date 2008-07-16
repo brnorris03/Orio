@@ -5,7 +5,7 @@
  }
 
  def performance_counter {
-   arg repetitions = 10;
+   arg repetitions = 100;
  }
 
  def performance_params {
@@ -13,10 +13,10 @@
  }
 
  def input_params {
-   param TROWS[] = [10000];
-   param TCOLS[] = [10000];
+   param TROWS[] = [100000];
+   param TCOLS[] = [100000];
    param BROWS[] = [4];
-   param BCOLS[] = [16];
+   param BCOLS[] = [20];
  }
  
  def input_vars { 
@@ -32,8 +32,8 @@
 register int clength,rlength;
 register int n=node_max;
 while (n--) {
-  rlength = row_sizes[0];
-  ++row_sizes;
+  rlength = node_sizes[0];
+  node_sizes++;
   clength=ai[1]-ai[0];
   ai+=rlength;
   
