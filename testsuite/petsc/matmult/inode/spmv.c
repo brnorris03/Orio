@@ -5,11 +5,12 @@
  }
 
  def performance_counter {
-   arg repetitions = 100;
+   arg repetitions = 200;
  }
 
  def performance_params {
-   param DUMMY[] = [1];
+   param OUF[] = [1,2,3,4];
+   param IUF[] = [1,2,3,4];
  }
 
  def input_params {
@@ -55,8 +56,8 @@ while (n--) {
     init_val = 0.0;
     
     # transformation parameters 
-    out_unroll_factor = 1; 
-    in_unroll_factor = 1; 
+    out_unroll_factor = OUF; 
+    in_unroll_factor = IUF; 
     
   ) @*/ 
   /*@ end @*/

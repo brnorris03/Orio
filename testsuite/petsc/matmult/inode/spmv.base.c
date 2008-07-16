@@ -4,14 +4,23 @@
 
 #include <papi.h>
 
-/*@ global @*/  
+#define TROWS 100000
+#define TCOLS 100000
+#define BROWS 4
+#define BCOLS 20
+#include "decl_code.h"
+
+#include "init_code.c"
+
+  
 
 #define max(x,y) ((x) > (y)? (x) : (y))
 #define min(x,y) ((x) < (y)? (x) : (y))
 
 int main()  
 {
-  /*@ prologue @*/  
+  init_input_vars();
+  
   
   int trows = TROWS;
   int tcols = TCOLS;
@@ -69,6 +78,7 @@ int main()
   for (orio_i=0; orio_i<REPS; orio_i++) 
     {  
       y=y_o; x=x_o; aa=aa_o; ai=ai_o; aj=aj_o; node_sizes=node_sizes_o;
+      int total_rows = node_max*brows;
       
       int err, EventSet = PAPI_NULL;
       long long CtrValues[1];
@@ -89,8 +99,14 @@ int main()
       }
       PAPI_start(EventSet);
       
-      /*@ tested code @*/ 
-      
+      register int i,j;
+      for (i=0; i<total_rows; i++) {
+	y[i]=0;
+	for (j=ai[i]; j<ai[i+1]; j++) {
+	  y[i] += aa[j] * x[aj[j]];
+	}
+      }
+
       PAPI_stop(EventSet, &CtrValues[0]);
       orio_total_cycles += CtrValues[0];
     }  
@@ -98,8 +114,7 @@ int main()
   orio_avg_cycles = orio_total_cycles / REPS;
   printf("%ld\n", orio_avg_cycles);
 
-  /*@ epilogue @*/  
-
+  
   return y[0]; // to avoid the dead code elimination
 }   
 
