@@ -20,31 +20,41 @@ class CodeGen:
         # boolean values to adjust the code generation phase
         self.include_outer_loop = True
         self.include_cleanup_code = True
+        self.vectorize = False
+
+        # some option adjustments
         if not self.include_outer_loop:
             self.include_cleanup_code = False
+        if self.ainfo.in_unroll_factor == 1:
+            self.vectorize = False
+
+        # check semantic correctness
+        self.__semantCheck()
 
     #------------------------------------------------------
 
-    def __generateCLengthCode(self):
-        '''Generate code for computing the column length'''
+    def __semantCheck(self):
+        '''Check semantic correctness'''
 
+        # get the argument information
         ainfo = self.ainfo
-        clength_var = 'clength'
-        clength_decl = 'short int %s;' % clength_var
-        clength_init = '%s=%s[1]-%s[0];' % (clength_var, ainfo.row_inds, ainfo.row_inds)
-        rind_inc = '%s+=%s;' % (ainfo.row_inds, ainfo.num_rows)
-        return (clength_var, clength_decl, clength_init, rind_inc)
-        
+
+        # semantic for vectorization
+        if self.vectorize and ainfo.in_unroll_factor > 1 and ainfo.in_unroll_factor % 2 != 0:
+            print ('error:SpMV: vectorization requires the inner loop unroll factor to be ' +
+                   'divisible by two')
+            sys.exit(1)
+
     #------------------------------------------------------
 
-    def __generateIArrCode(self, clength_var):
+    def __generateIArrCode(self):
         '''Generate code for the pointers to input array'''
 
         ainfo = self.ainfo
         iarrs = ['%s%s' % (ainfo.in_matrix, i) for i in range(0, ainfo.out_unroll_factor)]
         iarr_decls = ['%s *%s;' % (ainfo.elm_type, a) for a in iarrs]
         iarr_inits = [('%s=%s;' % (a, ainfo.in_matrix)) if i==0 else
-                      ('%s=%s+%s;' % (a, iarrs[i-1], clength_var))
+                      ('%s=%s+%s;' % (a, iarrs[i-1], ainfo.num_cols))
                       for i,a in enumerate(iarrs)]
         iarr_unroll_inc = '%s=%s;' % (ainfo.in_matrix, iarrs[-1])
         iarr_cleanup_inc = '%s=%s;' % (ainfo.in_matrix, iarrs[0])
@@ -67,44 +77,73 @@ class CodeGen:
 
     #------------------------------------------------------
 
-    def __generateIVecCode(self, clength_var):
+    def __generateIVecCode(self):
         '''Generate code for storing values of the input vectors'''
 
         ainfo = self.ainfo
-        cind_var = 'ind'
-        cinds = ['%s%s' % (cind_var, i) for i in range(0, ainfo.in_unroll_factor)]
-        cind_refs = ['%s[%s]' % (ainfo.col_inds, i) for i in range(0, ainfo.in_unroll_factor)]
-        cind_decls = ['int %s;' % i for i in cinds]
-        cind_inits = ['%s=%s;' % (i,r) for i,r in zip(cinds, cind_refs)]
         cind_unroll_inc = '%s+=%s;' % (ainfo.col_inds, ainfo.in_unroll_factor)
         cind_cleanup_inc = '%s++;' % (ainfo.col_inds)
         if ainfo.out_unroll_factor == 1:
             cind_inc = ''
         elif ainfo.out_unroll_factor == 2:
-            cind_inc = '%s+=%s;' % (ainfo.col_inds, clength_var)
+            cind_inc = '%s+=%s;' % (ainfo.col_inds, ainfo.num_cols)
         else:
-            cind_inc = '%s+=%s*%s;' % (ainfo.col_inds, (ainfo.out_unroll_factor-1), clength_var)
+            cind_inc = '%s+=%s*%s;' % (ainfo.col_inds, (ainfo.out_unroll_factor-1), ainfo.num_cols)
         ivecs = ['%s%s' % (ainfo.in_vector, i) for i in range(0, ainfo.in_unroll_factor)]
         ivec_decls = ['%s %s;' % (ainfo.elm_type, v) for v in ivecs]
-        ivec_inits = ['%s=%s[%s];' % (v, ainfo.in_vector, i) for v,i in zip(ivecs, cinds)]
-        return (cind_decls, cind_inits, cind_unroll_inc, cind_cleanup_inc, cind_inc,
-                ivecs, ivec_decls, ivec_inits)
+        ivec_inits = ['%s=%s[%s[%s]];' % (v, ainfo.in_vector, ainfo.col_inds, i)
+                      for i,v in enumerate(ivecs)]
+        return (cind_unroll_inc, cind_cleanup_inc, cind_inc, ivecs, ivec_decls, ivec_inits)
 
     #------------------------------------------------------
 
-    def __generateOpCode(self, ovecs, iarrs, ivecs):
-        '''Generate code for the unrolled SpMV operations'''
+    def __generateSimdCode(self, ovecs, ivecs, iarrs):
+        '''Generate code for vectorization/simdization'''
 
-        ops = []
-        for i1,(ov,a) in enumerate(zip(ovecs, iarrs)):
-            o = '%s += ' % ov
-            for i2,iv in enumerate(ivecs):
-                if i2 > 0: o += ' + '
-                o += '%s[%s]*%s' % (a,i2,iv)
-            ops.append(o + ';')
-        arr_incs = [('%s+=%s;' % (a, len(ivecs))) if len(ivecs)>1 else ('%s++;' % a) for a in iarrs]
-        ops.append(' '.join(arr_incs))
-        return ops
+        ainfo = self.ainfo
+        simd_type = 'v2df'
+        simd_typedef = 'typedef double %s __attribute__ ((vector_size(16)));' % simd_type
+        simd_ovars = ['%s%so' % (ainfo.out_vector, i) for i in range(0, ainfo.out_unroll_factor)]
+        simd_ovar_inits = ['%s %s={0,0};' % (simd_type, v) for v in simd_ovars]
+        simd_ivecs = ['%s%sv' % (ainfo.in_vector, i) for i in range(0, ainfo.in_unroll_factor/2)]
+        simd_ivec_inits = ['%s %s={%s[%s[%s]],%s[%s[%s]]};' % (simd_type,v,
+                                                               ainfo.in_vector,ainfo.col_inds,i*2,
+                                                               ainfo.in_vector,ainfo.col_inds,i*2+1)
+                           for i,v in enumerate(simd_ivecs)]
+        simd_iarrs = [['%s%sv' % (a,i) for i in range(ainfo.in_unroll_factor/2)] for a in iarrs]
+
+        simd_iarr_inits = [' '.join(['%s %s%sv={%s[%s],%s[%s]};' % (simd_type,a,i,a,i*2,a,i*2+1)
+                                     for i in range(0, ainfo.in_unroll_factor/2)])
+                           for a in iarrs]
+        simd_uvars = ['%s%su' % (ainfo.out_vector, i) for i in range(0, ainfo.out_unroll_factor)]
+        simd_uvar_inits = ['double *%s=(double *)&%s;' % (u,o) for u,o in zip(simd_uvars, simd_ovars)]
+        simd_stores = ['%s=%s[0]+%s[1];' % (o,u,u) for o,u in zip(ovecs, simd_uvars)]
+        return (simd_typedef, simd_ovars, simd_ovar_inits, simd_ivecs, simd_ivec_inits,
+                simd_iarrs, simd_iarr_inits, simd_uvar_inits, simd_stores)
+
+    #------------------------------------------------------
+
+    def __generateUnrolledOpCode(self, iarrs, inc_val, ovrefs, iarefs, ivrefs):
+        '''Generate code for the unrolled SpMV computation code'''
+
+        # initiate code sequence
+        codes = []
+
+        # generate the unrolled spmv computation code
+        for ov,as in zip(ovrefs, iarefs):
+            c = '%s +=' % ov
+            for i,(a,iv) in enumerate(zip(as,ivrefs)):
+                if i > 0:
+                    c += ' +'
+                c += ' %s*%s' % (a,iv)
+            codes.append(c + ';')
+
+        # generate code for incrementing the array pointers
+        arr_incs = [('%s+=%s;' % (a, inc_val)) if inc_val>1 else ('%s++;' % a) for a in iarrs]
+        codes.append(' '.join(arr_incs))
+
+        # return the generated code
+        return codes
     
     #------------------------------------------------------
 
@@ -114,105 +153,133 @@ class CodeGen:
         # get the argument info
         ainfo = self.ainfo
         
-        # generate codes for computing the column length
-        (clength_var, clength_decl, clength_init, rind_inc) = self.__generateCLengthCode()
-
         # generate codes for the input arrays
         (iarrs, iarr_decls, iarr_inits, iarr_unroll_inc,
-         iarr_cleanup_inc) = self.__generateIArrCode(clength_var)
+         iarr_cleanup_inc) = self.__generateIArrCode()
 
         # generate codes for the output vectors
         (ovecs, ovec_decls, ovec_inits, ovec_stores, ovec_unroll_inc,
          ovec_cleanup_inc) = self.__generateOVecCode()
 
         # generate codes for the input vectors
-        (cind_decls, cind_inits, cind_unroll_inc, cind_cleanup_inc, cind_inc,
-         ivecs, ivec_decls, ivec_inits) = self.__generateIVecCode(clength_var)
+        (cind_unroll_inc, cind_cleanup_inc, cind_inc,
+         ivecs, ivec_decls, ivec_inits) = self.__generateIVecCode()
 
-        # generate codes for the unrolled operation codes
-        main_main_ops = self.__generateOpCode(ovecs, iarrs, ivecs)
-        main_cleanup_ops = self.__generateOpCode(ovecs, iarrs, ivecs[:1])
-        cleanup_main_ops = self.__generateOpCode(ovecs[:1], iarrs[:1], ivecs)
-        cleanup_cleanup_ops = self.__generateOpCode(ovecs[:1], iarrs[:1], ivecs[:1])
+        # generate codes for vectorization/simdization
+        if self.vectorize:
+            (simd_typedef, simd_ovars, simd_ovar_inits, simd_ivecs, simd_ivec_inits, simd_iarrs,
+             simd_iarr_inits, simd_uvar_inits,
+             simd_stores) = self.__generateSimdCode(ovecs, ivecs, iarrs)
+
+        # generate codes for the unrolled computation codes
+        iarefs = [['%s[%s]' % (a,i) for i in range(0, ainfo.in_unroll_factor)] for a in iarrs]
+        if self.vectorize:
+            main_main_ops = self.__generateUnrolledOpCode(iarrs, ainfo.in_unroll_factor,
+                                                          simd_ovars, simd_iarrs, simd_ivecs)
+        else:
+            main_main_ops = self.__generateUnrolledOpCode(iarrs, ainfo.in_unroll_factor,
+                                                          ovecs, iarefs, ivecs)
+        main_cleanup_ops = self.__generateUnrolledOpCode(iarrs, 1, ovecs, iarefs, ivecs[:1])
+        if self.vectorize:
+            cleanup_main_ops = self.__generateUnrolledOpCode(iarrs[:1], ainfo.in_unroll_factor,
+                                                             simd_ovars[:1], simd_iarrs[:1],
+                                                             simd_ivecs)
+        else:
+            cleanup_main_ops = self.__generateUnrolledOpCode(iarrs[:1], ainfo.in_unroll_factor,
+                                                             ovecs[:1], iarefs[:1], ivecs)
+        cleanup_cleanup_ops = self.__generateUnrolledOpCode(iarrs[:1], 1,
+                                                            ovecs[:1], iarefs[:1], ivecs[:1])
 
         # generate code for the main unrolled loop
-        code = '\n'
-        code += clength_decl + '\n'
-        code += clength_init + '\n'
-        code += rind_inc + '\n'
+        code = ''
+        if self.vectorize:
+            code += simd_typedef + '\n'
+        code += ' '.join(iarr_decls) + '\n'
+        code += ' '.join(ovec_decls) + '\n'
+        if self.vectorize:
+            code += ivec_decls[0] + '\n'
+        else:
+            code += ' '.join(ivec_decls) + '\n'
         if self.include_outer_loop:
-            code += 'for (%s=0; %s<=%s-%s; %s+=%s) {\n' % (ainfo.out_loop_var, ainfo.out_loop_var,
-                                                           ainfo.num_rows,
-                                                           (1 + ainfo.out_unroll_factor - 1),
-                                                           ainfo.out_loop_var,
-                                                           ainfo.out_unroll_factor)
-        code += '  ' + ' '.join(iarr_decls) + '\n'
+            code += 'register int %s=0;\n' % ainfo.out_loop_var
+            code += 'while (%s<=%s-%s) {\n' % (ainfo.out_loop_var, ainfo.num_rows,
+                                               (1 + ainfo.out_unroll_factor - 1))
         code += '  ' + ' '.join(iarr_inits) + '\n'
-        code += '  ' + ' '.join(ovec_decls) + '\n'
-        code += '  ' + ' '.join(ovec_inits) + '\n'
-        code += '  ' + 'for (%s=0; %s<=%s-%s; %s+=%s) {\n' % (ainfo.in_loop_var, ainfo.in_loop_var,
-                                                              clength_var,
-                                                              (1 + ainfo.in_unroll_factor - 1),
-                                                              ainfo.in_loop_var,
-                                                              ainfo.in_unroll_factor)
-        code += '    ' + ' '.join(cind_decls) + '\n'
-        code += '    ' + ' '.join(ivec_decls) + '\n'
-        code += '    ' + ' '.join(cind_inits) + '\n'
+        if self.vectorize:
+            code += '  ' + ' '.join(simd_ovar_inits) + '\n'
+        else:
+            code += '  ' + ' '.join(ovec_inits) + '\n'
+        code += '  ' + 'register int %s=0;\n' % ainfo.in_loop_var
+        code += '  ' + 'while (%s<=%s-%s) {\n' % (ainfo.in_loop_var, ainfo.num_cols,
+                                                  (1 + ainfo.in_unroll_factor - 1))
+        if self.vectorize:
+            code += '    ' + '\n    '.join(simd_ivec_inits) + '\n'
+        else:
+            code += '    ' + ' '.join(ivec_inits) + '\n'
         code += '    ' + cind_unroll_inc + '\n'
-        code += '    ' + ' '.join(ivec_inits) + '\n'
+        if self.vectorize:
+            code += '    ' + '\n    '.join(simd_iarr_inits) + '\n'
         code += '    ' + '\n    '.join(main_main_ops) + '\n'
+        code += '    ' + '%s+=%s;\n' % (ainfo.in_loop_var, ainfo.in_unroll_factor)
         code += '  ' + '} \n'
-        code += '  ' + 'for (; %s<=%s-1; %s++) {\n' % (ainfo.in_loop_var, clength_var,
-                                                       ainfo.in_loop_var)
-        code += '    ' + cind_decls[0] + '\n'
-        code += '    ' + ivec_decls[0] + '\n'
-        code += '    ' + cind_inits[0] + '\n'
-        code += '    ' + cind_cleanup_inc + '\n'
-        code += '    ' + ivec_inits[0] + '\n'
-        code += '    ' + '\n    '.join(main_cleanup_ops) + '\n'
-        code += '  ' + '} \n'
+        if self.vectorize:
+            code += '  ' + ' '.join(simd_uvar_inits) + '\n'
+            code += '  ' + ' '.join(simd_stores) + '\n'
+        if ainfo.in_unroll_factor > 1:
+            code += '  ' + 'while (%s<=%s-1) {\n' % (ainfo.in_loop_var, ainfo.num_cols)
+            code += '    ' + ivec_inits[0] + '\n'
+            code += '    ' + cind_cleanup_inc + '\n'
+            code += '    ' + '\n    '.join(main_cleanup_ops) + '\n'
+            code += '    ' + '%s++;\n' % ainfo.in_loop_var
+            code += '  ' + '} \n'
         code += '  ' + ' '.join(ovec_stores) + '\n'
         code += '  ' + ovec_unroll_inc + '\n'
         code += '  ' + iarr_unroll_inc + '\n'
         code += '  ' + cind_inc + '\n'
         if self.include_outer_loop:
+            code += '  ' + '%s+=%s;\n' % (ainfo.out_loop_var, ainfo.out_unroll_factor)
             code += '} \n'
         
         # generate code for the clean-up loop
-        if self.include_cleanup_code:
-            code += 'for (; %s<=%s-1; %s++) {\n' % (ainfo.out_loop_var, ainfo.num_rows,
-                                                    ainfo.out_loop_var)
-            code += '  ' + iarr_decls[0] + '\n'
+        if ainfo.out_unroll_factor > 1 and self.include_cleanup_code:
+            code += 'while (%s<=%s-1) {\n' % (ainfo.out_loop_var, ainfo.num_rows)
             code += '  ' + iarr_inits[0] + '\n'
-            code += '  ' + ovec_decls[0] + '\n'
-            code += '  ' + ovec_inits[0] + '\n'
-            code += '  ' + 'for (%s=0; %s<=%s-%s; %s+=%s) {\n' % (ainfo.in_loop_var,
-                                                                  ainfo.in_loop_var,
-                                                                  clength_var,
-                                                                  (1 + ainfo.in_unroll_factor - 1),
-                                                                  ainfo.in_loop_var,
-                                                                  ainfo.in_unroll_factor)
-            code += '    ' + ' '.join(cind_decls) + '\n'
-            code += '    ' + ' '.join(ivec_decls) + '\n'
-            code += '    ' + ' '.join(cind_inits) + '\n'
+            if self.vectorize:
+                code += '  ' + simd_ovar_inits[0] + '\n'
+            else:
+                code += '  ' + ovec_inits[0] + '\n'
+            code += '  ' + 'register int %s=0;\n' % ainfo.in_loop_var
+            code += '  ' + 'while (%s<=%s-%s) {\n' % (ainfo.in_loop_var, ainfo.num_cols,
+                                                      (1 + ainfo.in_unroll_factor - 1))
+            if self.vectorize:
+                code += '    ' + '\n    '.join(simd_ivec_inits) + '\n'
+            else:
+                code += '    ' + ' '.join(ivec_inits) + '\n'
             code += '    ' + cind_unroll_inc + '\n'
-            code += '    ' + ' '.join(ivec_inits) + '\n'
+            if self.vectorize:
+                code += '    ' + simd_iarr_inits[0] + '\n'
             code += '    ' + '\n    '.join(cleanup_main_ops) + '\n'
+            code += '    ' + '%s+=%s;\n' % (ainfo.in_loop_var, ainfo.in_unroll_factor)
             code += '  ' + '} \n'
-            code += '  ' + 'for (; %s<=%s-1; %s++) {\n' % (ainfo.in_loop_var, clength_var,
-                                                           ainfo.in_loop_var)
-            code += '    ' + cind_decls[0] + '\n'
-            code += '    ' + ivec_decls[0] + '\n'
-            code += '    ' + cind_inits[0] + '\n'
-            code += '    ' + cind_cleanup_inc + '\n'
-            code += '    ' + ivec_inits[0] + '\n'
-            code += '    ' + '\n    '.join(cleanup_cleanup_ops) + '\n'
-            code += '  ' + '} \n'
+            if self.vectorize:
+                code += '  ' + simd_uvar_inits[0] + '\n'
+                code += '  ' + simd_stores[0] + '\n'
+            if ainfo.in_unroll_factor > 1:
+                code += '  ' + 'while (%s<=%s-1) {\n' % (ainfo.in_loop_var, ainfo.num_cols)
+                code += '    ' + ivec_inits[0] + '\n'
+                code += '    ' + cind_cleanup_inc + '\n'
+                code += '    ' + '\n    '.join(cleanup_cleanup_ops) + '\n'
+                code += '    ' + '%s++;\n' % ainfo.in_loop_var
+                code += '  ' + '} \n'
             code += '  ' + ovec_stores[0] + '\n'
             code += '  ' + ovec_cleanup_inc + '\n'
             code += '  ' + iarr_cleanup_inc + '\n'
-            code += '} \n'
+            code += '  ' + '%s++;\n' % ainfo.out_loop_var
+            code += '}'
 
+        # add a new scope and indentation
+        code = '\n{ \n' + '  ' + re.sub('\n', '\n  ', code) + '\n} \n'
+        
         # return the generated code
         return code
 
