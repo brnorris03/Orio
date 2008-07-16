@@ -1,16 +1,16 @@
 /*@ begin PerfTuning (  
  def build { 
    arg command = 'gcc'; 
-   arg options = '-O -I/disks/fast/papi/include -L/disks/fast/papi/lib -lpapi';
+   arg options = '-O3 -I/disks/fast/papi/include -L/disks/fast/papi/lib -lpapi';
  }
 
  def performance_counter {
-   arg repetitions = 200;
+   arg repetitions = 100;
  }
 
  def performance_params {
    param OUF[] = [1,2,3,4];
-   param IUF[] = [1,2,3,4];
+   param IUF[] = [1,2,6,8];
  }
 
  def input_params {
