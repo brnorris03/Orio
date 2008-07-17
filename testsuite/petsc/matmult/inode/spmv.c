@@ -9,8 +9,8 @@
  }
 
  def performance_params {
-   param OUF[] = [1,2,3,4];
-   param IUF[] = [1,2,6,8];
+   param OUF[] = [1];
+   param IUF[] = [4];
  }
 
  def input_params {
