@@ -20,7 +20,7 @@ class CodeGen:
         # boolean values to adjust the code generation phase
         self.include_outer_loop = True
         self.include_cleanup_code = True
-        self.vectorize = False
+        self.vectorize = True
 
         # some option adjustments
         if not self.include_outer_loop:

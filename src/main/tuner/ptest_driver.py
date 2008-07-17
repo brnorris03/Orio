@@ -206,7 +206,7 @@ class PerfTestDriver:
         self.__build()
         # Return a dictionary of performance codes indexed by the string represeentation of search coordinates
         perf_costs = self.__execute()
-        self.__cleanup()
+        #self.__cleanup()
         return perf_costs
 
 
