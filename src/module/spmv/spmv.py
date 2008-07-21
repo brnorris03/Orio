@@ -29,8 +29,7 @@ class SpMV(module.module.Module):
         ainfo = arg_info.ArgInfoGen().generate(args, self.perf_params)
 
         # generate the optimized code
-        indent = ' ' * self.indent_size
-        optimized_code = codegen.CodeGen(ainfo, self.annot_body_code, indent).generate()
+        optimized_code = codegen.CodeGen(ainfo).generate()
 
         # return the optimized code
         return optimized_code
