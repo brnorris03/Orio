@@ -22,8 +22,8 @@ class ArgInfo:
     #---------------------------------------------------------------------
 
     def __init__(self, out_vector, in_vector, in_matrix, row_inds, col_inds, data_type, init_val,
-                 total_rows, total_inodes, inode_row_sizes, out_unroll_factor, in_unroll_factor,
-                 num_threads, simd, block_structure):
+                 total_rows, total_inodes, inode_sizes, inode_rows, out_unroll_factor,
+                 in_unroll_factor, num_threads, simd, block_structure):
         '''To instantiate transformation argument information'''
 
         self.out_vector = out_vector
@@ -35,7 +35,8 @@ class ArgInfo:
         self.init_val = init_val
         self.total_rows = total_rows
         self.total_inodes = total_inodes
-        self.inode_row_sizes = inode_row_sizes
+        self.inode_sizes = inode_sizes
+        self.inode_rows = inode_rows
 
         self.out_unroll_factor = out_unroll_factor
         self.in_unroll_factor = in_unroll_factor
@@ -82,7 +83,8 @@ class ArgInfoGen:
         INITVAL = 'init_val'
         TROWS = 'total_rows'
         TINODES = 'total_inodes'
-        IRSIZES = 'inode_row_sizes'
+        ISIZES = 'inode_sizes'
+        IROWS = 'inode_rows'
         OUFAC = 'out_unroll_factor'
         IUFAC = 'in_unroll_factor'
         NTHREADS = 'num_threads'
@@ -99,7 +101,8 @@ class ArgInfoGen:
         init_val = '0.0'
         total_rows = 'total_rows'
         total_inodes = 'total_inodes'
-        inode_row_sizes = 'inode_row_sizes'
+        inode_sizes = 'inode_sizes'
+        inode_rows = 'inode_rows'
         out_unroll_factor = '1'
         in_unroll_factor = '1'
         num_threads = '1'
@@ -136,8 +139,10 @@ class ArgInfoGen:
                 total_rows = rhs
             elif vname == TINODES:
                 total_inodes = rhs
-            elif vname == IRSIZES:
-                inode_row_sizes = rhs
+            elif vname == ISIZES:
+                inode_sizes = rhs
+            elif vname == IROWS:
+                inode_rows = rhs
             elif vname == OUFAC:
                 out_unroll_factor = rhs
             elif vname == IUFAC:
@@ -188,7 +193,7 @@ class ArgInfoGen:
 
         # generate and return the transformation argument information
         return ArgInfo(out_vector, in_vector, in_matrix, row_inds, col_inds, data_type, init_val,
-                       total_rows, total_inodes, inode_row_sizes, out_unroll_factor, in_unroll_factor,
-                       num_threads, simd, block_structure)
+                       total_rows, total_inodes, inode_sizes, inode_rows, out_unroll_factor,
+                       in_unroll_factor, num_threads, simd, block_structure)
     
     
