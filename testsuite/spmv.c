@@ -11,12 +11,13 @@
  init_val = 0;
  total_rows = total_rows;
  total_inodes = total_inodes;
- inode_row_sizes = inode_row_sizes;
-  
+ inode_sizes = inode_sizes;
+ inode_rows = inode_rows;
+
  # transformation parameters
- out_unroll_factor = 2;
- in_unroll_factor = 1;
- num_threads = 8;
+ out_unroll_factor = 3;
+ in_unroll_factor = 4;
+ num_threads = 1;
  simd = 'none';    #'none' (default), 'gcc', 'xlc' (not yet supported)
  block_structure = 'none';    #'none' (default), 'inode', 'bcsr' (not yet supported)
 
