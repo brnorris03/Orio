@@ -15,11 +15,11 @@
  inode_rows = inode_rows;
 
  # transformation parameters
- out_unroll_factor = 3;
+ out_unroll_factor = 4;
  in_unroll_factor = 4;
  num_threads = 1;
- simd = 'none';    #'none' (default), 'gcc', 'xlc' (not yet supported)
- block_structure = 'none';    #'none' (default), 'inode', 'bcsr' (not yet supported)
+ simd = 'sse';    # 'none' (default), 'gcc', 'sse', 'xlc' (still unsupported)
+ block_structure = 'none';    # 'none' (default), 'inode', 'bcsr' (still unsupported)
 
 ) @*/
 
