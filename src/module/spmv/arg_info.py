@@ -12,6 +12,7 @@ class ArgInfo:
     # SIMD options
     SIMD_NONE = 'none'
     SIMD_GCC = 'gcc'
+    SIMD_SSE = 'sse'
     SIMD_XLC = 'xlc'
 
     # block structure options
@@ -45,8 +46,8 @@ class ArgInfo:
         self.block_structure = block_structure
         
         # check for unknown SpMV option
-        if self.simd not in (self.SIMD_NONE, self.SIMD_GCC, self.SIMD_XLC):
-            print 'error:SpMV: unknown SIMD value. got: "%s"' % self.simd
+        if self.simd not in (self.SIMD_NONE, self.SIMD_GCC, self.SIMD_XLC, self.SIMD_SSE):
+            print 'error:SpMV: unrecognized SIMD type. got: "%s"' % self.simd
             sys.exit(1)
 
         # check the semantic correctness
@@ -56,7 +57,14 @@ class ArgInfo:
 
         # check for unknown block-structure option
         if self.block_structure not in (self.BSTRUC_NONE, self.BSTRUC_INODE, self.BSTRUC_BCSR):
-            print 'error:SpMV: unknown block-structure value. got: "%s"' % self.block_structure
+            print 'error:SpMV: unrecognized block-structure type. got: "%s"' % self.block_structure
+            sys.exit(1)
+
+        # check for validity of the simdization requirement
+        if (self.simd != self.SIMD_NONE and self.in_unroll_factor > 1 and
+            self.in_unroll_factor % 2 != 0):
+            print ('error:SpMV: simdization requires the inner loop unroll factor to be ' +
+                   'divisible by two')
             sys.exit(1)
 
 #---------------------------------------------------------------------
