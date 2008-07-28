@@ -1,8 +1,7 @@
 
 /*@ begin PerfTuning ( 
  def build {
-   arg command = 'icc';
-   arg options = '-fast';
+   arg build_command = 'gcc -O3';
  }
 
  def performance_params {

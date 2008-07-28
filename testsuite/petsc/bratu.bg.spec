@@ -3,8 +3,7 @@ let REGS=32;
 spec bratu {
  def build   
  {  
-   arg command = 'mpixlc ';
-   arg options = '-O3 -qstrict -lm';  
+   arg build_command = 'mpixlc -O3 -qstrict -lm';  
  }  
   
  def performance_counter   

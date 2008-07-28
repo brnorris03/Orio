@@ -1,7 +1,6 @@
 /*@ begin PerfTuning (  
  def build { 
-   arg command = 'gcc'; 
-   arg options = ' -fopenmp -I/disks/fast/papi/include -L/disks/fast/papi/lib -lpapi';
+   arg build_command = 'gcc -fopenmp -I/disks/fast/papi/include -L/disks/fast/papi/lib -lpapi';
  } 
 
  def performance_counter {

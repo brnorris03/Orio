@@ -3,8 +3,7 @@ let REGS=32;
 spec bratu {
  def build   
  {  
-   arg command = '/Users/norris/software/openmpi-1.1.4/bin/mpicc ';  
-   arg options = '-O3 -lm';  
+   arg build_command = '/Users/norris/software/openmpi-1.1.4/bin/mpicc -O3 -lm';
  }  
   
  def performance_counter   
