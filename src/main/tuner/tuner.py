@@ -170,10 +170,9 @@ class PerfTuner:
             ptcodegens.append(c)
             
         # create the performance-testing driver
-        ptdriver = ptest_driver.PerfTestDriver(tinfo.build_cmd, tinfo.build_opts,
-                                               tinfo.pcount_method, tinfo.pcount_reps, 
-                                               tinfo.driver_src, tinfo.run_cmd, self.verbose)
-
+        ptdriver = ptest_driver.PerfTestDriver(tinfo.build_cmd, tinfo.run_cmd, tinfo.num_procs,
+                                               tinfo.pcount_method, tinfo.pcount_reps, self.verbose)
+        
         # get the axis names and axis value ranges to represent the search space
         axis_names, axis_val_ranges = self.__buildCoordSystem(tinfo.pparam_params)
 

@@ -46,7 +46,7 @@ class Search:
         '''
         To explore the search space and return the coordinate that yields the best performance
         (i.e. minimum performance cost).
-        This is the function that needs to be created in each new search engine subclass.
+        This is the function that needs to be implemented in each new search engine subclass.
         '''
         raise NotImplementedError('%s: unimplemented abstract function "searchBestCoord"' %
                                   self.__class__.__name__)

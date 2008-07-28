@@ -20,30 +20,26 @@ class PerfTestDriver:
     
     #-----------------------------------------------------
     
-    def __init__(self, build_cmd, build_opts, pcount_method, pcount_reps, driversrc=None, run_cmd=None, verbose=False):
+    def __init__(self, build_cmd, run_cmd, num_procs, pcount_method, pcount_reps, verbose):
         '''To instantiate the performance-testing driver'''
 
         self.build_cmd = build_cmd
-        self.build_opts = build_opts
+        self.run_cmd = run_cmd
+        self.num_procs = num_procs
         self.pcount_method = pcount_method        # TODO
         self.pcount_reps = pcount_reps
+        self.verbose = verbose
 
         # TODO: add tuning spec options for the following two values
         self.batch = False
         if run_cmd: self.batch = True
-        if driversrc:
-
-            self.srcname = driversrc                  # if specified, use that file as the driver
-            self.gendriver = False
-        else: 
-            self.srcname = self.__PTEST_SRC_FNAME
-            if self.batch: 
-                import random
-                self.srcname = '_orio_perftest' + str(random.randint(1, 14141)) + '.c'
-            self.gendriver = True
+        self.srcname = self.__PTEST_SRC_FNAME
+        if self.batch: 
+            import random
+            self.srcname = '_orio_perftest' + str(random.randint(1, 14141)) + '.c'
+        self.gendriver = True
         self.execname = self.srcname[:self.srcname.find('.')] + '.exe'
         self.run_cmd = run_cmd
-        self.verbose = verbose
 
         if self.pcount_method != self.__PCOUNT_BASIC:
             print 'error: unknown performance-counting method: "%s"' % self.pcount_method
@@ -74,9 +70,8 @@ class PerfTestDriver:
             extra_compiler_opts += '-DREPS=%s' % self.pcount_reps
             
             # compile the testing code
-            cmd = ('%s %s %s -o %s %s' %
-                   (self.build_cmd, self.build_opts, extra_compiler_opts,
-                    self.execname, self.srcname))
+            cmd = ('%s %s -o %s %s' % (self.build_cmd, extra_compiler_opts,
+                                       self.execname, self.srcname))
             if self.verbose: print ' compiling:\n\t' + cmd
             status = os.system(cmd)
             if status:
@@ -89,8 +84,7 @@ class PerfTestDriver:
             # add extra defines
             extra_vars = ' AUTOTUNE_REPS=%s' % self.pcount_reps
             
-            cmd = ('%s %s %s > build.log 2>&1' %
-                   self.build_cmd, self.build_opts, extra_vars)
+            cmd = ('%s %s > build.log 2>&1' % self.build_cmd, extra_vars)
             if self.verbose: print ' compiling:\n\t' + cmd
             try:
                 p1 = Popen([cmd], stdout=PIPE, stderr=PIPE)
@@ -123,7 +117,8 @@ class PerfTestDriver:
                 if self.verbose: print ' running:\n\t'  + cmd
                 try:
                     f = os.popen(cmd)    
-                    # The output is the list of times using python list syntax, e.g., {'[0,1]':0.2, '[1,1]': 0.3]
+                    # The output is the list of times using python list syntax,
+                    # e.g., {'[0,1]':0.2, '[1,1]': 0.3]
                     output = f.read()
                     if output: perf_costs = eval(output)
                     f.close()
@@ -137,14 +132,16 @@ class PerfTestDriver:
                 # TODO: redo this to take output file name
                 try:
                     f = os.popen(cmd)    
-                    # The output is the list of times using python list syntax, e.g., {'[0,1]':0.2, '[1,1]': 0.3]
+                    # The output is the list of times using python list syntax,
+                    # e.g., {'[0,1]':0.2, '[1,1]': 0.3]
                     output = f.read()
                     if self.batch and output:
                         import time
                         time.sleep(3);
                         status = '1'
                         while status == '1': 
-                            # FIX TODO: very bad assumption that the last number out is the batch job name
+                            # FIX TODO: very bad assumption that the last number out is
+                            # the batch job name
                             jobid = output.strip().split('\n')[-1]
                             # TODO: make this an option in tuning spec (status command):
                             chkstatus_command = 'cqstat %s | grep %s | wc -l' % (jobid, jobid)
@@ -176,7 +173,8 @@ class PerfTestDriver:
             print 'error: performance testing failed: "%s"' % cmd
             sys.exit(1)
 
-        # return the performance costs dictionary (indexed by the string representation of the search coordinates)
+        # return the performance costs dictionary
+        # (indexed by the string representation of the search coordinates)
         return perf_costs
             
     #-----------------------------------------------------
@@ -204,7 +202,8 @@ class PerfTestDriver:
 
         if self.gendriver: self.__write(test_code)
         self.__build()
-        # Return a dictionary of performance codes indexed by the string represeentation of search coordinates
+        # return a dictionary of performance codes indexed by
+        # the string representation of search coordinates
         perf_costs = self.__execute()
         self.__cleanup()
         return perf_costs
