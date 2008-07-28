@@ -14,7 +14,7 @@ class TuningInfo:
         '''To instantiate the tuning information'''
 
         # unpack all information
-        build_cmd, build_opts, driver_src, run_cmd = build_info
+        build_cmd, run_cmd, num_procs = build_info
         pcount_method, pcount_reps = pcount_info
         search_algo, search_time_limit, search_total_runs, search_opts = search_info
         pparam_params, pparam_constraints = pparam_info
@@ -23,10 +23,9 @@ class TuningInfo:
         ptest_skeleton_code_file, = ptest_code_info
 
         # build arguments
-        self.build_cmd = build_cmd        # must be specified by user
-        self.build_opts = build_opts      # must be specified by user
-        self.driver_src = driver_src      # user specified or default filename
+        self.build_cmd = build_cmd        # command for compiling the generated code
         self.run_cmd = run_cmd            # command for running the test driver (no executable name)
+        self.num_procs = num_procs        # the number of processors used to run the test driver
 
         # performance counter arguments
         self.pcount_method = pcount_method             # default: 'total time'
@@ -67,7 +66,8 @@ class TuningInfo:
         s += ' tuning info      \n'
         s += '------------------\n'
         s += ' build command: %s \n' % self.build_cmd
-        s += ' build options: %s \n' % self.build_opts
+        s += ' run command: %s \n' % self.run_cmd
+        s += ' num-processors: %s \n' % self.num_procs
         s += ' perf-counting method: %s \n' % self.pcount_method
         s += ' perf-counting repetitions: %s \n' % self.pcount_reps
         s += ' search algorithm: %s \n' % self.search_algo
@@ -132,16 +132,14 @@ class TuningInfoGen:
         '''
 
         # all expected argument names
-        CMD = 'command'
-        OPTS = 'options'
-        DRIVER = 'driver'
-        RUNCMD = 'runcommand'
-
+        BUILDCMD = 'build_command'
+        RUNCMD = 'run_command'
+        NUMPROCS = 'num_procs'
+        
         # all expected build information
         build_cmd = None
-        build_opts = None
-        driver_src = None
         run_cmd = None
+        num_procs = 1
 
         # iterate over each statement
         for stmt in stmt_seq:
@@ -161,45 +159,34 @@ class TuningInfoGen:
             _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
             
             # unknown argument name
-            if id_name not in (CMD, OPTS, DRIVER, RUNCMD):
+            if id_name not in (BUILDCMD, RUNCMD, NUMPROCS):
                 print 'error:%s: unknown build argument: "%s"' % (id_line_no, id_name)
                 sys.exit(1)
 
-            # evaluate build command
-            if id_name == CMD:
+            # evaluate the build command
+            if id_name == BUILDCMD:
                 if not isinstance(rhs, str):
-                    print 'error:%s: build command must be a string' % rhs_line_no
+                    print 'error:%s: build command in build section must be a string' % rhs_line_no
                     sys.exit(1)
                 build_cmd = rhs
 
-            # evaluate build options
-            elif id_name == OPTS:
-                if not isinstance(rhs, str):
-                    print 'error:%s: build options must be a string' % rhs_line_no
-                    sys.exit(1)
-                build_opts = rhs
-
-            # evaluate driver source settings
-            elif id_name == DRIVER:
-                if not isinstance(rhs, str):
-                    print ('error:%s: invalid file name for driver specified in build options' %
-                           rhs_line_no)
-                    sys.exit(1)
-                if not os.path.exists(rhs):
-                    print ('error:%s: cannot find driver file specified in build options' %
-                           rhs_line_no)
-                    sys.exit(1)
-                driver_src = rhs
-            
-            # evaluate run command (for batch queue systems)
+            # evaluate the run command (for batch queue systems)
             elif id_name == RUNCMD:
                 if not isinstance(rhs, str):
                     print 'error:%s: run command in build section must be a string' % rhs_line_no
                     sys.exit(1)
                 run_cmd = rhs
 
+            # evaluate the number of processors
+            elif id_name == NUMPROCS:
+                if not isinstance(rhs, int) or rhs <= 0:
+                    print (('error:%s: number of processors in build section must be a positive ' +
+                            'integer') % rhs_line_no)
+                    sys.exit(1)
+                num_procs = rhs
+
         # return all build information
-        return (build_cmd, build_opts, driver_src, run_cmd)
+        return (build_cmd, run_cmd, num_procs)
 
     #-----------------------------------------------------------
 
@@ -633,15 +620,11 @@ class TuningInfoGen:
             
             # build definition
             if dname == BUILD:
-                (build_cmd, build_opts,
-                 driver_src, run_cmd) = self.__genBuildInfo(body_stmt_seq, line_no)
+                (build_cmd, run_cmd, num_procs) = self.__genBuildInfo(body_stmt_seq, line_no)
                 if build_cmd == None:
                     print 'error:%s: missing build command in the build section' % line_no
                     sys.exit(1)
-                if build_opts == None:
-                    print 'error:%s: missing build options in the build section' % line_no
-                    sys.exit(1)
-                build_info = (build_cmd, build_opts, driver_src, run_cmd)
+                build_info = (build_cmd, run_cmd, num_procs)
 
             # performance counter definition
             elif dname == PERF_COUNTER:
@@ -704,7 +687,7 @@ class TuningInfoGen:
             sys.exit(1)
 
         # return the tuning information
-        return TuningInfo(build_info, pcount_info, search_info, pparam_info, iparam_info, 
+        return TuningInfo(build_info, pcount_info, search_info, pparam_info, iparam_info,
                           ivar_info, ptest_code_info)
 
 

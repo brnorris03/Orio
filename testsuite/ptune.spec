@@ -4,8 +4,7 @@ let REGS = 32;
 spec unrolljam_mm_mul {
  def build 
  {
-   arg command = 'gcc';
-   arg options = '-O3';
+   arg build_command = 'gcc -O3';
  }
 
  def performance_counter 
