@@ -224,6 +224,11 @@ class Simplex(main.tuner.search.search.Search):
 
         if self.verbose: print '\n----- begin simplex search -----'
 
+        # check for parallel search
+        if self.use_parallel_search:
+            print 'error: simplex search does not support parallel search'
+            sys.exit(1)
+
         # check if the size of the search space is valid for this search
         self.__checkSearchSpace()
 

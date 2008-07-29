@@ -90,6 +90,11 @@ class Random(main.tuner.search.search.Search):
         '''
 
         if self.verbose: print '\n----- begin random search -----'
+
+        # check for parallel search
+        if self.use_parallel_search:
+            print 'error: random search does not support parallel search'
+            sys.exit(1)
         
         # initialize a storage to remember all coordinates that have been explored
         coord_records = {}
