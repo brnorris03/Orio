@@ -97,51 +97,88 @@ class Search:
 
     def getPerfCost(self, coord):
         '''
-        To empirically evaluate the performance cost of the code variant generated using
-        the given coordinate
+        To empirically evaluate the performance cost of the code corresponding the given coordinate
         '''
 
-        # if the given coordinate is out of the search space
-        for i in range(0, self.total_dims):
-            iuplimit = self.dim_uplimits[i]
-            if coord[i] < 0 or coord[i] >= iuplimit:
-                return self.MAXFLOAT
+        perf_costs = self.getPerfCosts([coord])
+        [perf_cost,] = perf_costs.values()
+        return perf_cost
 
-        # if the given coordinate has been computed before
-        coord_key = str(coord)
-        if coord_key in self.perf_cost_records:
-            return self.perf_cost_records[coord_key]
-        
-        # get the performance parameters
-        perf_params = self.coordToPerfParams(coord)
-        
-        # test if the performance parameters are valid
-        try:
-            is_valid = eval(self.constraint, perf_params)
-        except Exception, e:
-            print 'error: failed to evaluate the constraint expression: "%s"' % self.constraint
-            print ' --> %s: %s' % (e.__class__.__name__, e)
-            sys.exit(1)
+    def getPerfCosts(self, coords):
+        '''
+        To empirically evaluate the performance costs of the codes corresponding the given coordinates
+        '''
 
-        # if invalid performance parameters
-        if not is_valid:
-            perf_cost = self.MAXFLOAT
-            
-        # empirically evaluate the performance cost
-        else:
+        # initialize the performance costs mapping
+        perf_costs = {}
+
+        # filter out all invalid coordinates and previously evaluated coordinates
+        uneval_coords = []
+        for coord in coords:
+            coord_key = str(coord)
+
+            # if the given coordinate is out of the search space
+            is_out = False
+            for i in range(0, self.total_dims):
+                if coord[i] < 0 or coord[i] >= self.dim_uplimits[i]:
+                    is_out = True
+                    break
+            if is_out:
+                perf_costs[coord_key] = self.MAXFLOAT
+                continue
+
+            # if the given coordinate has been computed before
+            if coord_key in self.perf_cost_records:
+                perf_costs[coord_key] = self.perf_cost_records[coord_key]
+                continue
+
+            # get the performance parameters
+            perf_params = self.coordToPerfParams(coord)
+        
+            # test if the performance parameters are valid
+            try:
+                is_valid = eval(self.constraint, perf_params)
+            except Exception, e:
+                print 'error: failed to evaluate the constraint expression: "%s"' % self.constraint
+                print ' --> %s: %s' % (e.__class__.__name__, e)
+                sys.exit(1)
+
+            # if invalid performance parameters
+            if not is_valid:
+                perf_costs[coord_key] = self.MAXFLOAT
+                continue
+
+            # store all unevaluated coordinates
+            uneval_coords.append(coord)
+
+        # check the unevaluated coordinates
+        if len(uneval_coords) == 0:
+            return perf_costs
+
+        # get the transformed code for each corresponding coordinate
+        code_map = {}
+        for coord in uneval_coords:
+            coord_key = str(coord)
+            perf_params = self.coordToPerfParams(coord)
             transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
             if len(transformed_code_seq) != 1:
                 print 'internal error: the optimized annotation code cannot be multiple versions'
                 sys.exit(1)
             transformed_code, _ = transformed_code_seq[0]
-            test_code = self.ptcodegen.generate(transformed_code)
-            perf_cost = self.ptdriver.run(test_code)
+            code_map[coord_key] = transformed_code
 
-        # remember the performance cost of the given coordinate
-        self.perf_cost_records[coord_key] = perf_cost
+        # evaluate the performance costs for all coordinates
+        test_code = self.ptcodegen.generate(code_map)
+        new_perf_costs = self.ptdriver.run(test_code)
+
+        # remember the performance cost of previously evaluated coordinate
+        self.perf_cost_records.update(new_perf_costs.items())
+
+        # merge the newly obtained performance costs
+        perf_costs.update(new_perf_costs.items())
         
         # return the performance cost
-        return perf_cost
+        return perf_costs
 
     #----------------------------------------------------------
 

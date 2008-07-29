@@ -2,7 +2,12 @@
 # To compile and execute the performance-testing code to get the performance cost
 #
 
-import os, sys, re
+import os, sys, time, random, re
+
+#-----------------------------------------------------
+
+# define an integer counter used for file naming 
+counter = 0
 
 #-----------------------------------------------------
 
@@ -13,7 +18,7 @@ class PerfTestDriver:
     '''
 
     # the file names of the testing code (i.e. source and executable)
-    __PTEST_SRC_FNAME = '_orio_perftest.c'
+    __PTEST_FNAME = '_orio_perftest'
 
     # types of performance-counting methods
     __PCOUNT_BASIC = 'basic timer'   # in microseconds (not accurate, large overhead)
@@ -21,26 +26,23 @@ class PerfTestDriver:
 
     #-----------------------------------------------------
     
-    def __init__(self, build_cmd, run_cmd, num_procs, pcount_method, pcount_reps, verbose):
+    def __init__(self, build_cmd, batch_cmd, status_cmd, num_procs, pcount_method, pcount_reps,
+                 use_parallel_search, verbose):
         '''To instantiate the performance-testing driver'''
 
         self.build_cmd = build_cmd
-        self.run_cmd = run_cmd
+        self.batch_cmd = batch_cmd
+        self.status_cmd = status_cmd
         self.num_procs = num_procs
         self.pcount_method = pcount_method
         self.pcount_reps = pcount_reps
+        self.use_parallel_search = use_parallel_search
         self.verbose = verbose
 
-        # TODO: add tuning spec options for the following two values
-        self.batch = False
-        if run_cmd: self.batch = True
-        self.srcname = self.__PTEST_SRC_FNAME
-        if self.batch: 
-            import random
-            self.srcname = '_orio_perftest' + str(random.randint(1, 14141)) + '.c'
-        self.gendriver = True
-        self.execname = self.srcname[:self.srcname.find('.')] + '.exe'
-        self.run_cmd = run_cmd
+        global counter
+        counter += 1
+        self.src_name = self.__PTEST_FNAME + str(counter) + '.c'
+        self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
 
         if self.pcount_method not in (self.__PCOUNT_BASIC, self.__PCOUNT_BGP):
             print 'error: unknown performance-counting method: "%s"' % self.pcount_method
@@ -52,132 +54,99 @@ class PerfTestDriver:
         '''Write the testing code into a file'''
 
         try:
-            f = open(self.srcname, 'w')
+            f = open(self.src_name, 'w')
             f.write(test_code)
             f.close()
         except:
-            print 'error: cannot open file for writing: %s' % self.srcname
+            print 'error: cannot open file for writing: %s' % self.src_name
             sys.exit(1)
 
     #-----------------------------------------------------
 
     def __build(self):
         '''Compile the testing code'''
-        #import distutils.sysconfig
         
-        if not self.build_cmd.startswith('make'):
-            # add extra options
-            extra_compiler_opts = ''
-            if self.pcount_method == self.__PCOUNT_BGP:
-                extra_compiler_opts += ' -DBGP_COUNTER'
-            extra_compiler_opts += ' -DREPS=%s' % self.pcount_reps
+        # get all extra options
+        extra_compiler_opts = ''
+        if self.pcount_method == self.__PCOUNT_BGP:
+            extra_compiler_opts += ' -DBGP_COUNTER'
+        extra_compiler_opts += ' -DREPS=%s' % self.pcount_reps
             
-            # compile the testing code
-            cmd = ('%s %s -o %s %s' % (self.build_cmd, extra_compiler_opts,
-                                       self.execname, self.srcname))
-            if self.verbose: print ' compiling:\n\t' + cmd
-            status = os.system(cmd)
-            if status:
-                print 'error: failed to compile the testing code: "%s"' % cmd
-                sys.exit(1)
-        else:
-            from subprocess import Popen, PIPE
-            
-            # Using make
-            # add extra defines
-            extra_vars = ' AUTOTUNE_REPS=%s' % self.pcount_reps
-            
-            cmd = ('%s %s > build.log 2>&1' % self.build_cmd, extra_vars)
-            if self.verbose: print ' compiling:\n\t' + cmd
-            try:
-                p1 = Popen([cmd], stdout=PIPE, stderr=PIPE)
-            except Exception,e:
-                print 'build command error: %s' % str(e)
-                sys.exit(1)
-                
-            try:
-                p2 = Popen(["tee", "build.log"], stdin=p1.stdout, stdout=PIPE)
-            except Exception,e:
-                print 'warning: could not save build output in build.log file: %s' % str(e)
-
-            # save build output
-            if p2:
-                output = p2.communicate()[0]
-                print output
-            
-            
+        # compile the testing code
+        cmd = ('%s %s -o %s %s' % (self.build_cmd, extra_compiler_opts,
+                                   self.exe_name, self.src_name))
+        if self.verbose: print ' compiling:\n\t' + cmd
+        status = os.system(cmd)
+        if status:
+            print 'error: failed to compile the testing code: "%s"' % cmd
+            sys.exit(1)
 
     #-----------------------------------------------------
 
     def __execute(self):
-        '''Execute the executable to get the performance cost'''
+        '''Execute the executable to get the performance costs'''
 
-        # execute the executable and collect the performance cost
+        # check if the executable exists
+        if not os.path.exists(self.exe_name):
+            print 'error: the executable of the testing code does not exist'
+            sys.exit(1)
+
+        # initialize the performance costs dictionary
+        # (indexed by the string representation of the search coordinates)
+        # e.g., {'[0,1]':0.2, '[1,1]':0.3}
         perf_costs = {}
-        if os.path.exists(self.execname):
-            if self.run_cmd == None:
-                cmd = './%s' % self.execname
-                if self.verbose: print ' running:\n\t'  + cmd
-                try:
-                    f = os.popen(cmd)    
-                    # The output is the list of times using python list syntax,
-                    # e.g., {'[0,1]':0.2, '[1,1]': 0.3]
-                    output = f.read()
-                    if output: perf_costs = eval(output)
+
+        # execute the search process in parallel
+        if self.use_parallel_search:
+            cmd = '%s %s' % (self.batch_cmd, self.exe_name)
+            if self.verbose: print ' running:\n\t' + cmd
+            # TODO: redo this to take output file name
+            try:
+                f = os.popen(cmd)    
+                output = f.read()
+                f.close()
+                # TODO: very bad assumption that the last number out is the batch job name
+                jobid = output.strip().split('\n')[-1]
+                status_cmd = '%s %s | grep %s | wc -l' % (self.status_cmd, jobid, jobid)
+                status = '1'
+                while status == '1': 
+                    time.sleep(3);
+                    f = os.popen(status_cmd)
+                    status = f.read().strip()
                     f.close()
-                except Exception, e:
-                    print 'error: failed to execute the testing code: "%s"' % cmd
-                    print ' --> %s: %s' % (e.__class__.__name__, e)
-                    sys.exit(1)
-            else:
-                cmd = self.run_cmd + ' ' + self.execname
-                if self.verbose: print ' running:\n\t'  + cmd
-                # TODO: redo this to take output file name
-                try:
-                    f = os.popen(cmd)    
-                    # The output is the list of times using python list syntax,
-                    # e.g., {'[0,1]':0.2, '[1,1]': 0.3]
-                    output = f.read()
-                    if self.batch and output:
-                        import time
-                        time.sleep(3);
-                        status = '1'
-                        while status == '1': 
-                            # FIX TODO: very bad assumption that the last number out is
-                            # the batch job name
-                            jobid = output.strip().split('\n')[-1]
-                            # TODO: make this an option in tuning spec (status command):
-                            chkstatus_command = 'cqstat %s | grep %s | wc -l' % (jobid, jobid)
-                            f2 = os.popen(chkstatus_command)
-                            status = f2.read().strip()
-                            f2.close()
-                        outfile = jobid + '.output'
-                        while not os.path.exists(outfile):
-                            time.sleep(5)
-                        try:
-                            f3 = open(outfile)
-                            output = f3.read()
-                            if output: perf_costs = eval(output)
-                            f3.close()
-                        except:
-                            perf_costs = {}
-                    else:    
-                        if output: perf_costs = eval(output)
-                        f.close()
-                except Exception, e:
-                    print 'error: failed to execute the testing code: "%s"' % cmd
-                    print ' --> %s: %s' % (e.__class__.__name__, e)
-                    sys.exit(1)
+                # TODO: generate an output file, instead of reading the batch-generated file
+                outfile = '%s.output' % jobid
+                while not os.path.exists(outfile):
+                    time.sleep(3)
+                f = open(outfile)
+                output = f.read()
+                f.close()
+                if output: perf_costs = eval(output)
+            except Exception, e:
+                print 'error: failed to execute the testing code: "%s"' % cmd
+                print ' --> %s: %s' % (e.__class__.__name__, e)
+                sys.exit(1)
+                
+        # execute the search sequentially
+        else:
+            cmd = './%s' % self.exe_name
+            if self.verbose: print ' running:\n\t' + cmd
+            try:
+                f = os.popen(cmd)
+                output = f.read()
+                f.close()
+                if output: perf_costs = eval(output)
+            except Exception, e:
+                print 'error: failed to execute the testing code: "%s"' % cmd
+                print ' --> %s: %s' % (e.__class__.__name__, e)
+                sys.exit(1)
 
-
-        
-        # check if the performance cost is already obtained
+        # check if the performance cost is already acquired
         if not perf_costs:
             print 'error: performance testing failed: "%s"' % cmd
             sys.exit(1)
 
         # return the performance costs dictionary
-        # (indexed by the string representation of the search coordinates)
         return perf_costs
             
     #-----------------------------------------------------
@@ -185,9 +154,7 @@ class PerfTestDriver:
     def __cleanup(self):
         '''Delete all the generated files'''
 
-        flist = [self.execname]
-        if self.gendriver: flist.append(self.srcname)
-        for fname in flist:
+        for fname in [self.exe_name, self.src_name]:
             try:
                 if os.path.exists(fname):
                     os.unlink(fname)
@@ -203,12 +170,19 @@ class PerfTestDriver:
         @return: a dictionary of the times corresponding to each coordinate in the search space
         '''
 
-        if self.gendriver: self.__write(test_code)
+        # write the testing code
+        self.__write(test_code)
+
+        # compile the testing code
         self.__build()
-        # return a dictionary of performance codes indexed by
-        # the string representation of search coordinates
+
+        # execute the testing code to get performance costs
         perf_costs = self.__execute()
+
+        # delete all generated and used files
         self.__cleanup()
+
+        # return the performance costs
         return perf_costs
 
 
