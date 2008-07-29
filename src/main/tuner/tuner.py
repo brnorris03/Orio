@@ -162,7 +162,7 @@ class PerfTuner:
         tinfo = self.__extractTuningInfo(module_body_code, line_no)
         
         # determine if parallel search is required
-        use_parallel_search = tinfo.run_cmd != None
+        use_parallel_search = tinfo.batch_cmd != None
 
         # create a performance-testing code generator for each distinct problem size
         ptcodegens = []
@@ -173,8 +173,9 @@ class PerfTuner:
             ptcodegens.append(c)
 
         # create the performance-testing driver
-        ptdriver = ptest_driver.PerfTestDriver(tinfo.build_cmd, tinfo.run_cmd, tinfo.num_procs,
-                                               tinfo.pcount_method, tinfo.pcount_reps, self.verbose)
+        ptdriver = ptest_driver.PerfTestDriver(tinfo.build_cmd, tinfo.batch_cmd, tinfo.status_cmd,
+                                               tinfo.num_procs, tinfo.pcount_method,
+                                               tinfo.pcount_reps, use_parallel_search, self.verbose)
 
         # get the axis names and axis value ranges to represent the search space
         axis_names, axis_val_ranges = self.__buildCoordSystem(tinfo.pparam_params)
