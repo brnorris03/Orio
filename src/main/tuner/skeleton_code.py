@@ -72,7 +72,7 @@ int main()
   }
   orio_t_total = orio_t_total / REPS;
   
-  printf("%f\n", orio_t_total);
+  printf("{'' : %g}", orio_t_total);
   
   /*@ epilogue @*/
 
@@ -278,7 +278,7 @@ class PerfTestSkeletonCode:
             if not match_obj:
                 print 'error: missing "coordinate" tag in the skeleton code'
                 sys.exit(1)
-
+            
             match_obj = re.search(self.__BEGIN_SWITCHBODY_TAG, code)
             if not match_obj:
                 print 'error: missing "begin switch body" tag in the skeleton code'
