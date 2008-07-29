@@ -16,8 +16,9 @@ class PerfTestDriver:
     __PTEST_SRC_FNAME = '_orio_perftest.c'
 
     # types of performance-counting methods
-    __PCOUNT_BASIC = 'total time'
-    
+    __PCOUNT_BASIC = 'basic timer'   # in microseconds (not accurate, large overhead)
+    __PCOUNT_BGP = 'bgp counter'     # in clock cycles (accurate, low overhead)
+
     #-----------------------------------------------------
     
     def __init__(self, build_cmd, run_cmd, num_procs, pcount_method, pcount_reps, verbose):
@@ -26,7 +27,7 @@ class PerfTestDriver:
         self.build_cmd = build_cmd
         self.run_cmd = run_cmd
         self.num_procs = num_procs
-        self.pcount_method = pcount_method        # TODO
+        self.pcount_method = pcount_method
         self.pcount_reps = pcount_reps
         self.verbose = verbose
 
@@ -41,7 +42,7 @@ class PerfTestDriver:
         self.execname = self.srcname[:self.srcname.find('.')] + '.exe'
         self.run_cmd = run_cmd
 
-        if self.pcount_method != self.__PCOUNT_BASIC:
+        if self.pcount_method not in (self.__PCOUNT_BASIC, self.__PCOUNT_BGP):
             print 'error: unknown performance-counting method: "%s"' % self.pcount_method
             sys.exit(1)
 
@@ -67,7 +68,9 @@ class PerfTestDriver:
         if not self.build_cmd.startswith('make'):
             # add extra options
             extra_compiler_opts = ''
-            extra_compiler_opts += '-DREPS=%s' % self.pcount_reps
+            if self.pcount_method == self.__PCOUNT_BGP:
+                extra_compiler_opts += ' -DBGP_COUNTER'
+            extra_compiler_opts += ' -DREPS=%s' % self.pcount_reps
             
             # compile the testing code
             cmd = ('%s %s -o %s %s' % (self.build_cmd, extra_compiler_opts,
