@@ -200,10 +200,12 @@ int main(int argc, char *argv[])
   MPI_Gather(&mytimeinfo, 1, TimingInfoMPIType, timevec, 1, TimingInfoMPIType, 0, MPI_COMM_WORLD);
 
   if (myid==0) {
-    printf("{'%s' : %g", mytimeinfo.coord, mytimeinfo.tm);
+    printf("{");
+    if (mytimeinfo.tm >= 0 && strcmp(mytimeinfo.coord, "") != 0)
+      printf(" '%s' : %g,", mytimeinfo.coord, mytimeinfo.tm);
     for (_i=1; _i<numprocs; _i++) {
-      if (timevec[_i].tm >= 0 && strcmp(timevec[_i].coord, "") == 0)
-        printf(", '%s' : %g", timevec[_i].coord, timevec[_i].tm);
+      if (timevec[_i].tm >= 0 && strcmp(timevec[_i].coord, "") != 0)
+        printf(" '%s' : %g,", timevec[_i].coord, timevec[_i].tm);
     }
     printf("}\n");
   }

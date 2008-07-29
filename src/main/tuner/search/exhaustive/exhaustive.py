@@ -68,6 +68,11 @@ class Exhaustive(main.tuner.search.search.Search):
         '''
 
         if self.verbose: print '\n----- begin exhaustive search -----'
+
+        # get the total number of coordinates to be tested at the same time
+        coord_count = 1
+        if self.use_parallel_search:
+            coord_count = self.num_procs
         
         # record the best coordinate and its best performance cost
         best_coord = None
@@ -78,30 +83,47 @@ class Exhaustive(main.tuner.search.search.Search):
 
         # start from the origin coordinate (i.e. [0,0,...])
         coord = [0] * self.total_dims 
+        coords = [coord]
+        while len(coords) < coord_count:
+            coord = self.__getNextCoord(coord)
+            if coord:
+                coords.append(coord)
+            else:
+                break
 
         # evaluate every coordinate in the search space
         while True:
 
-            # determine the performance cost of the current coordinate
-            perf_cost = self.getPerfCost(coord)
+            # determine the performance cost of all chosen coordinates
+            perf_costs = self.getPerfCosts(coords)
 
-            if self.verbose: print 'coordinate: %s, cost: %s' % (coord, perf_cost)
-
-            # compare to the best result so far
-            if perf_cost < best_perf_cost:
-                best_coord = coord
-                best_perf_cost = perf_cost
-                if self.verbose: print '>>>> best coordinate found: %s, cost: %s' % (coord,perf_cost)
+            # compare to the best result
+            pcost_items = perf_costs.items()
+            pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
+            for coord_str, perf_cost in pcost_items:
+                coord_val = eval(coord_str)
+                if self.verbose: print 'coordinate: %s, cost: %s' % (coord_val, perf_cost)
+                if perf_cost < best_perf_cost:
+                    best_coord = coord_val
+                    best_perf_cost = perf_cost
+                    if self.verbose:
+                        print '>>>> best coordinate found: %s, cost: %s' % (coord_val, perf_cost)
 
             # check if the time is up
             if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
                 break
 
-            # move to the next coordinate in the search space
-            coord = self.__getNextCoord(coord)
+            # get to all the next coordinates in the search space
+            coords = []
+            while len(coords) < coord_count:
+                coord = self.__getNextCoord(coord)
+                if coord:
+                    coords.append(coord)
+                else:
+                    break
 
             # check if all coordinates have been visited
-            if coord == None:
+            if len(coords) == 0:
                 break
 
         # compute the total search time
