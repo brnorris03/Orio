@@ -54,7 +54,7 @@ double getClock()
 }
 #endif
 
-int main()
+int main(int argc, char *argv[])
 {
   /*@ prologue @*/
 
@@ -139,7 +139,7 @@ typedef struct {
   double tm;
 } TimingInfo;
 
-int main()
+int main(int argc, char *argv[])
 {
   int numprocs, myid, _i;
   TimingInfo mytimeinfo;
