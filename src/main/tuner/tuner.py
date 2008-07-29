@@ -3,7 +3,7 @@
 #
 
 import re, sys
-import main.dyn_loader, main.tspec.tspec, ptest_codegen_basic, ptest_driver
+import main.dyn_loader, main.tspec.tspec, ptest_codegen, ptest_driver
 
 #--------------------------------------------------
 
@@ -157,22 +157,25 @@ class PerfTuner:
         Perform empirical performance tuning on the given annotated code. And return the best
         optimized code variant.
         '''
-        
+
         # extract the tuning information specified from the given annotation
         tinfo = self.__extractTuningInfo(module_body_code, line_no)
+        
+        # determine if parallel search is required
+        use_parallel_search = tinfo.run_cmd != None
 
         # create a performance-testing code generator for each distinct problem size
         ptcodegens = []
         for prob_size in self.__getProblemSizes(tinfo.iparam_params, tinfo.iparam_constraints):
-            c = ptest_codegen_basic.PerfTestCodeGenBasic(prob_size, tinfo.ivar_decls,
-                                                         tinfo.ivar_decl_file, tinfo.ivar_init_file,
-                                                         tinfo.ptest_skeleton_code_file)
+            c = ptest_codegen.PerfTestCodeGen(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
+                                              tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
+                                              use_parallel_search)
             ptcodegens.append(c)
-            
+
         # create the performance-testing driver
         ptdriver = ptest_driver.PerfTestDriver(tinfo.build_cmd, tinfo.run_cmd, tinfo.num_procs,
                                                tinfo.pcount_method, tinfo.pcount_reps, self.verbose)
-        
+
         # get the axis names and axis value ranges to represent the search space
         axis_names, axis_val_ranges = self.__buildCoordSystem(tinfo.pparam_params)
 
