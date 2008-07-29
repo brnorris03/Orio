@@ -208,7 +208,12 @@ class Annealing(main.tuner.search.search.Search):
         '''
 
         if self.verbose: print '\n----- begin simulated annealing search -----'
-        
+
+        # check for parallel search
+        if self.use_parallel_search:
+            print 'error: simulated annealing search does not support parallel search'
+            sys.exit(1)
+
         # initialize a storage to remember all initial coordinates that have been explored
         coord_records = {}
                 
