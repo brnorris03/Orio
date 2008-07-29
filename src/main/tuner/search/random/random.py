@@ -23,12 +23,13 @@ class Random(main.tuner.search.search.Search):
     #--------------------------------------------------
     
     def __init__(self, cfrags, axis_names, axis_val_ranges, constraint, time_limit, total_runs, 
-                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver):
+                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver, use_parallel_search):
         '''To instantiate a random search engine'''
 
         main.tuner.search.search.Search.__init__(self, cfrags, axis_names, axis_val_ranges,
                                                  constraint, time_limit, total_runs, search_opts,
-                                                 cmd_line_opts, ptcodegen, ptdriver, odriver)
+                                                 cmd_line_opts, ptcodegen, ptdriver, odriver,
+                                                 use_parallel_search)
 
         # set all algorithm-specific arguments to their default values
         self.local_distance = 0

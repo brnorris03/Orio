@@ -35,12 +35,13 @@ class Simplex(main.tuner.search.search.Search):
     #-----------------------------------------------------
 
     def __init__(self, cfrags, axis_names, axis_val_ranges, constraint, time_limit, total_runs,
-                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver):
+                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver, use_parallel_search):
         '''To instantiate a Nelder-Mead simplex search engine'''
         
         main.tuner.search.search.Search.__init__(self, cfrags, axis_names, axis_val_ranges,
                                                  constraint, time_limit, total_runs, search_opts,
-                                                 cmd_line_opts, ptcodegen, ptdriver, odriver)
+                                                 cmd_line_opts, ptcodegen, ptdriver, odriver,
+                                                 use_parallel_search)
 
         # other private class variables
         self.__simplex_size = self.total_dims + 1
