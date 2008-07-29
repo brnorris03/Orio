@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
   }
   orio_t_total = orio_t_total / REPS;
   
-  printf("{'' : %g}", orio_t_total);
+  printf("{'%s' : %g}", /*@ coordinate @*/, orio_t_total);
   
   /*@ epilogue @*/
 
@@ -275,13 +275,13 @@ class PerfTestSkeletonCode:
             print 'error: missing "tested code" tag in the skeleton code'
             sys.exit(1)
 
+        match_obj = re.search(self.__COORD_TAG, code)
+        if not match_obj:
+            print 'error: missing "coordinate" tag in the skeleton code'
+            sys.exit(1)
+            
         if self.use_parallel_search:
 
-            match_obj = re.search(self.__COORD_TAG, code)
-            if not match_obj:
-                print 'error: missing "coordinate" tag in the skeleton code'
-                sys.exit(1)
-            
             match_obj = re.search(self.__BEGIN_SWITCHBODY_TAG, code)
             if not match_obj:
                 print 'error: missing "begin switch body" tag in the skeleton code'
@@ -346,7 +346,8 @@ class PerfTestSkeletonCode:
             
         # insert the sequential code
         else:
-            (tcode,) = tested_code_map.values()
+            ((coord_key, tcode),) = tested_code_map.items()
+            code = re.sub(self.__COORD_TAG, coord_key, code)
             code = re.sub(self.__TCODE_TAG, tcode, code)
 
         # return the performance-testing code
