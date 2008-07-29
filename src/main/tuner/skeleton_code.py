@@ -72,8 +72,8 @@ int main(int argc, char *argv[])
   }
   orio_t_total = orio_t_total / REPS;
   
-  printf("{'%s' : %g}", /*@ coordinate @*/, orio_t_total);
-  
+  printf("{'/*@ coordinate @*/' : %g}", orio_t_total);
+
   /*@ epilogue @*/
 
   return 0;
