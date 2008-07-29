@@ -116,7 +116,8 @@ class Exhaustive(main.tuner.search.search.Search):
             # get to all the next coordinates in the search space
             coords = []
             while len(coords) < coord_count:
-                coord = self.__getNextCoord(coord)
+                if coord:
+                    coord = self.__getNextCoord(coord)
                 if coord:
                     coords.append(coord)
                 else:
