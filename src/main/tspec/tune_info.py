@@ -14,7 +14,7 @@ class TuningInfo:
         '''To instantiate the tuning information'''
 
         # unpack all information
-        build_cmd, run_cmd, num_procs = build_info
+        build_cmd, batch_cmd, status_cmd, num_procs = build_info
         pcount_method, pcount_reps = pcount_info
         search_algo, search_time_limit, search_total_runs, search_opts = search_info
         pparam_params, pparam_constraints = pparam_info
@@ -24,11 +24,12 @@ class TuningInfo:
 
         # build arguments
         self.build_cmd = build_cmd        # command for compiling the generated code
-        self.run_cmd = run_cmd            # command for running the test driver (no executable name)
-        self.num_procs = num_procs        # the number of processors used to run the test driver
+        self.batch_cmd = batch_cmd        # command for requesting a batch job
+        self.status_cmd = status_cmd      # command for checking status of submitted batch
+        self.num_procs = num_procs        # the number of processes used to run the test driver
 
         # performance counter arguments
-        self.pcount_method = pcount_method             # default: 'total time'
+        self.pcount_method = pcount_method             # default: 'basic timer' --> in microseconds
         self.pcount_reps = pcount_reps                 # default: 1
 
         # search arguments
@@ -66,7 +67,8 @@ class TuningInfo:
         s += ' tuning info      \n'
         s += '------------------\n'
         s += ' build command: %s \n' % self.build_cmd
-        s += ' run command: %s \n' % self.run_cmd
+        s += ' batch command: %s \n' % self.batch_cmd
+        s += ' status command: %s \n' % self.status_cmd
         s += ' num-processors: %s \n' % self.num_procs
         s += ' perf-counting method: %s \n' % self.pcount_method
         s += ' perf-counting repetitions: %s \n' % self.pcount_reps
@@ -133,12 +135,14 @@ class TuningInfoGen:
 
         # all expected argument names
         BUILDCMD = 'build_command'
-        RUNCMD = 'run_command'
+        BATCHCMD = 'batch_command'
+        STATUSCMD = 'status_command'
         NUMPROCS = 'num_procs'
         
         # all expected build information
         build_cmd = None
-        run_cmd = None
+        batch_cmd = None
+        status_cmd = None
         num_procs = 1
 
         # iterate over each statement
@@ -159,7 +163,7 @@ class TuningInfoGen:
             _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
             
             # unknown argument name
-            if id_name not in (BUILDCMD, RUNCMD, NUMPROCS):
+            if id_name not in (BUILDCMD, BATCHCMD, STATUSCMD, NUMPROCS):
                 print 'error:%s: unknown build argument: "%s"' % (id_line_no, id_name)
                 sys.exit(1)
 
@@ -170,12 +174,19 @@ class TuningInfoGen:
                     sys.exit(1)
                 build_cmd = rhs
 
-            # evaluate the run command (for batch queue systems)
-            elif id_name == RUNCMD:
+            # evaluate the batch command
+            elif id_name == BATCHCMD:
                 if not isinstance(rhs, str):
-                    print 'error:%s: run command in build section must be a string' % rhs_line_no
+                    print 'error:%s: batch command in build section must be a string' % rhs_line_no
                     sys.exit(1)
-                run_cmd = rhs
+                batch_cmd = rhs
+
+            # evaluate the status command
+            elif id_name == STATUSCMD:
+                if not isinstance(rhs, str):
+                    print 'error:%s: status command in build section must be a string' % rhs_line_no
+                    sys.exit(1)
+                status_cmd = rhs
 
             # evaluate the number of processors
             elif id_name == NUMPROCS:
@@ -186,7 +197,7 @@ class TuningInfoGen:
                 num_procs = rhs
 
         # return all build information
-        return (build_cmd, run_cmd, num_procs)
+        return (build_cmd, batch_cmd, status_cmd, num_procs)
 
     #-----------------------------------------------------------
 
@@ -588,7 +599,7 @@ class TuningInfoGen:
 
         # all expected definition information
         build_info = None
-        pcount_info = ('total time', 1)
+        pcount_info = ('basic timer', 1)
         search_info = ('Exhaustive', -1, -1, [])
         pparam_info = ([], [])
         iparam_info = ([], [])
@@ -620,11 +631,16 @@ class TuningInfoGen:
             
             # build definition
             if dname == BUILD:
-                (build_cmd, run_cmd, num_procs) = self.__genBuildInfo(body_stmt_seq, line_no)
+                (build_cmd, batch_cmd, status_cmd,
+                 num_procs) = self.__genBuildInfo(body_stmt_seq, line_no)
                 if build_cmd == None:
                     print 'error:%s: missing build command in the build section' % line_no
                     sys.exit(1)
-                build_info = (build_cmd, run_cmd, num_procs)
+                if ((batch_cmd != None and status_cmd == None) or
+                    (batch_cmd == None and status_cmd != None)):
+                    print 'error:%s: both batch and status commands must not be empty' % line_no
+                    sys.exit(1)
+                build_info = (build_cmd, batch_cmd, status_cmd, num_procs)
 
             # performance counter definition
             elif dname == PERF_COUNTER:

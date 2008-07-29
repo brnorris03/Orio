@@ -2,6 +2,9 @@
 /*@ begin PerfTuning ( 
  def build {
    arg build_command = 'gcc -O3';
+   #arg batch_command = 'qsub -n 64 -t 10 -q short';
+   #arg num_procs = 64;
+   #arg status_command = 'qstat';
  }
 
  def performance_params {
@@ -10,6 +13,7 @@
 
  def input_params {
    param N[] = [1000];
+   param alpha[] = [10.0];
  }
 
  def input_vars {
@@ -35,7 +39,6 @@
 ) @*/
 
 int i, it;
-double alpha = 10.0;
 
 /*@ begin Loop (
 transform RegTile(loops=['i'], ufactors=[UI])
