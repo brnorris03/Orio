@@ -15,7 +15,7 @@ class Search:
     #----------------------------------------------------------
     
     def __init__(self, cfrags, axis_names, axis_val_ranges, constraint, time_limit, total_runs,
-                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver):
+                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver, use_parallel_search):
         '''To instantiate a search engine'''
 
         # the class variables that are essential to know when developing a new search engine subclass
@@ -28,6 +28,8 @@ class Search:
         if self.total_dims > 0:
             self.space_size = reduce(lambda x,y: x*y, self.dim_uplimits, 1)
         self.verbose = cmd_line_opts.verbose
+        self.use_parallel_search = use_parallel_search
+        self.num_procs = ptdriver.num_procs
         
         # the class variables that may be ignored when developing a new search engine subclass
         self.cfrags = cfrags
@@ -106,6 +108,8 @@ class Search:
                 return perf_cost
         print 'internal error: no valid performance cost can be found'
         sys.exit(1)
+
+    #----------------------------------------------------------
 
     def getPerfCosts(self, coords):
         '''
