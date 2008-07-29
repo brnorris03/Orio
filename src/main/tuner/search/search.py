@@ -101,8 +101,11 @@ class Search:
         '''
 
         perf_costs = self.getPerfCosts([coord])
-        [perf_cost,] = perf_costs.values()
-        return perf_cost
+        for perf_cost in perf_costs.values():
+            if perf_cost >= 0:
+                return perf_cost
+        print 'internal error: no valid performance cost can be found'
+        sys.exit(1)
 
     def getPerfCosts(self, coords):
         '''
