@@ -212,7 +212,8 @@ class PerfTuner:
             # create the search engine
             search_eng = search_class(cfrags, axis_names, axis_val_ranges, pparam_constraint,
                                       search_time_limit, search_total_runs, search_opts,
-                                      self.cmd_line_opts, ptcodegen, ptdriver, self.odriver)
+                                      self.cmd_line_opts, ptcodegen, ptdriver, self.odriver,
+                                      use_parallel_search)
 
             # search for the best performance parameters
             best_perf_params, best_perf_cost = search_eng.search()

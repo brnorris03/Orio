@@ -638,7 +638,12 @@ class TuningInfoGen:
                     sys.exit(1)
                 if ((batch_cmd != None and status_cmd == None) or
                     (batch_cmd == None and status_cmd != None)):
-                    print 'error:%s: both batch and status commands must not be empty' % line_no
+                    print (('error:%s: both batch and status commands in build section ' +
+                            'must not be empty') % line_no)
+                    sys.exit(1)
+                if batch_cmd == None and num_procs > 1:
+                    print (('error:%s: number of processors in build section must be greater than ' +
+                            'one for non-batch (or non-parallel) search') % line_no)
                     sys.exit(1)
                 build_info = (build_cmd, batch_cmd, status_cmd, num_procs)
 
