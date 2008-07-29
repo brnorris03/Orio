@@ -11,12 +11,13 @@ class Exhaustive(main.tuner.search.search.Search):
     '''The search engine that uses an exhaustive search approach'''
 
     def __init__(self, cfrags, axis_names, axis_val_ranges, constraint, time_limit, total_runs,
-                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver):
+                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver, use_parallel_search):
         '''To instantiate an exhaustive search engine'''
 
         main.tuner.search.search.Search.__init__(self, cfrags, axis_names, axis_val_ranges,
                                                  constraint, time_limit, total_runs, search_opts,
-                                                 cmd_line_opts, ptcodegen, ptdriver, odriver)
+                                                 cmd_line_opts, ptcodegen, ptdriver, odriver,
+                                                 use_parallel_search)
 
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
