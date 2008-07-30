@@ -9,16 +9,16 @@
  col_inds = aj;
  data_type = PetscScalar;
  init_val = 0;
- total_rows = total_rows;
- total_inodes = total_inodes;
- inode_sizes = inode_sizes;
- inode_rows = inode_rows;
+ total_rows = total_rows;       # the total number of rows of matrix 'aa'
+ total_inodes = total_inodes;   # the total number of inodes
+ inode_sizes = inode_sizes;     # the total number of rows for each inode (e.g. [2,3,4])
+ inode_rows = inode_rows;       # the accumulated version of inode_sizes (e.g. [0,2,5,9])
 
  # transformation parameters
- out_unroll_factor = 4;
+ out_unroll_factor = 3;
  in_unroll_factor = 4;
- num_threads = 1;
- simd = 'sse';    # 'none' (default), 'gcc', 'sse', 'xlc' (still unsupported)
+ num_threads = 2;
+ simd = 'xlc';    # 'none' (default), 'gcc', 'sse', 'xlc'
  block_structure = 'none';    # 'none' (default), 'inode', 'bcsr' (still unsupported)
 
 ) @*/
