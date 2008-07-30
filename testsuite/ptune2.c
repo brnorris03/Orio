@@ -36,6 +36,12 @@
 #   arg skeleton_code_file = 'ptune2_skeleton_code.c'; 
 # }
 
+ def search 
+ { 
+   arg algorithm = 'Random';
+   arg time_limit = 10;
+   arg random_local_distance = 1; 
+ }
 ) @*/
 
 int i, it;
