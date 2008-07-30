@@ -386,6 +386,7 @@ class CodeGen:
 
         # start generating the optimized code
         code = ''
+        code += '%s tbuf[%s];\n' % (ainfo.data_type, 2*ainfo.out_unroll_factor)
 
         # the inode loop
         if parallelize:
@@ -401,7 +402,7 @@ class CodeGen:
 
             code += 'register int n;\n'
             code += 'omp_set_num_threads(%s);\n' % ainfo.num_threads
-            code += ('#pragma omp parallel for shared(%s,%s,%s,%s,%s,%s,%s) private(n)\n' %
+            code += ('#pragma omp parallel for shared(%s,%s,%s,%s,%s,%s,%s) private(n,tbuf)\n' %
                      (ainfo.out_vector, ainfo.in_vector, ainfo.in_matrix, ainfo.row_inds,
                       ainfo.col_inds, ainfo.total_inodes, ainfo.inode_rows))
             code += 'for (n=0; n<=%s-1; n+=1) {\n' % ainfo.total_inodes
@@ -444,7 +445,6 @@ class CodeGen:
         vivecs = ['%s%sv' % (ainfo.in_vector, i) for i in range(0, ainfo.in_unroll_factor/2)]
         
         # the outer main loop
-        code += '  %s tbuf[%s];\n' % (ainfo.data_type, 2*ainfo.out_unroll_factor)
         code += '  register int i=0;\n'
         code += '  while (i<=rlength-%s) {\n' % ainfo.out_unroll_factor
         if len(iarr_inits) > 0:
@@ -518,6 +518,192 @@ class CodeGen:
             for vov,vias in zip(vovecs[:1], viarrs[:1]):
                 for viv, via in zip(vivecs, vias):
                     code += '      %s=_mm_add_pd(%s,_mm_mul_pd(%s,%s));\n' % (vov,vov,via,viv)
+            code += '      %s+=%s;\n' % (iarrs[0], ainfo.in_unroll_factor)
+            code += '      %s+=%s;\n' % (col_inds, ainfo.in_unroll_factor)
+            code += '      j+=%s;\n' % ainfo.in_unroll_factor
+            code += '    }\n'
+
+            # vector values assignments
+            code += '    %s;\n' % vovec_assgs[0]
+            code += '    %s %s;\n' % (ainfo.data_type, vovec_stores[0])
+
+            # the inner cleanup-cleanup loop
+            if ainfo.in_unroll_factor > 1:
+                code += '    while (j<=clength-1) {\n'
+                for ov,ia in zip(ovecs[:1], iarrs[:1]):
+                    code += '      %s += ' % ov
+                    for i,iv in enumerate(ivec_refs[:1]):
+                        if i: code += ' + '
+                        code += '%s[%s]*%s' % (ia,i,iv)
+                    code += ';\n'
+                code += '      %s+=1;\n' % iarr
+                code += '      %s+=1;\n' % col_inds
+                code += '      j+=1;\n'
+                code += '    }\n'
+
+            # the epilogue of the outer cleanup loop
+            code += '    %s;\n' % ovec_stores[0]
+            code += '    %s+=1;\n' % ovec
+            code += '    i+=1;\n'
+            code += '  }\n'
+
+        # close the inode loop
+        code += '}\n'
+
+        # to enclose with brackets and to correct indentation
+        code = '\n{\n' + re.sub('\n', '\n  ', '\n' + code) + '\n}\n'
+
+        # return the generated code
+        return code
+
+    #------------------------------------------------------
+
+    def __generateParXlcSimdInodeCode(self):
+        '''Generate an inode optimized code that is parallel and XLC simdized'''
+        return self.__generateXlcSimdInodeCode(True)
+
+    def __generateXlcSimdInodeCode(self,parallelize=False):
+        '''Generate an inode optimized code that is sequential and XLC simdized'''
+
+        # get the argument information
+        ainfo = self.ainfo
+
+        # start generating the optimized code
+        code = ''
+        code += '%s zerobuf[2]={%s,%s};\n' % (ainfo.data_type, ainfo.init_val, ainfo.init_val)
+        code += '%s tbuf[%s];\n' % (ainfo.data_type, 2*ainfo.out_unroll_factor)
+        code += '%s xbuf[%s];\n' % (ainfo.data_type, ainfo.in_unroll_factor)
+
+        # the inode loop
+        if parallelize:
+            iarr = '%sc' % ainfo.in_matrix
+            iarrs = [iarr] + \
+                    ['%s%sc' % (ainfo.in_matrix, i) for i in range(1, ainfo.out_unroll_factor)]
+            iarr_inits = ['%s=%s+clength' % (a, iarrs[i]) for i,a in enumerate(iarrs[1:])]
+            ovec = '%sc' % ainfo.out_vector
+            ovecs = ['%s%sc' % (ainfo.out_vector, i) for i in range(0, ainfo.out_unroll_factor)]
+            ovec_inits = ['%s=%s' % (v, ainfo.init_val) for v in ovecs]
+            ovec_stores = ['%sc[%s]=%s' % (ainfo.out_vector,i,v) for i,v in enumerate(ovecs)]
+            col_inds = '%sc' % ainfo.col_inds
+
+            code += 'register int n;\n'
+            code += 'omp_set_num_threads(%s);\n' % ainfo.num_threads
+            code += ('#pragma omp parallel for shared(%s,%s,%s,%s,%s,%s,%s,zerobuf) private(n,tbuf,xbuf)\n' %
+                     (ainfo.out_vector, ainfo.in_vector, ainfo.in_matrix, ainfo.row_inds,
+                      ainfo.col_inds, ainfo.total_inodes, ainfo.inode_rows))
+            code += 'for (n=0; n<=%s-1; n+=1) {\n' % ainfo.total_inodes
+            code += '  int start_row=%s[n];\n' % ainfo.inode_rows
+            code += '  register int rlength=%s[n+1]-start_row;\n' % ainfo.inode_rows
+            code += '  int first_col=%s[start_row];\n' % ainfo.row_inds
+            code += '  register int clength=%s[start_row+1]-first_col;\n' % ainfo.row_inds
+            code += '  %s *%s=&%s[start_row];\n' % (ainfo.data_type, ovec, ainfo.out_vector)
+            code += '  int *%s=&%s[first_col];\n' % (col_inds, ainfo.col_inds)
+            code += '  %s *%s=&%s[first_col];\n' % (ainfo.data_type, iarr, ainfo.in_matrix)
+
+        else:
+            iarr = ainfo.in_matrix
+            iarrs = [iarr] + \
+                    ['%s%s' % (ainfo.in_matrix, i) for i in range(1, ainfo.out_unroll_factor)]
+            iarr_inits = ['%s=%s+clength' % (a, iarrs[i]) for i,a in enumerate(iarrs[1:])]
+            ovec = ainfo.out_vector
+            ovecs = ['%s%s' % (ainfo.out_vector, i) for i in range(0, ainfo.out_unroll_factor)]
+            ovec_inits = ['%s=%s' % (v, ainfo.init_val) for v in ovecs]
+            ovec_stores = ['%s[%s]=%s' % (ainfo.out_vector,i,v) for i,v in enumerate(ovecs)]
+            col_inds = ainfo.col_inds
+
+            code += 'register int n=%s;\n' % ainfo.total_inodes
+            code += 'while (n--) {\n'
+            code += '  register int rlength=%s[0]; %s+=1;\n' % (ainfo.inode_sizes, ainfo.inode_sizes)
+            code += '  register int clength=%s[1]-%s[0]; %s+=rlength;\n' % (ainfo.row_inds,
+                                                                            ainfo.row_inds,
+                                                                            ainfo.row_inds)
+
+        ivecs = ['%s%s' % (ainfo.in_vector, i) for i in range(0, ainfo.in_unroll_factor)]
+        ivec_refs = ['%s[%s[%s]]' % (ainfo.in_vector, col_inds, i)
+                     for i in range(0, ainfo.in_unroll_factor)]
+        vovecs = ['%sv' % v for v in ovecs]
+        vovec_inits = ['%s=__lfpd(zerobuf)' % (r) for r in vovecs]
+        vovec_assgs = ['__stfpd(&tbuf[%s],%s)' % (2*i,r) for i,r in enumerate(vovecs)]
+        vovec_stores = ['%s=tbuf[%s]+tbuf[%s]' % (v,2*i,2*i+1) for i,v in enumerate(ovecs)]
+        viarrs = [['%sv%s' % (a,i) for i in range(ainfo.in_unroll_factor/2)] for a in iarrs]
+        viarr_inits = [['%s=__lfpd(&%s[%s])' % (r,a,2*i) for i,r in enumerate(rs)]
+                       for rs,a in zip(viarrs, iarrs)]
+        vivecs = ['%s%sv' % (ainfo.in_vector, i) for i in range(0, ainfo.in_unroll_factor/2)]
+        
+        # the outer main loop
+        code += '  register int i=0;\n'
+        code += '  while (i<=rlength-%s) {\n' % ainfo.out_unroll_factor
+        if len(iarr_inits) > 0:
+            code += '    %s %s;\n' % (ainfo.data_type, ','.join(map(lambda x:'*'+x, iarr_inits)))
+        code += '    double _Complex %s;\n' % ','.join(vovec_inits)
+
+        # the inner main-main loop
+        code += '    register int j=0;\n'
+        code += '    while (j<=clength-%s) {\n' % ainfo.in_unroll_factor
+        code += '      %s\n' % '; '.join('xbuf[%s]=%s' % (i,ivec_refs[i])
+                                         for i in range(ainfo.in_unroll_factor))
+        code += '      double _Complex %s;\n' % ','.join(['%s=__lfpd(&xbuf[%s])' % (vivecs[i], 2*i)
+                                                          for i in range(0,ainfo.in_unroll_factor/2)])
+        for ins in viarr_inits:
+            code += '      double _Complex %s;\n' % ','.join(ins)
+        for vov,vias in zip(vovecs, viarrs):
+            for viv, via in zip(vivecs, vias):
+                code += '      %s=__fpmadd(%s,%s,%s));\n' % (vov,vov,via,viv)
+        code += '      %s;\n' % '; '.join(['%s+=%s' % (a,ainfo.in_unroll_factor) for a in iarrs])
+        code += '      %s+=%s;\n' % (col_inds, ainfo.in_unroll_factor)
+        code += '      j+=%s;\n' % ainfo.in_unroll_factor
+        code += '    }\n'
+
+        # vector values assignments
+        code += '    %s;\n' % '; '.join(vovec_assgs)
+        code += '    %s %s;\n' % (ainfo.data_type, ','.join(vovec_stores))
+
+        # the inner main-cleanup loop
+        if ainfo.in_unroll_factor > 1:
+            code += '    while (j<=clength-1) {\n'
+            used_ivecs = ivec_refs[:1]
+            if ainfo.out_unroll_factor > 1:
+                code += '      %s %s=%s;\n' % (ainfo.data_type, ivecs[0], ivec_refs[0])
+                used_ivecs = ivecs[:1]
+            for ov,ia in zip(ovecs, iarrs):
+                code += '      %s += ' % ov
+                for i,iv in enumerate(used_ivecs):
+                    if i: code += ' + '
+                    code += '%s[%s]*%s' % (ia,i,iv)
+                code += ';\n'
+            code += '      %s;\n' % '; '.join(['%s+=1' % a for a in iarrs])
+            code += '      %s+=1;\n' % col_inds
+            code += '      j+=1;\n'
+            code += '    }\n'
+
+        # the epiloque of the outer main loop
+        code += '    %s;\n' % '; '.join(ovec_stores)
+        code += '    %s+=%s;\n' % (ovec, ainfo.out_unroll_factor)
+        if ainfo.out_unroll_factor > 1:
+            code += '    %s=%s;\n' % (iarr, iarrs[-1])
+            if ainfo.out_unroll_factor == 2:
+                code += '    %s+=clength;\n' % col_inds
+            else:
+                code += '    %s+=%s*clength;\n' % (col_inds, ainfo.out_unroll_factor-1)
+        code += '    i+=%s;\n' % ainfo.out_unroll_factor
+        code += '  }\n'
+
+        # the outer cleanup loop
+        if ainfo.out_unroll_factor > 1:
+            code += '  while (i<=rlength-1) {\n'
+            code += '    double _Complex %s;\n' % vovec_inits[0]
+
+            # the inner cleanup-main loop
+            code += '    register int j=0;\n'
+            code += '    while (j<=clength-%s) {\n' % ainfo.in_unroll_factor
+            code += '      %s\n' % '; '.join('xbuf[%s]=%s' % (i,ivec_refs[i])
+                                             for i in range(ainfo.in_unroll_factor))
+            code += '      double _Complex %s;\n' % ','.join(['%s=__lfpd(&xbuf[%s])' % (vivecs[i],2*i)
+                                                              for i in range(ainfo.in_unroll_factor/2)])
+            code += '      double _Complex %s;\n' % ','.join(viarr_inits[0])
+            for vov,vias in zip(vovecs[:1], viarrs[:1]):
+                for viv, via in zip(vivecs, vias):
+                    code += '      %s=__fpmadd(%s,%s,%s));\n' % (vov,vov,via,viv)
             code += '      %s+=%s;\n' % (iarrs[0], ainfo.in_unroll_factor)
             code += '      %s+=%s;\n' % (col_inds, ainfo.in_unroll_factor)
             code += '      j+=%s;\n' % ainfo.in_unroll_factor
@@ -936,6 +1122,144 @@ class CodeGen:
         return code
 
     #------------------------------------------------------
+    #XXX
+    def __generateParXlcSimdCode(self):
+        '''Generate an optimized code that is parallel and XLC simdized'''
+        return self.__generateXlcSimdCode(True)
+
+    def __generateXlcSimdCode(self, parallelize=False):
+        '''Generate an optimized code that is sequential and XLC simdized'''
+
+        # get the argument information
+        ainfo = self.ainfo
+
+        # generate the optimized code
+        code = ''
+        code += '%s zerobuf[2]={%s,%s};\n' % (ainfo.data_type, ainfo.init_val, ainfo.init_val)
+        code += '%s tbuf[2];\n' % ainfo.data_type
+        code += '%s xbuf[%s];\n' % (ainfo.data_type, ainfo.in_unroll_factor)
+
+        # the outer main loop
+        if parallelize:
+            code += 'register int i;\n'
+            if ainfo.out_unroll_factor==1:
+                code += 'register int lbound=%s;\n' % ainfo.total_rows
+            else:
+                code += 'register int lbound=%s-(%s%%%s);\n' % (ainfo.total_rows, ainfo.total_rows,
+                                                                ainfo.out_unroll_factor)
+            code += 'omp_set_num_threads(%s);\n' % ainfo.num_threads
+            code += ('#pragma omp parallel for shared(%s,%s,%s,%s,%s,%s,lbound,zerobuf) private(i,tbuf,xbuf)\n' %
+                     (ainfo.out_vector, ainfo.in_vector, ainfo.in_matrix, ainfo.row_inds,
+                      ainfo.col_inds, ainfo.total_rows))
+            code += 'for (i=0; i<=lbound-%s; i+=%s) {\n' % (ainfo.out_unroll_factor,
+                                                            ainfo.out_unroll_factor)
+        else:
+            code += 'register int i=0;\n'
+            code += 'while (i<=%s-%s) {\n' % (ainfo.total_rows, ainfo.out_unroll_factor)
+        code += '  register int %s;\n' % ','.join(['lb%s=%s[i%s]' % (i, ainfo.row_inds,
+                                                                     '+%s'%i if i else '')
+                                                   for i in range(0, ainfo.out_unroll_factor+1)])
+        
+        # the unrolled inner loop
+        for i in range(0, ainfo.out_unroll_factor):
+            code += '  %s%s0v=__lfpd(zerobuf);\n' % ('' if i else 'double _Complex ',ainfo.out_vector)
+
+            # the inner main-main loop
+            code += '  %sj=lb%s;\n' % ('' if i else 'register int ', i)
+            code += '  while (j<=lb%s-%s) {\n' % (i+1, ainfo.in_unroll_factor)
+            code += '    %s\n' % '; '.join('xbuf[%s]=%s[%s[j%s]]' % (i, ainfo.in_vector,
+                                                                     ainfo.col_inds,
+                                                                     '+%s'%i if i else '')
+                                           for i in range(ainfo.in_unroll_factor))
+            for j in range(0, ainfo.in_unroll_factor/2):
+                if not j: code += '    double _Complex '
+                if j: code += ','
+                code += '%s%sv=__lfpd(&xbuf[%s])' % (ainfo.in_vector, j, 2*j)
+            code += ';\n'
+            for j in range(0, ainfo.in_unroll_factor/2):
+                if not j: code += '    double _Complex '
+                if j: code += ','
+                code += '%s%sv=__lfpd(&%s[j%s])' % (ainfo.in_matrix, j, ainfo.in_matrix,
+                                                    '+%s'%(2*j) if (2*j) else '')
+            code += ';\n'
+            for j in range(0, ainfo.in_unroll_factor/2):
+                code += ('    %s0v=__fpmadd(%s0v,%s%sv,%s%sv);\n' %
+                         (ainfo.out_vector, ainfo.out_vector, ainfo.in_matrix, j, ainfo.in_vector, j))
+            code += '    j+=%s; \n' % ainfo.in_unroll_factor
+            code += '  }\n'
+
+            # vector values assignments
+            code += '  __stfpd(tbuf,%s0v);\n' % ainfo.out_vector
+            code += '  %s%s0=tbuf[0]+tbuf[1];\n' % ('' if i else '%s '%ainfo.data_type,
+                                                    ainfo.out_vector)
+            
+            # the inner main-cleanup loop
+            if ainfo.in_unroll_factor > 1:
+                code += '  while (j<=lb%s-1) {\n' % (i+1)
+                code += '    %s0 += %s[j]*%s[%s[j]];\n' % (ainfo.out_vector, ainfo.in_matrix,
+                                                           ainfo.in_vector, ainfo.col_inds)
+                code += '    j+=1;\n'
+                code += '  }\n'
+            code += '  %s[i%s]=%s0;\n' % (ainfo.out_vector, '+%s'%i if i else '', ainfo.out_vector)
+
+        # to close the outer main loop
+        if not parallelize:
+            code += '  i+=%s;\n' % ainfo.out_unroll_factor
+        code += '} \n'
+
+        # the outer cleanup loop
+        if ainfo.out_unroll_factor > 1:
+            if parallelize:
+                code += 'i=lbound;\n'
+            code += 'while (i<=%s-1) {\n' % ainfo.total_rows
+            code += '  double _Complex %s0v=__lfpd(zerobuf);\n' % ainfo.out_vector
+            code += '  register int j=%s[i], ub=%s[i+1];\n' % (ainfo.row_inds, ainfo.row_inds)
+
+            # the inner cleanup-main loop
+            code += '  while (j<=ub-%s) {\n' % ainfo.in_unroll_factor
+            code += '    %s\n' % '; '.join('xbuf[%s]=%s[%s[j%s]]' % (i, ainfo.in_vector,
+                                                                     ainfo.col_inds,
+                                                                     '+%s'%i if i else '')
+                                           for i in range(ainfo.in_unroll_factor))
+            for j in range(0, ainfo.in_unroll_factor/2):
+                if not j: code += '    double _Complex '
+                if j: code += ','
+                code += '%s%sv=__lfpd(&xbuf[%s])' % (ainfo.in_vector, j, 2*j)
+            code += ';\n'
+            for j in range(0, ainfo.in_unroll_factor/2):
+                if not j: code += '    double _Complex '
+                if j: code += ','
+                code += '%s%sv=__lfpd(&%s[j%s])' % (ainfo.in_matrix, j, ainfo.in_matrix,
+                                                    '+%s'%(2*j) if (2*j) else '')
+            code += ';\n'
+            for j in range(0, ainfo.in_unroll_factor/2):
+                code += ('    %s0v=__fpmadd(%s0v,%s%sv,%s%sv);\n' %
+                         (ainfo.out_vector, ainfo.out_vector, ainfo.in_matrix, j, ainfo.in_vector, j))
+            code += '    j+=%s;\n' % ainfo.in_unroll_factor
+            code += '  }\n'
+
+            # vector values assignments
+            code += '  __stfpd(tbuf,%s0v);\n' % ainfo.out_vector
+            code += '  %s %s0=tbuf[0]+tbuf[1];\n' % (ainfo.data_type, ainfo.out_vector)
+
+            # the inner cleanup-cleanup loop
+            if ainfo.in_unroll_factor > 1:
+                code += '  while (j<=ub-1) {\n'
+                code += '    %s0 += %s[j]*%s[%s[j]];\n' % (ainfo.out_vector, ainfo.in_matrix,
+                                                           ainfo.in_vector, ainfo.col_inds)
+                code += '    j+=1;\n'
+                code += '  }\n'   
+            code += '  %s[i]=%s0;\n' % (ainfo.out_vector, ainfo.out_vector)
+            code += '  i+=1;\n'
+            code += '}\n'
+
+        # to enclose with brackets and to correct indentation
+        code = '\n{\n' + re.sub('\n', '\n  ', '\n' + code) + '\n}\n'
+
+        # return the generated code
+        return code
+
+    #------------------------------------------------------
 
     def generate(self):
         '''To generate optimized SpMV code'''
@@ -953,6 +1277,8 @@ class CodeGen:
                     code = self.__generateGccSimdCode()
                 elif ainfo.simd == arg_info.ArgInfo.SIMD_SSE:
                     code = self.__generateSseSimdCode()
+                elif ainfo.simd == arg_info.ArgInfo.SIMD_XLC:
+                    code = self.__generateXlcSimdCode()
                 else:
                     print 'error:SpMV: unsupported SIMD type'
                     sys.exit(1)
@@ -963,6 +1289,8 @@ class CodeGen:
                     code = self.__generateParGccSimdCode()
                 elif ainfo.simd == arg_info.ArgInfo.SIMD_SSE:
                     code = self.__generateParSseSimdCode()
+                elif ainfo.simd == arg_info.ArgInfo.SIMD_XLC:
+                    code = self.__generateParXlcSimdCode()
                 else:
                     print 'error:SpMV: unsupported SIMD type'
                     sys.exit(1)
@@ -976,6 +1304,8 @@ class CodeGen:
                     code = self.__generateGccSimdInodeCode()
                 elif ainfo.simd == arg_info.ArgInfo.SIMD_SSE:
                     code = self.__generateSseSimdInodeCode()
+                elif ainfo.simd == arg_info.ArgInfo.SIMD_XLC:
+                    code = self.__generateXlcSimdInodeCode()
                 else:
                     print 'error:SpMV: unsupported SIMD type'
                     sys.exit(1)
@@ -986,6 +1316,8 @@ class CodeGen:
                     code = self.__generateParGccSimdInodeCode()
                 elif ainfo.simd == arg_info.ArgInfo.SIMD_SSE:
                     code = self.__generateParSseSimdInodeCode()
+                elif ainfo.simd == arg_info.ArgInfo.SIMD_XLC:
+                    code = self.__generateParXlcSimdInodeCode()
                 else:
                     print 'error:SpMV: unsupported SIMD type'
                     sys.exit(1)

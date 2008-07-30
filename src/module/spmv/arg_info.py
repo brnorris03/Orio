@@ -50,19 +50,13 @@ class ArgInfo:
             print 'error:SpMV: unrecognized SIMD type. got: "%s"' % self.simd
             sys.exit(1)
 
-        # check the semantic correctness
-        if self.simd != self.SIMD_NONE and self.in_unroll_factor % 2 != 0:
-            print 'error:SpMV: inner unroll factor must be divisible by 2 for simdization'
-            sys.exit(1)
-
         # check for unknown block-structure option
         if self.block_structure not in (self.BSTRUC_NONE, self.BSTRUC_INODE, self.BSTRUC_BCSR):
             print 'error:SpMV: unrecognized block-structure type. got: "%s"' % self.block_structure
             sys.exit(1)
 
         # check for validity of the simdization requirement
-        if (self.simd != self.SIMD_NONE and self.in_unroll_factor > 1 and
-            self.in_unroll_factor % 2 != 0):
+        if self.simd != self.SIMD_NONE and self.in_unroll_factor % 2 != 0:
             print ('error:SpMV: simdization requires the inner loop unroll factor to be ' +
                    'divisible by two')
             sys.exit(1)
@@ -140,7 +134,7 @@ class ArgInfoGen:
             elif vname == CINDS:
                 col_inds = rhs
             elif vname == DTYPE:
-                elm_type = rhs
+                data_type = rhs
             elif vname == INITVAL:
                 init_val = rhs
             elif vname == TROWS:
