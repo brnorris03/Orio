@@ -67,12 +67,19 @@ class Random(main.tuner.search.search.Search):
 
     #--------------------------------------------------
 
-    def __initRandomCoord(self, coord_records):
-        '''Randomly initialize a coordinate in the search space'''
+    def __getNextCoord(self, coord_records, neigh_coords):
+        '''Get the next coordinate to be empirically tested'''
 
         # check if all coordinates have been explored
         if len(coord_records) >= self.space_size:
             return None
+
+        # pick the next neighbor coordinate in the list (if exists)
+        while len(neigh_coords) > 0:
+            coord = neigh_coords.pop(0)
+            if str(coord) not in coord_records:
+                coord_records[str(coord)] = None
+                return coord
 
         # randomly pick a coordinate that has never been explored before
         while True:
@@ -91,12 +98,21 @@ class Random(main.tuner.search.search.Search):
 
         if self.verbose: print '\n----- begin random search -----'
 
+        # get the total number of coordinates to be tested at the same time
+        coord_count = 1
+        if self.use_parallel_search:
+            coord_count = self.num_procs
+
         # initialize a storage to remember all coordinates that have been explored
         coord_records = {}
+
+        # initialize a list to store the neighboring coordinates
+        neigh_coords = []
 
         # record the best coordinate and its best performance cost
         best_coord = None
         best_perf_cost = self.MAXFLOAT
+        old_perf_cost = best_perf_cost
 
         # record the number of runs
         runs = 0
@@ -107,36 +123,43 @@ class Random(main.tuner.search.search.Search):
         # execute the randomized search method
         while True:
 
-            # randomly pick a coordinate in the search space
-            coord = self.__initRandomCoord(coord_records)
+            # randomly pick a set of coordinates to be empirically tested
+            coords = []
+            while len(coords) < coord_count:
+                coord = self.getNextCoord(coord_records, neigh_coords)
+                if coord:
+                    coords.append(coord)
+                else:
+                    break
 
-            # if all coordinates in the search space have been explored
-            if coord == None:
+            # check if all coordinates in the search space have been explored
+            if len(coords) == 0:
                 break
-            
-            # get the performance cost of the current coordinate
-            perf_cost = self.getPerfCost(coord)
-            old_perf_cost = perf_cost
-            
-            if self.verbose: print '(run %s) coordinate: %s, cost: %s' % (runs+1, coord, perf_cost)
-            
-            # perform a local search on the randomly picked coordinate
-            coord, perf_cost = self.searchBestNeighbor(coord, self.local_distance)
 
-            # if the neighboring coordinate has a better performance cost
-            if perf_cost < old_perf_cost:
-                if self.verbose: print ('--> better neighbor found: %s, cost: %s' %
-                                        (coord, perf_cost))
+            # determine the performance cost of all chosen coordinates
+            perf_costs = self.getPerfCosts(coords)
 
-            # compare to the best result so far
-            if perf_cost < best_perf_cost:
-                best_coord = coord
-                best_perf_cost = perf_cost
-                if self.verbose: print '>>>> best coordinate found: %s, cost: %s' % (coord,perf_cost)
-                
+            # compare to the best result
+            pcost_items = perf_costs.items()
+            pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
+            for i, (coord_str, perf_cost) in enumerate(pcost_items):
+                coord_val = eval(coord_str)
+                if self.verbose:
+                    print '(run %s) coordinate: %s, cost: %s' % (runs+i+1, coord_val, perf_cost)
+                if perf_cost < best_perf_cost:
+                    best_coord = coord_val
+                    best_perf_cost = perf_cost
+                    if self.verbose:
+                        print '>>>> best coordinate found: %s, cost: %s' % (coord_val, perf_cost)
+
+            # if a better coordinate is found, explore the neighboring coordinates
+            if old_perf_cost != best_perf_cost:
+                neigh_coords.extend(self.getNeighbors(best_coord, self.local_distance))
+                old_perf_cost = best_perf_cost
+
             # increment the number of runs
-            runs += 1
-
+            runs += len(perf_costs)
+                        
             # check if the time is up
             if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
                 break
