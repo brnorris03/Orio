@@ -126,7 +126,7 @@ class Random(main.tuner.search.search.Search):
             # randomly pick a set of coordinates to be empirically tested
             coords = []
             while len(coords) < coord_count:
-                coord = self.getNextCoord(coord_records, neigh_coords)
+                coord = self.__getNextCoord(coord_records, neigh_coords)
                 if coord:
                     coords.append(coord)
                 else:
