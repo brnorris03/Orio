@@ -18,8 +18,8 @@
  out_unroll_factor = 3;
  in_unroll_factor = 4;
  num_threads = 2;
- simd = 'xlc';    # 'none' (default), 'gcc', 'sse', 'xlc'
- block_structure = 'none';    # 'none' (default), 'inode', 'bcsr' (still unsupported)
+ simd = 'none';    # 'none' (default), 'gcc', 'sse', 'xlc'
+ block_structure = 'inode';    # 'none' (default), 'inode', 'bcsr' (still unsupported)
 
 ) @*/
 
