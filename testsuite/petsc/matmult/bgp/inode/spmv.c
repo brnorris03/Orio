@@ -1,22 +1,39 @@
 /*@ begin PerfTuning (  
  def build { 
-   arg build_command = 'gcc -O3 -I/disks/fast/papi/include -L/disks/fast/papi/lib -lpapi';
+   arg build_command = 'mpixlc_r -O -qsmp=omp:noauto -qstrict ';
+   arg batch_command = 'qsub -n 64 -t 5 -q short';
+   arg status_command = 'qstat';
+   arg num_procs = 64;
  }
 
  def performance_counter {
+   arg method = 'bgp counter';
    arg repetitions = 100;
  }
 
  def performance_params {
-   param OUF[] = [1];
-   param IUF[] = [4];
+#   param UNROLL_FAC_OUT[] = [1,2,3,4];
+#   param UNROLL_FAC_IN[] = [1,2,3,4,5,6];
+#   param N_THREADS[] = [1,2,3,4]
+#   param SIMD_TYPE[] = ['none', 'xlc'];
+#   param BLK_TYPE[] = ['none', 'inode'];
+
+   param UNROLL_FAC_OUT[] = [4];
+   param UNROLL_FAC_IN[] = [2];
+   param N_THREADS[] = [4];
+   param SIMD_TYPE[] = ['none','xlc'];
+   param BLK_TYPE[] = ['inode'];
+
+   constraint simd_unroll_factor = (SIMD_TYPE=='none' or UNROLL_FAC_IN%2==0);
  }
 
  def input_params {
-   param TROWS[] = [100000];
-   param TCOLS[] = [100000];
-   param BROWS[] = [4];
-   param BCOLS[] = [20];
+   param G_NROWS[] = [2**16];
+   param G_NCOLS[] = [2**16];
+   param B_NROWS[] = [4];
+   param B_NCOLS_MIN[] = [12];
+   param B_NCOLS_MAX[] = [20];
+   param B_NCOLS_STRIDE[] = [4];
  }
  
  def input_vars { 
@@ -27,40 +44,36 @@
  def performance_test_code { 
    arg skeleton_code_file = 'skeleton_code.c';  
  } 
-) @*/ 
 
-register int clength,rlength;
-register int n=node_max;
-while (n--) {
-  rlength = node_sizes[0];
-  node_sizes++;
-  clength=ai[1]-ai[0];
-  ai+=rlength;
+ def search
+ {
+   arg algorithm = 'Exhaustive';
+ }  
+ ) @*/ 
+
+/*@ begin SpMV (
+  # SpMV computation: y = y + aa * x;
+  out_vector = y;
+  in_vector = x;
+  in_matrix = aa;
+  row_inds = ai;
+  col_inds = aj;
+  data_type = double;
+  init_val = 0;
+  total_rows = total_rows;       
+  total_inodes = total_inodes;   
+  inode_sizes = inode_sizes;     
+  inode_rows = inode_rows;       
   
-  /*@ begin SpMV (     
-    # SpMV option 
-    option = INODE; 
-    
-    # high-level description of the SpMV computation 
-    num_rows = rlength; 
-    num_cols = clength; 
-    out_vector = y; 
-    in_vector = x; 
-    in_matrix = aa; 
-    row_inds = ai; 
-    col_inds = aj; 
-    out_loop_var = i; 
-    in_loop_var = j;
-    elm_type = double;
-    init_val = 0.0;
-    
-    # transformation parameters 
-    out_unroll_factor = OUF; 
-    in_unroll_factor = IUF; 
-    
-  ) @*/ 
-  /*@ end @*/
- }
+  # transformation parameters
+  out_unroll_factor = UNROLL_FAC_OUT;
+  in_unroll_factor = UNROLL_FAC_IN;
+  num_threads = N_THREADS;
+  simd = SIMD_TYPE;              # 'none' (default), 'gcc', 'sse', 'xlc'
+  block_structure = BLK_TYPE;    # 'none' (default), 'inode', 'bcsr' (still unsupported)
+  ) @*/
+
+/*@ end @*/
 
 /*@ end @*/
 

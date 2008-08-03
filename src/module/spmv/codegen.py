@@ -640,15 +640,15 @@ class CodeGen:
         # the inner main-main loop
         code += '    register int j=0;\n'
         code += '    while (j<=clength-%s) {\n' % ainfo.in_unroll_factor
-        code += '      %s\n' % '; '.join('xbuf[%s]=%s' % (i,ivec_refs[i])
-                                         for i in range(ainfo.in_unroll_factor))
+        code += '      %s;\n' % '; '.join('xbuf[%s]=%s' % (i,ivec_refs[i])
+                                          for i in range(ainfo.in_unroll_factor))
         code += '      double _Complex %s;\n' % ','.join(['%s=__lfpd(&xbuf[%s])' % (vivecs[i], 2*i)
                                                           for i in range(0,ainfo.in_unroll_factor/2)])
         for ins in viarr_inits:
             code += '      double _Complex %s;\n' % ','.join(ins)
         for vov,vias in zip(vovecs, viarrs):
             for viv, via in zip(vivecs, vias):
-                code += '      %s=__fpmadd(%s,%s,%s));\n' % (vov,vov,via,viv)
+                code += '      %s=__fpmadd(%s,%s,%s);\n' % (vov,vov,via,viv)
         code += '      %s;\n' % '; '.join(['%s+=%s' % (a,ainfo.in_unroll_factor) for a in iarrs])
         code += '      %s+=%s;\n' % (col_inds, ainfo.in_unroll_factor)
         code += '      j+=%s;\n' % ainfo.in_unroll_factor
@@ -696,14 +696,14 @@ class CodeGen:
             # the inner cleanup-main loop
             code += '    register int j=0;\n'
             code += '    while (j<=clength-%s) {\n' % ainfo.in_unroll_factor
-            code += '      %s\n' % '; '.join('xbuf[%s]=%s' % (i,ivec_refs[i])
+            code += '      %s;\n' % '; '.join('xbuf[%s]=%s' % (i,ivec_refs[i])
                                              for i in range(ainfo.in_unroll_factor))
             code += '      double _Complex %s;\n' % ','.join(['%s=__lfpd(&xbuf[%s])' % (vivecs[i],2*i)
                                                               for i in range(ainfo.in_unroll_factor/2)])
             code += '      double _Complex %s;\n' % ','.join(viarr_inits[0])
             for vov,vias in zip(vovecs[:1], viarrs[:1]):
                 for viv, via in zip(vivecs, vias):
-                    code += '      %s=__fpmadd(%s,%s,%s));\n' % (vov,vov,via,viv)
+                    code += '      %s=__fpmadd(%s,%s,%s);\n' % (vov,vov,via,viv)
             code += '      %s+=%s;\n' % (iarrs[0], ainfo.in_unroll_factor)
             code += '      %s+=%s;\n' % (col_inds, ainfo.in_unroll_factor)
             code += '      j+=%s;\n' % ainfo.in_unroll_factor
@@ -1122,7 +1122,7 @@ class CodeGen:
         return code
 
     #------------------------------------------------------
-    #XXX
+
     def __generateParXlcSimdCode(self):
         '''Generate an optimized code that is parallel and XLC simdized'''
         return self.__generateXlcSimdCode(True)
@@ -1167,9 +1167,9 @@ class CodeGen:
             # the inner main-main loop
             code += '  %sj=lb%s;\n' % ('' if i else 'register int ', i)
             code += '  while (j<=lb%s-%s) {\n' % (i+1, ainfo.in_unroll_factor)
-            code += '    %s\n' % '; '.join('xbuf[%s]=%s[%s[j%s]]' % (i, ainfo.in_vector,
-                                                                     ainfo.col_inds,
-                                                                     '+%s'%i if i else '')
+            code += '    %s;\n' % '; '.join('xbuf[%s]=%s[%s[j%s]]' % (i, ainfo.in_vector,
+                                                                      ainfo.col_inds,
+                                                                      '+%s'%i if i else '')
                                            for i in range(ainfo.in_unroll_factor))
             for j in range(0, ainfo.in_unroll_factor/2):
                 if not j: code += '    double _Complex '
@@ -1217,7 +1217,7 @@ class CodeGen:
 
             # the inner cleanup-main loop
             code += '  while (j<=ub-%s) {\n' % ainfo.in_unroll_factor
-            code += '    %s\n' % '; '.join('xbuf[%s]=%s[%s[j%s]]' % (i, ainfo.in_vector,
+            code += '    %s;\n' % '; '.join('xbuf[%s]=%s[%s[j%s]]' % (i, ainfo.in_vector,
                                                                      ainfo.col_inds,
                                                                      '+%s'%i if i else '')
                                            for i in range(ainfo.in_unroll_factor))
