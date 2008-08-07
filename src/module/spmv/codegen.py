@@ -1193,8 +1193,7 @@ class CodeGen:
             code += '      j+=%s; \n' % ainfo.in_unroll_factor
             code += '    }\n'
             code += '    __stfpd(tbuf,%s0v);\n' % ainfo.out_vector
-            code += '    %s%s0=tbuf[0]+tbuf[1];\n' % ('' if i else '%s '%ainfo.data_type,
-                                                    ainfo.out_vector)
+            code += '    %s0=tbuf[0]+tbuf[1];\n' % ainfo.out_vector
 
             # unaligned case
             code += '  } else {\n'
@@ -1229,35 +1228,51 @@ class CodeGen:
             if parallelize:
                 code += 'i=lbound;\n'
             code += 'while (i<=%s-1) {\n' % ainfo.total_rows
-            code += '  double _Complex %s0v=__lfpd(zerobuf);\n' % ainfo.out_vector
-            code += '  register int j=%s[i], ub=%s[i+1];\n' % (ainfo.row_inds, ainfo.row_inds)
+            code += '  %s %s0=%s;\n' % (ainfo.data_type, ainfo.out_vector, ainfo.init_val)
 
             # the inner cleanup-main loop
-            code += '  while (j<=ub-%s) {\n' % ainfo.in_unroll_factor
-            code += '    %s;\n' % '; '.join('xbuf[%s]=%s[%s[j%s]]' % (i, ainfo.in_vector,
-                                                                     ainfo.col_inds,
-                                                                     '+%s'%i if i else '')
-                                           for i in range(ainfo.in_unroll_factor))
+            code += '  register int j=%s[i], ub=%s[i+1];\n' % (ainfo.row_inds, ainfo.row_inds)
+
+            # simdization (aligned case)
+            code += '  if ((((int) &%s[j]) & 0xf) == 0) {\n' % ainfo.in_matrix
+            code += '    double _Complex %s0v=__lfpd(zerobuf);\n' % ainfo.out_vector
+            code += '    while (j<=ub-%s) {\n' % ainfo.in_unroll_factor
+            code += '      %s;\n' % '; '.join('xbuf[%s]=%s[%s[j%s]]' % (i, ainfo.in_vector,
+                                                                        ainfo.col_inds,
+                                                                        '+%s'%i if i else '')
+                                              for i in range(ainfo.in_unroll_factor))
             for j in range(0, ainfo.in_unroll_factor/2):
-                if not j: code += '    double _Complex '
+                if not j: code += '      double _Complex '
                 if j: code += ','
                 code += '%s%sv=__lfpd(&xbuf[%s])' % (ainfo.in_vector, j, 2*j)
             code += ';\n'
             for j in range(0, ainfo.in_unroll_factor/2):
-                if not j: code += '    double _Complex '
+                if not j: code += '      double _Complex '
                 if j: code += ','
                 code += '%s%sv=__lfpd(&%s[j%s])' % (ainfo.in_matrix, j, ainfo.in_matrix,
                                                     '+%s'%(2*j) if (2*j) else '')
             code += ';\n'
             for j in range(0, ainfo.in_unroll_factor/2):
-                code += ('    %s0v=__fpmadd(%s0v,%s%sv,%s%sv);\n' %
+                code += ('      %s0v=__fpmadd(%s0v,%s%sv,%s%sv);\n' %
                          (ainfo.out_vector, ainfo.out_vector, ainfo.in_matrix, j, ainfo.in_vector, j))
-            code += '    j+=%s;\n' % ainfo.in_unroll_factor
-            code += '  }\n'
+            code += '      j+=%s;\n' % ainfo.in_unroll_factor
+            code += '    }\n'
+            code += '    __stfpd(tbuf,%s0v);\n' % ainfo.out_vector
+            code += '    %s0=tbuf[0]+tbuf[1];\n' % ainfo.out_vector
 
-            # vector values assignments
-            code += '  __stfpd(tbuf,%s0v);\n' % ainfo.out_vector
-            code += '  %s %s0=tbuf[0]+tbuf[1];\n' % (ainfo.data_type, ainfo.out_vector)
+            # unaligned case
+            code += '  } else {\n'
+            code += '    while (j<=ub-%s) {\n' % ainfo.in_unroll_factor
+            code += '      %s0 += ' % ainfo.out_vector
+            for j in range(0, ainfo.in_unroll_factor):
+                if j: code += ' + '
+                code += '%s[j%s]*%s[%s[j%s]]' % (ainfo.in_matrix, '+%s'%j if j else '',
+                                                 ainfo.in_vector, ainfo.col_inds,
+                                                 '+%s'%j if j else '')
+            code += ';\n'
+            code += '      j+=%s;\n' % ainfo.in_unroll_factor
+            code += '    }\n'
+            code += '  }\n'
 
             # the inner cleanup-cleanup loop
             if ainfo.in_unroll_factor > 1:
