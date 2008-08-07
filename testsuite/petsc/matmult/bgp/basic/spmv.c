@@ -1,9 +1,9 @@
 /*@ begin PerfTuning (  
  def build { 
-   arg build_command = 'mpixlc_r -O -qsmp=omp:noauto -qstrict ';
-   arg batch_command = 'qsub -n 256 -t 5 -q short';
+   arg build_command = 'mpixlc_r -O3 -qsmp=omp:noauto -qstrict';
+   arg batch_command = 'qsub -n 4 -t 5 -q short --env "BG_MAXALIGNEXP=0"';
    arg status_command = 'qstat';
-   arg num_procs = 256;
+   arg num_procs = 4;
  }
 
  def performance_counter {
@@ -12,16 +12,16 @@
  }
 
  def performance_params {
-   param UNROLL_FAC_OUT[] = [1,2,3,4];
-   param UNROLL_FAC_IN[] = [1,2,3,4,5,6,7,8];
-   param N_THREADS[] = [1,2,3,4];
-   param SIMD_TYPE[] = ['none','xlc'];
+   param UNROLL_FAC_OUT[] = [1];
+   param UNROLL_FAC_IN[] = [2];
+   param N_THREADS[] = [1];
+   param SIMD_TYPE[] = ['xlc'];
 
    constraint simd_unroll_factor = (SIMD_TYPE=='none' or UNROLL_FAC_IN%2==0);
  }
 
  def input_params {
-   param NROWS[] = [1600];
+   param NROWS[] = [1000];
    param NCOLS[] = [25];
  }
  
