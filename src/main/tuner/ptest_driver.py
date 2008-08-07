@@ -110,7 +110,7 @@ class PerfTestDriver:
                 status_cmd = '%s %s | grep %s | wc -l' % (self.status_cmd, jobid, jobid)
                 status = '1'
                 while status == '1': 
-                    time.sleep(3);
+                    time.sleep(3)
                     f = os.popen(status_cmd)
                     status = f.read().strip()
                     f.close()
