@@ -1,6 +1,6 @@
 /*@ begin PerfTuning (  
  def build { 
-   arg build_command = 'mpixlc_r -O -qsmp=omp:noauto -qstrict ';
+   arg build_command = 'mpixlc_r -O3 -qsmp=omp:noauto -qstrict ';
    arg batch_command = 'qsub -n 256 -t 5 -q short';
    arg status_command = 'qstat';
    arg num_procs = 256;
@@ -12,15 +12,9 @@
  }
 
  def performance_params {
-#   param UNROLL_FAC_OUT[] = [1,2,3,4];
-#   param UNROLL_FAC_IN[] = [1,2,3,4,5,6];
-#   param N_THREADS[] = [1,2,3,4]
-#   param SIMD_TYPE[] = ['none', 'xlc'];
-#   param BLK_TYPE[] = ['none', 'inode'];
-
    param UNROLL_FAC_OUT[] = [1,2,3,4];
    param UNROLL_FAC_IN[] = [1,2,3,4,5,6,7,8];
-   param N_THREADS[] = [1,4];
+   param N_THREADS[] = [2];
    param SIMD_TYPE[] = ['none','xlc'];
    param BLK_TYPE[] = ['none','inode'];
 
@@ -28,11 +22,11 @@
  }
 
  def input_params {
-   param G_NROWS[] = [196];
-   param G_NCOLS[] = [196];
+   param G_NROWS[] = [74000];
+   param G_NCOLS[] = [74000];
    param B_NROWS[] = [4];
-   param B_NCOLS_MIN[] = [160];
-   param B_NCOLS_MAX[] = [168];
+   param B_NCOLS_MIN[] = [12];
+   param B_NCOLS_MAX[] = [20];
    param B_NCOLS_STRIDE[] = [4];
 
    constraint square_x_y = (G_NROWS==G_NCOLS);
