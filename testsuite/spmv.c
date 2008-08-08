@@ -15,10 +15,10 @@
  inode_rows = inode_rows;       # the accumulated version of inode_sizes (e.g. [0,2,5,9])
 
  # transformation parameters
- out_unroll_factor = 3;
- in_unroll_factor = 4;
- num_threads = 1;
- simd = 'xlc';    # 'none' (default), 'gcc', 'sse', 'xlc'
+ out_unroll_factor = 4;
+ in_unroll_factor = 6;
+ num_threads = 4;
+ simd = 'none';    # 'none' (default), 'gcc', 'sse', 'xlc'
  block_structure = 'none';    # 'none' (default), 'inode', 'bcsr' (still unsupported)
 
 ) @*/
