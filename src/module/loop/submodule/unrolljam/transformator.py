@@ -10,13 +10,13 @@ import module.loop.ast, module.loop.ast_lib.constant_folder, module.loop.ast_lib
 class Transformator:
     '''Code transformator'''
 
-    def __init__(self, ufactor, do_jamming, stmt, init_cleanup_loop):
+    def __init__(self, ufactor, do_jamming, stmt, parallelize):
         '''To instantiate a code transformator object'''
 
         self.ufactor = ufactor
         self.do_jamming = do_jamming
         self.stmt = stmt
-        self.init_cleanup_loop = init_cleanup_loop
+        self.parallelize = parallelize
         self.flib = module.loop.ast_lib.forloop_lib.ForLoopLib()
         self.cfolder = module.loop.ast_lib.constant_folder.ConstFolder()
         
@@ -213,8 +213,13 @@ class Transformator:
         
         # when ufactor = 1, no transformation will be applied
         if self.ufactor == 1:
-            return self.flib.createForLoop(index_id, lbound_exp, ubound_exp,
-                                           stride_exp, loop_body)
+            orig_loop = self.flib.createForLoop(index_id, lbound_exp, ubound_exp,
+                                                stride_exp, loop_body)
+            if self.parallelize:
+                omp_pragma = module.loop.ast.Pragma('omp parallel for')
+                return module.loop.ast.CompStmt([omp_pragma, orig_loop])
+            else:
+                return orig_loop
         
         # start generating the main unrolled loop
         # compute lower bound --> new_LB = LB
@@ -265,16 +270,17 @@ class Transformator:
                                             new_stride_exp, unrolled_loop_body)
         
         # generate the cleanup-loop lower-bound expression
-        t = module.loop.ast.BinOpExp(module.loop.ast.ParenthExp(ubound_exp.replicate()),
-                                     module.loop.ast.NumLitExp(self.ufactor,
-                                                               module.loop.ast.NumLitExp.INT),
-                                     module.loop.ast.BinOpExp.MOD)
-        cleanup_lbound_exp = module.loop.ast.BinOpExp(
-            module.loop.ast.ParenthExp(ubound_exp.replicate()),
-            module.loop.ast.ParenthExp(t),
-            module.loop.ast.BinOpExp.SUB)
-        cleanup_lbound_exp = self.cfolder.fold(cleanup_lbound_exp)
-        if not self.init_cleanup_loop:
+        if self.parallelize:
+            t = module.loop.ast.BinOpExp(module.loop.ast.ParenthExp(ubound_exp.replicate()),
+                                         module.loop.ast.NumLitExp(self.ufactor,
+                                                                   module.loop.ast.NumLitExp.INT),
+                                         module.loop.ast.BinOpExp.MOD)
+            cleanup_lbound_exp = module.loop.ast.BinOpExp(
+                module.loop.ast.ParenthExp(ubound_exp.replicate()),
+                module.loop.ast.ParenthExp(t),
+                module.loop.ast.BinOpExp.SUB)
+            cleanup_lbound_exp = self.cfolder.fold(cleanup_lbound_exp)
+        else:
             cleanup_lbound_exp = None
         
         # generate the clean-up loop
@@ -282,7 +288,12 @@ class Transformator:
                                                stride_exp, loop_body)
         
         # generate the transformed statement
-        transformed_stmt = module.loop.ast.CompStmt([main_loop, cleanup_loop])
+        if self.parallelize:
+            omp_pragma = module.loop.ast.Pragma('omp parallel for')
+            stmts = [omp_pragma, main_loop, cleanup_loop]
+        else:
+            stmts = [main_loop, cleanup_loop]
+        transformed_stmt = module.loop.ast.CompStmt(stmts)
 
         # return the transformed statement
         return transformed_stmt

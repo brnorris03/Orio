@@ -25,9 +25,9 @@ class Unroll(module.loop.submodule.submodule.SubModule):
 
     #-----------------------------------------------------------------
 
-    def unroll(self, ufactor, stmt, init_cleanup_loop):
+    def unroll(self, ufactor, stmt, parallelize):
         '''To apply unroll-and-jam transformation'''
-        return self.ujam_smod.unrollAndJam(ufactor, False, stmt, init_cleanup_loop)
+        return self.ujam_smod.unrollAndJam(ufactor, False, stmt, parallelize)
     
     #-----------------------------------------------------------------
 
@@ -35,10 +35,10 @@ class Unroll(module.loop.submodule.submodule.SubModule):
         '''To perform code transformations'''
 
         # read all transformation arguments
-        ufactor, init_cleanup_loop = self.readTransfArgs(self.perf_params, self.transf_args)
+        ufactor, parallelize = self.readTransfArgs(self.perf_params, self.transf_args)
         
         # perform the unroll-and-jam transformation
-        transformed_stmt = self.unroll(ufactor, self.stmt, init_cleanup_loop)
+        transformed_stmt = self.unroll(ufactor, self.stmt, parallelize)
         
         # return the transformed statement
         return transformed_stmt
