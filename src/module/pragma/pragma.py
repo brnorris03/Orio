@@ -18,6 +18,17 @@ class Pragma(module.module.Module):
                                       cmd_line_opts, line_no, indent_size)
 
     #---------------------------------------------------------------------
+
+    def __isNextNewlineChar(self, string):
+        '''To determine if the next character is a newline (spaces are ignored)'''
+
+        for c in string:
+            if c == ' ':
+                continue
+            return (c == '\n')
+        return False
+
+    #---------------------------------------------------------------------
     
     def transform(self):
         '''To generate a pragma directive'''
@@ -39,7 +50,9 @@ class Pragma(module.module.Module):
         
         # generate the transformed code
         transformed_code = ''
-        transformed_code += '\n' + pragma_directive + '\n'
+        transformed_code += '\n' + pragma_directive
+        if not self.__isNextNewlineChar(self.annot_body_code):
+            transformed_code += '\n'
         transformed_code += self.annot_body_code
         
         # return the transformed code
