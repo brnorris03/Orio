@@ -22,9 +22,11 @@ class UnrollJam(module.loop.submodule.submodule.SubModule):
 
         # all expected argument names
         UFACTOR = 'ufactor'
+        INIT_CLOOP = 'init_cleanup_loop'
 
         # all expected transformation arguments
         ufactor = None
+        init_cleanup_loop = (False, None)
 
         # iterate over all transformation arguments
         for aname, rhs, line_no in transf_args:
@@ -41,6 +43,10 @@ class UnrollJam(module.loop.submodule.submodule.SubModule):
             if aname == UFACTOR:
                 ufactor = (rhs, line_no)
     
+            # need to initialize the cleanup loop
+            elif aname == INIT_CLOOP:
+                init_cleanup_loop = (rhs, line_no)
+    
             # unknown argument name
             else:
                 print 'error:%s: unrecognized transformation argument: "%s"' % (line_no, aname)
@@ -52,14 +58,14 @@ class UnrollJam(module.loop.submodule.submodule.SubModule):
             sys.exit(1)
 
         # check semantics of the transformation arguments
-        ufactor, = self.checkTransfArgs(ufactor)
-                
+        ufactor, init_cleanup_loop = self.checkTransfArgs(ufactor, init_cleanup_loop)
+
         # return information about the transformation arguments
-        return (ufactor, )
+        return (ufactor, init_cleanup_loop)
 
     #-----------------------------------------------------------------
 
-    def checkTransfArgs(self, ufactor):
+    def checkTransfArgs(self, ufactor, init_cleanup_loop):
         '''Check the semantics of the given transformation arguments'''
         
         # evaluate the unroll factor
@@ -69,16 +75,23 @@ class UnrollJam(module.loop.submodule.submodule.SubModule):
             sys.exit(1)
         ufactor = rhs
 
+        # evaluate the initialization of cleanup loop
+        rhs, line_no = init_cleanup_loop
+        if (not isinstance(rhs, bool)) and (not isinstance(rhs, int)):
+            print 'error:%s: invalid type of "init_cleanup_loop" value : %s' % (line_no, rhs)
+            sys.exit(1)
+        init_cleanup_loop = rhs
+
         # return information about the transformation arguments
-        return (ufactor, )
+        return (ufactor, init_cleanup_loop)
 
     #-----------------------------------------------------------------
 
-    def unrollAndJam(self, ufactor, do_jamming, stmt):
+    def unrollAndJam(self, ufactor, do_jamming, stmt, init_cleanup_loop):
         '''To apply unroll-and-jam transformation'''
 
         # perform the unroll-and-jam transformation
-        t = transformator.Transformator(ufactor, do_jamming, stmt)
+        t = transformator.Transformator(ufactor, do_jamming, stmt, init_cleanup_loop)
         transformed_stmt = t.transform()
 
         # return the transformed statement
@@ -90,10 +103,10 @@ class UnrollJam(module.loop.submodule.submodule.SubModule):
         '''To perform code transformations'''
 
         # read all transformation arguments
-        ufactor, = self.readTransfArgs(self.perf_params, self.transf_args)
+        ufactor, init_cleanup_loop = self.readTransfArgs(self.perf_params, self.transf_args)
 
         # perform the unroll-and-jam transformation
-        transformed_stmt = self.unrollAndJam(ufactor, True, self.stmt)
+        transformed_stmt = self.unrollAndJam(ufactor, True, self.stmt, init_cleanup_loop)
         
         # return the transformed statement
         return transformed_stmt
