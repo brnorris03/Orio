@@ -1,6 +1,6 @@
 
 /*@ begin Loop (
-transform UnrollJam(ufactor=2)
+transform UnrollJam(ufactor=2, init_cleanup_loop=True)
 for (i = 0; i <= M-1; i++)
   transform UnrollJam(ufactor=2)
   for (j = 0; j <= N-1; j++)
