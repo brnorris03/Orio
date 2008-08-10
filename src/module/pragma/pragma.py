@@ -3,7 +3,7 @@
 #
 
 import sys
-import codegen, module.module, parser
+import module.module
 
 #-----------------------------------------
 
@@ -39,8 +39,8 @@ class Pragma(module.module.Module):
         
         # generate the transformed code
         transformed_code = ''
-        transformed_code += pragma_str + '\n'
-        transformed_code += self.annot_body_code + '\n'
+        transformed_code += '\n' + pragma_directive + '\n'
+        transformed_code += self.annot_body_code
         
         # return the transformed code
         return transformed_code
