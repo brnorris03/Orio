@@ -48,7 +48,6 @@ double getClock()
 {
   struct timezone tzp;
   struct timeval tp;
-  int stat;
   gettimeofday (&tp, &tzp);
   return (tp.tv_sec + tp.tv_usec*1.0e-6);
 }
@@ -127,7 +126,6 @@ double getClock()
 {
   struct timezone tzp;
   struct timeval tp;
-  int stat;
   gettimeofday (&tp, &tzp);
   return (tp.tv_sec + tp.tv_usec*1.0e-6);
 }
