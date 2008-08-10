@@ -16,6 +16,9 @@ class Transformator:
         self.pragmas = pragmas
         self.stmt = stmt
 
+        # remove all empty pragma strings
+        self.pragmas = filter(lambda x: x.strip(), self.pragmas)
+
     #----------------------------------------------------------
 
     def transform(self):

@@ -21,7 +21,7 @@ class Pragma(module.loop.submodule.submodule.SubModule):
         '''Process the given transformation arguments'''
 
         # all expected argument names
-        PRAGMAS = 'pragmas'
+        PRAGMAS = 'pragma_str'
 
         # all expected transformation arguments
         pragmas = []
@@ -68,7 +68,7 @@ class Pragma(module.loop.submodule.submodule.SubModule):
                        (line_no, rhs))
                 sys.exit(1)
             pragmas = rhs
-        
+
         # return information about the transformation arguments
         return (pragmas, )
 
