@@ -10,12 +10,13 @@ import module.loop.ast, module.loop.ast_lib.constant_folder, module.loop.ast_lib
 class Transformator:
     '''Code transformator'''
 
-    def __init__(self, ufactor, do_jamming, stmt):
+    def __init__(self, ufactor, do_jamming, stmt, init_cleanup_loop):
         '''To instantiate a code transformator object'''
 
         self.ufactor = ufactor
         self.do_jamming = do_jamming
         self.stmt = stmt
+        self.init_cleanup_loop = init_cleanup_loop
         self.flib = module.loop.ast_lib.forloop_lib.ForLoopLib()
         self.cfolder = module.loop.ast_lib.constant_folder.ConstFolder()
         
@@ -263,8 +264,21 @@ class Transformator:
         main_loop = self.flib.createForLoop(index_id, new_lbound_exp, new_ubound_exp,
                                             new_stride_exp, unrolled_loop_body)
         
+        # generate the cleanup-loop lower-bound expression
+        t = module.loop.ast.BinOpExp(module.loop.ast.ParenthExp(ubound_exp.replicate()),
+                                     module.loop.ast.NumLitExp(self.ufactor,
+                                                               module.loop.ast.NumLitExp.INT),
+                                     module.loop.ast.BinOpExp.MOD)
+        cleanup_lbound_exp = module.loop.ast.BinOpExp(
+            module.loop.ast.ParenthExp(ubound_exp.replicate()),
+            module.loop.ast.ParenthExp(t),
+            module.loop.ast.BinOpExp.SUB)
+        cleanup_lbound_exp = self.cfolder.fold(cleanup_lbound_exp)
+        if not self.init_cleanup_loop:
+            cleanup_lbound_exp = None
+        
         # generate the clean-up loop
-        cleanup_loop = self.flib.createForLoop(index_id, None, ubound_exp,
+        cleanup_loop = self.flib.createForLoop(index_id, cleanup_lbound_exp, ubound_exp,
                                                stride_exp, loop_body)
         
         # generate the transformed statement
