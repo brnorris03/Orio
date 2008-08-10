@@ -1,3 +1,3 @@
 
-rm *.o *~ _orio* parsetab.* a.out _* *.lst
+rm 5* 6* 7* *.o *~ _orio* parsetab.* a.out _* *.lst
 
