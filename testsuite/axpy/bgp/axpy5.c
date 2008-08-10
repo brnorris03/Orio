@@ -7,20 +7,20 @@ void axpy_4(int N, double *y,
 /*@ begin PerfTuning (
  def build {
    arg build_command = 'mpixlc_r -O3 -qstrict -qsmp=omp:noauto';
-   arg batch_command = 'qsub -n 32 -t 5 -q short --env "BG_MAXALIGNEXP=0"';
+   arg batch_command = 'qsub -n 32 -t 20 -q short --env "BG_MAXALIGNEXP=0"';
    arg status_command = 'qstat';
    arg num_procs = 32;
  }
  def performance_counter {
    arg method = 'bgp counter';
-   arg repetitions = 100;
+   arg repetitions = 10;
  }
  def performance_params {  
    param UF[] = range(1,11);
    constraint divisible_by_two = (UF % 2 == 0);
  }
  def input_params {
-   param N[] = [1000000];
+   param N[] = [100000000];
  }
  def input_vars {
    decl dynamic double x1[N] = random;
