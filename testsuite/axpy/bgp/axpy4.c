@@ -4,7 +4,7 @@ void axpy5(int N, double *y, double a1, double *x1, double a2, double *x2, doubl
 
 /*@ begin PerfTuning (
  def build {
-   arg build_command = 'mpixlc_r -O3 -qstrict -qsmp=omp:noauto';
+   arg build_command = 'mpixlc_r -O5 -qstrict -qsmp=omp:noauto';
    arg batch_command = 'qsub -n 128 -t 20 -q short --env "OMP_NUM_THREADS=4"';
    arg status_command = 'qstat';
    arg num_procs = 128;
@@ -14,11 +14,14 @@ void axpy5(int N, double *y, double a1, double *x1, double a2, double *x2, doubl
    arg repetitions = 1000;
  }
  def performance_params {
-   param UF[] = range(1,33);
-   param P[] = [True, False];
+   param UF[] = range(1,17);
+   param P[] = [False];
  }
  def input_params {
-   param N[] = [10,100,1000,10000,50000,100000,500000,1000000,5000000,10000000];
+   let Ns = [10,100,1000,10000,50000];
+   let Nm = [100000,500000,1000000];
+   let Nl = [5000000,10000000];
+   param N[] = Ns;
  }
  def input_vars {
    decl dynamic double x1[N] = random;
