@@ -3,8 +3,6 @@
 #include <sys/time.h>
 #include <omp.h>
 
-#include "decl_init.h"
-
 double getClock()
 {
     struct timezone tzp;
@@ -15,11 +13,38 @@ double getClock()
 
 int main(int argc, char *argv[])
 {
-    malloc_arrays();
-    init_input_vars();
+    double *y;
+    double *x1;
+    double *x2;
+    double *x3;
+    double *x4;
+    double a1;
+    double a2;
+    double a3;
+    double a4;
+
+    int n = N;
+    {
+        int i1;
+        y = (double*) malloc((n) * sizeof(double));
+        x1 = (double*) malloc((n) * sizeof(double));
+        x2 = (double*) malloc((n) * sizeof(double));
+        x3 = (double*) malloc((n) * sizeof(double));
+        x4 = (double*) malloc((n) * sizeof(double));
+        for (i1=0; i1<n; i1++) {
+            x1[i1] = (i1+1) % 4 + 1;
+            x2[i1] = (i1+5) % 10 + 1;
+            x3[i1] = (i1+3) % 6 + 1;
+            x4[i1] = (i1+9) % 9 + 1;
+            y[i1] = 0;
+        }
+        a1 = (double) 6;
+        a2 = (double) 7;
+        a3 = (double) 4;
+        a4 = (double) 1;
+    }
 
     int one = 1;
-    int n = N;
 
     double orio_t_start, orio_t_end, orio_t_total=0;
     int orio_i;
