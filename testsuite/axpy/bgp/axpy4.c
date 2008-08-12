@@ -4,7 +4,7 @@ void axpy4(int N, double *y, double a1, double *x1, double a2, double *x2,
 
 /*@ begin PerfTuning (
  def build {
-   arg build_command = 'mpixlc_r -O3 -qstrict -qhot -qsmp=omp:noauto';
+   arg build_command = 'mpixlc_r -O3 -qstrict -qarch=450d -qtune=450 -qhot -qsmp=omp:noauto';
    arg batch_command = 'qsub -n 128 -t 20 -q short --env "OMP_NUM_THREADS=4"';
    arg status_command = 'qstat';
    arg num_procs = 128;
