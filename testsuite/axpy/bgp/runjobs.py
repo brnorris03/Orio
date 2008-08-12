@@ -8,7 +8,7 @@ def runExp(ename, flag, src_file, libs, numthreads):
     print ename
     print '-=-=-=-=-=-=-=-=-=-=-=-=-'
 
-    CC = 'bgxlc_r -O3 -qstrict -qhot' 
+    CC = 'bgxlc_r -O3 -qstrict -qarch=450d -qtune=450 -qhot' 
 
     REPS = [100000,10000,10000,1000,1000,500,500,100,50,20]
     N = [10,100,1000,10000,50000,100000,500000,1000000,5000000,10000000]
