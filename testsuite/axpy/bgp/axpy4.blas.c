@@ -36,14 +36,13 @@ int main(int argc, char *argv[])
 	daxpy(&n, &a2, x2, &one, y, &one);
 	daxpy(&n, &a3, x3, &one, y, &one);
 	daxpy(&n, &a4, x4, &one, y, &one);
-	daxpy(&n, &a5, x5, &one, y, &one);
 	
     }
     orio_t_end = getClock();
     orio_t_total = orio_t_end - orio_t_start;
 
     orio_t_total = orio_t_total / REPS; 
-    double mflops = (10.0*N)/(orio_t_total*1000000);
+    double mflops = (8.0*N)/(orio_t_total*1000000);
 
 #ifdef TEST
     {
@@ -55,7 +54,7 @@ int main(int argc, char *argv[])
 	}
     }
 #else
-    printf("%.6f\t%.3f\n", orio_t_total, mflops);
+    printf("%f\t%f\n", orio_t_total, mflops);
 #endif
 
     return y[0];
