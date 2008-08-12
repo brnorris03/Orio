@@ -2,13 +2,13 @@
 
 import os, sys, time, random, re
 
-def runExp(ename, smp_flag, src_file, libs, numthreads):
+def runExp(ename, flag, src_file, libs, numthreads):
 
     print '-=-=-=-=-=-=-=-=-=-=-=-=-'
     print ename
     print '-=-=-=-=-=-=-=-=-=-=-=-=-'
 
-    CC = 'bgxlc_r -O3 -qarch=450d -qtune=450 -qhot=simd' 
+    CC = 'bgxlc_r -O3 -qstrict -qhot' 
 
     REPS = [100000,10000,10000,1000,1000,500,500,100,50,20]
     N = [10,100,1000,10000,50000,100000,500000,1000000,5000000,10000000]
@@ -23,7 +23,7 @@ def runExp(ename, smp_flag, src_file, libs, numthreads):
 
         # build the code
         build_cmd = ('%s %s -DN=%s -DREPS=%s -o %s%s %s %s' %
-                     (CC, smp_flag, n, reps, ename, i, src_file, libs))
+                     (CC, flag, n, reps, ename, i, src_file, libs))
         print '********************************'
         print build_cmd
         print '********************************'
@@ -88,33 +88,33 @@ def runExp(ename, smp_flag, src_file, libs, numthreads):
         os.system(rm_cmd)
         
 
-# Name, SMP flag, Source files, LIBS flag, Number of threads
+# Name, Flags, Source files, LIBS flag, Number of threads
 
-#runExp('base_seq', '-qsmp=noauto', 'axpy5.base.c', '', 1)
-#runExp('base_par', '-qsmp=auto', 'axpy5.base.c', '', 4)
-
-
-#runExp('essl_seq', '-qsmp=noauto', 'axpy5.blas.c',
-#       '-L/bgsys/ibm_essl/sles10/prod/opt/ibmmath/lib -lesslbg ' +
-#       '-L/opt/ibmcmp/xlf/bg/11.1/bglib -lxlf90_r -lxlfmath -lm',
-#       1)
-#runExp('essl_par', '-qsmp=auto', 'axpy5.blas.c',
-#       '-L/bgsys/ibm_essl/sles10/prod/opt/ibmmath/lib -lesslsmpbg ' +
-#       '-L/opt/ibmcmp/xlf/bg/11.1/bglib -lxlf90_r -lxlfmath -lm',
-#       4)
+runExp('base_seq', '-qsmp=noauto', 'axpy4.base.c', '', 1)
+runExp('base_par', '-qsmp=auto', 'axpy4.base.c', '', 4)
 
 
-#runExp('goto_seq', '-qsmp=noauto', 'axpy5.blas.c',
-#       '-L/soft/apps/LIBGOTO -lgoto -L/opt/ibmcmp/xlf/bg/11.1/bglib -lxlf90_r ' +
-#       '-lpthread -lxlfmath -lm',
-#       1)
-#runExp('goto_par', '-qsmp=auto', 'axpy5.blas.c',
-#       '-L/soft/apps/LIBGOTO -lgoto -L/opt/ibmcmp/xlf/bg/11.1/bglib -lxlf90_r ' +
-#       '-lpthread -lxlfmath -lm',
-#       4)
+runExp('essl_seq', '-qsmp=noauto', 'axpy4.blas.c',
+       '-L/bgsys/ibm_essl/sles10/prod/opt/ibmmath/lib -lesslbg ' +
+       '-L/opt/ibmcmp/xlf/bg/11.1/bglib -lxlf90_r -lxlfmath -lm',
+       1)
+runExp('essl_par', '-qsmp=auto', 'axpy4.blas.c',
+       '-L/bgsys/ibm_essl/sles10/prod/opt/ibmmath/lib -lesslsmpbg ' +
+       '-L/opt/ibmcmp/xlf/bg/11.1/bglib -lxlf90_r -lxlfmath -lm',
+       4)
 
 
-runExp('orio_seq', '-qsmp=omp:noauto', 'axpy5.orio.c fun_axpy5.orio.seq.c', '', 1)
-#runExp('orio_par', '-qsmp=omp:noauto', 'axpy5.orio.c fun_axpy5.orio.seq_par.c', '', 4)
+runExp('goto_seq', '-qsmp=noauto', 'axpy4.blas.c',
+       '-L/soft/apps/LIBGOTO -lgoto -L/opt/ibmcmp/xlf/bg/11.1/bglib -lxlf90_r ' +
+       '-lpthread -lxlfmath -lm',
+       1)
+runExp('goto_par', '-qsmp=auto', 'axpy4.blas.c',
+       '-L/soft/apps/LIBGOTO -lgoto -L/opt/ibmcmp/xlf/bg/11.1/bglib -lxlf90_r ' +
+       '-lpthread -lxlfmath -lm',
+       4)
+
+
+runExp('orio_seq', '-qsmp=omp:noauto -DORIO_SEQ', 'axpy4.orio.c', '', 1)
+runExp('orio_par', '-qsmp=omp:noauto -DORIO_PAR', 'axpy4.orio.c', '', 4)
 
 
