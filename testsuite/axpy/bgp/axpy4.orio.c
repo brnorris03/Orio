@@ -5,8 +5,8 @@
 
 #include "decl_init.h"
 
-void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, double a3, double *x3,
-           double a4, double *x4, double a5, double *x5);
+void axpy4(int* n, double *y, double* a1, double *x1, double* a2, double *x2, double* a3, double *x3,
+           double* a4, double *x4);
 
 double getClock()
 {
@@ -35,14 +35,14 @@ int main(int argc, char *argv[])
     for (orio_i=0; orio_i<reps; orio_i++)
     {
 
-	axpy5(n,y,a1,x1,a2,x2,a3,x3,a4,x4,a5,x5);
+	axpy4(&n,y,&a1,x1,&a2,x2,&a3,x3,&a4,x4);
 
     }
     orio_t_end = getClock();
     orio_t_total = orio_t_end - orio_t_start;
 
     orio_t_total = orio_t_total / REPS; 
-    double mflops = (10.0*N)/(orio_t_total*1000000);
+    double mflops = (8.0*N)/(orio_t_total*1000000);
 
 #ifdef TEST
     {
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	}
     }
 #else
-    printf("%.6f\t%.3f\n", orio_t_total, mflops);
+    printf("%f\t%f\n", orio_t_total, mflops);
 #endif
 
     return y[0];
