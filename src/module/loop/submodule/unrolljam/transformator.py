@@ -162,7 +162,7 @@ class Transformator:
         # jam all compound statements
         if isinstance(stmts[0], module.loop.ast.CompStmt):
             for s in stmts:
-                if not isinstance(s, module.loop.ast.ComptStmt):
+                if not isinstance(s, module.loop.ast.CompStmt):
                     print 'internal error: not all statements are compound'
                     sys.exit(1)
             return self.__jamStmtSeqs([s.stmts for s in stmts])
