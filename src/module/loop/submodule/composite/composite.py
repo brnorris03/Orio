@@ -7,6 +7,7 @@ import module.loop.submodule.submodule, transformator
 import module.loop.submodule.tile.tile
 import module.loop.submodule.permut.permut
 import module.loop.submodule.regtile.regtile
+import module.loop.submodule.unrolljam.unrolljam
 import module.loop.submodule.scalarreplace.scalarreplace
 import module.loop.submodule.boundreplace.boundreplace
 import module.loop.submodule.pragma.pragma
@@ -26,6 +27,7 @@ class Composite(module.loop.submodule.submodule.SubModule):
         self.tile_smod = module.loop.submodule.tile.tile.Tile()
         self.perm_smod = module.loop.submodule.permut.permut.Permut()
         self.regt_smod = module.loop.submodule.regtile.regtile.RegTile()
+        self.ujam_smod = module.loop.submodule.unrolljam.unrolljam.UnrollJam()
         self.srep_smod = module.loop.submodule.scalarreplace.scalarreplace.ScalarReplace()
         self.brep_smod = module.loop.submodule.boundreplace.boundreplace.BoundReplace()
         self.prag_smod = module.loop.submodule.pragma.pragma.Pragma()
@@ -40,6 +42,7 @@ class Composite(module.loop.submodule.submodule.SubModule):
         TILE = 'tile'
         PERMUT = 'permut'
         REGTILE = 'regtile'
+        UJAM = 'unrolljam'
         SCALARREP = 'scalarreplace'
         BOUNDREP = 'boundreplace'
         PRAGMA = 'pragma'
@@ -51,6 +54,7 @@ class Composite(module.loop.submodule.submodule.SubModule):
         tiles = ([], None)
         permuts = ([], None)
         regtiles = (([],[]), None)
+        ujams = (([],[]), None)
         scalarrep = (False, None)
         boundrep = (False, None)
         pragma = ([], None)
@@ -76,6 +80,8 @@ class Composite(module.loop.submodule.submodule.SubModule):
                 permuts = (rhs, line_no)
             elif aname == REGTILE:
                 regtiles = (rhs, line_no)
+            elif aname == UJAM:
+                ujams = (rhs, line_no)
             elif aname == SCALARREP:
                 scalarrep = (rhs, line_no)
             elif aname == BOUNDREP:
@@ -95,17 +101,17 @@ class Composite(module.loop.submodule.submodule.SubModule):
                 sys.exit(1)
 
         # check semantics of the transformation arguments
-        (tiles, permuts, regtiles, scalarrep, boundrep,
-         pragma, openmp, vector, arrcopy) = self.checkTransfArgs(tiles, permuts, regtiles,
+        (tiles, permuts, regtiles, ujams, scalarrep, boundrep,
+         pragma, openmp, vector, arrcopy) = self.checkTransfArgs(tiles, permuts, regtiles, ujams,
                                                                  scalarrep, boundrep, pragma,
                                                                  openmp, vector, arrcopy)
 
         # return information about the transformation arguments
-        return (tiles, permuts, regtiles, scalarrep, boundrep, pragma, openmp, vector, arrcopy)
+        return (tiles, permuts, regtiles, ujams, scalarrep, boundrep, pragma, openmp, vector, arrcopy)
 
     #-----------------------------------------------------------------
 
-    def checkTransfArgs(self, tiles, permuts, regtiles, scalarrep, boundrep, pragma,
+    def checkTransfArgs(self, tiles, permuts, regtiles, ujams, scalarrep, boundrep, pragma,
                         openmp, vector, arrcopy):
         '''Check the semantics of the given transformation arguments'''
         
@@ -147,7 +153,21 @@ class Composite(module.loop.submodule.submodule.SubModule):
         loops, ufactors = rhs
         loops, ufactors = self.regt_smod.checkTransfArgs((loops, line_no), (ufactors, line_no))
         regtiles = (loops, ufactors)
-        
+
+        # evaluate arguments for unroll/jamming
+        rhs, line_no = ujams
+        if not isinstance(rhs, list) and not isinstance(rhs, tuple):
+            print 'error:%s: unroll/jam argument must be a list/tuple: %s' % (line_no, rhs)
+            sys.exit(1)
+        if len(rhs) != 2:
+            print (('error:%s: unroll/jam argument must be in the form of ' +
+                    '(<loop-ids>,<ufactors>): %s') % (line_no, rhs))
+            sys.exit(1)
+        loops, ufactors = rhs
+        for lp,uf in zip(loops, ufactors):
+            self.ujam_smod.checkTransfArgs((uf, line_no), (False, line_no))
+        ujams = (loops, ufactors)
+
         # evaluate arguments for scalar replacement
         rhs, line_no = scalarrep
         if isinstance(rhs, bool) or rhs == 0 or rhs == 1:
@@ -255,16 +275,16 @@ class Composite(module.loop.submodule.submodule.SubModule):
         arrcopy = targs
 
         # return information about the transformation arguments
-        return (tiles, permuts, regtiles, scalarrep, boundrep, pragma, openmp, vector, arrcopy)
+        return (tiles, permuts, regtiles, ujams, scalarrep, boundrep, pragma, openmp, vector, arrcopy)
 
     #-----------------------------------------------------------------
 
-    def applyTransf(self, tiles, permuts, regtiles, scalarrep, boundrep,
+    def applyTransf(self, tiles, permuts, regtiles, ujams, scalarrep, boundrep,
                     pragma, openmp, vector, arrcopy, stmt):
         '''To apply a sequence of transformations'''
 
         # perform the composite transformations
-        t = transformator.Transformator(tiles, permuts, regtiles, scalarrep,
+        t = transformator.Transformator(tiles, permuts, regtiles, ujams, scalarrep,
                                         boundrep, pragma, openmp, vector, arrcopy, self.stmt)
         transformed_stmt = t.transform()
 
@@ -315,11 +335,11 @@ class Composite(module.loop.submodule.submodule.SubModule):
 
         # read all transformation arguments
         args_info = self.__readTransfArgs(self.perf_params, self.transf_args)
-        (tiles, permuts, regtiles, scalarrep,
+        (tiles, permuts, regtiles, ujams, scalarrep,
          boundrep, pragma, openmp, vector, arrcopy) = args_info
-
+        
         # perform all transformations
-        transformed_stmt = self.applyTransf(tiles, permuts, regtiles, scalarrep, boundrep,
+        transformed_stmt = self.applyTransf(tiles, permuts, regtiles, ujams, scalarrep, boundrep,
                                             pragma, openmp, vector, arrcopy, self.stmt)
 
         # return the transformed statement
