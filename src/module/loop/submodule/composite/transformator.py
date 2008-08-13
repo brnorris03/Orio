@@ -7,6 +7,7 @@ import module.loop.ast, module.loop.ast_lib.common_lib, module.loop.ast_lib.forl
 import module.loop.submodule.tile.tile
 import module.loop.submodule.permut.permut
 import module.loop.submodule.regtile.regtile
+import module.loop.submodule.unrolljam.unrolljam
 import module.loop.submodule.scalarreplace.scalarreplace
 import module.loop.submodule.boundreplace.boundreplace
 import module.loop.submodule.pragma.pragma
@@ -17,13 +18,14 @@ import module.loop.submodule.arrcopy.arrcopy
 class Transformator:
     '''Code transformator'''
 
-    def __init__(self, tiles, permuts, regtiles, scalarrep, boundrep,
+    def __init__(self, tiles, permuts, regtiles, ujams, scalarrep, boundrep,
                  pragma, openmp, vector, arrcopy, stmt):
         '''To instantiate a code transformator object'''
 
         self.tiles = tiles
         self.permuts = permuts
         self.regtiles = regtiles
+        self.ujams = ujams
         self.scalarrep = scalarrep
         self.boundrep = boundrep
         self.pragma = pragma
@@ -41,6 +43,7 @@ class Transformator:
         self.tile_smod = module.loop.submodule.tile.tile.Tile()
         self.perm_smod = module.loop.submodule.permut.permut.Permut()
         self.regt_smod = module.loop.submodule.regtile.regtile.RegTile()
+        self.ujam_smod = module.loop.submodule.unrolljam.unrolljam.UnrollJam()
         self.srep_smod = module.loop.submodule.scalarreplace.scalarreplace.ScalarReplace()
         self.brep_smod = module.loop.submodule.boundreplace.boundreplace.BoundReplace()
         self.prag_smod = module.loop.submodule.pragma.pragma.Pragma()
@@ -75,6 +78,50 @@ class Transformator:
             lid, tsize, tindex = tinfo
             if lid == index_id.name:
                 stmt = self.tile_smod.tile(tsize, tindex, stmt)
+
+            # return this loop statement
+            return stmt
+
+        elif isinstance(stmt, module.loop.ast.TransformStmt):
+            print 'internal error: unprocessed transform statement'
+            sys.exit(1)
+                                    
+        elif isinstance(stmt, module.loop.ast.NewAST):
+            return stmt
+
+        else:
+            print 'internal error: unexpected AST type: "%s"' % stmt.__class__.__name__
+            sys.exit(1)
+        
+    #----------------------------------------------------------
+
+    def __unrollJam(self, stmt, tinfo):
+        '''To apply loop unroll/jamming'''
+        
+        if isinstance(stmt, module.loop.ast.ExpStmt):
+            return stmt
+
+        elif isinstance(stmt, module.loop.ast.CompStmt):
+            stmt.stmts = [self.__unrollJam(s, tinfo) for s in stmt.stmts]
+            return stmt
+            
+        elif isinstance(stmt, module.loop.ast.IfStmt):
+            stmt.true_stmt = self.__unrollJam(stmt.true_stmt, tinfo)
+            if stmt.false_stmt:
+                stmt.false_stmt = self.__unrollJam(stmt.false_stmt, tinfo)
+            return stmt
+                
+        elif isinstance(stmt, module.loop.ast.ForStmt):
+
+            # recursively transform the loop body
+            stmt.stmt = self.__unrollJam(stmt.stmt, tinfo)
+
+            # apply tiling if this is the loop to be tiled
+            for_loop_info = self.flib.extractForLoopInfo(stmt)
+            index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
+            lid, ufactor = tinfo
+            if lid == index_id.name:
+                stmt = self.ujam_smod.unrollAndJam(ufactor, True, stmt, False)
 
             # return this loop statement
             return stmt
@@ -347,6 +394,15 @@ class Transformator:
         loops, ufactors = self.regtiles
         if len(loops) > 0:
             tstmt = self.regt_smod.tileForRegs(loops, ufactors, tstmt)
+
+        # apply unroll/jamming
+        loops, ufactors = self.ujams
+        for loop_id, ufactor in zip(loops, ufactors):
+            all_lids = self.flib.getLoopIndexNames(tstmt)
+            lid = self.__searchLoopId(all_lids, (True, loop_id))
+            if lid != None:
+                tinfo = (lid, ufactor)
+                tstmt = self.__unrollJam(tstmt, tinfo)
 
         # apply scalar replacement
         do_scalarrep, dtype, prefix = self.scalarrep
