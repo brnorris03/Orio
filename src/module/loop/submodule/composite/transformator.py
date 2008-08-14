@@ -133,10 +133,11 @@ class Transformator:
                 if lid == index_id.name:
                     ufactor = uf
                     break
+
             if ufactor > 1:
                 do_jamming = not body_unrolled
                 parallelize = False
-                stmt, _ = self.ujam_smod.unrollAndJam(ufactor, do_jamming, stmt, parallelize)
+                stmt = self.ujam_smod.unrollAndJam(ufactor, do_jamming, stmt, parallelize)
                 body_unrolled = True
 
             # return this loop statement
@@ -145,7 +146,7 @@ class Transformator:
         elif isinstance(stmt, module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
-                                    
+
         elif isinstance(stmt, module.loop.ast.NewAST):
             return (stmt, False)
 
