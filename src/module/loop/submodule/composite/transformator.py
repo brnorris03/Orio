@@ -95,43 +95,59 @@ class Transformator:
         
     #----------------------------------------------------------
 
-    def __unrollJam(self, stmt, tinfo):
+    def __unrollJam(self, stmt, tinfos):
         '''To apply loop unroll/jamming'''
         
         if isinstance(stmt, module.loop.ast.ExpStmt):
-            return stmt
+            return (stmt, False)
 
         elif isinstance(stmt, module.loop.ast.CompStmt):
-            stmt.stmts = [self.__unrollJam(s, tinfo) for s in stmt.stmts]
-            return stmt
+            tstmts = []
+            body_unrolled = False
+            for s in stmt.stmts:
+                t,b = self.__unrollJam(s, tinfos)
+                tstmts.append(t)
+                body_unrolled = body_unrolled or b
+            stmt.stmts = tstmts
+            return (stmt, body_unrolled)
             
         elif isinstance(stmt, module.loop.ast.IfStmt):
-            stmt.true_stmt = self.__unrollJam(stmt.true_stmt, tinfo)
+            t,body_unrolled = self.__unrollJam(stmt.true_stmt, tinfos)
+            stmt.true_stmt = t
             if stmt.false_stmt:
-                stmt.false_stmt = self.__unrollJam(stmt.false_stmt, tinfo)
-            return stmt
+                t,b = self.__unrollJam(stmt.false_stmt, tinfos)
+                stmt.false_stmt = t
+                body_unrolled = body_unrolled or b
+            return (stmt, body_unrolled)
                 
         elif isinstance(stmt, module.loop.ast.ForStmt):
 
             # recursively transform the loop body
-            stmt.stmt = self.__unrollJam(stmt.stmt, tinfo)
+            stmt.stmt, body_unrolled = self.__unrollJam(stmt.stmt, tinfos)
 
-            # apply tiling if this is the loop to be tiled
+            # apply unroll/jamming
             for_loop_info = self.flib.extractForLoopInfo(stmt)
             index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
-            lid, ufactor = tinfo
-            if lid == index_id.name:
-                stmt = self.ujam_smod.unrollAndJam(ufactor, True, stmt, False)
+            ufactor = -1
+            for lid, uf in tinfos:
+                if lid == index_id.name:
+                    ufactor = uf
+                    break
+            if ufactor > 1:
+                do_jamming = not body_unrolled
+                parallelize = False
+                stmt, _ = self.ujam_smod.unrollAndJam(ufactor, do_jamming, stmt, parallelize)
+                body_unrolled = True
 
             # return this loop statement
-            return stmt
+            return (stmt, body_unrolled)
 
         elif isinstance(stmt, module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
                                     
         elif isinstance(stmt, module.loop.ast.NewAST):
-            return stmt
+            return (stmt, False)
 
         else:
             print 'internal error: unexpected AST type: "%s"' % stmt.__class__.__name__
@@ -397,12 +413,14 @@ class Transformator:
 
         # apply unroll/jamming
         loops, ufactors = self.ujams
+        tinfos = []
         for loop_id, ufactor in zip(loops, ufactors):
             all_lids = self.flib.getLoopIndexNames(tstmt)
-            lid = self.__searchLoopId(all_lids, (True, loop_id))
-            if lid != None:
-                tinfo = (lid, ufactor)
-                tstmt = self.__unrollJam(tstmt, tinfo)
+            lid = self.__searchLoopId(all_lids, (False, loop_id))
+            if lid != None and ufactor > 1:
+                tinfos.append((lid, ufactor))
+        if len(tinfos) > 0:
+            tstmt,_ = self.__unrollJam(tstmt, tinfos)
 
         # apply scalar replacement
         do_scalarrep, dtype, prefix = self.scalarrep
