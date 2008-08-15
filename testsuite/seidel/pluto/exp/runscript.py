@@ -88,7 +88,7 @@ def checkCorrectness(optflag = '-O0'):
     fnames = [
         'seidel.base.pluto.seq.c', 
         'seidel.base.pluto.par.c', 
-        'seidel.pluto_ancc.seq_par.c',
+        'seidel.pluto_orio.seq_par.c',
         ]
     for fname in fnames:
         compile_cmd = (('icc %s -openmp -DREPS=1 -DT=%s -DN=%s -DTEST ' +
@@ -121,12 +121,13 @@ def checkCorrectness(optflag = '-O0'):
         else:
             print '-------PASSED CORRECTNESS CHECKING--------'
 
+# correctness checking
+OPTFLAG = '-O3'
+checkCorrectness()
+checkCorrectness(OPTFLAG)
+
 # parallel case
 if 0:
-    OPTFLAG = '-O3'
-    checkCorrectness()
-    checkCorrectness(OPTFLAG)
-
     reps = 1
     T = 1024
     N = 1024
@@ -141,7 +142,7 @@ if 0:
     mflopss_pluto_par = countFlops(T,N,rtimes_pluto_par)
     
     rtimes_orio_par = runExp([1,2,3,4], 'icc %s -openmp' % OPTFLAG, 
-                             'seidel.pluto_ancc.seq_par.c', 'orio_par', flags, '-lm')
+                             'seidel.pluto_orio.seq_par.c', 'orio_par', flags, '-lm')
     mflopss_orio_par = countFlops(T,N,rtimes_orio_par)
     
     print mflopss_base_par
@@ -150,9 +151,6 @@ if 0:
     
 # sequential case
 if 1:
-    OPTFLAG = '-O3'
-    checkCorrectness()
-    checkCorrectness(OPTFLAG)
 
     reps = 1
     T = 1024
@@ -165,15 +163,15 @@ if 1:
         rtimes_base = runExp([1], 'icc %s' % OPTFLAG, 
                              'seidel.base.c', 'base_seq', flags, '-lm')
         p = countFlops(T,N,rtimes_base)
-        mflopss_base.append(p)
+        mflopss_base.append(p[0])
         rtimes_pluto = runExp([1], 'icc %s' % OPTFLAG, 
                               'seidel.base.pluto.seq.c', 'pluto_seq', flags, '-lm')
         p = countFlops(T,N,rtimes_pluto)
-        mflopss_pluto.append(p)
+        mflopss_pluto.append(p[0])
         rtimes_orio = runExp([1], 'icc %s -openmp' % OPTFLAG, 
-                             'seidel.pluto_ancc.seq_par.c', 'orio_seq', flags, '-lm')
+                             'seidel.pluto_orio.seq_par.c', 'orio_seq', flags, '-lm')
         p = countFlops(T,N,rtimes_orio)
-        mflopss_orio.append(p)
+        mflopss_orio.append(p[0])
         
     print mflopss_base
     print mflopss_pluto
