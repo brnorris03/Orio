@@ -1,13 +1,11 @@
 /*@ begin PerfTuning (          
   def build  
   {  
-    arg command = 'icc';  
-    arg options = '-fast -openmp -I/usr/local/icc/include -lm';  
-  }  
+    arg build_command = 'icc -O3 -openmp -I/usr/local/icc/include -lm';  
+  }
      
   def performance_counter           
   {  
-    arg method = 'basic timer';  
     arg repetitions = 1;  
   } 
  
@@ -20,33 +18,37 @@
 #    param T2_2[] = [1,4,8,16,32]; 
 #    param T2_3[] = [1,4,8,16,32]; 
 
-    param T1_1[] = [32]; 
-    param T1_2[] = [32];
-    param T1_3[] = [64];
+    param T1_1[] = [1]; 
+    param T1_2[] = [32]; 
+    param T1_3[] = [32]; 
     param T2_1[] = [1]; 
     param T2_2[] = [1]; 
-    param T2_3[] = [8];
+    param T2_3[] = [1]; 
  
+    constraint c1 = (T1_1*T2_1<=1024 and T1_1*T2_1<=1024 and T1_1*T2_1<=1024);
+
 #    param U1[] = [1,2,4,8];
 #    param U2[] = [1,2,4,8];
 #    param U3[] = [1,2,4,8];
 
-    param U1[] = [8];
-    param U2[] = [1];
-    param U3[] = [8];
+    param U1[] = [10];
+    param U2[] = [8];
+    param U3[] = [1];
+
+    constraint c2 = (U1*U2*U3<=256);
 
     param PERM[] = [
      [0,1,2],
-#     [0,2,1],
-#     [1,0,2],
-#     [1,2,0],
-#     [2,0,1],
-#     [2,1,0],
+     #[0,2,1],
+     #[1,0,2],
+     #[1,2,0],
+     #[2,0,1],
+     #[2,1,0],
     ];
 
-    param PAR[] = [True]; 
-    param SCREP[] = [True]; 
-    param IVEC[] = [True]; 
+    param PAR[] = [True];
+    param SCREP[] = [False];
+    param IVEC[] = [True];
   } 
  
   def search  
@@ -54,16 +56,20 @@
     arg algorithm = 'Exhaustive';  
 #    arg algorithm = 'Simplex';  
 #    arg algorithm = 'Random';  
-    arg time_limit = 30;
+#    arg time_limit = 30;
 #    arg total_runs = 1; 
   }  
-    
+
   def input_params  
   { 
     param N[] = [1024];
     param T[] = [1024];
-    decl out static double A[N][N+17] = random;  
   } 
+
+  def input_vars
+  {
+    decl static double A[N][N+17] = random;
+  }
 ) @*/  
 
 register int i,j,k,t; 
@@ -93,6 +99,8 @@ for (t=0; t<=T-1; t++)
       A[i][j] = (A[i-1][j-1] + A[i-1][j] + A[i-1][j+1]
 		 + A[i][j-1] + A[i][j] + A[i][j+1]
 		 + A[i+1][j-1] + A[i+1][j] + A[i+1][j+1])/9.0;
+
+
 /* pluto end */
 
 /*@ end @*/ 
