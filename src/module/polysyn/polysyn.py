@@ -20,13 +20,43 @@ class PolySyn(module.module.Module):
 
     #---------------------------------------------------------------------
 
+    def __insertPolysynTags(self, code):
+        '''To add opening and closing tags to indicate the beginning anf ending of the code
+        to be transformed using Pluto'''
+
+        # the used tags
+        polysyn_open_tag = '/* polysyn start */'
+        polysyn_close_tag = '/* polysyn end */'
+        pluto_open_tag_re = r'/\*\s*pluto\s+start.*?\*/'
+        pluto_close_tag_re = r'/\*\s*pluto\s+end.*?\*/'
+        
+        # find the opening and closing tags of the pluto code
+        open_m = re.search(pluto_open_tag_re, code)
+        close_m = re.search(pluto_close_tag_re, code)
+        if (not open_m) or (not close_m):
+            print ('error:polysyn: cannot find the opening and closing tags for the PLuTo code') 
+            sys.exit(1) 
+
+        # insert the polysyn tags
+        code = (code[:open_m.start()] + polysyn_open_tag + '\n' + 
+                code[open_m.start():close_m.end()] + '\n' + polysyn_close_tag + 
+                code[close_m.end():])
+
+        # return the modified code
+        return code
+
+    #---------------------------------------------------------------------
+
     def transform(self):
         '''To apply a polyhedral-syntactic transformation on the annotated code'''
 
         # remove all existing annotations
         annot_re = r'/\*@((.|\n)*?)@\*/'
         self.annot_body_code = re.sub(annot_re, '', self.annot_body_code)
-        
+
+        # insert polysyn tags
+        self.annot_body_code = self.__insertPolysynTags(self.annot_body_code)
+
         # parse the module body code
         assigns = parser.Parser().parse(self.module_body_code, self.line_no)
 
