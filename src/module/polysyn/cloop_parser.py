@@ -116,7 +116,7 @@ class CLoopParser:
     def __parseAssignStmt(self, linestr, line_num):
         '''Parse the given line string for an assignment statement'''
 
-        m = re.match(r'^\s*\w+\s*\=.*?;\s*$', linestr)
+        m = re.match(r'^\s*\w+.*?\=.*?;\s*$', linestr)
         if not m:
             return None
         return ('assignment', linestr, line_num)
@@ -155,25 +155,93 @@ class CLoopParser:
                 self.__parseWhitespace(linestr, line_num))
 
     #-------------------------------------------------------------------
+    
+    def __moveOpeningTag(self, pluto_code):
+        '''Move the opening tag to the exact place where the pltuo-transformed begins'''
+        
+        # find the opening and closing tags of the Cloog code
+        open_tag_re = r'/\*\s*polysyn\s+start\s*\*/'
+        close_tag_re = r'/\*\s*polysyn\s+end\s*\*/'
+        open_m = re.search(open_tag_re, pluto_code)
+        close_m = re.search(close_tag_re, pluto_code)
+        if (not open_m) or (not close_m):
+            print ('internal-error:polysyn: cannot find the opening and closing tags for ' +
+                   'the Cloog code')
+            sys.exit(1)
+        (open_start_pos, open_end_pos) = (open_m.start(), open_m.end())
+        (close_start_pos, close_end_pos) = (close_m.start(), close_m.end())
+
+        # get the code fragments
+        prologue_code = pluto_code[:open_start_pos]
+        open_tag_code = pluto_code[open_start_pos:open_end_pos]
+        cloog_code = pluto_code[open_end_pos:close_start_pos]
+        close_tag_code = pluto_code[close_start_pos:close_end_pos]
+        epilogue_code = pluto_code[close_end_pos:]
+
+        # regular expressions
+        vdecl_re = r'^\s*(\w+\s+)+(\s*\w+\s*,)*\s*\w+\s*;\s*$'
+        wspace_re = r'^\s*$'
+
+        # detect all variable declarations
+        prologues = []
+        rests = []
+        no_more_prologues = False
+        for linestr in cloog_code.split('\n'):
+            if no_more_prologues:
+                rests.append(linestr)
+                continue
+            if re.match(wspace_re, linestr) or re.match(vdecl_re, linestr):
+                prologues.append(linestr)
+            else:
+                no_more_prologues = True
+                rests.append(linestr)
+            
+        # check if there is no variable declaration in the Cloog code
+        if len(prologues) == 0:
+            return pluto_code
+
+        # check the Cloog code contains only variable declarations
+        if len(rests) == 0:
+            print 'internal-error:polysyn: Cloog code cannot be empty'
+            sys.exit(1)
+
+        # move all variables declarations to prologue code and place the opening tag accordingly
+        code = prologue_code
+        code += '\n'.join(prologues) 
+        code += open_tag_code + '\n'
+        code += '\n'.join(rests)
+        code += close_tag_code
+        code += epilogue_code
+
+        # return the modified code
+        return code
+
+    #-------------------------------------------------------------------
 
     def __focusToCloogCode(self, pluto_code, hotspots_info):
         '''Narrow focus to the Cloog code only'''
 
+        # move opening tag to the right place
+        pluto_code = self.__moveOpeningTag(pluto_code)
+
         # find the opening and closing tags of the Cloog code
-        open_tag_re = r'/\*\s*Generated\s+from\s+PLuTo.*?\*/'
-        close_tag_re = r'/\*\s*End\s+of\s+CLooG\s+code\s*\*/'
+        open_tag_re = r'/\*\s*polysyn\s+start\s*\*/'
+        close_tag_re = r'/\*\s*polysyn\s+end\s*\*/'
         open_m = re.search(open_tag_re, pluto_code)
         close_m = re.search(close_tag_re, pluto_code)
         if (not open_m) or (not close_m):
-            print ('error:polysyn: cannot find the opening and closing tags for the Cloog code')
+            print ('internal-error:polysyn: cannot find the opening and closing tags for ' +
+                   'the Cloog code')
             sys.exit(1)
+        (open_start_pos, open_end_pos) = (open_m.start(), open_m.end())
+        (close_start_pos, close_end_pos) = (close_m.start(), close_m.end())
 
         # get the Cloog code
-        cloog_code = pluto_code[open_m.end():close_m.start()]
+        cloog_code = pluto_code[open_end_pos:close_start_pos]
 
         # get the hotspots only related to the Cloog code
-        start_line_no = pluto_code[:open_m.start()].count('\n') + 1
-        end_line_no = pluto_code[:close_m.start()].count('\n') + 1
+        start_line_no = pluto_code[:open_start_pos].count('\n') + 1
+        end_line_no = pluto_code[:close_start_pos].count('\n') + 1
         cloog_hotspots_info = []
         for t,l in hotspots_info:
             if start_line_no <= l <= end_line_no:
@@ -182,7 +250,7 @@ class CLoopParser:
 
         # update the Pluto code (with the Cloog code being eliminated and replaced with a new tag)
         tag = '/*@ cloog code @*/'
-        pluto_code = pluto_code[:open_m.end()] + tag + pluto_code[close_m.start():]
+        pluto_code = pluto_code[:open_end_pos] + tag + pluto_code[close_start_pos:]
 
         # return the Cloog code and Cloog hotspots information, and the Pluto code
         return (cloog_code, cloog_hotspots_info, pluto_code)
@@ -496,6 +564,23 @@ class CLoopParser:
     
     def getHotspotLoopNests(self, pluto_code, hotspots_info):
         '''To get a sequence of hotspot loops'''
+
+
+        def __rewriteMacroDefs(self, macro_defs):
+            '''To rewrite "{<statement>;}" to "<statement>" '''
+
+        # normalize funny statements: i.e. {<statement>;}; ==> <statement>;
+        rexp = r'\{([^;]*?;)\s*\}\s*;'
+        norm_codes = []
+        for linestr in pluto_code.split('\n'):
+            m = re.search(rexp, linestr)
+            if m:
+                stmt_code = m.group(1)
+                norm_code = re.sub(rexp, stmt_code, linestr)
+                norm_codes.append(norm_code)
+            else:
+                norm_codes.append(linestr)
+        pluto_code = '\n'.join(norm_codes)
 
         # narrow focus on the Cloog code only
         cloog_code, hotspots_info, pluto_code = self.__focusToCloogCode(pluto_code, hotspots_info)
