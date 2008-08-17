@@ -101,7 +101,7 @@ def checkCorrectness(optflag = '-O0'):
     fnames = [
         #'fdtd-2d.pluto.seq.c', 
         #'fdtd-2d.pluto.par.c', 
-        'fdtd-2d.orio.seq.small.c',
+        #'fdtd-2d.orio.seq.small.c',
         #'fdtd-2d.orio.seq.large.c',
         #'fdtd-2d.orio.par.c',
         ]
@@ -142,7 +142,7 @@ checkCorrectness()
 checkCorrectness(OPTFLAG)
 
 # parallel case
-if 0:
+if 1:
     reps = 1
     T = 500
     N = 2000
@@ -152,17 +152,17 @@ if 0:
     mflopss_pluto = []
     mflopss_orio = []
 
-    rtimes_base = runExp([1,2,3,4,5,6,7,8], 'icc %s -parallel' % OPTFLAG, 
-                         'fdtd-2d.base.c', 'base_par', flags, '-lm')
-    mflopss_base = countFlops(T,N,rtimes_base)
+    #rtimes_base = runExp([1,2,3,4,5,6,7,8], 'icc %s -parallel' % OPTFLAG, 
+    #                     'fdtd-2d.base.c', 'base_par', flags, '-lm')
+    #mflopss_base = countFlops(T,N,rtimes_base)
     
     rtimes_pluto = runExp([1,2,3,4,5,6,7,8], 'icc %s -openmp' % OPTFLAG, 
                           'fdtd-2d.pluto.par.c', 'pluto_par', flags, '-lm')
     mflopss_pluto = countFlops(T,N,rtimes_pluto)
     
-    rtimes_orio = runExp([1,2,3,4,5,6,7,8], 'icc %s -openmp' % OPTFLAG, 
-                         'fdtd-2d.orio.par.c', 'orio_par', flags, '-lm')
-    mflopss_orio = countFlops(T,N,rtimes_orio)
+    #rtimes_orio = runExp([1,2,3,4,5,6,7,8], 'icc %s -openmp' % OPTFLAG, 
+    #                     'fdtd-2d.orio.par.c', 'orio_par', flags, '-lm')
+    #mflopss_orio = countFlops(T,N,rtimes_orio)
     
     printFloats(mflopss_base)
     printFloats(mflopss_pluto)
@@ -186,15 +186,15 @@ if 1:
         #p = countFlops(T,N,rtimes_base)
         #mflopss_base.append(p[0])
         
-        #rtimes_pluto = runExp([1], 'icc %s' % OPTFLAG, 
-        #                      'fdtd-2d.pluto.seq.c', 'pluto_seq', flags, '-lm')
-        #p = countFlops(T,N,rtimes_pluto)
-        #mflopss_pluto.append(p[0])
+        rtimes_pluto = runExp([1], 'icc %s' % OPTFLAG, 
+                              'fdtd-2d.pluto.seq.c', 'pluto_seq', flags, '-lm')
+        p = countFlops(T,N,rtimes_pluto)
+        mflopss_pluto.append(p[0])
         
-        rtimes_orio_small = runExp([1], 'icc %s -openmp' % OPTFLAG, 
-                                   'fdtd-2d.orio.seq.small.c', 'orio_seq_small', flags, '-lm')
-        p = countFlops(T,N,rtimes_orio_small)
-        mflopss_orio_small.append(p[0])
+        #rtimes_orio_small = runExp([1], 'icc %s -openmp' % OPTFLAG, 
+        #                           'fdtd-2d.orio.seq.small.c', 'orio_seq_small', flags, '-lm')
+        #p = countFlops(T,N,rtimes_orio_small)
+        #mflopss_orio_small.append(p[0])
         
         #rtimes_orio_large = runExp([1], 'icc %s -openmp' % OPTFLAG, 
         #                           'fdtd-2d.orio.seq.large.c', 'orio_seq_large', flags, '-lm')
