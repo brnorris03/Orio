@@ -9,7 +9,7 @@ import os, re, shlex, sys
 class SynTransformator:
     '''The syntactic transformator'''
 
-    def __init__(self, verbose, permut, unroll_factors, scalar_replace, vectorize):
+    def __init__(self, verbose, permut, unroll_factors, scalar_replace, vectorize, rect_regtile):
         '''To instantiate a syntactic transformator instance'''
 
         self.verbose = verbose
@@ -17,6 +17,7 @@ class SynTransformator:
         self.unroll_factors = unroll_factors
         self.scalar_replace = scalar_replace
         self.vectorize = vectorize
+        self.rect_regtile = rect_regtile
 
     #---------------------------------------------------------
 
@@ -165,7 +166,10 @@ class SynTransformator:
             else:
                 lnest = lnest[-mlength:]
                 ufactors = self.unroll_factors[:mlength]
-                regtile_code = 'regtile = (%s,%s)' % (lnest, ufactors)
+                if self.rect_regtile:
+                    regtile_code = 'unrolljam = (%s,%s)' % (lnest, ufactors)
+                else:
+                    regtile_code = 'regtile = (%s,%s)' % (lnest, ufactors)
 
             # get the scalar-replacement code
             srep_code = "scalarreplace = (%s, '%s')" % self.scalar_replace

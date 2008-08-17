@@ -10,13 +10,14 @@ class TransfInfo:
     '''The transformation information'''
 
     def __init__(self, parallel, tiles, permut, unroll_factors, scalar_replace, vectorize,
-                 profiling_code, compile_cmd, compile_opts):
+                 profiling_code, compile_cmd, compile_opts, rect_regtile):
         '''To instantiate a transformation information instance'''
 
         self.parallel = parallel
         self.tiles = tiles
         self.permut = permut
         self.unroll_factors = unroll_factors
+        self.rect_regtile = rect_regtile
         self.scalar_replace = scalar_replace
         self.vectorize = vectorize
 
@@ -51,6 +52,7 @@ class TransfInfoGen:
         TILES = 'tiles'
         PERMUT = 'permut'
         UFACTORS = 'unroll_factors'
+        RECTRTILE = 'rect_regtile'
         SREPLACE = 'scalar_replace'
         VECTOR = 'vectorize'
         PCODE = 'profiling_code'
@@ -62,6 +64,7 @@ class TransfInfoGen:
         tiles = None
         permut = None
         unroll_factors = None
+        rect_regtile = None
         scalar_replace = None
         vectorize = None
         profiling_code = None
@@ -114,6 +117,14 @@ class TransfInfoGen:
                                (rhs_line_no, t))
                         sys.exit(1)
                 unroll_factors = rhs_val
+
+            # rectangular register tiling
+            elif vname == RECTRTILE:
+                if not isinstance(rhs_val, bool):
+                    print ('error:%s: rectangular register-tiling value must be a boolean' % 
+                           rhs_line_no)
+                    sys.exit(1)
+                rect_regtile = rhs_val
 
             # parallelization
             elif vname == PARALLEL:
@@ -177,6 +188,8 @@ class TransfInfoGen:
             permut = []
         if unroll_factors == None:
             unroll_factors = []
+        if rect_regtile == None:
+            rect_regtile = False
         if scalar_replace == None:
             scalar_replace = (False, 'double')
         if vectorize == None:
@@ -187,6 +200,6 @@ class TransfInfoGen:
             
         # generate and return the transformation information
         return TransfInfo(parallel, tiles, permut, unroll_factors, scalar_replace, vectorize,
-                          profiling_code, compile_cmd, compile_opts)
+                          profiling_code, compile_cmd, compile_opts, rect_regtile)
 
 
