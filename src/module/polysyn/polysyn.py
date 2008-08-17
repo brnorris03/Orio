@@ -87,7 +87,8 @@ class PolySyn(module.module.Module):
                                                     tinfo.permut,
                                                     tinfo.unroll_factors,
                                                     tinfo.scalar_replace,
-                                                    tinfo.vectorize)
+                                                    tinfo.vectorize,
+                                                    tinfo.rect_regtile)
         transformed_code = strans.transform(pluto_code)
 
         # return the transformed code
