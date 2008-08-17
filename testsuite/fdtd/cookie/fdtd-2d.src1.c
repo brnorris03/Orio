@@ -40,6 +40,7 @@
     param PAR[] = [True];
     param SCREP[] = [False];
     param IVEC[] = [True];
+    param RECTILE[] = [False];
   }
   
   def search
@@ -79,6 +80,7 @@ register int newub_c1, newub_c2, newub_c3, newub_c4, newub_c5, newub_c6,
   tiles = [T1_1,T1_2,T1_3,T2_1,T2_2,T2_3];
   permut = PERM;
   unroll_factors = [U1,U2,U3]; 
+  rect_regtile = RECTILE;
   scalar_replace = SCREP; 
   vectorize = IVEC; 
  
