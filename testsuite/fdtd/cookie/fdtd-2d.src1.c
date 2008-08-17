@@ -1,7 +1,7 @@
 /*@ begin PerfTuning (
   def build
   {
-    arg build_command = 'icc -O3 openmp -lm';
+    arg build_command = 'icc -O3 -openmp -lm';
   }
 
   def performance_counter
@@ -11,27 +11,21 @@
   
   def performance_params
   {  
-#    param T1_1[] = [1,32,64,128,256,512];
-#    param T1_2[] = [1,32,64,128,256,512];
-#    param T1_3[] = [1,32,64,128,256,512];
-#    param T2_1[] = [1,4,8,16,32];
-#    param T2_2[] = [1,4,8,16,32];
-#    param T2_3[] = [1,4,8,16,32];
+#   [1,32,64,128,256,512];
+#   [1,4,8,16,32];
 
-    param T1_1[] = [32];
-    param T1_2[] = [64];
-    param T1_3[] = [8];
+    param T1_1[] = [8,16,64];
+    param T1_2[] = [16,32,64];
+    param T1_3[] = [16,32,64];
     param T2_1[] = [1];
     param T2_2[] = [1];
     param T2_3[] = [1];
 
-    param U1[] = [3];
+    param U1[] = [1];
     param U2[] = [1];
     param U3[] = [1];
 
-#    param U1[] = [1,2,4,8];
-#    param U2[] = [1,2,4,8];
-#    param U3[] = [1,2,4,8];
+    constraint c1 = (U1*U2*U3<=512);
 
     param PERM[] = [
 #      [0,1,2],
@@ -44,24 +38,25 @@
     ];
 
     param PAR[] = [True];
-    param SCREP[] = [True];
+    param SCREP[] = [False];
     param IVEC[] = [True];
   }
   
   def search
   {
-  arg algorithm = 'Exhaustive';
-# arg algorithm = 'Simplex';
-# arg algorithm = 'Random';
-# arg time_limit = 10;
-  arg total_runs = 1;
+   arg algorithm = 'Exhaustive';
+#   arg algorithm = 'Simplex';
+#   arg total_runs = 1;
+#   arg algorithm = 'Random';
+#   arg time_limit = 10;
   }
 
   def input_params
   {
+  let N=2000;
   param tmax[] = [500];
-  param nx[] = [2000];
-  param ny[] = [2000]; 
+  param nx[] = [N];
+  param ny[] = [N]; 
   }
 
   def input_vars
