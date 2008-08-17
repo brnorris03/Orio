@@ -1,31 +1,31 @@
 /*@ begin PerfTuning (
-  def build
-  {
+  def build {
     arg build_command = 'icc -O3 -openmp -lm';
   }
 
-  def performance_counter
-  {
+  def performance_counter {
     arg repetitions = 1;
   }  
   
-  def performance_params
-  {  
-#   [1,32,64,128,256,512];
-#   [1,4,8,16,32];
+  def performance_params {  
+#   [4,8,16,32,64,128];
+#   [1,4,8,16];
 
-    param T1_1[] = [8,16,64];
-    param T1_2[] = [16,32,64];
-    param T1_3[] = [16,32,64];
+    param T1_1[] = [16];
+    param T1_2[] = [32];
+    param T1_3[] = [32];
     param T2_1[] = [1];
     param T2_2[] = [1];
     param T2_3[] = [1];
 
-    param U1[] = [1];
-    param U2[] = [1];
-    param U3[] = [1];
+#    constraint c1 = (T1_1*T2_1<=1024 and T1_2*T2_2<=1024 and T1_3*T2_3<=1024);
+#    constraint c2 = (T1_1==T1_3 and T2_1==T2_3);
+    
+    param U1[] = [8];
+    param U2[] = [2];
+    param U3[] = [4];
 
-    constraint c1 = (U1*U2*U3<=512);
+    constraint c3 = (U1*U2*U3<=256);
 
     param PERM[] = [
 #      [0,1,2],
