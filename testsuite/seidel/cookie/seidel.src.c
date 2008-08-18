@@ -14,17 +14,17 @@
 # [1,8,16,32,64,128,256]; 
 # [1,4,8,16,32];
 
-    param T1_1[] = [32];
-    param T1_2[] = [32];
-    param T1_3[] = [32];
+    param T1_1[] = [16];
+    param T1_2[] = [8];
+    param T1_3[] = [512];
     param T2_1[] = [1];
     param T2_2[] = [1];
     param T2_3[] = [1];
  
     constraint c1 = (T1_1*T2_1<=1024 and T1_1*T2_1<=1024 and T1_1*T2_1<=1024);
 
-    param U1[] = [1];
-    param U2[] = [4];
+    param U1[] = [3];
+    param U2[] = [1];
     param U3[] = [4];
 
     constraint c2 = (U1*U2*U3<=256);
@@ -38,17 +38,17 @@
 #     [2,1,0],
     ];
 
-    param PAR[] = [True];
-    param SCREP[] = [False];
-    param IVEC[] = [False];
-    param RECTILE[] = [True,False];
+    param PAR[] = [False];
+    param SCREP[] = [True];
+    param IVEC[] = [True];
+    param RECTILE[] = [True];
   } 
  
   def search  
   {
     arg algorithm = 'Exhaustive';  
 #    arg algorithm = 'Simplex';  
-#    arg total_runs = 1; 
+#    arg total_runs = 5; 
   }
 
   def input_params  
