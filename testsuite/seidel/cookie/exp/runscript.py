@@ -99,9 +99,9 @@ def checkCorrectness(optflag = '-O0'):
     f.close()
     
     fnames = [
-        #'seidel.pluto.seq.c', 
-        #'seidel.pluto.par.c', 
-        #'seidel.orio.seq.c',
+        'seidel.pluto.seq.c', 
+        'seidel.pluto.par.c', 
+        'seidel.orio.seq.c',
         'seidel.orio.par.c',
         ]
     for fname in fnames:
@@ -151,15 +151,15 @@ if 1:
     mflopss_pluto = []
     mflopss_orio = []
 
-    #rtimes_base = runExp([1,2,3,4,5,6,7,8], 'icc %s -parallel' % OPTFLAG, 
-    #                     'seidel.base.c', 'base_par', flags, '-lm')
-    #mflopss_base = countFlops(T,N,rtimes_base)
+    rtimes_base = runExp([1,2,3,4,5,6,7,8], 'icc %s -parallel' % OPTFLAG, 
+                         'seidel.base.c', 'base_par', flags, '-lm')
+    mflopss_base = countFlops(T,N,rtimes_base)
     
-    #rtimes_pluto = runExp([1,2,3,4,5,6,7,8], 'icc %s -openmp' % OPTFLAG, 
-    #                      'seidel.pluto.par.c', 'pluto_par', flags, '-lm')
-    #mflopss_pluto = countFlops(T,N,rtimes_pluto)
+    rtimes_pluto = runExp([1,2,3,4,5,6,7,8], 'icc %s -openmp' % OPTFLAG, 
+                          'seidel.pluto.par.c', 'pluto_par', flags, '-lm')
+    mflopss_pluto = countFlops(T,N,rtimes_pluto)
     
-    rtimes_orio = runExp([2,4,6,8], 'icc %s -openmp' % OPTFLAG, 
+    rtimes_orio = runExp([1,2,3,4,5,6,7,8], 'icc %s -openmp' % OPTFLAG, 
                          'seidel.orio.par.c', 'orio_par', flags, '-lm')
     mflopss_orio = countFlops(T,N,rtimes_orio)
     
@@ -168,7 +168,7 @@ if 1:
     printFloats(mflopss_orio)
     
 # sequential case
-if 0:
+if 1:
     reps = 1
     T = 500
 
@@ -179,15 +179,15 @@ if 0:
     for N in [125,250,500,1000,2000,4000,8000]:
         flags = '-DREPS=%s -DT=%s -DN=%s' % (reps, T, N)
         
-        #rtimes_base = runExp([1], 'icc %s' % OPTFLAG, 
-        #                     'seidel.base.c', 'base_seq', flags, '-lm')
-        #p = countFlops(T,N,rtimes_base)
-        #mflopss_base.append(p[0])
+        rtimes_base = runExp([1], 'icc %s' % OPTFLAG, 
+                             'seidel.base.c', 'base_seq', flags, '-lm')
+        p = countFlops(T,N,rtimes_base)
+        mflopss_base.append(p[0])
         
-        #rtimes_pluto = runExp([1], 'icc %s' % OPTFLAG, 
-        #                      'seidel.pluto.seq.c', 'pluto_seq', flags, '-lm')
-        #p = countFlops(T,N,rtimes_pluto)
-        #mflopss_pluto.append(p[0])
+        rtimes_pluto = runExp([1], 'icc %s' % OPTFLAG, 
+                              'seidel.pluto.seq.c', 'pluto_seq', flags, '-lm')
+        p = countFlops(T,N,rtimes_pluto)
+        mflopss_pluto.append(p[0])
         
         rtimes_orio = runExp([1], 'icc %s -openmp' % OPTFLAG, 
                              'seidel.orio.seq.c', 'orio_seq', flags, '-lm')
