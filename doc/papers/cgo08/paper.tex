@@ -1,20 +1,53 @@
-\documentclass[11pt]{article}
+% CGO 09: http://www.cgo.org/
+% svn co https://svn.mcs.anl.gov/repos/performance/orio/doc/papers/cgo08
+% Max 22 pages, double-spaced, 11pt or larger font
+% Abstract: Sep. 12, 2008
+% Full paper: Sep. 19, 2008
 
+\documentclass[11pt]{article}
 
 \usepackage{url}
 \usepackage{html}
-\usepackage{setspace}
 \usepackage{graphicx}
 \usepackage{subfigure}
+\usepackage{amsmath}
 \usepackage{cite}
+\usepackage{times}
+\usepackage{fullpage}
+\usepackage{setspace}
 \usepackage[margin=1in]{geometry}
+
+
+\title{Generating Empirically Optimized Numerical Software from MATLAB Prototypes}
+
+
+\author{
+Elizabeth Jessup,$^1$ Boyana Norris,$^2$ Albert Hartono,$^3$ and Jeremy Siek$^4$\\
+\\
+\vspace{-.05in}
+{\small $^1$University of Colorado at Boulder Dept. of Computer Science, Boulder, CO~80302}\\
+\vspace{-.05in}
+{\small \url{jessup@cs.colorado.edu}}\\
+\vspace{-.05in}
+{\small $^2$Argonne National Laboratory Mathematics and Computer Science Division, Argonne, IL~60439}\\
+\vspace{-.05in}
+{\small \url{norris@mcs.anl.gov}}\\
+\vspace{-.05in}
+{\small $^3$Ohio State University Dept. of Computer Science and Engineering, Columbus, OH 43210}\\
+\vspace{-.05in}
+{\small \url{hartonoa@cse.ohio-state.edu}}\\
+\vspace{-.05in}
+{\small $^4$University of Colorado at Boulder Dept. of Electrical and Computer Engineering, Boulder, CO~80302}\\
+\vspace{-.05in}
+{\small \url{jeremy.siek@colorado.edu}}
+}
 
 \begin{document}
 
-\title{Generating Empirically Optimized Numerical Software from Matlab Prototypes}
+\maketitle
 
-\abstract{}
-
+\abstract{TODO}
+\doublespacing
 \section{Introduction}
 \label{sec:intro}
 
@@ -23,37 +56,32 @@
 
 The growing demand for higher levels of detail and accuracy in results means that the size and complexity of scientific computations is increasing at least as fast as the improvements in processor technology. Programming scientific applications is hard, and optimizing them for high performance is even harder.  The development of optimized codes requires extensive knowledge, not only of the costs of floating-point arithmetic but also of  memory access issues and of the compiler being used. Hardware platforms are continually evolving. In addition, experiments show that the complexity of this  hardware-software system means that performance is difficult to predict fully.  Therefore, computational scientists are often forced to choose between investing too much time in tuning code or  accepting performance that is lower (and sometimes significantly lower) than peak.
 
-Historically, the research community has pursued two separate paths toward the goal of making software run at near-peak levels.  The first of these builds on research into compilers and their associated technologies.  The holy grail of compilation research is to take an arbitrary code as input and produce optimal code as output for a given language and hardware platform.  Despite the immense effort that has been poured into this approach, its success has been limited both by practical constraints (users will not tolerate compile times that extend into several days) and by the amount of detailed information the compiler can obtain about the software to be compiled and the hardware on which it is to execute~\cite{Ken99,Wol89,Wol96}.
+Historically, the research community has pursued two separate paths toward the goal of making software run at near-peak levels.  The first of these builds on research into compilers and their associated technologies.  The holy grail of compilation research is to take an arbitrary code as input and produce optimal code as output for a given language and hardware platform.  Despite the immense effort that has been poured into that approach, its success has been limited both by practical constraints (users will not tolerate compile times that extend into several days) and by the amount of detailed information the compiler can obtain about the software to be compiled and the hardware on which it is to execute~\cite{Ken99,Wol89,Wol96}.    The second path has been to identify kernel routines that constitute the dominant costs of a wide variety of applications.  When such kernels can be identified and agreed upon by the members of the community, programmers with the required level of technical knowledge can concentrate on producing these optimized kernel libraries for architectures of interest. A prime example is the high-performance BLAS libraries produced by a combination of hardware vendors, independent software vendors, and researchers.  Developers who write their codes calling these routines can achieve high performance across all supported architectures. The efforts in high-performance library development aptly demonstrate, however, that the research into compiler technologies has not been fully successful.  If compilers could take the relatively simple code even for basic tasks such as a dense matrix-matrix product and produce optimal code, this second approach would be unnecessary.    Like compiler optimization, the kernel library-oriented approach has significant limitations.  Support for a variety of architectures is the most serious problem because the optimizations necessary to achieve near-peak performance are by nature not portable.   Lack of portability is particularly problematic because processor designs are constantly changing,  and constant updates are nearly impossible to maintain by hand.  It is a sad fact of the computing industry that by the time highly-optimized code is available for a given architecture, that architecture is generally well on its way to obsolescence.    
 
-The second path has been to identify kernel routines that constitute the dominant costs of a wide variety of applications.  When such kernels can be identified and agreed upon by the members of the community, programmers with the required level of technical knowledge can concentrate on producing these optimized kernel libraries for architectures of interest. A prime example is the high-performance BLAS libraries produced by a combination of hardware vendors, independent software vendors, and researchers.  Developers who write their codes calling these routines can achieve high performance across all supported architectures. The efforts in high-performance library development aptly demonstrate, however, that the research into compiler technologies has not been fully successful.  If compilers could take the relatively simple code for basic tasks such as a dense matrix-matrix product and produce optimal code, this second approach would be unnecessary.
-
-Like compiler optimization, the kernel library-oriented approach has significant limitations.  Support for a variety of architectures is the most serious problem because the optimizations necessary to achieve near-peak performance are by nature not portable.   This lack of portability is particularly problematic because processor designs are constantly changing,  and constant updates are nearly impossible to maintain by hand.  It is a sad fact of the computing industry that by the time highly-optimized code is available for a given architecture, that architecture is generally well on its way to obsolescence.
-
-%This doesn't match our paper but I leave it here anyway.
-We believe that addressing these barriers to performance optimization requires a paradigm shift from standard approaches, a shift that augments traditional techniques with an automated process that experimentally tests software on target architectures and modifies the code accordingly.
-
-
-To begin, we are using matrix algebra operations.
+In this paper, we describe the first steps toward a fully automated system for the optimization of the matrix algebra kernels that are a foundational part of many scientific applications.    [Ugly] Beginning with a MATLAB prototype, we first generate C or Fortran then run it through Pluto~\cite{} to optimize the sequence of loops and then Pluto~\cite{} to generate a collection of organizations of code and to identify the best choice.   Comment on manual parts of this.
 
 \section{Background}
 \label{sec:background}
 
-To date, efforts toward automatically tuned software have focused largely on linear algebra.  These systems all have the same structure.  A collection of implementations is generated and timed, and the best choice is then identified.  One such early effort that combined automated code generation and empirical timings for automatic tuning was the PHiPAC (Portable High Performance Ansi C) \cite{lawn111} project.  PHiPAC generates parameterized code that can be tuned to machine specifications.  Basic optimizations in the code include manual loop unrolling, explicit removal of unnecessary dependencies in code blocks, and use of machine sympathetic C constructs. Search scripts are provided that, for a given code generator, find the best set of parameters for a given architecture and compiler. A follow-on to PHiPAC, the Sparsity system \cite{SPARSITY}, allows users to build sparse matrix kernels that are tuned to their matrices and machines automatically. Sparsity combines traditional techniques such as loop transformations with data structure transformations and optimization heuristics that are specific to sparse  matrices. It is based on a framework for selecting optimization parameters, such as block sizes, using a combination of performance models and search.
 
-Should update to include OSKI.
 
-ATLAS produces dense linear algebra kernels that have portable high efficiency across a variety of platforms. Like PHiPAC, ATLAS employs a test and search strategy. The automatic output of ATLAS is highly efficient implementations of the BLAS and of a limited set of LAPACK routines. Even in this narrow incarnation, ATLAS produces valuable results, since these subprograms are the essential computational building blocks of many scientific computing codes and of many general-purpose libraries such as LAPACK or PETSc~\cite{BGC+98}.  Moreover, ATLAS-based BLAS are immediately and directly reusable in software designed and written for distributed-memory concurrent computers, since optimized kernels are also heavily used locally by each processor in many scientific computing applications.
+%Modified from recent DOE proposal
 
-Another project that lies outside of the domain of linear algebra, is FFTW (Fastest FFT in the West)~\cite{frigo98, frigo99} for tuning discrete fast Fourier transforms.  FFTW uses the Cooley-Tukey algorithm and relies on explicit recursion in order to improve locality.   It also follows the test-and-search procedure of the linear algebra systems. FFTW creates sequences of instructions for the evaluation of the FFT called {\em plans}. Using a dynamic programming algorithm, it then efficiently searches through the plans to identify an optimal one.
+The most common approach  to tuning numerical codes is for an expert to transform the source manually, unrolling loops, blocking for multiple levels of cache, and inserting prefetch instructions.  The pitfalls of this approach are well-understood~\cite{Goedecker01}.  It requires a significant amount of time and effort. Optimizing code for one particular platform may in fact make it less efficient on other platforms and often makes it complex and hard to understand or maintain.    An alternative is the use of tuned libraries of key numerical algorithms (e.g., BLAS~\cite{Dongarra:1990fk} and LAPACK~\cite{LAPACK} for dense linear algebra, SPARSPAK~\cite{sparspak} for sparse linear algebra, and BLITZ++~\cite{blitz} to support scientific computing in C++, or GPULib by Tech-X, an open source library for accelerating numerical computations on Graphics Processing Units~\cite{gpulib}, to name just a few). Such libraries are difficult to develop, and they generally cannot adapt to execution context: as we note in Section~\ref{sec:composed}, a series of calls to library routines can incur high memory costs.
+
+Specialized code generators circumvent the high costs of manual code generation . They include tools for basic dense linear algebra operations (ATLAS~\cite{WN147}, PhiPAC~\cite{bilmes97optimizing,phipacwww}), sparse linear algebra (OSKI~\cite{vuduc05}), FFTs~\cite{FFTW,Spiral}), stencil-based operations~\cite{kamil06}, and tensor computations (TCE~\cite{TCE}) among others.  It is often impossible to predict the performance of code precisely on modern computer architectures. Thus, many of these specialized code generators exploit search strategies to identify the best (or nearly best) code for a particular choice of problem parameters and machine. Such autotuning tools are not general but rather each is valuable in one specific problem domain. While not all applications can be written in terms of available libraries, the performance achieved with autotuning tools does convincingly demonstrate the advantage of source-to-source transformation over optimizing compilers.
+
+The best performance today is obtained through approaches like that taken by PERI~\cite{PERI}, which involves a labor intensive rewrite of portion of the code by a group of performance tools experts in collaboration with application scientists. Maintaining performance of the code as the application and hardware evolves means that the tuning process may need to be repeated. We propose to investigate ways to capture this performance tuning expertise in a way that can be integrated into the application. We will thus enable performance portability and ensure that the improvements to the application are long-lasting.
+
+% TODO: Paragraph about source-to-source transformation tools, including PLuTo, Orio
 
 \section{Composed Operations}
 \label{sec:composed}
 
-%These words swiped from the recent DOE proposal.  
+Codes based on matrix algebra are generally constructed as a sequence of calls to the Basic Linear Algebra Subprograms (BLAS)~\cite{Dongarra:1988uq,Lawson:1979kx,Dongarra:1990fk} and similar sparse matrix libraries~\cite{Saad:fr,George:1981uq}. Writing programs in this way promotes readability and maintainability but can be costly in terms of memory efficiency. Specifically, the retrieval of a large order matrix at each routine call can have a profound effect on performance even when highly tuned implementations of the BLAS (e.g ~\cite{Bilmes:1997ye,Whaley:1998fk,IntelMath:oq,ESSL:kl,Goto:2006fk}) are used.
 
-To begin, we will focus on the matrix algebra that is a foundational part of many scientific applications. Codes based on matrix algebra are typically constructed as a sequence of calls to the Basic Linear Algebra Subprograms (BLAS)~\cite{Dongarra:1988uq,Lawson:1979kx,Dongarra:1990fk} and similar sparse matrix libraries~\cite{Saad:fr,George:1981uq}. Writing programs in this way promotes readability and maintainability but can be costly in terms of memory efficiency. While highly tuned implementations of the BLAS are available~\cite{Bilmes:1997ye,Whaley:1998fk,IntelMath:oq,ESSL:kl,Goto:2006fk}, the retrieval of a large order matrix at each routine call can have a profound effect on performance. Indeed, the PIs and other researchers have observed that a sequence of BLAS calls can be substantially less efficient than a call to a single specialized routine that performs the same operations (i.e, a {\it composed} BLAS routine)~\cite{Ashby:uq,Blackford:2002vn,Stanley:CSD-98-992,baker03blgmres,baker03lgmres,Dennis:2005tg,Howell:2008,gropp01,Vuduc:2003kl}. There are several ways to construct composed BLAS. As an example, consider the pair of matrix-vector products
-$q  = Ap$, $s  = A^Tr$, where $A$ is a matrix and $p$, $q$, $r$, and $s$ are vectors, that comprise the computational
-bottleneck of the BiConjugate Gradient Method~\cite{Barrett:1994kx,Saad:2003fk}.  These two operations can be implemented as a pair of calls to the BLAS routine {\tt GEMV} or they can be rewritten as a single doubly nested loop encompassing both matrix-vector multiplies. In the former case, the matrix $A$ is accessed twice while, in the latter, is it accessed only a single time. Our preliminary results indicate that this loop fusion leads to a routine that delivers 90\% more megaflops than does a pair of calls to the highly optimized Goto BLAS~\cite{Goto:2006fk} {\tt GEMV} routines for large matrix orders.
+The PIs and other researchers have observed that it can be much more efficient to call a single specialized routine that performs multiple operations than to make successive calls to separate BLAS ~\cite{Ashby:uq,Blackford:2002vn,Stanley:CSD-98-992,baker03blgmres,baker03lgmres,Dennis:2005tg,Howell:2008,gropp01,Vuduc:2003kl}.  Single routines that carry out more than one linear algebra operation are known as {\t composed} BLAS. As an example, consider the pair of matrix-vector products $q  = Ap$, $s  = A^Tr$, where $A$ is a matrix and $p$, $q$, $r$, and $s$ are vectors, that comprise the computational
+bottlenecks of the BiConjugate Gradient Method~\cite{Barrett:1994kx,Saad:2003fk}  and of the GEMVER kernel examined in Section~\ref{sec:matlab}.   These two operations can be implemented as a pair of calls to the BLAS routine {\tt GEMV} or they can be rewritten as a composed BLAS consisting of the doubly nested loop encompassing both matrix-vector multiplies. In the former case, the matrix $A$ is accessed twice while, in the latter, is it accessed only once. Our preliminary results indicate that this loop fusion leads to a routine that delivers 90\% more megaflops than does a pair of calls to the highly optimized Goto BLAS~\cite{Goto:2006fk} {\tt GEMV} routines for large matrix orders.
 
 Composed routines are the focus of the work presented here, but much of what we discuss generalizes to a much broader array of computations.   Extending our approach will be the subject of future work.
 
@@ -67,38 +95,47 @@ Composed routines are the focus of the work presented here, but much of what we 
 \section{Our Approach}
 \label{sec:approach}
 
-To generate highly optimized code from a MATLAB prototype, we will follow a three-step approach.    To begin, we will use a compiler that converts a MATLAB script into simple C code.  
+To generate highly optimized code from a MATLAB prototype, we will follow a three-step approach, illustrated in Figure~\ref{fig:process}.    To begin, we have developed a compiler that converts a MATLAB script into simple C code.   We then use the source-to-source automatic parallelization tool  PLuTo\cite{Pluto} to optimize for coarse-grained parallelism and locality simultaneously. The result is an automatically generated OpenMP parallel code for multicores.   Finally, we employ the extensible annotation system Orio to generate many tuned versions of the same operation using different optimization parameters and perform an empirical search for selecting the best among the multiple optimized code variants.
 
-Matlab compiler -> Pluto ->  Orio
+Probably need some words about WHY this 3 pronged approach is a good idea.
 
-\subsection{A Matlab Compiler}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.7\textwidth]{figures/process.png}
+
+\caption{Overview of the code generation and tuning process.}
+\label{fig:process}
+\end{figure}
+
+\subsection{A {MATLAB} Compiler}
 \label{sec:matlab}
 
 Figure~\ref{fig:compiler} gives an overview of the compilation process. The MATLAB kernel specification is parsed into a high-level intermediate representation in the form of a dataflow graph.  This dataflow graph is then iteratively processed until all of the implementation choices have been made.  The compilation process consists of three phases: analysis, lowering, and optimization, which are together iterated until all of the implementation decisions have been made.  The graph is then translated into C code.
 
 \begin{figure}[htbp]
-  \centering
+\centering
+\includegraphics[width=.7\textwidth]{figures/compile.png}
 
-  \caption{Overview of the Matlab compiler.}
+\caption{Overview of the MATLAB compiler.}
 \label{fig:compiler}
 \end{figure}
-
 
 \subsubsection{The Dataflow Graph}
 
 An example dataflow graph for the GEMVER kernel, defined below, is given in figure~\ref{fig:gemver-dataflow}.
-\begin{eqnarray*}
+\begin{align*}
   A &\gets A + u_1 v_1^T + u_2 v_2^T \\[-0.5ex]
   x &\gets \beta A^T y + z \\[-0.5ex]
   w &\gets \alpha A x
-\end{eqnarray*}
+\end{align*}
 Each node represents a parameter of the kernel or an operation.  The arrows indicate the flow of data. At first the graph specifies what operations are to be performed but does not contain any implementation details. The symbol $\times$ in the depicted graph stands variously for outer product, matrix-vector multiplication, and scalar-vector multiplication, and it does not yet specify, for example, whether the outer products compute a row or a column at a time of the result matrix.
 
 \begin{figure}[htbp]
-  \centering
+\centering
+\includegraphics[width=.7\textwidth]{figures/gemver-dataflow.png}
  
 \caption{Dataflow graph for the GEMVER kernel.}
-  \label{fig:gemver-dataflow}
+\label{fig:gemver-dataflow}
 \end{figure}
 
 \subsubsection{Analyze the Dataflow Graph}
@@ -123,14 +160,12 @@ Figure~\ref{fig:refine-mv-dot} shows two steps of refinement for a matrix-vector
 The second pass of refinement introduces another subgraph to implement the inner products (the dot algorithm from figure~\ref{fig:algos}). The new subgraph iterates through each dense row, as indicated by the $j=1:n$ annotation. The sign $\Sigma$ indicates that the sum of all of the iterations is computed.
 
 
-\begin{figure*}[btp]
-  \centering
-
-  \caption{The refinement of a matrix-vector product to a set of inner products and the refinement of inner products to scalar multiplications and additions.}
-  \label{fig:refine-mv-dot}
-\end{figure*}
-
-
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.9\textwidth]{figures/refine-mv-dot.png}
+\caption{The refinement of a matrix-vector product to a set of inner products and the refinement of inner products to scalar multiplications and additions.}
+\label{fig:refine-mv-dot}
+\end{figure}
 
 
 \subsubsection{Optimize the Dataflow Graph}
@@ -143,8 +178,7 @@ The choice of which optimizations to apply to various parts of the graph depends
 \label{sec:search}
 
 This will need updating depending on how we decide to address this topic. -Jeremy 8/6/08 10:19 AM 
-The set of all possible combinations of implementation and optimization choices is called the search space~\cite{Kisuki:2000uq,Triantafyllis:2003uq, Cooper:2005kx}.  Although the dataflow graphs are quite small in our setting (usually less than 100 nodes), it is still important to prune the search space to avoid an exponential compilation time. Our prototype already performs some pruning: the optimization rewrite rules only apply under certain circumstances.  However, as mentioned above we are sometimes overly aggressive in applying optimizations. To solve this problem we plan to use a combination of analytic methods and empirical
-methods~\cite{Chen:2007vn}.
+The set of all possible combinations of implementation and optimization choices is called the search space~\cite{Kisuki:2000uq,Triantafyllis:2003uq, Cooper:2005kx}.  Although the dataflow graphs are quite small in our setting (usually less than 100 nodes), it is still important to prune the search space to avoid an exponential compilation time. Our prototype already performs some pruning: the optimization rewrite rules only apply under certain circumstances.  However, as mentioned above we are sometimes overly aggressive in applying optimizations. To solve this problem we plan to use a combination of analytic methods and empirical methods~\cite{Chen:2007vn}.
 %Yotov:2005kx
 We plan to use a fast analytic cost function to prune out regions of the search space that will not produce competitive implementations. The cost function is based on a model of the computer architecture, but does not necessarily account for all the details.  Once the search space is narrowed, we will use empirical testing with representative data sets to determine the exact performance of the alternatives and choose the best one.
 
@@ -158,31 +192,68 @@ A graph that cannot be further refined has been reduced to a collection of subgr
 
 \subsection{PLuTo}
 \label{sec:plutonorio}
-% http://www.cse.ohio-state.edu/~bondhugu/pluto/
+% http://www.cse.ohio-state.edu/~bondhugu//
 
-PLuTo~\cite{uday07tr70,uday08cc} is a source-to-source transformation tool for optimizing sequences of (possibly nested) loops.
+PLuTo~\cite{Pluto,uday08cc} is a source-to-source transformation tool for optimizing sequences of (possibly nested) loops.
 
 \subsection{Orio}
 \label{sec:orio}
 
 Orio~\cite{Norris:2007} is an empirical tuning tool that takes as input annotated C code and generates multiple tuned versions of the annotated code. Orio does not parse the application code; rather, it relies on annotations expressed as structured comments, which contain a simplified expression of the computation, as well as directives on what transformations to apply.
 
-% TODO (Boyana): redo this figure
-
-\subsection{Putting it All Together}
-\label{sec:combining}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.7\textwidth]{figures/orio.png}
+\caption{Overview of the Orio empirical tuning process.}
+\label{fig:orio}
+\end{figure}
 
 \section{Experimental Results}
 \label{sec:experiments}
 
-\section{Multicore?}
-\label{sec:multicore}
 
-\section{Conclusions}
+\subsection{VADD}
 
-\bibliography{paper}
+\subsection{WAXPBY $v = Ax + By$}
+perhaps add another term
+
+\subsection{GEMVER}
+
+
+%for (i=0; i<=A_nrows-1; i++)
+%  for (j=0; j<=A_ncols-1; j++)
+%    B[i][j] = A[i][j] + u1[i]*v1[j] + u2[i]*v2[j];
+%
+%for (i=0; i<=A_ncols-1; i++)
+%  for (j=0; j<=A_nrows-1; j++)
+%    x[i] = x[i] + b * B[j][i]*y[j];
+%
+%
+%for (i=0; i<=A_ncols-1; i++)
+%  x[i] = x[i] + z[i];
+%
+%for (i=0; i<=A_nrows-1; i++)
+%  for (j=0; j<=A_ncols-1; j++)
+%    w[i] = w[i] + a * B[i][j]*x[j];
+
+Experiments on Intel Xeon and BGP.
+
+
+
+% Placeholder for the new results, the loops tuned for the figure above were almost identical to the ones generated by the MATLAB compiler
+
+\subsection{GESUMMV $y = a * (A * x) + b * (B * x)$}
+
+\subsection{Bicgkernel}
+
+
+\section{Conclusions and Future Work}
+
+fully automate the process to get rid of the manual steps along the way
+
+extend beyond composed BLAS
+\singlespacing
+\section*{References}
 \bibliographystyle{siam}
-
-
+\bibliography{paper}
 \end{document}
-
