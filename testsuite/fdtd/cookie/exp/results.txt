@@ -34,6 +34,7 @@ Large problem size:
  IVEC = True
  PAR = False
  PERM = [0, 2, 1]
+ RECTILE = False
  SCREP = False
  T1_1 = 64
  T1_2 = 64
@@ -60,6 +61,7 @@ Large problem size:
  IVEC = True
  PAR = True
  PERM = [0, 2, 1]
+ RECTILE = False
  SCREP = False
  T1_1 = 16
  T1_2 = 32
