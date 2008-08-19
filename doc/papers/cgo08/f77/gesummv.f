@@ -24,13 +24,11 @@ c   Put beta*B*x into y.
 c
       zero = 0.0d0
       call dgemv( 'n', n, n, beta, b, lda, x, incx, zero, y, incy )
-      print*,'first y',(y(j),j=1,n)
 c
 c   Put y = beta*B*x + alpha*A*x into y.
 c
       one = 1.0d0
       call dgemv( 'n', n, n, alpha, a, lda, x, incx, one, y, incy )
-      print*,'second y',(y(j),j=1,n)
 c
       return
       end
