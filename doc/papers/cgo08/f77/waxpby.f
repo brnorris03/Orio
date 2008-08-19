@@ -1,7 +1,7 @@
-      subroutine waxpby(n, w, alpha, x, beta, y)
+      subroutine waxpby(n, w, alpha, x, beta, y, yy)
       integer n, incx, incy
       double precision alpha
-      double precision yy(n)
+      double precision yy(*)
       double precision w(*), x(*), y(*)
 c
 c   WAXPBY

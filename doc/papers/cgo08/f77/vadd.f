@@ -1,7 +1,7 @@
-      subroutine vadd(n, x, w, y, z) 
+      subroutine vadd(n, x, w, y, z, yy) 
       integer n, incx, incy
       double precision one
-      double precision yy(n) 
+      double precision yy(*) 
       double precision w(*), x(*), y(*), z(*)
 c
 c   vadd
