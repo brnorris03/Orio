@@ -11,25 +11,25 @@
 #   [4,8,16,32,64,128];
 #   [1,4,8,16];
 
-    param T1_1[] = [16];
+    param T1_1[] = [32];
     param T1_2[] = [32];
     param T1_3[] = [32];
-    param T2_1[] = [1];
-    param T2_2[] = [1];
-    param T2_3[] = [1];
+    param T2_1[] = [8];
+    param T2_2[] = [8];
+    param T2_3[] = [8];
 
 #    constraint c1 = (T1_1*T2_1<=1024 and T1_2*T2_2<=1024 and T1_3*T2_3<=1024);
 #    constraint c2 = (T1_1==T1_3 and T2_1==T2_3);
     
-    param U1[] = [8];
-    param U2[] = [2];
-    param U3[] = [4];
+    param U1[] = [1];
+    param U2[] = [1];
+    param U3[] = [1];
 
     constraint c3 = (U1*U2*U3<=256);
 
     param PERM[] = [
-#      [0,1,2],
-      [0,2,1],
+      [0,1,2],
+#      [0,2,1],
 #      [1,0,2],
 #      [1,2,0],
 #      [2,0,1],
@@ -37,9 +37,9 @@
 
     ];
 
-    param PAR[] = [True];
+    param PAR[] = [False];
     param SCREP[] = [False];
-    param IVEC[] = [True];
+    param IVEC[] = [False];
     param RECTILE[] = [False];
   }
   
