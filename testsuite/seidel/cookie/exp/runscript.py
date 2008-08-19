@@ -107,7 +107,7 @@ def checkCorrectness(optflag = '-O0'):
         'seidel.orio.par.c',
         ]
     for fname in fnames:
-        compile_cmd = (('gcc %s -fopenmp -DREPS=1 -DT=%s -DN=%s -DTEST -o opt_test %s -lm') % 
+        compile_cmd = (('icc %s -openmp -DREPS=1 -DT=%s -DN=%s -DTEST -o opt_test %s -lm') % 
                        (optflag, T, N, fname))
         run_cmd = 'export OMP_NUM_THREADS=1; ./opt_test'
         print '***********************'
