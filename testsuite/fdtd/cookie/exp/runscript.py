@@ -82,7 +82,7 @@ def myDiff(fname1, fname2):
     return (total_diffs==0, diffs, total_diffs, total_nums)
 
 def checkCorrectness(optflag = '-O0'):
-    T=100
+    T=10
     N=500
     compile_cmd = 'gcc -O0 -DREPS=1 -DT=%s -DN=%s -DTEST -o base_test fdtd-2d.base.c -lm' % (T,N)
     run_cmd = 'export OMP_NUM_THREADS=1; ./base_test'
@@ -108,7 +108,7 @@ def checkCorrectness(optflag = '-O0'):
         'fdtd-2d.orio.par.c',
         ]
     for fname in fnames:
-        compile_cmd = (('gcc %s -fopenmp -DREPS=1 -DT=%s -DN=%s -DTEST -o opt_test %s -lm') % 
+        compile_cmd = (('icc %s -openmp -DREPS=1 -DT=%s -DN=%s -DTEST -o opt_test %s -lm') % 
                        (optflag, T, N, fname))
         run_cmd = 'export OMP_NUM_THREADS=1; ./opt_test'
         print '***********************'
