@@ -99,35 +99,37 @@ class Transformator:
         '''To apply loop unroll/jamming'''
         
         if isinstance(stmt, module.loop.ast.ExpStmt):
-            return (stmt, False)
+            return (stmt, [])
 
         elif isinstance(stmt, module.loop.ast.CompStmt):
             tstmts = []
-            body_unrolled = False
+            unrolled_loop_infos = []
             for s in stmt.stmts:
-                t,b = self.__unrollJam(s, tinfos)
+                t,l = self.__unrollJam(s, tinfos)
                 tstmts.append(t)
-                body_unrolled = body_unrolled or b
+                unrolled_loop_infos.extend(l)
             stmt.stmts = tstmts
-            return (stmt, body_unrolled)
+            return (stmt, unrolled_loop_infos)
             
         elif isinstance(stmt, module.loop.ast.IfStmt):
-            t,body_unrolled = self.__unrollJam(stmt.true_stmt, tinfos)
+            unrolled_loop_infos = []
+            t,l = self.__unrollJam(stmt.true_stmt, tinfos)
             stmt.true_stmt = t
+            unrolled_loop_infos.extend(l)
             if stmt.false_stmt:
-                t,b = self.__unrollJam(stmt.false_stmt, tinfos)
+                t,l = self.__unrollJam(stmt.false_stmt, tinfos)
                 stmt.false_stmt = t
-                body_unrolled = body_unrolled or b
-            return (stmt, body_unrolled)
-                
+                unrolled_loop_infos.extend(l)
+            return (stmt, unrolled_loop_infos)
+
         elif isinstance(stmt, module.loop.ast.ForStmt):
+            t,l = self.__unrollJam(stmt.stmt, tinfos)
+            stmt.stmt = t
+            unrolled_loop_infos = l[:]
 
-            # recursively transform the loop body
-            stmt.stmt, body_unrolled = self.__unrollJam(stmt.stmt, tinfos)
-
-            # apply unroll/jamming
             for_loop_info = self.flib.extractForLoopInfo(stmt)
             index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
+            
             ufactor = -1
             for lid, uf in tinfos:
                 if lid == index_id.name:
@@ -135,13 +137,17 @@ class Transformator:
                     break
 
             if ufactor > 1:
-                do_jamming = not body_unrolled
+                do_jamming = True
+                for lbexp, ubexp, stexp in unrolled_loop_infos:
+                    do_jamming = (do_jamming and 
+                                  (not self.clib.containIdentName(lbexp, index_id.name)) and
+                                  (not self.clib.containIdentName(ubexp, index_id.name)) and
+                                  (not self.clib.containIdentName(stexp, index_id.name)))
                 parallelize = False
                 stmt = self.ujam_smod.unrollAndJam(ufactor, do_jamming, stmt, parallelize)
-                body_unrolled = True
+                unrolled_loop_infos.append((lbound_exp, ubound_exp, stride_exp))
 
-            # return this loop statement
-            return (stmt, body_unrolled)
+            return (stmt, unrolled_loop_infos)
 
         elif isinstance(stmt, module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
