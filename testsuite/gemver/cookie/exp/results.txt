@@ -1,0 +1,39 @@
+
+--------------- 
+ GEMVER
+--------------- 
+
+Notes:
+ - 'base' is the original C code produced by MatLab C compiler, with few additional modifications:
+   * to not have pointer arithmetics
+   * to use double (instead of float)
+
+ - 'pluto' is the basic Pluto-generated code (with no tiling, no unrolling, no parallezation, 
+   no vectorization). We used Pluto to exploit its loop fusion.
+
+ - 'orio' is the final optimized code, produced from tuning the 'pluto' code using Orio.
+
+****************
+
+Number of ops = (10*N*N+N)
+
+****************
+ Sequential
+ N=2000,4000,6000,8000,10000
+****************
+
+ base=[1020.147, 1010.075, 1003.826, 1013.852, 1008.986]
+ pluto=[1364.837, 1342.172, 1840.957, 1840.854, 1833.589]
+ orio=[1364.092, 1343.980, 1840.230, 1840.913, 1835.088]
+
+****************
+ Parallel
+ N=10000
+ 1,2,3,4,5,6,7,8 cores
+****************
+
+ base=[1011.150, 1010.132, 1010.549, 1010.425, 1010.272, 1009.713, 1009.637, 1009.015]
+ pluto=[1292.031, 1292.626, 1292.417, 1293.301, 1292.617, 1292.495, 1292.711, 1292.702]
+ orio=[1832.974, 1916.885, 2206.807, 2383.098, 2298.942, 2340.228, 2336.041, 2391.127]
+
+
