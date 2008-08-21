@@ -100,7 +100,7 @@ def checkCorrectness(optflag, arrtype):
     fnames = [
         'gemver.matlab.c', 
         'gemver.orio.seq.c', 
-        #'gemver.orio.par.c', 
+        'gemver.orio.par.c', 
         ]
     for fname in fnames:
         compile_cmd = (('icc %s %s -openmp -DDYNAMIC -DREPS=1 -DN=%s -DTEST %s -lm') % 
@@ -135,16 +135,16 @@ def checkCorrectness(optflag, arrtype):
 
 # correctness checking
 OPTFLAG = '-O3'
-if 0:
+if 1:
     checkCorrectness('-O0', '-DDYNAMIC')
     checkCorrectness(OPTFLAG, '-DDYNAMIC')
     checkCorrectness('-O0', '')
     checkCorrectness(OPTFLAG, '')
 
 # parallel case
-if 0:
+if 1:
     reps = 1
-    N = 12000
+    N = 10000
     flags = '-DREPS=%s -DN=%s' % (reps, N)
 
     rtimes_matlab_static =[]
@@ -166,7 +166,6 @@ if 0:
                     'gemver.matlab.c', flags, '-lm')
     rtimes_matlab_dynamic = rtimes
     mflopss_matlab_dynamic = countFlops(N,rtimes)
-
 
     rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -openmp' % OPTFLAG, 
                     'gemver.orio.par.c', flags, '-lm')
@@ -216,8 +215,8 @@ if 1:
     mflopss_orio_static = []
     mflopss_orio_dynamic = []
 
-    #for N in [2000,4000,6000,8000,10000]:
-    for N in [12000,14000,16000,18000,20000]:
+    for N in [2000,4000,6000,8000,10000]:
+    #for N in [12000,14000,16000,18000,20000]:
 
         if N < 5000:
             reps = 200
@@ -230,20 +229,20 @@ if 1:
 
         flags = '-DREPS=%s -DN=%s' % (reps, N)
         
-        #rtimes = runExp([1], 'icc %s' % OPTFLAG, 'gemver.matlab.c', flags, '-lm')
-        #p = countFlops(N,rtimes)
-        #rtimes_matlab_static.append(rtimes[0])
-        #mflopss_matlab_static.append(p[0])
+        rtimes = runExp([1], 'icc %s' % OPTFLAG, 'gemver.matlab.c', flags, '-lm')
+        p = countFlops(N,rtimes)
+        rtimes_matlab_static.append(rtimes[0])
+        mflopss_matlab_static.append(p[0])
         
         rtimes = runExp([1], 'icc %s -DDYNAMIC' % OPTFLAG, 'gemver.matlab.c', flags, '-lm')
         p = countFlops(N,rtimes)
         rtimes_matlab_dynamic.append(rtimes[0])
         mflopss_matlab_dynamic.append(p[0])
         
-        #rtimes = runExp([1], 'icc %s' % OPTFLAG, 'gemver.orio.seq.c', flags, '-lm')
-        #p = countFlops(N,rtimes)
-        #rtimes_orio_static.append(rtimes[0])
-        #mflopss_orio_static.append(p[0])
+        rtimes = runExp([1], 'icc %s' % OPTFLAG, 'gemver.orio.seq.c', flags, '-lm')
+        p = countFlops(N,rtimes)
+        rtimes_orio_static.append(rtimes[0])
+        mflopss_orio_static.append(p[0])
         
         rtimes = runExp([1], 'icc %s -DDYNAMIC' % OPTFLAG, 'gemver.orio.seq.c', flags, '-lm')
         p = countFlops(N,rtimes)

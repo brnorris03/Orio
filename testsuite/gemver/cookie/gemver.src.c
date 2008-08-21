@@ -15,16 +15,16 @@
   param U2i[] = [1];
   param U2j[] = [1];
   param U3[]  = [1];
-  param U4i[] = [5];
+  param U4i[] = [1];
   param U4j[] = [1];
 
   param PAR1[] = [False];
   param PAR2[] = [False];
   param PAR3[] = [False];
-  param PAR4[] = [False];
+  param PAR4[] = [True];
 
   param SCR1[] = [False];
-  param SCR2[] = [False];
+  param SCR2[] = [True];
 
   param VEC1[] = [False];
   param VEC2[] = [False];
