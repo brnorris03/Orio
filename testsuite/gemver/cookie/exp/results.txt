@@ -3,7 +3,27 @@
  GEMVER
 --------------- 
 
+Notes:
+
 Number of operations = (10*N*N+N)
+
+Compiler used: icc 10.1
+Optimization flags used: -O3 (-parallel for parallel matlab code) (-openmp for parallel orio code)
+
+We compare two types of codes:
+ 1. matlab
+ 2. orio
+
+1. 'matlab' code is the original code produced by the matlab c compiler.
+
+2. 'orio' is obtained first from the Pluto-generated code (use loop fusion, NO loop tiling, 
+   NO unrolling, NO parallelization, NO vectorization), then was decorated with 
+   performance annotations before being tuned by Orio.
+
+Each code has two versions: one with static arrays, and another with dynamic arrays.
+Conversion from/to static arrays to/from dynamic arrays was done manually (can be done
+automatically later when time permits).
+
 
 -------------------------------------
 SEQUENTIAL
@@ -50,8 +70,44 @@ Performance parameters found:
  for 1,2,3,4,5,6,7,8 cores
 -------------------------------------
 
+--- Parallel: seconds (static arrays) ---
+matlab= [0.772, 0.772, 0.772, 0.772, 0.772, 0.772, 0.776, 0.772]
+orio= [0.545, 0.522, 0.454, 0.419, 0.433, 0.433, 0.427, 0.420]
+
+--- Parallel: Mflops/sec (static arrays) ---
+matlab= [1294.620, 1295.252, 1295.006, 1295.732, 1296.117, 1295.996, 1288.314, 1295.326]
+orio= [1833.454, 1917.293, 2205.031, 2384.752, 2307.488, 2310.677, 2341.724, 2381.532]
+
+--- Parallel: seconds (dynamic arrays) ---
+matlab= [0.975, 0.978, 0.976, 0.977, 0.975, 0.977, 0.975, 0.977]
+orio= [1.009, 0.895, 0.916, 0.882, 0.897, 0.899, 0.890, 0.880]
+
+--- Parallel: Mflops/sec (dynamic arrays) ---
+matlab= [1025.130, 1022.529, 1025.121, 1023.583, 1025.236, 1023.345, 1025.773, 1023.605]
+orio= [991.570, 1117.056, 1091.301, 1134.027, 1115.114, 1112.393, 1123.635, 1136.897]
 
 
+-------------------------------------
+ PARALLEL
+ for N=20000
+ for 1,2,3,4,5,6,7,8 cores
+-------------------------------------
+
+--- Parallel: seconds (static arrays) ---
+matlab= []
+orio= []
+
+--- Parallel: Mflops/sec (static arrays) ---
+matlab= []
+orio= []
+
+--- Parallel: seconds (dynamic arrays) ---
+matlab= [3.881, 3.880, 3.882, 3.880, 3.881, 3.882, 3.881, 3.881]
+orio= [4.013, 3.882, 3.613, 3.471, 3.525, 3.511, 3.484, 3.470]
+
+--- Parallel: Mflops/sec (dynamic arrays) ---
+matlab= [1030.654, 1030.828, 1030.416, 1031.018, 1030.761, 1030.392, 1030.770, 1030.642]
+orio= [996.695, 1030.501, 1106.972, 1152.497, 1134.685, 1139.147, 1148.265, 1152.846]
 
 Performance parameters found:
  PAR1 = False
