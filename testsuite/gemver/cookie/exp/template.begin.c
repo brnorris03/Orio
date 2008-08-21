@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -9,45 +8,7 @@
 #define max(x,y)    ((x) > (y)? (x) : (y))
 #define min(x,y)    ((x) < (y)? (x) : (y))
 
-double a;
-double b;
-int nx;
-int ny;
-double A[Nx][Ny];
-double B[Nx][Ny];
-double u1[Nx];
-double u2[Nx];
-double v1[Ny];
-double v2[Ny];
-double y[Nx];
-double z[Ny];
-double w[Nx];
-double x[Ny];
-
-void init_arrays()
-{
-  int i, j;
-  a = 1.5;
-  b = 2.5;
-  nx = Nx;
-  ny = Ny;
-  for (i=0; i<=Nx-1; i++) {
-    u1[i]=(i+1)/Nx/2.0;
-    u2[i]=(i+1)/Nx/4.0;
-    y[i]=(i+1)/Nx/6.0;
-    w[i]=(i+1)/Nx/8.0;
-    for (j=0; j<=Ny-1; j++) {
-      A[i][j]=(i*j)/Ny;
-      B[i][j]=0;
-    }
-  }
-  for (j=0; j<=Ny-1; j++) {
-    v1[j]=(j+1)/Ny/2.0;
-    v2[j]=(j+1)/Ny/4.0;
-    z[j]=(j+1)/Ny/6.0;
-    x[j]=(j+1)/Ny/8.0;
-  }
-}
+#include "decl.h"
 
 double rtclock()
 {
@@ -60,13 +21,13 @@ double rtclock()
 
 int main()
 {
-  init_arrays();
+  init_input_vars();
 
   double annot_t_start=0, annot_t_end=0, annot_t_total=0;
   int annot_i;
 
   for (annot_i=0; annot_i<REPS; annot_i++)
-  {
-    annot_t_start = rtclock();
+    {
+      annot_t_start = rtclock();
 
 
