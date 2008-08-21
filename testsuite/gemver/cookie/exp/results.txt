@@ -3,37 +3,71 @@
  GEMVER
 --------------- 
 
-Notes:
- - 'base' is the original C code produced by MatLab C compiler, with few additional modifications:
-   * to not have pointer arithmetics
-   * to use double (instead of float)
+Number of operations = (10*N*N+N)
 
- - 'pluto' is the basic Pluto-generated code (with no tiling, no unrolling, no parallezation, 
-   no vectorization). We used Pluto to exploit its loop fusion.
+-------------------------------------
+SEQUENTIAL
+for N=2000,4000,6000,8000,10000,12000,14000,16000,18000,20000
+-------------------------------------
 
- - 'orio' is the final optimized code, produced from tuning the 'pluto' code using Orio.
+--- Sequential: seconds (static arrays) ---
+matlab= [0.037, 0.153, 0.344, 0.609, 0.773]
+orio= [0.029, 0.116, 0.188, 0.335, 0.525]
 
-****************
+--- Sequential: Mflops/sec (static arrays) ---
+matlab= [1073.706, 1044.890, 1047.662, 1050.813, 1294.216]
+orio= [1392.439, 1380.857, 1916.689, 1909.360, 1904.951]
 
-Number of ops = (10*N*N+N)
+--- Sequential: seconds (dynamic arrays) ---
+matlab= [0.038, 0.156, 0.352, 0.626, 0.975, 1.406, 1.908, 2.494, 3.144, 3.877]
+orio= [0.035, 0.139, 0.312, 0.553, 0.865, 1.247, 1.693, 2.223, 2.792, 3.486]
 
-****************
- Sequential
- N=2000,4000,6000,8000,10000
-****************
+--- Sequential: Mflops/sec (dynamic arrays) ---
+matlab= [1045.695, 1022.723, 1023.981, 1022.656, 1025.479, 1024.503, 1027.179, 1026.363, 1030.613, 1031.714]
+orio= [1143.764, 1153.539, 1154.720, 1158.373, 1155.533, 1154.466, 1157.596, 1151.646, 1160.579, 1147.544]
 
- base=[1020.147, 1010.075, 1003.826, 1013.852, 1008.986]
- pluto=[1364.837, 1342.172, 1840.957, 1840.854, 1833.589]
- orio=[1364.092, 1343.980, 1840.230, 1840.913, 1835.088]
+Performance parameters found:
+ PAR1 = False
+ PAR2 = False
+ PAR3 = False
+ PAR4 = False
+ SCR1 = False
+ SCR2 = False
+ U1 = 1
+ U2i = 1
+ U2j = 1
+ U3 = 1
+ U4i = 5
+ U4j = 1
+ VEC1 = False
+ VEC2 = False
+ VEC3 = False
 
-****************
- Parallel
- N=10000
- 1,2,3,4,5,6,7,8 cores
-****************
 
- base=[1011.150, 1010.132, 1010.549, 1010.425, 1010.272, 1009.713, 1009.637, 1009.015]
- pluto=[1292.031, 1292.626, 1292.417, 1293.301, 1292.617, 1292.495, 1292.711, 1292.702]
- orio=[1832.974, 1916.885, 2206.807, 2383.098, 2298.942, 2340.228, 2336.041, 2391.127]
+-------------------------------------
+ PARALLEL
+ for N=10000
+ for 1,2,3,4,5,6,7,8 cores
+-------------------------------------
+
+
+
+
+Performance parameters found:
+ PAR1 = False
+ PAR2 = False
+ PAR3 = False
+ PAR4 = True
+ SCR1 = False
+ SCR2 = True
+ U1 = 1
+ U2i = 1
+ U2j = 1
+ U3 = 1
+ U4i = 1
+ U4j = 1
+ VEC1 = False
+ VEC2 = False
+ VEC3 = False
 
 
