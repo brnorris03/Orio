@@ -1,8 +1,0 @@
-/*@ begin Loop(
-transform Unroll(ufactor=4)
-  for (c4=0;c4<=n-1;c4++) 
-{
-    S1(c2,c4) ;
-    S3(c2,c4) ;
-}
-) @*/
