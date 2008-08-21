@@ -11,8 +11,8 @@ def printFloats(ls):
     s+=']'
     print s
 
-def runExp(nthreadss, cc, src_file, out_file, flags, libs):
-    compile_cmd = '%s %s -o %s %s %s' % (cc, flags, out_file, src_file, libs)
+def runExp(nthreadss, cc, src_file, flags, libs):
+    compile_cmd = '%s %s %s %s %s' % (cc, flags, src_file, libs)
     print '*************************************'
     print compile_cmd
     print '*************************************'
@@ -20,7 +20,7 @@ def runExp(nthreadss, cc, src_file, out_file, flags, libs):
 
     rtimes = []
     for nt in nthreadss:
-        run_cmd = 'export OMP_NUM_THREADS=%s; ./%s' % (nt, out_file)
+        run_cmd = 'export OMP_NUM_THREADS=%s; ./a.out' % (nt)
         print '*************************************'
         print run_cmd
         print '*************************************'
@@ -81,11 +81,10 @@ def myDiff(fname1, fname2):
                     diffs.sort()
     return (total_diffs==0, diffs, total_diffs, total_nums)
 
-def checkCorrectness(optflag = '-O0'):
+def checkCorrectness(optflag, arrtype):
     N=5000
-    compile_cmd = ('gcc -O0 -DREPS=1 -DNx=%s -DNy=%s -DTEST -o base_test gemver.base.c -lm' %
-                   (N, N))
-    run_cmd = 'export OMP_NUM_THREADS=1; ./base_test'
+    compile_cmd = (('gcc -DDYNAMIC -O0 -DREPS=1 -DN=%s -DTEST gemver.matlab.c -lm') % N)
+    run_cmd = 'export OMP_NUM_THREADS=1; ./a.out'
     print '***********************'
     print compile_cmd
     print run_cmd
@@ -99,14 +98,14 @@ def checkCorrectness(optflag = '-O0'):
     f.close()
     
     fnames = [
-        'gemver.pluto.c', 
+        'gemver.matlab.c', 
         'gemver.orio.seq.c', 
-        'gemver.orio.par.c', 
+        #'gemver.orio.par.c', 
         ]
     for fname in fnames:
-        compile_cmd = (('icc %s -openmp -DREPS=1 -DNx=%s -DNy=%s -DTEST -o opt_test %s -lm') % 
-                       (optflag, N, N, fname))
-        run_cmd = 'export OMP_NUM_THREADS=1; ./opt_test'
+        compile_cmd = (('icc %s %s -openmp -DDYNAMIC -DREPS=1 -DN=%s -DTEST %s -lm') % 
+                       (arrtype, optflag, N, fname))
+        run_cmd = 'export OMP_NUM_THREADS=1; ./a.out'
         print '***********************'
         print compile_cmd
         print run_cmd
@@ -136,68 +135,140 @@ def checkCorrectness(optflag = '-O0'):
 
 # correctness checking
 OPTFLAG = '-O3'
-checkCorrectness()
-checkCorrectness(OPTFLAG)
-
+checkCorrectness('-O0', '-DDYNAMIC')
+checkCorrectness(OPTFLAG, '-DDYNAMIC')
+checkCorrectness('-O0', '')
+checkCorrectness(OPTFLAG, '')
+sys.exit(1)
 # parallel case
-if 1:
-    reps = 10
-    N = 10000
-    flags = '-DREPS=%s -DNx=%s -DNy=%s' % (reps, N, N)
+if 0:
+    reps = 1
+    N = 12000
+    flags = '-DREPS=%s -DN=%s' % (reps, N)
 
-    mflopss_base = []
-    mflopss_pluto = []
-    mflopss_orio_par = []
+    rtimes_matlab_static =[]
+    rtimes_matlab_dynamic =[]
+    rtimes_orio_static =[]
+    rtimes_orio_dynamic =[]
 
-    #rtimes_base = runExp([1,2,3,4,5,6,7,8], 'icc %s -parallel' % OPTFLAG, 
-    #                     'gemver.base.c', 'base_par', flags, '-lm')
-    #mflopss_base = countFlops(N,rtimes_base)
-    
-    rtimes_pluto = runExp([1,2,3,4,5,6,7,8], 'icc %s -parallel' % OPTFLAG, 
-                          'gemver.pluto.c', 'pluto_par', flags, '-lm')
-    mflopss_pluto = countFlops(N,rtimes_pluto)
-    
-    rtimes_orio_par = runExp([1,2,3,4,5,6,7,8], 'icc %s -openmp' % OPTFLAG, 
-                             'gemver.orio.par.c', 'pluto_par', flags, '-lm')
-    mflopss_orio_par = countFlops(N,rtimes_orio_par)
+    mflopss_matlab_static = []
+    mflopss_matlab_dynamic = []
+    mflopss_orio_static = []
+    mflopss_orio_dynamic = []
 
-    printFloats(mflopss_base)
-    printFloats(mflopss_pluto)
-    printFloats(mflopss_orio_par)
+    rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -parallel' % OPTFLAG, 
+                    'gemver.matlab.c', flags, '-lm')
+    rtimes_matlab_static = rtimes
+    mflopss_matlab_static = countFlops(N,rtimes)
+
+    rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -parallel' % OPTFLAG, 
+                    'gemver.matlab.c', flags, '-lm')
+    rtimes_matlab_dynamic = rtimes
+    mflopss_matlab_dynamic = countFlops(N,rtimes)
+
+
+    rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -openmp' % OPTFLAG, 
+                    'gemver.orio.par.c', flags, '-lm')
+    rtimes_orio_static = rtimes
+    mflopss_orio_static = countFlops(N,rtimes)
+
+    rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -openmp' % OPTFLAG, 
+                    'gemver.orio.par.c', flags, '-lm')
+    rtimes_orio_dynamic = rtimes
+    mflopss_orio_dynamic = countFlops(N,rtimes)
+
+    print '--- Parallel: seconds (static arrays) ---'
+    print 'matlab=',
+    printFloats(rtimes_matlab_static)
+    print 'orio=',
+    printFloats(rtimes_orio_static)
+
+    print '--- Parallel: Mflops/sec (static arrays) ---'
+    print 'matlab=',
+    printFloats(mflopss_matlab_static)
+    print 'orio=',
+    printFloats(mflopss_orio_static)
+
+    print '--- Parallel: seconds (dynamic arrays) ---'
+    print 'matlab=',
+    printFloats(rtimes_matlab_dynamic)
+    print 'orio=',
+    printFloats(rtimes_orio_dynamic)
+
+    print '--- Parallel: Mflops/sec (dynamic arrays) ---'
+    print 'matlab=',
+    printFloats(mflopss_matlab_dynamic)
+    print 'orio=',
+    printFloats(mflopss_orio_dynamic)
 
     
 # sequential case
 if 1:
 
-    mflopss_base = []
-    mflopss_pluto = []
-    mflopss_orio_seq = []
+    rtimes_matlab_static =[]
+    rtimes_matlab_dynamic =[]
+    rtimes_orio_static =[]
+    rtimes_orio_dynamic =[]
+
+    mflopss_matlab_static = []
+    mflopss_matlab_dynamic = []
+    mflopss_orio_static = []
+    mflopss_orio_dynamic = []
 
     for N in [2000,4000,6000,8000,10000]:
+
         if N < 5000:
             reps = 200
         elif N < 8000:
             reps = 100
+        elif N < 11000:
+            reps = 5
         else:
-            reps = 10
+            reps = 2
 
-        flags = '-DREPS=%s -DNx=%s -DNy=%s' % (reps, N, N)
+        flags = '-DREPS=%s -DN=%s' % (reps, N)
         
-        #rtimes_base = runExp([1], 'icc %s' % OPTFLAG, 
-        #                     'gemver.base.c', 'base_seq', flags, '-lm')
-        #p = countFlops(N,rtimes_base)
-        #mflopss_base.append(p[0])
+        rtimes = runExp([1], 'icc %s' % OPTFLAG, 'gemver.matlab.c', flags, '-lm')
+        p = countFlops(N,rtimes)
+        rtimes_matlab_static.append(rtimes[0])
+        mflopss_matlab_static.append(p[0])
         
-        rtimes_pluto = runExp([1], 'icc %s' % OPTFLAG,
-                              'gemver.pluto.c', 'base_seq', flags, '-lm')
-        p = countFlops(N,rtimes_pluto)
-        mflopss_pluto.append(p[0])
+        rtimes = runExp([1], 'icc %s -DDYNAMIC' % OPTFLAG, 'gemver.matlab.c', flags, '-lm')
+        p = countFlops(N,rtimes)
+        rtimes_matlab_dynamic.append(rtimes[0])
+        mflopss_matlab_dynamic.append(p[0])
+        
+        rtimes = runExp([1], 'icc %s' % OPTFLAG, 'gemver.orio.seq.c', flags, '-lm')
+        p = countFlops(N,rtimes)
+        rtimes_orio_static.append(rtimes[0])
+        mflopss_orio_static.append(p[0])
+        
+        rtimes = runExp([1], 'icc %s -DDYNAMIC' % OPTFLAG, 'gemver.orio.seq.c', flags, '-lm')
+        p = countFlops(N,rtimes)
+        rtimes_orio_dynamic.append(rtimes[0])
+        mflopss_orio_dynamic.append(p[0])
 
-        rtimes_orio_seq = runExp([1], 'icc %s' % OPTFLAG, 
-                                 'gemver.orio.seq.c', 'base_seq', flags, '-lm')
-        p = countFlops(N,rtimes_orio_seq)
-        mflopss_orio_seq.append(p[0])
-        
-    printFloats(mflopss_base)
-    printFloats(mflopss_pluto)
-    printFloats(mflopss_orio_seq)
+    print '--- Sequential: seconds (static arrays) ---'
+    print 'matlab=',
+    printFloats(rtimes_matlab_static)
+    print 'orio=',
+    printFloats(rtimes_orio_static)
+
+    print '--- Sequential: Mflops/sec (static arrays) ---'
+    print 'matlab=',
+    printFloats(mflopss_matlab_static)
+    print 'orio=',
+    printFloats(mflopss_orio_static)
+
+    print '--- Sequential: seconds (dynamic arrays) ---'
+    print 'matlab=',
+    printFloats(rtimes_matlab_dynamic)
+    print 'orio=',
+    printFloats(rtimes_orio_dynamic)
+
+    print '--- Sequential: Mflops/sec (dynamic arrays) ---'
+    print 'matlab=',
+    printFloats(mflopss_matlab_dynamic)
+    print 'orio=',
+    printFloats(mflopss_orio_dynamic)
+

@@ -1,11 +1,9 @@
 
+	
+	annot_t_end = rtclock();
+	annot_t_total += annot_t_end - annot_t_start;
+    }
 
-
-
-    annot_t_end = rtclock();
-    annot_t_total += annot_t_end - annot_t_start;
-  }
-  
   annot_t_total = annot_t_total / REPS;
 
 #ifndef TEST
@@ -13,16 +11,14 @@
 #else
   {
     int i, j;
-    for (i=0; i<nx; i++) {
+    for (i=0; i<n; i++) {
       if (i%100==0)
 	printf("\n");
       printf("%f ",w[i]);
     }
-    printf("\n");
   }
 #endif
 
-  return ((int) w[0]); 
-}
-                                
+  return ((int) w[0]);
 
+}
