@@ -27,15 +27,16 @@ spec unrolljam_mm_mul {
    param NVAL[] = [100,200];
    param OVAL[] = [100,200];
    constraint rectangular_shape = (MVAL == NVAL == OVAL);
-   decl in int M = MVAL;
-   decl in int N = NVAL;
-   decl in int O = OVAL;
-   decl out static double X[MVAL][NVAL] = 0;
-   decl in static double A[MVAL][OVAL] = random;
-   decl in static double B[OVAL][NVAL] = random;
-   #decl out dynamic double X[MVAL*NVAL] = 0;
-   #decl in dynamic double A[MVAL*OVAL] = random;
-   #decl in dynamic double B[OVAL*NVAL] = random;
+ }
+
+ def input_vars
+ {
+   decl int M = MVAL;
+   decl int N = NVAL;
+   decl int O = OVAL;
+   decl dynamic double X[MVAL][NVAL] = 0;
+   decl dynamic double A[MVAL][OVAL] = random;
+   decl dynamic double B[OVAL][NVAL] = random;
  }
 
  def search
