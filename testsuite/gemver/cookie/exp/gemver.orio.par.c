@@ -50,7 +50,7 @@ int main()
 	}
 	{
 	  register int ub=n-1;
-#pragma omp parallel for
+#pragma omp parallel for private(i,j)
 	  for (i=0; i<=ub; i=i+1) {
 	    double tmp1=w[i];
 	    double* tB=B+i*n;
@@ -78,7 +78,7 @@ int main()
 	  x[i]=b*x[i]+z[i];
 	}
 	{
-#pragma omp parallel for
+#pragma omp parallel for private(i,j)
 	  for (i=0; i<=n-1; i=i+1) {
 	    double scv_1;
 	    scv_1=w[i];
