@@ -40,13 +40,13 @@ orio= [1114.803, 1104.990, 1533.757, 1527.513, 1523.878]
 
 --- Sequential: seconds (dynamic arrays) ---
 matlab= [0.038, 0.157, 0.352, 0.626, 0.976, 1.406, 1.909, 2.494, 3.143, 3.886]
-orio= [0.035, 0.139, 0.312, 0.553, 0.866, 1.247, 1.693, 2.229, 2.792, 3.489]
+orio= [0.029, 0.118, 0.263, 0.480, 0.759, 1.075, 1.447, 1.899, 2.338, 2.978]
 
 --- Sequential: Mflops/sec (dynamic arrays) ---
 matlab= [838.073, 817.926, 818.896, 817.900, 819.845, 819.175, 821.502, 821.127, 824.599, 823.582]
-orio= [917.524, 922.802, 923.209, 926.541, 924.248, 924.016, 926.004, 918.886, 928.434, 917.214]
+orio= [1088.491, 1082.865, 1095.725, 1066.961, 1053.804, 1071.657, 1083.582, 1078.675, 1108.477, 1074.713]
 
-Performance parameters found:
+Performance parameters found (for static arrays -- gemver.src1.c):
  PAR1 = False
  PAR2 = False
  PAR3 = False
@@ -63,6 +63,22 @@ Performance parameters found:
  VEC2 = False
  VEC3 = False
 
+Performance parameters found (for dynamic arrays -- gemver.src2.c):
+ PAR1 = False
+ PAR2 = False
+ PAR3 = False
+ PAR4 = False
+ SCR1 = True
+ SCR2 = True
+ U1 = 1
+ U2i = 4
+ U2j = 1
+ U3 = 1
+ U4i = 4
+ U4j = 4
+ VEC1 = False
+ VEC2 = False
+ VEC3 = True
 
 -------------------------------------
  PARALLEL
@@ -80,11 +96,11 @@ orio= [1465.289, 1532.895, 1765.404, 1895.550, 1883.354, 1890.560, 1890.537, 190
 
 --- Parallel: seconds (dynamic arrays) ---
 matlab= [0.976, 0.976, 0.976, 0.976, 0.976, 0.976, 0.975, 0.976]
-orio= [0.856, 0.834, 0.761, 0.729, 0.742, 0.734, 0.731, 0.726]
+orio= [0.754, 0.738, 0.666, 0.649, 0.664, 0.664, 0.647, 0.668]
 
 --- Parallel: Mflops/sec (dynamic arrays) ---
 matlab= [819.729, 819.907, 819.794, 819.539, 819.485, 819.345, 820.314, 819.386]
-orio= [934.871, 959.770, 1050.862, 1097.606, 1078.164, 1090.411, 1093.968, 1102.293]
+orio= [1061.487, 1083.504, 1200.468, 1232.144, 1204.732, 1203.998, 1235.884, 1196.836]
 
 
 -------------------------------------
@@ -103,13 +119,14 @@ orio= []
 
 --- Parallel: seconds (dynamic arrays) ---
 matlab= [3.871, 3.871, 3.873, 3.871, 3.872, 3.870, 3.873, 3.871]
-orio= [3.451, 3.355, 3.078, 2.946, 2.996, 2.945, 2.948, 2.936]
+orio= [3.010, 2.953, 2.677, 2.547, 2.603, 2.594, 2.581, 2.566]
 
 --- Parallel: Mflops/sec (dynamic arrays) ---
 matlab= [826.666, 826.754, 826.235, 826.637, 826.421, 826.964, 826.222, 826.758]
-orio= [927.373, 953.714, 1039.529, 1086.359, 1067.987, 1086.727, 1085.484, 1089.996]
+orio= [1063.289, 1083.558, 1195.381, 1256.253, 1229.229, 1233.427, 1239.693, 1247.277]
 
-Performance parameters found:
+
+Performance parameters found (for static arrays -- gemver.src1.c):
  PAR1 = False
  PAR2 = False
  PAR3 = False
@@ -126,4 +143,19 @@ Performance parameters found:
  VEC2 = False
  VEC3 = False
 
-
+Performance parameters found (for dynamic arrays -- gemver.src2.c):
+ PAR1 = False
+ PAR2 = False
+ PAR3 = True
+ PAR4 = True
+ SCR1 = True
+ SCR2 = True
+ U1 = 1
+ U2i = 1
+ U2j = 3
+ U3 = 1
+ U4i = 6
+ U4j = 4
+ VEC1 = False
+ VEC2 = False
+ VEC3 = True
