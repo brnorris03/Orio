@@ -145,6 +145,7 @@ if 1:
 if 1:
     reps = 1
     N = 10000
+    #N = 20000
     flags = '-DREPS=%s -DN=%s' % (reps, N)
 
     rtimes_matlab_static =[]
