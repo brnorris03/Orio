@@ -24,7 +24,7 @@ double q[NX];
 void init_input_vars() {
   int i, j;
 #ifdef DYNAMIC
-  A = (double*) malloc((NX*NY)*sizeof(double*));
+  A = (double*) malloc((NX*NY)*sizeof(double));
   r = (double*) malloc((NX)*sizeof(double));
   s = (double*) malloc((NY)*sizeof(double));
   p = (double*) malloc((NY)*sizeof(double));

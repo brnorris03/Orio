@@ -20,7 +20,7 @@ double y[NY];
 void init_input_vars() {
   int i, j;
 #ifdef DYNAMIC
-  A = (double*) malloc((NX*NY)*sizeof(double*));
+  A = (double*) malloc((NX*NY)*sizeof(double));
   x = (double*) malloc((NY)*sizeof(double));
   y = (double*) malloc((NY)*sizeof(double));
 #endif
