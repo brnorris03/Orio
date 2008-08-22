@@ -11,11 +11,11 @@
   
   def performance_params 
   {
-  param U1[] = [3];
-  param U2[] = [1];
+  param U1[] = [1];
+  param U2[] = [8];
 
-  param PAR[] = [False];
-  param SCR[] = [True];
+  param PAR[] = [True];
+  param SCR[] = [False];
   param VEC[] = [True];
   }
 			 
