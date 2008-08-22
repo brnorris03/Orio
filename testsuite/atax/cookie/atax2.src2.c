@@ -1,7 +1,7 @@
 /*@ begin PerfTuning (  
   def build
   {
-  arg build_command = 'icc -O3 -openmp -lm'; 
+  arg build_command = 'icc -O3 -openmp -lm -DDYNAMIC'; 
   }
   
   def performance_counter  
@@ -11,8 +11,8 @@
   
   def performance_params 
   {
-  param U1[]   = [5];
-  param U2i[]  = [24];
+  param U1[]   = [4];
+  param U2i[]  = [37];
   param U2ja[] = [1];
   param U2jb[] = [1];
 
@@ -20,7 +20,7 @@
   param PAR2[] = [True];
   param SCR[]  = [True];
   param VEC1[] = [True];
-  param VEC2[] = [False];
+  param VEC2[] = [True];
   }
 			 
   def search 
@@ -67,10 +67,10 @@ double* tmp=(double*) malloc(nx*sizeof(double));
     tmp[i] = 0;
     transform UnrollJam(ufactor=U2ja)
     for (j = 0; j<=ny-1; j++) 
-      tmp[i] = tmp[i] + A[i][j]*x[j];
+      tmp[i] = tmp[i] + A[i*ny+j]*x[j];
     transform UnrollJam(ufactor=U2jb)
     for (j = 0; j<=ny-1; j++) 
-      y[j] = y[j] + A[i][j]*tmp[i];
+      y[j] = y[j] + A[i*ny+j]*tmp[i];
   }
 ) @*/
 /*@ end @*/

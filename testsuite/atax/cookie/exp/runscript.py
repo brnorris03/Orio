@@ -83,7 +83,7 @@ def myDiff(fname1, fname2):
 
 def checkCorrectness(optflag, arrtype):
     N=5000
-    compile_cmd = (('gcc -DDYNAMIC -O0 -DREPS=1 -DN=%s -DTEST bicgkernel.matlab.c -lm') % N)
+    compile_cmd = (('gcc -DDYNAMIC -O0 -DREPS=1 -DN=%s -DTEST atax.matlab.c -lm') % N)
     run_cmd = 'export OMP_NUM_THREADS=1; ./a.out'
     print '***********************'
     print compile_cmd
@@ -98,9 +98,9 @@ def checkCorrectness(optflag, arrtype):
     f.close()
     
     fnames = [
-        'bicgkernel.matlab.c', 
-        'bicgkernel.orio.seq.c', 
-        'bicgkernel.orio.par.c', 
+        'atax.matlab.c', 
+        'atax.orio.seq.c', 
+        'atax.orio.par.c', 
         ]
     for fname in fnames:
         compile_cmd = (('icc %s %s -openmp -DREPS=1 -DN=%s -DTEST %s -lm') % 
@@ -135,7 +135,7 @@ def checkCorrectness(optflag, arrtype):
 
 # correctness checking
 OPTFLAG = '-O3'
-if 1:
+if 0:
     checkCorrectness('-O0', '-DDYNAMIC')
     checkCorrectness(OPTFLAG, '-DDYNAMIC')
     checkCorrectness('-O0', '')
@@ -145,7 +145,7 @@ if 1:
 if 1:
     reps = 1
     N = 10000
-    #N = 20000
+    N = 20000
     flags = '-DREPS=%s -DN=%s' % (reps, N)
 
     rtimes_matlab_static =[]
@@ -160,23 +160,23 @@ if 1:
 
     if N <= 10000:
         rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -parallel' % OPTFLAG, 
-                        'bicgkernel.matlab.c', flags, '-lm')
+                        'atax.matlab.c', flags, '-lm')
         rtimes_matlab_static = rtimes
         mflopss_matlab_static = countFlops(N,rtimes)
         
     rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -parallel' % OPTFLAG, 
-                    'bicgkernel.matlab.c', flags, '-lm')
+                    'atax.matlab.c', flags, '-lm')
     rtimes_matlab_dynamic = rtimes
     mflopss_matlab_dynamic = countFlops(N,rtimes)
 
     if N <= 10000:
         rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -openmp' % OPTFLAG, 
-                        'bicgkernel.orio.par.c', flags, '-lm')
+                        'atax.orio.par.c', flags, '-lm')
         rtimes_orio_static = rtimes
         mflopss_orio_static = countFlops(N,rtimes)
         
     rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -openmp' % OPTFLAG, 
-                    'bicgkernel.orio.par.c', flags, '-lm')
+                    'atax.orio.par.c', flags, '-lm')
     rtimes_orio_dynamic = rtimes
     mflopss_orio_dynamic = countFlops(N,rtimes)
 
@@ -206,7 +206,7 @@ if 1:
 
     
 # sequential case
-if 1:
+if 0:
 
     rtimes_matlab_static =[]
     rtimes_matlab_dynamic =[]
@@ -233,23 +233,23 @@ if 1:
         flags = '-DREPS=%s -DN=%s' % (reps, N)
         
         if N <= 10000:
-            rtimes = runExp([1], 'icc %s' % OPTFLAG, 'bicgkernel.matlab.c', flags, '-lm')
+            rtimes = runExp([1], 'icc %s' % OPTFLAG, 'atax.matlab.c', flags, '-lm')
             p = countFlops(N,rtimes)
             rtimes_matlab_static.append(rtimes[0])
             mflopss_matlab_static.append(p[0])
         
-        rtimes = runExp([1], 'icc %s -DDYNAMIC' % OPTFLAG, 'bicgkernel.matlab.c', flags, '-lm')
+        rtimes = runExp([1], 'icc %s -DDYNAMIC' % OPTFLAG, 'atax.matlab.c', flags, '-lm')
         p = countFlops(N,rtimes)
         rtimes_matlab_dynamic.append(rtimes[0])
         mflopss_matlab_dynamic.append(p[0])
         
         if N <= 10000:
-            rtimes = runExp([1], 'icc %s' % OPTFLAG, 'bicgkernel.orio.seq.c', flags, '-lm')
+            rtimes = runExp([1], 'icc %s' % OPTFLAG, 'atax.orio.seq.c', flags, '-lm')
             p = countFlops(N,rtimes)
             rtimes_orio_static.append(rtimes[0])
             mflopss_orio_static.append(p[0])
         
-        rtimes = runExp([1], 'icc %s -DDYNAMIC' % OPTFLAG, 'bicgkernel.orio.seq.c', flags, '-lm')
+        rtimes = runExp([1], 'icc %s -DDYNAMIC' % OPTFLAG, 'atax.orio.seq.c', flags, '-lm')
         p = countFlops(N,rtimes)
         rtimes_orio_dynamic.append(rtimes[0])
         mflopss_orio_dynamic.append(p[0])
