@@ -3,25 +3,7 @@
  ATAX
 --------------- 
 
-Notes:
-
 Number of operations = 4*N*N
-
-Compiler used: icc 10.1
-Optimization flags used: -O3 (-parallel for parallel matlab code) (-openmp for parallel orio code)
-
-We compare two types of codes:
- 1. matlab
- 2. orio
-
-1. 'matlab' code is the original code produced by the matlab c compiler.
-
-2. 'orio' is obtained first from the Pluto-generated code (use loop fusion, NO loop tiling, 
-   NO unrolling, NO parallelization, NO vectorization), then was decorated with 
-   performance annotations before being tuned by Orio.
-
-Each code has two versions: one with static arrays, and another with dynamic arrays.
-Conversion from/to static arrays to/from dynamic arrays was done manually.
 
 -------------------------------------
 SEQUENTIAL
