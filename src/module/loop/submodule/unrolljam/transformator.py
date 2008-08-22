@@ -216,7 +216,12 @@ class Transformator:
             orig_loop = self.flib.createForLoop(index_id, lbound_exp, ubound_exp,
                                                 stride_exp, loop_body)
             if self.parallelize:
-                omp_pragma = module.loop.ast.Pragma('omp parallel for')
+                inames = self.flib.getLoopIndexNames(orig_loop)
+                inames_str = ','.join(inames)
+                if inames:
+                    omp_pragma = module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
+                else:
+                    omp_pragma = module.loop.ast.Pragma('omp parallel for')
                 return module.loop.ast.CompStmt([omp_pragma, orig_loop])
             else:
                 return orig_loop
@@ -289,7 +294,12 @@ class Transformator:
         
         # generate the transformed statement
         if self.parallelize:
-            omp_pragma = module.loop.ast.Pragma('omp parallel for')
+            inames = self.flib.getLoopIndexNames(main_loop)
+            inames_str = ','.join(inames)
+            if inames:
+                omp_pragma = module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
+            else:
+                omp_pragma = module.loop.ast.Pragma('omp parallel for')     
             stmts = [omp_pragma, main_loop, cleanup_loop]
         else:
             stmts = [main_loop, cleanup_loop]
