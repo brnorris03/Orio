@@ -33,8 +33,8 @@ double x[N];
 void init_input_vars() {
   int i, j;
 #ifdef DYNAMIC
-  A = (double*) malloc((N*N)*sizeof(double*));
-  B = (double*) malloc((N*N)*sizeof(double*));
+  A = (double*) malloc((N*N)*sizeof(double));
+  B = (double*) malloc((N*N)*sizeof(double));
   u1 = (double*) malloc((N)*sizeof(double));
   u2 = (double*) malloc((N)*sizeof(double));
   v1 = (double*) malloc((N)*sizeof(double));
