@@ -32,7 +32,11 @@ class Transformator:
         prags = [module.loop.ast.Pragma(p) for p in self.pragmas]
 
         # create the transformed statement
-        transformed_stmt = module.loop.ast.CompStmt(prags + [self.stmt])
+        if isinstance(self.stmt, module.loop.ast.CompStmt):
+            stmts = self.stmt.stmts
+        else:
+            stmts = [self.stmt]
+        transformed_stmt = module.loop.ast.CompStmt(prags + stmts)
 
         # return the transformed statement
         return transformed_stmt
