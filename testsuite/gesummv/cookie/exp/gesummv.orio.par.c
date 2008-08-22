@@ -33,7 +33,7 @@ int main()
 #ifdef DYNAMIC
       {
 	int i,j;
-#pragma omp parallel for
+#pragma omp parallel for private(i,j)
 	for (i=0; i<=n-1; i=i+1) {
 	  double tmp=0;
 	  y[i]=0;
@@ -77,7 +77,7 @@ int main()
 #else
       {
 	int i,j;
-#pragma omp parallel for
+#pragma omp parallel for private(i,j)
 	for (i=0; i<=n-1; i=i+1) {
 	  double tmp=0;
 	  y[i]=0;

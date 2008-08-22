@@ -5,7 +5,7 @@
 
 Notes:
 
-Number of operations = ????
+Number of operations = (4*N*N+3*N)
 
 Compiler used: icc 10.1
 Optimization flags used: -O3 (-parallel for parallel matlab code) (-openmp for parallel orio code)
@@ -30,6 +30,22 @@ SEQUENTIAL
 for N=2000,4000,6000,8000,10000,12000,14000,16000,18000,20000
 -------------------------------------
 
+--- Sequential: seconds (static arrays) ---
+matlab= [0.017, 0.069, 0.155, 0.277, 0.444]
+orio= [0.017, 0.068, 0.152, 0.274, 0.425]
+
+--- Sequential: Mflops/sec (static arrays) ---
+matlab= [918.091, 926.314, 929.580, 924.294, 900.200]
+orio= [943.583, 937.575, 947.930, 933.873, 940.221]
+
+--- Sequential: seconds (dynamic arrays) ---
+matlab= [0.019, 0.076, 0.170, 0.302, 0.472, 0.681, 0.926, 1.209, 1.530, 1.888]
+orio= [0.018, 0.072, 0.160, 0.289, 0.446, 0.649, 0.867, 1.171, 1.431, 1.827]
+
+--- Sequential: Mflops/sec (dynamic arrays) ---
+matlab= [844.287, 845.769, 846.224, 846.419, 846.879, 846.396, 847.153, 847.277, 847.314, 847.360]
+orio= [899.668, 892.427, 901.504, 884.482, 896.189, 887.382, 904.012, 874.238, 905.473, 875.723]
+
 
 Performance parameters found:
  PAR = False
@@ -45,6 +61,21 @@ Performance parameters found:
  for 1,2,3,4,5,6,7,8 cores
 -------------------------------------
 
+--- Parallel: seconds (static arrays) ---
+matlab= [0.445, 0.444, 0.444, 0.443, 0.445, 0.444, 0.444, 0.444]
+orio= [0.459, 0.416, 0.279, 0.212, 0.218, 0.212, 0.212, 0.209]
+
+--- Parallel: Mflops/sec (static arrays) ---
+matlab= [898.594, 900.249, 900.695, 902.157, 898.744, 900.160, 901.868, 901.852]
+orio= [871.175, 960, 1436.946, 1890.278, 1834.024, 1889.323, 1885.049, 1915.403]
+
+--- Parallel: seconds (dynamic arrays) ---
+matlab= [0.473, 0.473, 0.473, 0.472, 0.473, 0.472, 0.479, 0.472]
+orio= [0.490, 0.422, 0.284, 0.218, 0.222, 0.218, 0.218, 0.211]
+
+--- Parallel: Mflops/sec (dynamic arrays) ---
+matlab= [846.268, 846.551, 846.553, 847.422, 846.551, 847.446, 834.601, 847.225]
+orio= [816.496, 947.802, 1408.546, 1832.050, 1799.497, 1835.906, 1835.136, 1897.370]
 
 
 -------------------------------------
@@ -53,6 +84,21 @@ Performance parameters found:
  for 1,2,3,4,5,6,7,8 cores
 -------------------------------------
 
+--- Parallel: seconds (static arrays) ---
+matlab= []
+orio= []
+
+--- Parallel: Mflops/sec (static arrays) ---
+matlab= []
+orio= []
+
+--- Parallel: seconds (dynamic arrays) ---
+matlab= [1.894, 1.892, 1.889, 1.890, 1.890, 1.888, 1.888, 1.888]
+orio= [1.958, 1.692, 1.067, 0.857, 0.908, 0.866, 0.852, 0.834]
+
+--- Parallel: Mflops/sec (dynamic arrays) ---
+matlab= [844.474, 845.161, 846.876, 846.312, 846.631, 847.696, 847.696, 847.467]
+orio= [817.386, 948.805, 1498.699, 1867.179, 1765.811, 1848.558, 1878.118, 1917.065]
 
 
 Performance parameters found:
