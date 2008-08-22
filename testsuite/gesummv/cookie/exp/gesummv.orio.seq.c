@@ -32,63 +32,91 @@ int main()
 
 
 #ifdef DYNAMIC
-      {
-	int i,j;
-	for (i=0; i<=n-3; i=i+3) {
-	  double scv_2, scv_3, scv_4, scv_5, scv_6, scv_7;
-	  scv_3=0;
-	  scv_2=0;
-	  scv_7=0;
-	  scv_5=0;
-	  scv_6=0;
-	  scv_4=0;
-	  double* tA0=A+i*n;
-	  double* tA1=A+(i+1)*n;
-	  double* tA2=A+(i+2)*n;
-	  double* tB0=B+i*n;
-	  double* tB1=B+(i+1)*n;
-	  double* tB2=B+(i+2)*n;
-	  register int cbv_1;
-	  cbv_1=n-1;
-#pragma ivdep
-#pragma vector always
-	  for (j=0; j<=cbv_1; j=j+1) {
-	    double scv_1;
-	    scv_1=x[j];
-	    scv_3=tA0[j]*scv_1+scv_3;
-	    scv_2=tA1[j]*scv_1+scv_2;
-	    scv_7=tA2[j]*scv_1+scv_7;
-	    scv_5=tB0[j]*scv_1+scv_5;
-	    scv_6=tB1[j]*scv_1+scv_6;
-	    scv_4=tB2[j]*scv_1+scv_4;
-	  }
-	  scv_5=a*scv_3+b*scv_5;
-	  scv_6=a*scv_2+b*scv_6;
-	  scv_4=a*scv_7+b*scv_4;
-	  y[i]=scv_5;
-	  y[(i+1)]=scv_6;
-	  y[(i+2)]=scv_4;
-	}
-	for (; i<=n-1; i=i+1) {
-	  double scv_9, scv_10;
-	  scv_10=0;
-	  scv_9=0;
-	  double* tA0=A+i*n;
-	  double* tB0=B+i*n;	  
-	  register int cbv_2;
-	  cbv_2=n-1;
-#pragma ivdep
-#pragma vector always
-	  for (j=0; j<=cbv_2; j=j+1) {
-	    double scv_8;
-	    scv_8=x[j];
-	    scv_10=tA0[j]*scv_8+scv_10;
-	    scv_9=tB0[j]*scv_8+scv_9;
-	    }
-	  scv_9=a*scv_10+b*scv_9;
-	  y[i]=scv_9;
-	}
-      }
+
+
+{
+int i,j;
+  
+{
+  for (i=0; i<=n-7; i=i+7) {
+    double scv_2, scv_3, scv_4, scv_5, scv_6, scv_7, scv_8, scv_9;
+    double scv_10, scv_11, scv_12, scv_13, scv_14, scv_15;
+    scv_2=y[(i+1)];
+    scv_6=y[(i+3)];
+    scv_7=y[(i+2)];
+    scv_8=y[i];
+    scv_13=y[(i+4)];
+    scv_14=y[(i+6)];
+    scv_15=y[(i+5)];
+    scv_4=0;
+    scv_9=0;
+    scv_11=0;
+    scv_3=0;
+    scv_12=0;
+    scv_10=0;
+    scv_5=0;
+    scv_8=0;
+    scv_2=0;
+    scv_7=0;
+    scv_6=0;
+    scv_13=0;
+    scv_15=0;
+    scv_14=0;
+    for (j=0; j<=n-1; j=j+1) {
+      double scv_1;
+      scv_1=x[j];
+      scv_4=A[i*n+j]*scv_1+scv_4;
+      scv_9=A[(i+1)*n+j]*scv_1+scv_9;
+      scv_11=A[(i+2)*n+j]*scv_1+scv_11;
+      scv_3=A[(i+3)*n+j]*scv_1+scv_3;
+      scv_12=A[(i+4)*n+j]*scv_1+scv_12;
+      scv_10=A[(i+5)*n+j]*scv_1+scv_10;
+      scv_5=A[(i+6)*n+j]*scv_1+scv_5;
+      scv_8=B[i*n+j]*scv_1+scv_8;
+      scv_2=B[(i+1)*n+j]*scv_1+scv_2;
+      scv_7=B[(i+2)*n+j]*scv_1+scv_7;
+      scv_6=B[(i+3)*n+j]*scv_1+scv_6;
+      scv_13=B[(i+4)*n+j]*scv_1+scv_13;
+      scv_15=B[(i+5)*n+j]*scv_1+scv_15;
+      scv_14=B[(i+6)*n+j]*scv_1+scv_14;
+    }
+    scv_8=a*scv_4+b*scv_8;
+    scv_2=a*scv_9+b*scv_2;
+    scv_7=a*scv_11+b*scv_7;
+    scv_6=a*scv_3+b*scv_6;
+    scv_13=a*scv_12+b*scv_13;
+    scv_15=a*scv_10+b*scv_15;
+    scv_14=a*scv_5+b*scv_14;
+    y[(i+1)]=scv_2;
+    y[(i+3)]=scv_6;
+    y[(i+2)]=scv_7;
+    y[i]=scv_8;
+    y[(i+4)]=scv_13;
+    y[(i+6)]=scv_14;
+    y[(i+5)]=scv_15;
+  }
+  for (; i<=n-1; i=i+1) {
+    double scv_17, scv_18;
+    scv_17=y[i];
+    scv_18=0;
+    scv_17=0;
+    for (j=0; j<=n-1; j=j+1) {
+      double scv_16;
+      scv_16=x[j];
+      scv_18=A[i*n+j]*scv_16+scv_18;
+      scv_17=B[i*n+j]*scv_16+scv_17;
+    }
+    scv_17=a*scv_18+b*scv_17;
+    y[i]=scv_17;
+  }
+}
+
+}
+
+
+  
+
+
 #else      
       {
 	int i,j;
@@ -166,4 +194,3 @@ int main()
   return ((int) y[0]);
 
 }
-
