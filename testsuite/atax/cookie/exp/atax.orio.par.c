@@ -35,11 +35,6 @@ int main()
 #ifdef DYNAMIC
 
 
-
-
-
-
-
 int i,j;
   
 {
@@ -62,49 +57,34 @@ int i,j;
 }
 {
 #pragma omp parallel for private(j,i)
-  for (i=0; i<=nx-37; i=i+37) {
+  for (i=0; i<=nx-24; i=i+24) {
     double scv_3, scv_4, scv_5, scv_6, scv_7, scv_8, scv_9, scv_10;
     double scv_11, scv_12, scv_13, scv_14, scv_15, scv_16, scv_17, scv_18;
     double scv_19, scv_20, scv_21, scv_22, scv_23, scv_24, scv_25, scv_26;
-    double scv_27, scv_28, scv_29, scv_30, scv_31, scv_32, scv_33, scv_34;
-    double scv_35, scv_36, scv_37, scv_38, scv_39;
-    scv_13=0;
-    scv_35=0;
-    scv_20=0;
-    scv_12=0;
-    scv_32=0;
-    scv_19=0;
-    scv_16=0;
-    scv_14=0;
-    scv_34=0;
-    scv_33=0;
-    scv_23=0;
-    scv_31=0;
-    scv_4=0;
-    scv_6=0;
-    scv_24=0;
-    scv_27=0;
-    scv_30=0;
-    scv_39=0;
     scv_10=0;
+    scv_23=0;
+    scv_14=0;
     scv_9=0;
-    scv_3=0;
-    scv_7=0;
-    scv_37=0;
-    scv_36=0;
-    scv_29=0;
-    scv_28=0;
-    scv_22=0;
+    scv_20=0;
+    scv_13=0;
+    scv_12=0;
     scv_11=0;
-    scv_25=0;
-    scv_38=0;
-    scv_15=0;
-    scv_17=0;
-    scv_26=0;
+    scv_22=0;
     scv_21=0;
-    scv_18=0;
+    scv_15=0;
+    scv_19=0;
+    scv_4=0;
     scv_5=0;
+    scv_16=0;
+    scv_17=0;
+    scv_18=0;
+    scv_26=0;
     scv_8=0;
+    scv_7=0;
+    scv_3=0;
+    scv_6=0;
+    scv_25=0;
+    scv_24=0;
     register int cbv_1;
     cbv_1=ny-1;
 #pragma ivdep
@@ -112,43 +92,30 @@ int i,j;
     for (j=0; j<=cbv_1; j=j+1) {
       double scv_1;
       scv_1=x[j];
-      scv_13=scv_13+A[i*ny+j]*scv_1;
-      scv_35=scv_35+A[(i+1)*ny+j]*scv_1;
-      scv_20=scv_20+A[(i+2)*ny+j]*scv_1;
-      scv_12=scv_12+A[(i+3)*ny+j]*scv_1;
-      scv_32=scv_32+A[(i+4)*ny+j]*scv_1;
-      scv_19=scv_19+A[(i+5)*ny+j]*scv_1;
-      scv_16=scv_16+A[(i+6)*ny+j]*scv_1;
-      scv_14=scv_14+A[(i+7)*ny+j]*scv_1;
-      scv_34=scv_34+A[(i+8)*ny+j]*scv_1;
-      scv_33=scv_33+A[(i+9)*ny+j]*scv_1;
-      scv_23=scv_23+A[(i+10)*ny+j]*scv_1;
-      scv_31=scv_31+A[(i+11)*ny+j]*scv_1;
+      scv_10=scv_10+A[i*ny+j]*scv_1;
+      scv_23=scv_23+A[(i+1)*ny+j]*scv_1;
+      scv_14=scv_14+A[(i+2)*ny+j]*scv_1;
+      scv_9=scv_9+A[(i+3)*ny+j]*scv_1;
+      scv_20=scv_20+A[(i+4)*ny+j]*scv_1;
+      scv_13=scv_13+A[(i+5)*ny+j]*scv_1;
+      scv_12=scv_12+A[(i+6)*ny+j]*scv_1;
+      scv_11=scv_11+A[(i+7)*ny+j]*scv_1;
+      scv_22=scv_22+A[(i+8)*ny+j]*scv_1;
+      scv_21=scv_21+A[(i+9)*ny+j]*scv_1;
+      scv_15=scv_15+A[(i+10)*ny+j]*scv_1;
+      scv_19=scv_19+A[(i+11)*ny+j]*scv_1;
       scv_4=scv_4+A[(i+12)*ny+j]*scv_1;
-      scv_6=scv_6+A[(i+13)*ny+j]*scv_1;
-      scv_24=scv_24+A[(i+14)*ny+j]*scv_1;
-      scv_27=scv_27+A[(i+15)*ny+j]*scv_1;
-      scv_30=scv_30+A[(i+16)*ny+j]*scv_1;
-      scv_39=scv_39+A[(i+17)*ny+j]*scv_1;
-      scv_10=scv_10+A[(i+18)*ny+j]*scv_1;
-      scv_9=scv_9+A[(i+19)*ny+j]*scv_1;
+      scv_5=scv_5+A[(i+13)*ny+j]*scv_1;
+      scv_16=scv_16+A[(i+14)*ny+j]*scv_1;
+      scv_17=scv_17+A[(i+15)*ny+j]*scv_1;
+      scv_18=scv_18+A[(i+16)*ny+j]*scv_1;
+      scv_26=scv_26+A[(i+17)*ny+j]*scv_1;
+      scv_8=scv_8+A[(i+18)*ny+j]*scv_1;
+      scv_7=scv_7+A[(i+19)*ny+j]*scv_1;
       scv_3=scv_3+A[(i+20)*ny+j]*scv_1;
-      scv_7=scv_7+A[(i+21)*ny+j]*scv_1;
-      scv_37=scv_37+A[(i+22)*ny+j]*scv_1;
-      scv_36=scv_36+A[(i+23)*ny+j]*scv_1;
-      scv_29=scv_29+A[(i+24)*ny+j]*scv_1;
-      scv_28=scv_28+A[(i+25)*ny+j]*scv_1;
-      scv_22=scv_22+A[(i+26)*ny+j]*scv_1;
-      scv_11=scv_11+A[(i+27)*ny+j]*scv_1;
-      scv_25=scv_25+A[(i+28)*ny+j]*scv_1;
-      scv_38=scv_38+A[(i+29)*ny+j]*scv_1;
-      scv_15=scv_15+A[(i+30)*ny+j]*scv_1;
-      scv_17=scv_17+A[(i+31)*ny+j]*scv_1;
-      scv_26=scv_26+A[(i+32)*ny+j]*scv_1;
-      scv_21=scv_21+A[(i+33)*ny+j]*scv_1;
-      scv_18=scv_18+A[(i+34)*ny+j]*scv_1;
-      scv_5=scv_5+A[(i+35)*ny+j]*scv_1;
-      scv_8=scv_8+A[(i+36)*ny+j]*scv_1;
+      scv_6=scv_6+A[(i+21)*ny+j]*scv_1;
+      scv_25=scv_25+A[(i+22)*ny+j]*scv_1;
+      scv_24=scv_24+A[(i+23)*ny+j]*scv_1;
     }
     register int cbv_2;
     cbv_2=ny-1;
@@ -157,65 +124,53 @@ int i,j;
     for (j=0; j<=cbv_2; j=j+1) {
       double scv_2;
       scv_2=y[j];
-      scv_2=scv_2+A[i*ny+j]*scv_13;
-      scv_2=scv_2+A[(i+1)*ny+j]*scv_35;
-      scv_2=scv_2+A[(i+2)*ny+j]*scv_20;
-      scv_2=scv_2+A[(i+3)*ny+j]*scv_12;
-      scv_2=scv_2+A[(i+4)*ny+j]*scv_32;
-      scv_2=scv_2+A[(i+5)*ny+j]*scv_19;
-      scv_2=scv_2+A[(i+6)*ny+j]*scv_16;
-      scv_2=scv_2+A[(i+7)*ny+j]*scv_14;
-      scv_2=scv_2+A[(i+8)*ny+j]*scv_34;
-      scv_2=scv_2+A[(i+9)*ny+j]*scv_33;
-      scv_2=scv_2+A[(i+10)*ny+j]*scv_23;
-      scv_2=scv_2+A[(i+11)*ny+j]*scv_31;
+      scv_2=scv_2+A[i*ny+j]*scv_10;
+      scv_2=scv_2+A[(i+1)*ny+j]*scv_23;
+      scv_2=scv_2+A[(i+2)*ny+j]*scv_14;
+      scv_2=scv_2+A[(i+3)*ny+j]*scv_9;
+      scv_2=scv_2+A[(i+4)*ny+j]*scv_20;
+      scv_2=scv_2+A[(i+5)*ny+j]*scv_13;
+      scv_2=scv_2+A[(i+6)*ny+j]*scv_12;
+      scv_2=scv_2+A[(i+7)*ny+j]*scv_11;
+      scv_2=scv_2+A[(i+8)*ny+j]*scv_22;
+      scv_2=scv_2+A[(i+9)*ny+j]*scv_21;
+      scv_2=scv_2+A[(i+10)*ny+j]*scv_15;
+      scv_2=scv_2+A[(i+11)*ny+j]*scv_19;
       scv_2=scv_2+A[(i+12)*ny+j]*scv_4;
-      scv_2=scv_2+A[(i+13)*ny+j]*scv_6;
-      scv_2=scv_2+A[(i+14)*ny+j]*scv_24;
-      scv_2=scv_2+A[(i+15)*ny+j]*scv_27;
-      scv_2=scv_2+A[(i+16)*ny+j]*scv_30;
-      scv_2=scv_2+A[(i+17)*ny+j]*scv_39;
-      scv_2=scv_2+A[(i+18)*ny+j]*scv_10;
-      scv_2=scv_2+A[(i+19)*ny+j]*scv_9;
+      scv_2=scv_2+A[(i+13)*ny+j]*scv_5;
+      scv_2=scv_2+A[(i+14)*ny+j]*scv_16;
+      scv_2=scv_2+A[(i+15)*ny+j]*scv_17;
+      scv_2=scv_2+A[(i+16)*ny+j]*scv_18;
+      scv_2=scv_2+A[(i+17)*ny+j]*scv_26;
+      scv_2=scv_2+A[(i+18)*ny+j]*scv_8;
+      scv_2=scv_2+A[(i+19)*ny+j]*scv_7;
       scv_2=scv_2+A[(i+20)*ny+j]*scv_3;
-      scv_2=scv_2+A[(i+21)*ny+j]*scv_7;
-      scv_2=scv_2+A[(i+22)*ny+j]*scv_37;
-      scv_2=scv_2+A[(i+23)*ny+j]*scv_36;
-      scv_2=scv_2+A[(i+24)*ny+j]*scv_29;
-      scv_2=scv_2+A[(i+25)*ny+j]*scv_28;
-      scv_2=scv_2+A[(i+26)*ny+j]*scv_22;
-      scv_2=scv_2+A[(i+27)*ny+j]*scv_11;
-      scv_2=scv_2+A[(i+28)*ny+j]*scv_25;
-      scv_2=scv_2+A[(i+29)*ny+j]*scv_38;
-      scv_2=scv_2+A[(i+30)*ny+j]*scv_15;
-      scv_2=scv_2+A[(i+31)*ny+j]*scv_17;
-      scv_2=scv_2+A[(i+32)*ny+j]*scv_26;
-      scv_2=scv_2+A[(i+33)*ny+j]*scv_21;
-      scv_2=scv_2+A[(i+34)*ny+j]*scv_18;
-      scv_2=scv_2+A[(i+35)*ny+j]*scv_5;
-      scv_2=scv_2+A[(i+36)*ny+j]*scv_8;
+      scv_2=scv_2+A[(i+21)*ny+j]*scv_6;
+      scv_2=scv_2+A[(i+22)*ny+j]*scv_25;
+      scv_2=scv_2+A[(i+23)*ny+j]*scv_24;
       y[j]=scv_2;
     }
+
   }
-  for (i=nx-((nx-1)%37)-1; i<=nx-1; i=i+1) {
-    double scv_41;
-    scv_41=0;
+  for (i=nx-((nx-1)%24)-1; i<=nx-1; i=i+1) {
+    double scv_28;
+    scv_28=0;
     register int cbv_3;
     cbv_3=ny-1;
 #pragma ivdep
 #pragma vector always
     for (j=0; j<=cbv_3; j=j+1) {
-      scv_41=scv_41+A[i*ny+j]*x[j];
+      scv_28=scv_28+A[i*ny+j]*x[j];
     }
     register int cbv_4;
     cbv_4=ny-1;
 #pragma ivdep
 #pragma vector always
     for (j=0; j<=cbv_4; j=j+1) {
-      double scv_40;
-      scv_40=y[j];
-      scv_40=scv_40+A[i*ny+j]*scv_41;
-      y[j]=scv_40;
+      double scv_27;
+      scv_27=y[j];
+      scv_27=scv_27+A[i*ny+j]*scv_28;
+      y[j]=scv_27;
     }
   }
 }

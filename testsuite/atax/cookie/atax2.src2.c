@@ -12,7 +12,7 @@
   def performance_params 
   {
   param U1[]   = [4];
-  param U2i[]  = [37];
+  param U2i[]  = [22,24,26,28,30];
   param U2ja[] = [1];
   param U2jb[] = [1];
 
