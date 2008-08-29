@@ -5,8 +5,6 @@
       double precision z(n)
       double precision A(lda,*), B(ldb,*)
 c
-c  NOTE COLUMN ORIENTED MATRIX COPY BELOW.
-c
 c   GEMVER
 c   in
 c     A : column matrix, u1 : vector, u2 : vector, v1 : vector, v2 : vector,

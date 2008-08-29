@@ -78,5 +78,16 @@ c
       print*,'gemver result w',(w(j),j=1,n)
       print*,'x should be ()'
       print*,'w s. be ()'
+      print*,' '
+c
+c  y = A' * (A * x)
+c
+      do j = 1,n
+        x(j) = xorig(j)
+      enddo
+      call waxpby(n, w, alpha, x, beta, y)
+      call atax(lda, n, a, x, y, z)
+      print*,'atax result y',(y(j),j=1,n)
+      print*,'atax result y should be  2040.  2660.  400.  620.  1010.'
 c
       end
