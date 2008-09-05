@@ -76,8 +76,9 @@ c
       call gemver(alpha,beta,lda,n,A,ldb,B,u1,v1,u2,v2,w,x,v1,z)
       print*,'gemver result x',(x(j),j=1,n)
       print*,'gemver result w',(w(j),j=1,n)
-      print*,'x should be ()'
-      print*,'w s. be ()'
+      print*,'x should be 7240.  15964.  23169.  31102.  39098.'
+      print*,'w should be 113685638. 224265074. 335545386. '
+      print*, '446124822. 557914852.'
       print*,' '
 c
 c  y = A' * (A * x)
