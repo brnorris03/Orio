@@ -1,7 +1,8 @@
       subroutine bicgkernel(lda, n, A, p, r, s, q)
-      integer lda, n
+      integer lda, n, incx, incy
       double precision zero, one
       double precision p(*), r(*)
+      double precision s(*), q(*)
       double precision A(lda, *)
 c
 c   BICG
