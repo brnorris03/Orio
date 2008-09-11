@@ -3,29 +3,25 @@
 % Max 22 pages, double-spaced, 11pt or larger font
 % Abstract: Sep. 12, 2008
 % Full paper: Sep. 19, 2008
-
 \documentclass[11pt]{article}
+
 
 \usepackage{url}
 \usepackage{html}
-\usepackage{graphicx}
-\usepackage{subfigure}
-\usepackage{amsmath}
-\usepackage{cite}
-\usepackage{times}
-\usepackage{fullpage}
 \usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{cite}
+\usepackage{amsmath}
 \usepackage[margin=1in]{geometry}
 
 
 \title{Generating Empirically Optimized Numerical Software from MATLAB Prototypes}
 
-
 \author{
 Elizabeth Jessup,$^1$ Boyana Norris,$^2$ Albert Hartono,$^3$ and Jeremy Siek$^4$\\
 \\
 \vspace{-.05in}
-{\small $^1$University of Colorado at Boulder Dept. of Computer Science, Boulder, CO~80302}\\
+{\small $^1$University of Colorado at Boulder Dept. of Computer Science, Boulder, CO~80309}\\
 \vspace{-.05in}
 {\small \url{jessup@cs.colorado.edu}}\\
 \vspace{-.05in}
@@ -33,11 +29,11 @@ Elizabeth Jessup,$^1$ Boyana Norris,$^2$ Albert Hartono,$^3$ and Jeremy Siek$^4$
 \vspace{-.05in}
 {\small \url{norris@mcs.anl.gov}}\\
 \vspace{-.05in}
-{\small $^3$Ohio State University Dept. of Computer Science and Engineering, Columbus, OH 43210}\\
+{\small $^3$Ohio State University Dept. of Computer Science and Engineering, Columbus, OH~43210}\\
 \vspace{-.05in}
 {\small \url{hartonoa@cse.ohio-state.edu}}\\
 \vspace{-.05in}
-{\small $^4$University of Colorado at Boulder Dept. of Electrical and Computer Engineering, Boulder, CO~80302}\\
+{\small $^4$University of Colorado at Boulder Dept. of Electrical and Computer Engineering, Boulder, CO~80309}\\
 \vspace{-.05in}
 {\small \url{jeremy.siek@colorado.edu}}
 }
@@ -47,6 +43,8 @@ Elizabeth Jessup,$^1$ Boyana Norris,$^2$ Albert Hartono,$^3$ and Jeremy Siek$^4$
 \maketitle
 
 \abstract{TODO}
+
+
 \doublespacing
 \section{Introduction}
 \label{sec:intro}
@@ -107,7 +105,7 @@ Probably need some words about WHY this 3 pronged approach is a good idea.
 \label{fig:process}
 \end{figure}
 
-\subsection{A {MATLAB} Compiler}
+\subsection{A MATLAB Compiler}
 \label{sec:matlab}
 
 Figure~\ref{fig:compiler} gives an overview of the compilation process. The MATLAB kernel specification is parsed into a high-level intermediate representation in the form of a dataflow graph.  This dataflow graph is then iteratively processed until all of the implementation choices have been made.  The compilation process consists of three phases: analysis, lowering, and optimization, which are together iterated until all of the implementation decisions have been made.  The graph is then translated into C code.
@@ -160,12 +158,15 @@ Figure~\ref{fig:refine-mv-dot} shows two steps of refinement for a matrix-vector
 The second pass of refinement introduces another subgraph to implement the inner products (the dot algorithm from figure~\ref{fig:algos}). The new subgraph iterates through each dense row, as indicated by the $j=1:n$ annotation. The sign $\Sigma$ indicates that the sum of all of the iterations is computed.
 
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=.9\textwidth]{figures/refine-mv-dot.png}
-\caption{The refinement of a matrix-vector product to a set of inner products and the refinement of inner products to scalar multiplications and additions.}
-\label{fig:refine-mv-dot}
+\begin{figure}[hbtp]
+  \centering
+  \includegraphics[width=\textwidth]{figures/refine-mv-dot.png}
+
+  \caption{The refinement of a matrix-vector product to a set of inner products and the refinement of inner products to scalar multiplications and additions.}
+  \label{fig:refine-mv-dot}
 \end{figure}
+
+
 
 
 \subsubsection{Optimize the Dataflow Graph}
@@ -211,40 +212,149 @@ Orio~\cite{Norris:2007} is an empirical tuning tool that takes as input annotate
 \section{Experimental Results}
 \label{sec:experiments}
 
+In this section we present performance results for a number of composed BLAS operations. We performed experiments on an dual quad-core 2/88 Xeon with 2.88 GHz, 16GB DDR2 FBDIMM
 
 \subsection{VADD}
 
-\subsection{WAXPBY $v = Ax + By$}
-perhaps add another term
+$x = w + y + z$
+
+\subsection{ATAX}
+
+$y = A' * (A * x)$
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=.8\textwidth]{figures/atax.png}
+\caption{Wall-clock time (in seconds) for the ATAX operation using different code versions.}
+\label{fig:atax}
+\end{figure}
 
 \subsection{GEMVER}
 
 
-%for (i=0; i<=A_nrows-1; i++)
-%  for (j=0; j<=A_ncols-1; j++)
-%    B[i][j] = A[i][j] + u1[i]*v1[j] + u2[i]*v2[j];
+
+\begin{figure}[htb]
+\centering
+\scriptsize
+\begin{verbatim}
+for (i=0; i<=A_nrows-1; i++)
+  for (j=0; j<=A_ncols-1; j++)
+   B[i][j] = A[i][j] + u1[i]*v1[j] + u2[i]*v2[j];
+
+for (i=0; i<=A_ncols-1; i++)
+  for (j=0; j<=A_nrows-1; j++)
+    x[i] = x[i] + b * B[j][i]*y[j];
+
+for (i=0; i<=A_ncols-1; i++)
+  x[i] = x[i] + z[i];
+
+for (i=0; i<=A_nrows-1; i++)
+  for (j=0; j<=A_ncols-1; j++)
+    w[i] = w[i] + a * B[i][j]*x[j];
+\end{verbatim}
+\caption{GEMVER C code.}
+\label{fig:gemver}
+\end{figure}
+
+%--- Sequential: seconds (dynamic arrays) ---
+%cmatlab= [0.038, 0.157, 0.352, 0.626, 0.976, 1.406, 1.909, 2.494, 3.143, 3.886]
+%orio= [0.029, 0.118, 0.263, 0.480, 0.759, 1.075, 1.447, 1.899, 2.338, 2.978]
+%blas= [0.064, 0.265, 0.598, 1.091, 1.711, 2.456, 3.340, 4.345, 5.480, 6.840]
+%mkl=  [0.073, 0.147, 0.331, 0.591, 0.923, 1.326, 1.803, 2.350, 2.975, 3.676]
+%atlas=[0.039, 0.163, 0.401, 0.796, 1.225, 1.916, 2.582, 3.381, 4.210, 4.756]
 %
-%for (i=0; i<=A_ncols-1; i++)
-%  for (j=0; j<=A_nrows-1; j++)
-%    x[i] = x[i] + b * B[j][i]*y[j];
-%
-%
-%for (i=0; i<=A_ncols-1; i++)
-%  x[i] = x[i] + z[i];
-%
-%for (i=0; i<=A_nrows-1; i++)
-%  for (j=0; j<=A_ncols-1; j++)
-%    w[i] = w[i] + a * B[i][j]*x[j];
+%--- Parallel: seconds (dynamic arrays) --- N=10,000, cores=1-8
+%cmatlab= [0.976, 0.976, 0.976, 0.976, 0.976, 0.976, 0.975, 0.976]
+%orio= [0.754, 0.738, 0.666, 0.649, 0.664, 0.664, 0.647, 0.668]
+
 
 Experiments on Intel Xeon and BGP.
 
+\begin{figure}[htp]
+\centering
+\includegraphics[width=.8\textwidth]{figures/gemver.png}
+\caption{Wall-clock time (in seconds) for the GEMVER operation using different code versions.}
+\label{fig:gemver}
+\end{figure}
 
+\subsection{GESUMMV}
+$y = a * (A * x) + b * (B * x)$
 
-% Placeholder for the new results, the loops tuned for the figure above were almost identical to the ones generated by the MATLAB compiler
+\begin{figure}[htp]
+\centering
+\includegraphics[width=.8\textwidth]{figures/gesummv.png}
 
-\subsection{GESUMMV $y = a * (A * x) + b * (B * x)$}
+\caption{Wall-clock time (in seconds) for the GESUMMV operation using different code versions.}
+\label{fig:gesummv}
+\end{figure}
+\subsection{BiCG Kernel}
 
-\subsection{Bicgkernel}
+$q = A * p$, $s = A' * r$
+
+\begin{figure}[htp]
+\centering
+
+\includegraphics[width=.8\textwidth]{figures/bicgkernel.png}
+\caption{Wall-clock time (in seconds) for the BiCG Kernel operation using different code versions.}
+\label{fig:bicgkernel}
+\end{figure}
+
+%NOTES about the experiments
+
+%Results already obtained:
+% -gemver (orio/testsuite/gemver/cookie directory)
+% -gesummv (orio/testsuite/gesummv/cookie directory)
+% -bicgkernel (orio/testsuite/bicgkernel/cookie directory)
+% -atax (orio/testsuite/atax/cookie directory)
+
+%* All results were obtained on the cookie machine (eight-core Intel Xeon)
+
+%* Compiler used: icc 10.1
+%* Optimization flags used: -O3 (-parallel for parallel matlab code) (-openmp for parallel orio code)
+
+%* We compare two types of codes:
+%  1. matlab
+%  2. orio
+%1. 'matlab' code is the original code produced by the matlab c compiler.
+%2. 'orio' is obtained first from the Pluto-generated code (use loop fusion, NO loop tiling,
+%   NO unrolling, NO parallelization, NO vectorization), then was decorated with
+%   performance annotations before being tuned by Orio.
+
+%* Each code has two versions: one with static arrays, and another with dynamic arrays.
+
+%* Conversion from/to static arrays to/from dynamic arrays was done manually.
+
+%* I run Pluto first to maximally fuse all loops (using polycc <file>
+%--maxfuse option) and see the resulting fused loop(s). And then tune the
+%fused loop using Orio. Sometimes, the fused loop gets very complicated
+%because of Pluto's various transformations (e.g. skewing). In that case, I
+%don't use Pluto's loop fusion. For example, gemver and gesummv results use
+%Pluto's loop fusion, but bicgkernel doesn't use Pluto's loop fusion at
+%all.
+
+%* All experiment files are in <kernel-name>/cookie directory
+
+%* All generated codes (the base Matlab codes, and the Orio-tuned codes),
+%results, script for running the experiments are in
+%<kernel-name>/cookie/exp
+
+%* I tuned 4 different versions for each kernel:
+% 1. sequential (static arrays)
+% 2. sequential (dynamic arrays)
+% 3. parallel (static arrays)
+% 4. parallel (dynamic arrays)
+
+%The annotated source code for 1 and 3 is in <kernel-name>.src1.c
+%The annotated source code for 3 and 4 is in <kernel-name>.src2.c
+
+%The final code for 1 and 2 is in <kernel-name>.orio.seq.c
+%The final code for 3 and 4 is in <kernel-name>.orio.par.c
+
+%* <kernel-name>.matlab.c contains the original Matlab code (for both
+%static and dynamics arrays)
+
+%* The best performance parameters for each version can be seen in
+%results.txt file.
 
 
 \section{Conclusions and Future Work}
@@ -252,7 +362,11 @@ Experiments on Intel Xeon and BGP.
 fully automate the process to get rid of the manual steps along the way
 
 extend beyond composed BLAS
+
+Ultimately, the tuning process should result in more than one version of the computation since different versions are optimal for different problem sizes.
+
 \singlespacing
 \bibliographystyle{siam}
 \bibliography{paper}
 \end{document}
+
