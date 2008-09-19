@@ -1,5 +1,176 @@
 
 % Put bibtex for any references here:
+@inproceedings{MaJIC,
+    author={V. Menon and K. Pingali},
+    title = {High-level semantic optimization of numerical codes},
+    booktitle = {Proceedings of the 13th International Conference on Supercomputing},
+    pages = {434–443},
+    address = {New York},
+    year={1999},
+    publisher={ACM Press},
+    isbn={ISBN 1-58113-164-X},
+    doi={http://doi.acm.org/10.1145/305138.305230},
+}
+
+@Article{veldhuizen95,
+  author =       {T. Veldhuizen},
+  title =        {Expression Templates},
+  journal =      {C++ Report},
+  year =         {1995},
+  volume =       {7},
+  number =       {5},
+  pages =        {26--31},
+  month =        {June},
+}
+
+
+@InProceedings{weise93,
+  author =       {Daniel Weise and Roger Crew},
+  title =        {Programmable syntax macros},
+  booktitle =    {SIGPLAN Conference on Programming Language Design and Implementation},
+  pages =        {156--165},
+  year =         {1993},
+  url = "citeseer.ist.psu.edu/weise93programmable.html"
+}
+
+@Article{broadway,
+  author =       {Calvin Lin and Samuel Z. Guyer},
+  title =        {Boradway: {A} Compiler for Exploiting the Domain-Specific Semantics of Software Li
+braries},
+  journal =      {Proceedings of the IEEE},
+  year =         {2005},
+  volume =       {93},
+  number =       {2},
+  pages =        {342--357},
+  month =        {July},
+}
+
+
+@InProceedings{chiba95,
+  author =       {S. Chiba},
+  title =        {A metaobject protocol for {C++}},
+  booktitle =    {ACM SIGPLAN Conference
+on Object-Oriented Programming Systems, Languages and Applications},
+  pages =        {285--299},
+  year =         {1995},
+  month =        {Oct},
+}
+
+@Book{kiczales91,
+  author =       {G. Kiczales and J. des~Rivieres and D.~G. Bobrow},
+  title =        {The Art of the Meta-Object Protocol},
+  publisher =    {MIT Press},
+  year =         {1991},
+  address =      {Cambridge (MA)},
+}
+
+
+@Article{LoopTool,
+   author = {John Mellor-Crummey and Robert Fowler and G. Marin and Nathan Tallent},
+   title = {{HPCVIEW}: {A} Tool for Top-Down Analysis of Node Performance},
+   journal = {The Journal of Supercomputing},
+   volume ={23},
+   number = {1},
+   month = {Aug},
+   year = {2002},
+   pages={81-104},
+   mynote = {http://lacsi.rice.edu/software/looptool/},
+}
+
+
+@InProceedings{POET,
+   author = {Qing Yi and Keith Seymour and<A0> Haihang You<A0>and Richard Vuduc and Dan Quinlan},
+   title = {{POET}: Parameterized Optimizations for Empirical Tuning},
+   booktitle = {Proceedings of the Parallel and Distributed Processing Symposium, 2007},
+   year = {2007},
+   publisher={IEEE},
+   pages = {1--8},
+   DOI={10.1109/IPDPS.2007.370637},
+   location = {Long Beach, CA},
+   month = {Mar}
+}
+
+@InCollection{XLanguage,
+  author =       {Sebastien Donadio and James Brodman and Thomas Roeder and Kamen Yotov and Denis Ba
+rthou and Albert Cohen and Mar\'{i}a Jes\'{u}s Garzar\'{a}n and David Padua and Keshav Pingali},
+  title =        {Language for the Compact Representation of Multiple Program Versions},
+  booktitle =    {Proceedings of Languages and Compilers for Parallel Computing (LCPC<D5>05)},
+  pages =     {136-151},
+  publisher = {Springer-Verlag},
+  year =      {2006},
+  number =    {4339},
+  series =    {Lecture Notes in Computer Science},
+  address =   {Germany},
+}
+
+
+@InProceedings{TCE,
+  author =       {Gerald Baumgartner and Alexander Auer and David E. Bernholdt and
+                  Alina Bibireata and Venkatesh Choppella and Daniel Cociorva and
+                  Xiaoyang Gao and Robert J. Harrison and So Hirata and
+                  Sriram Krishnamoorthy and Sandhya Krishan and Chi-Chung Lam and
+                  Qingda Lu and Marcel Nooijen and Russell M. Pitzer and J. Ramanujam and
+                  P. Sadayappan and And Alexander Sibiryakov},
+  title =        {Synthesis of High-Performance Parallel Programs for a Class of Ab Initio Quantum C
+hemistry Models},
+  booktitle =    {Proceedings of the {IEEE}},
+  year =      {2005},
+  volume =    {93},
+  number =    {2},
+  month =     {Feb},
+  publisher = {IEEE},
+  pages = {276-292},
+  mynote =      {http://bit.csc.lsu.edu/~gb/TCE/},
+}
+
+@Article{teleoverview,
+  author = {Ken Kennedy and Bradley Broom and Arun Chauhan and Rob Fowler and John Garvin and Charle
+s Koelbel and Cheryl McCosh and John Mellor-Crummey},
+  authorURLs = {\url{http://www.cs.rice.edu/\~ken}},
+  title = {Telescoping Languages: A System for Automatic Generation of Domain Languages},
+  year = {2005},
+  URL = {http://ieeexplore.ieee.org/xpl/abs\_free.jsp?arNumber=1386658 },
+  abstract = { The software gap - the discrepancy between the need for new software and the aggregat
+e capacity of the workforce to produce it - is a serious problem for scientific software. Although u
+sers appreciate the convenience (and, thus, improved productivity) of using relatively high-level sc
+ripting languages, the slow execution speeds of these languages remain a problem. Lower level langua
+ges, such as C and Fortran, provide better performance for production applications, but at the cost
+of tedious programming and optimization by experts. If applications written in scripting languages c
+ould be routinely compiled into highly optimized machine code, a huge productivity advantage would b
+e possible. It is not enough, however, to simply develop excellent compiler technologies for scripti
+ng languages (as a number of projects have succeeded in doing for MATLAB). In practice, scientists t
+ypically extend these languages with their own domain-centric components, such as the MATLAB signal
+processing toolbox. Doing so effectively defines a new domain-specific language. If we are to addres
+s efficiency problems for such extended languages, we must develop a framework for automatically gen
+erating optimizing compilers for them. To accomplish this goal, we have been pursuing an innovative
+strategy that we call telescoping languages. Our approach calls for using a library-preprocessing ph
+ase to extensively analyze and optimize collections of libraries that define an extended language. R
+esults of this analysis are collected into annotated libraries and used to generate a library-aware
+optimizer. The generated library-aware optimizer uses the knowledge gathered during preprocessing to
+ carry out fast and effective optimization of high-level scripts. This enables script optimization t
+o benefit from the intense analysis performed during preprocessing without repaying its price. Since
+ library preprocessing is performed only at infrequent "language-generation" times, its cost is amor
+tized over many compilations of individual scripts that use the library. We call this strategy "tele
+scoping languages" because it merges knowledge of a hierarchy of extended languages into a single li
+brary-aware optimizer. We present our vision and plans for compiler frameworks based on telescoping
+languages and - report on the preliminary research that has established the effectiveness of this ap
+proach. },
+  journal = {Proceedings of the IEEE},
+  volume = {93},
+  number = {3},
+  pages = {387--408},
+}
+
+{Ken99,
+AUTHOR = "Ken Kennedy",
+TITLE  = "Telescoping Languages: A Compiler Strategy for Implementation
+of High-Level Domain-Specific Programming Systems",
+BOOKTITLE   = "Proceedings of International Parallel and Distributed Processing Symposium 2000 (IPDP
+S 2000)",
+pages = "297--304",
+MONTH  = "May",
+YEAR   = "2000"
+}
 
 @techreport{uday07tr70,
     author = {Uday Bondhugula and J. Ramanujam and P.
