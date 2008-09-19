@@ -189,7 +189,7 @@ The choice of which optimizations to apply to various parts of the graph depends
 
 \subsubsection{Translate the Dataflow Graph to C}
 
-A graph that cannot be further refined has been reduced to a collection of subgraphs representing loops over scalar operations. The generator outputs a C loop for each subgraph.  The order in which the loops, and scalar operations within the loops, appear in the output is determined by performing a topological sort
+A graph that cannot be further refined has been reduced to a collection of subgraphs representing loops over scalar operations. The generator outputs a C loop for each subgraph.  A topological sort is performed to determine the order in which the loops and scalar operations within the loops appear in the output.
 \subsection{Orio}
 \label{sec:orio}
 
@@ -197,9 +197,9 @@ Orio~\cite{Norris:2007} is an empirical tuning tool that takes as input annotate
 
 % Explain how Pluto is used
 
-% Explain how Orio is used
+Figure~\ref{fig:orio} illustrates the tuning process using Orio. In the simplest case, Orio can be used to improve code performance by performing source-to-source transformations, such as loop unrolling and memory alignment optimizations. First, the input to Orio is C code, which contains syntactically structured comments that contain both the computation to be tuned, as well as various performance-tuning directives. Orio scans the annotated input code and extracts all annotated regions. Each annotated region is then passed to the code transformation modules for potential optimizations. The code generator then produces the final code incorporating the newly generated optimized C code corresponding to the annotation. The original C code is not parsed (only the annotation comments are processed) and is preserved in the new version. The user has the option of selecting either the original or the tuned code by using a compile-time macro.
 
-% Forward ref. to search approaches
+
 
 \begin{figure}[htbp]
 \centering
@@ -208,10 +208,11 @@ Orio~\cite{Norris:2007} is an empirical tuning tool that takes as input annotate
 \label{fig:orio}
 \end{figure}
 
+Orio can also be used as an automatic performance tuning tool. The system uses its code transformation modules and code generator to generate an optimized code version for each distinct combination of performance parameters. Then the optimized code versions are executed and their performance measured, which is subsequently compared to the performances of other previously tested code variants. After iteratively evaluating all code variants under consideration, the best-performing code is selected as the final output of Orio. The tuning specifications, written by users in the form of annotations (either embedded in the source code or in separate files), are parsed and used by Orio to guide the search and tuning process. These specifications include important information such as the used compilers, the search strategy, the program transformation parameters, the input data sizes, etc.
+
 \subsection{Search Space Exploration and Evaluation}
 \label{sec:search}
 
-This will need updating depending on how we decide to address this topic. -Jeremy 8/6/08 10:19 AM
 % BN: moved to its own section since multiple tools deal with the search space problem.
 The set of all possible combinations of implementation and optimization choices is called the search space~\cite{Kisuki:2000uq,Triantafyllis:2003uq, Cooper:2005kx}.  Although the dataflow graphs are quite small in our setting (usually less than 100 nodes), it is still important to prune the search space to avoid an exponential compilation time. Our prototype Matlab compiler already performs some pruning: the optimization rewrite rules only apply under certain circumstances. 
 %
@@ -219,20 +220,21 @@ The set of all possible combinations of implementation and optimization choices 
 %However, as mentioned above we are sometimes overly aggressive in applying optimizations.
 %To solve this problem we plan to use a combination of analytic methods and empirical methods~\cite{Chen:2007vn}.
 %
-Orio also offers a number of different general strategies for narrowing the search space over loop-level optimizations, including random, simplex, and simulated annealing searches.
+Orio provides a number of different search heuristics to narrow the search space for near-optimal performance, including random, simplex, and simulated annealing searches. The search algorithm is one of the user-defined values in the Orio tuning specification.
 
 
 
 \section{Experimental Results}
 \label{sec:experiments}
 
-In this section we present performance results for a number of composed BLAS operations. We performed experiments on an Intel Xeon 2.80 GHz Intel(R) E5462 dual quad-core workstation with 16GB DDR2 FBDIMM RAM.
+In this section we present performance results for a number of composed BLAS operations. The experiment described in Section~\ref{sec:vadd} were performed on Blue Gene/P, while the remaining experiments were all performed on an Intel Xeon 2.80 GHz Intel(R) E5462 dual quad-core workstation with a 1600MHz front-side bus and 16GB DDR2 FBDIMM RAM. 
+
 % Include peak numbers?
 
-
 \subsection{VADD}
+\label{sec:vadd}
 
-We optimized the performance for the VADD operation, $x = w + y + z$, on the Blue Gene/P at Argonne National Laboratory using the IBM XLC compiler, version 9.0. We measured the performance for two scenarios: using one core per processor and using all cores. In the single-core case, the codes were compiled with the following options: \texttt{-O3 -qstrict -qarch=450d -qtune=450 -qhot -qsmp=noauto}. For the multicore case, the only difference in the compilation was that for the non-Orio versions, the \texttt{-qsmp=auto} option was used.
+We optimized the performance for the VADD operation, $x = w + y + z$, on the Blue Gene/P at Argonne National Laboratory using the IBM XLC compiler version 9.0. We measured the performance for two scenarios: using one core per processor and using all cores. In the single-core case, the codes were compiled with the following options: \texttt{-O3 -qstrict -qarch=450d -qtune=450 -qhot -qsmp=noauto}. For the multicore case, the only difference in the compilation was that for the non-Orio versions, the \texttt{-qsmp=auto} option was used.
 
 \begin{figure}[htp]
 \centering
@@ -269,9 +271,7 @@ The "Base" label designates the simple loop C implementation generated by the Ma
 
 \subsection{ATAX}
 
-
-The extended Matlab code for the ATAX operation, $y = A' * (A * x)$,
-and the corresponding performance results are shown in Figure~\ref{fig:atax}.
+The extended Matlab code for the ATAX operation, $y = A' * (A * x)$, and the corresponding performance results are shown in Figure~\ref{fig:atax}. The Orio-tuned version that incorporates OpenMP directives achieves the best performance for most problem sizes, while the
 
 
 
@@ -399,7 +399,7 @@ out
 
 
 % BN: ATLAS's dgemv is annihilating everything else, even though it's called twice... wow.
-% I did check the result and it was correct
+% I did check the result and it was correct, i'm still somewhat baffled
 % The Time and MFLOPS data for the above are (with icc):
 % (Dual quad-core Intel Xeon E5462, 16GB RAM)
 % ops = (4*N*N+3*N)
@@ -452,64 +452,6 @@ out
 \label{fig:bicgkernel}
 \end{figure}
 
-%NOTES about the experiments
-
-%Results already obtained:
-% -gemver (orio/testsuite/gemver/cookie directory)
-% -gesummv (orio/testsuite/gesummv/cookie directory)
-% -bicgkernel (orio/testsuite/bicgkernel/cookie directory)
-% -atax (orio/testsuite/atax/cookie directory)
-
-%* All results were obtained on the cookie machine (eight-core Intel Xeon)
-
-%* Compiler used: icc 10.1
-%* Optimization flags used: -O3 (-parallel for parallel matlab code) (-openmp for parallel orio code)
-
-%* We compare two types of codes:
-%  1. matlab
-%  2. orio
-%1. 'matlab' code is the original code produced by the matlab c compiler.
-%2. 'orio' is obtained first from the Pluto-generated code (use loop fusion, NO loop tiling,
-%   NO unrolling, NO parallelization, NO vectorization), then was decorated with
-%   performance annotations before being tuned by Orio.
-
-%* Each code has two versions: one with static arrays, and another with dynamic arrays.
-
-%* Conversion from/to static arrays to/from dynamic arrays was done manually.
-
-%* I run Pluto first to maximally fuse all loops (using polycc <file>
-%--maxfuse option) and see the resulting fused loop(s). And then tune the
-%fused loop using Orio. Sometimes, the fused loop gets very complicated
-%because of Pluto's various transformations (e.g. skewing). In that case, I
-%don't use Pluto's loop fusion. For example, gemver and gesummv results use
-%Pluto's loop fusion, but bicgkernel doesn't use Pluto's loop fusion at
-%all.
-
-%* All experiment files are in <kernel-name>/cookie directory
-
-%* All generated codes (the base Matlab codes, and the Orio-tuned codes),
-%results, script for running the experiments are in
-%<kernel-name>/cookie/exp
-
-%* I tuned 4 different versions for each kernel:
-% 1. sequential (static arrays)
-% 2. sequential (dynamic arrays)
-% 3. parallel (static arrays)
-% 4. parallel (dynamic arrays)
-
-%The annotated source code for 1 and 3 is in <kernel-name>.src1.c
-%The annotated source code for 3 and 4 is in <kernel-name>.src2.c
-
-%The final code for 1 and 2 is in <kernel-name>.orio.seq.c
-%The final code for 3 and 4 is in <kernel-name>.orio.par.c
-
-%* <kernel-name>.matlab.c contains the original Matlab code (for both
-%static and dynamics arrays)
-
-%* The best performance parameters for each version can be seen in
-%results.txt file.
-
-
 \section{Conclusions and Future Work}
 
 The positive initial results from our three-pronged approach to generating tuned linear algebra routines motivate several future lines of investigation. At present there are a number of manual steps involved in obtaining a compiled tuned linear algebra library from the high-level extended MATLAB descriptions. We will next delve into each manual step and create the software that automates it and in effect serves as the ``glue'' between the different tools. We will also investigate extending the supported functionality beyond composed BLAS operations, thus benefiting a wider spectrum of applications.
@@ -526,6 +468,7 @@ We plan to use a fast analytic cost function to prune out regions of the search 
 \bibliographystyle{siam}
 \bibliography{paper}
 \end{document}
+
 
 
 
