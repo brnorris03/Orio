@@ -1,4 +1,4 @@
-%, CGO 09: http://www.cgo.org/
+% CGO 09: http://www.cgo.org/
 % svn co https://svn.mcs.anl.gov/repos/performance/orio/doc/papers/cgo08
 % Max 22 pages, double-spaced, 11pt or larger font
 % Abstract 300 words: Sep. 12, 2008
@@ -369,7 +369,8 @@ The extended Matlab code for the ATAX operation, $y = A' * (A * x)$, and the cor
 \begin{verbatim}
 ATAX
 in
-  A : row matrix, x : vector
+  A : row matrix,
+  x : vector
 out
   y : vector
 {
@@ -412,7 +413,8 @@ out
   B : column matrix,
   x : vector, w : vector
 {
-  B = A + u1 * v1' + u2 * v2'
+  B = A + u1 * v1'
+           + u2 * v2'
   x = b * (B' * y) + z
   w = a * (B * x)
 }
@@ -463,7 +465,8 @@ in
 out
   y : vector
 {
-  y = a * (A * x) + b * (B * x)
+  y = a * (A * x)
+       + b * (B * x)
 }
 
 
