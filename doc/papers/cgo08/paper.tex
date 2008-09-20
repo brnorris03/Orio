@@ -104,10 +104,9 @@ Composed routines are the focus of the work presented here, but much of what we 
 \section{Our Approach}
 \label{sec:approach}
 
-To generate highly optimized code from a MATLAB prototype, we will follow a three-step approach, illustrated in Figure~\ref{fig:process}.  To begin, we have developed a compiler that converts a MATLAB script into simple C code.  We then use the source-to-source automatic parallelization tool  PLuTo\cite{Pluto} to optimize for coarse-grained parallelism and locality simultaneously. Using the results of the PLuTo analysis, we insert annotations into the C code, which are then processed by the extensible annotation system Orio to generate many tuned versions of the same operation using different optimization parameters. Orio then performs an empirical search to select the best among the multiple optimized code variants.
+To generate highly optimized code from a MATLAB prototype, we will follow a three-step approach, illustrated in Figure~\ref{fig:process}.  To begin, we have developed a compiler that converts a MATLAB script into simple C code.  We then (optionally) use the source-to-source automatic parallelization tool PLuTo\cite{Pluto} developed at Ohio State University to optimize for coarse-grained parallelism and locality simultaneously. Using the results of the PLuTo analysis, we insert annotations into the C code, which are then processed by our extensible annotation system Orio to generate many tuned versions of the same operation using different optimization parameters. Orio then performs an empirical search to select the best among the multiple optimized code variants.
 
 %Probably need some words about WHY this 3 pronged approach is a good idea.
-MATLAB optimizing compilers traditionally have not been able to achieve
 
 \begin{figure}[htbp]
 \centering
@@ -156,7 +155,8 @@ We do not hard code this knowledge of basic linear algebra in the compiler algor
 compiler algorithm. 
 
 The analysis algorithm makes implementation choices using the most-constrained first strategy (also called minimum remaining values)
-from the artificial intelligence literature~\cite{Russell:2003mz}.This may need to be updated depending on how we decide to talk about the empirical search. -Jeremy 8/6/08 10:15 AM 
+from the artificial intelligence literature~\cite{Russell:2003mz}.
+%This may need to be updated depending on how we decide to talk about the empirical search. -Jeremy 8/6/08 10:15 AM 
 The compiler chooses the node with the fewest matching implementations (in the linear algebra database) and assigns a matching implementation to the node.  If there is more than one match, the prototype compiler picks the first.  Once we add backtracking we will push each alternative onto the stack to be explored later. Once the choice is made, the kind and storage format labels for the operation node itself and for the input nodes are updated with the labels specified in the linear algebra database for the chosen algorithm. The algorithm then goes on to find the next node with the fewest matching implementations and repeats.  In this phase, only the name of the algorithm is assigned to the operation node.  The details of the implementation are not specified until the refinement phase.
 
 
@@ -165,9 +165,9 @@ The compiler chooses the node with the fewest matching implementations (in the l
 
 The refinement phase resolves the implementation for each operation node in the graph into a subgraph defining the details of the chosen algorithm.  Each subgraph is an abstract representation of the loop that implements the given operation.  In each case, the subgraph has an iteration strategy that specifies how to traverse the elements of the matrix or vector.
 
-Figure~\ref{fig:refine-mv-dot} shows two steps of refinement for a matrix-vector multiplication. The first step expands the matrix-vector multiplication according to the mv-dot algorithm from figure~\ref{fig:algos}.  The refinement step replaces the $\times$ node with a subgraph that computes the inner product of a row of the matrix---the node labeled $(i,:)$---with the vector, storing the result in the $i$th element of the result vector---the node labeled $(i)$. The subgraph is labeled with $i=1\!:\!m$ indicating that the iteration strategy is to traverse the rows of the dense matrix.
+Figure~\ref{fig:refine-mv-dot} shows two steps of refinement for a matrix-vector multiplication. The first step expands the matrix-vector multiplication according to the mv-dot algorithm: $(Ax)(i) = A(i,:)x$.  The refinement step replaces the $\times$ node with a subgraph that computes the inner product of a row of the matrix---the node labeled $(i,:)$---with the vector, storing the result in the $i$th element of the result vector---the node labeled $(i)$. The subgraph is labeled with $i=1\!:\!m$ indicating that the iteration strategy is to traverse the rows of the dense matrix.
 %
-The second pass of refinement introduces another subgraph to implement the inner products (the dot algorithm from figure~\ref{fig:algos}). The new subgraph iterates through each dense row, as indicated by the $j=1:n$ annotation. The sign $\Sigma$ indicates that the sum of all of the iterations is computed.
+The second pass of refinement introduces another subgraph to implement the inner products. The new subgraph iterates through each dense row, as indicated by the $j=1:n$ annotation. The sign $\Sigma$ indicates that the sum of all of the iterations is computed.
 
 
 \begin{figure}[hbtp]
@@ -208,13 +208,98 @@ Figure~\ref{fig:orio} illustrates the tuning process using Orio. In the simplest
 \label{fig:orio}
 \end{figure}
 
+
 Orio can also be used as an automatic performance tuning tool. The system uses its code transformation modules and code generator to generate an optimized code version for each distinct combination of performance parameters. Then the optimized code versions are executed and their performance measured, which is subsequently compared to the performances of other previously tested code variants. After iteratively evaluating all code variants under consideration, the best-performing code is selected as the final output of Orio. The tuning specifications, written by users in the form of annotations (either embedded in the source code or in separate files), are parsed and used by Orio to guide the search and tuning process. These specifications include important information such as the used compilers, the search strategy, the program transformation parameters, the input data sizes, etc.
+
+\begin{figure}[thp]
+\centering
+\begin{tabular}{cc}
+\begin{minipage}[b]{.45\textwidth}
+\scriptsize
+\begin{verbatim}
+void vadd(int n, double *y, double *x1,
+               double *x2, double *x3)
+{
+    int i;
+
+/*@ begin Align (x1[],x2[],x3[],y[]) @*/
+/*@ begin Loop (
+  transform Unroll(ufactor=20, parallelize=True)
+    for (i=0; i < n; i++)
+      y[i] = x1[i] + x2[i] + x3[i];
+      ) @*/
+
+    for (i=0; i < n ; i++)
+        y[i] = x1[i] + x2[i] + x3[i];
+
+/*@ end @*/
+/*@ end @*/
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}[b]{.45\textwidth}
+\scriptsize
+\begin{verbatim}
+spec align_unroll {
+ def build  
+ { 
+   arg build_command = 'mpixlc -O3 -qstrict -lm'; 
+ } 
+ def performance_counter  
+ { 
+   arg method = 'basic timer'; 
+   arg repetitions = 10000;
+ } 
+ def performance_params 
+ { 
+   param UF[] = range(1,20);
+ } 
+ def input_params 
+ { 
+   param SIZE = @THESIZE@;
+   decl int n = SIZE;
+   decl double x1[n] = random;   
+   decl double x2[n] = random;   
+   decl double x3[n] = random;   
+   decl double y[n] = 0;
+ } 
+ def search
+ {
+   arg algorithm = 'Exhaustive';
+   arg time_limit = 20;
+   arg run_command = 'cqsub -n 64 -t 10 -q short ';
+   arg num_processes = 64;
+ }
+}
+\end{verbatim}
+\end{minipage}\\
+\end{tabular}
+\caption{Orio example: annotated C source code (left) and a tuning specification for the Blue Gene/P (right).}
+\label{fig:orio-example}
+\end{figure}
+
+
+We use the VADD operation, $x = w + y + z$, as a simple example of the annotations and tuning specification used by Orio. Figure~\ref{fig:orio-example} shows the C code with annotation comments indicating that Orio should perform memory alignment and loop transformations. In addition to simple source transformation annotations in the example above, Orio supports a number of other transformations, including loop unroll and jam, composite optimizations, and architecture-specific directives (e.g., for generation of calls to SIMD intrinsics on the Blue Gene/P). On the right-hand side of Figure~\ref{fig:orio-example}, a separate tuning specification contains the information required for creating complete executable tests and running them, including variable types, initializations (e.g., random), the search heuristic (in this case, exhaustive search is indicated, other options are random, simplex, and simulated annealing), and execution environment details. When parallel resources are available, Orio executes multiple variants in the same parallel job (the granularity is indicated by the \texttt{num\_processes} field in the search portion of the tuning specification. At present the tuning specification must be created manually. When Orio is used in conjunction with compiler tools, such as the MATLAB compiler described in this paper, it should be possible to generate most of this tuning specification automatically.
 
 \subsection{Search Space Exploration and Evaluation}
 \label{sec:search}
 
 % BN: moved to its own section since multiple tools deal with the search space problem.
-The set of all possible combinations of implementation and optimization choices is called the search space~\cite{Kisuki:2000uq,Triantafyllis:2003uq, Cooper:2005kx}.  Although the dataflow graphs are quite small in our setting (usually less than 100 nodes), it is still important to prune the search space to avoid an exponential compilation time. Our prototype Matlab compiler already performs some pruning: the optimization rewrite rules only apply under certain circumstances. 
+The set of all possible combinations of implementation and optimization choices is called the search space~\cite{Kisuki:2000uq,Triantafyllis:2003uq, Cooper:2005kx}.  Although the dataflow graphs are quite small in our setting (usually less than 100 nodes), it is still important to prune the search space to avoid an exponential compilation time. Our prototype MATLAB compiler already performs some pruning: the optimization rewrite rules only apply under certain circumstances. 
 %
 % BN: commented out below since it's more future work
 %However, as mentioned above we are sometimes overly aggressive in applying optimizations.
@@ -222,19 +307,28 @@ The set of all possible combinations of implementation and optimization choices 
 %
 Orio provides a number of different search heuristics to narrow the search space for near-optimal performance, including random, simplex, and simulated annealing searches. The search algorithm is one of the user-defined values in the Orio tuning specification.
 
-
-
 \section{Experimental Results}
 \label{sec:experiments}
 
-In this section we present performance results for a number of composed BLAS operations. The experiment described in Section~\ref{sec:vadd} were performed on Blue Gene/P, while the remaining experiments were all performed on an Intel Xeon 2.80 GHz Intel(R) E5462 dual quad-core workstation with a 1600MHz front-side bus and 16GB DDR2 FBDIMM RAM. 
+In this section we present performance results for a number of composed BLAS operations. The experiment described in Section~\ref{sec:vadd} were performed on Blue Gene/P, while the remaining experiments described in this section were all performed on an Intel Xeon 2.80 GHz Intel(R) E5462 dual quad-core workstation with a 1600Mhz front-side bus and 16GB DDR2 FBDIMM RAM, running Ubuntu 8.04.
 
 % Include peak numbers?
+
+For the Xeon experiments, we used the Intel icc compiler (version 10.1) with the \texttt{-O3 -parallel} optimization flags. We generated and tested the following different implementations of each operation:
+\begin{itemize}
+\item C from MATLAB: C code generated by the MATLAB compiler described in Section~\ref{sec:matlab}.
+\item BLAS: A version implemented using multiple BLAS calls and linked with the default BLAS library available on Ubutnu 8.04.
+\item Intel MKL: The same code as the BLAS version, but linked to the Intel MKL libraries.
+\item ATLAS: The same code as the BLAS version, but linked to the ATLAS libraries tuned for this machine.
+\item Orio (Seq.): The C code generated by the MATLAB compiler annotated with sequential-only optimization directives.
+\item Orio (Par.) : The C code generated by the MATLAB compiler annotated with both sequential and parallel optimization directives. This version was compiled with the \texttt{-O3 -openmp} options.
+\end{itemize}
 
 \subsection{VADD}
 \label{sec:vadd}
 
-We optimized the performance for the VADD operation, $x = w + y + z$, on the Blue Gene/P at Argonne National Laboratory using the IBM XLC compiler version 9.0. We measured the performance for two scenarios: using one core per processor and using all cores. In the single-core case, the codes were compiled with the following options: \texttt{-O3 -qstrict -qarch=450d -qtune=450 -qhot -qsmp=noauto}. For the multicore case, the only difference in the compilation was that for the non-Orio versions, the \texttt{-qsmp=auto} option was used.
+The VADD operation is simply the addition of three arrays, storing the result in a fourth: $x = w + y + z$.
+We optimized the performance for the VADD operation on the Blue Gene/P at Argonne National Laboratory using the IBM XLC compiler version 9.0. We measured the performance for two scenarios: using one core per processor and using all cores. In the single-core case, the codes were compiled with the following options: \texttt{-O3 -qstrict -qarch=450d -qtune=450 -qhot -qsmp=noauto}. For the multicore case, the only difference in the compilation was that for the non-Orio versions, the \texttt{-qsmp=auto} option was used.
 
 \begin{figure}[htp]
 \centering
@@ -271,7 +365,7 @@ The "Base" label designates the simple loop C implementation generated by the Ma
 
 \subsection{ATAX}
 
-The extended Matlab code for the ATAX operation, $y = A' * (A * x)$, and the corresponding performance results are shown in Figure~\ref{fig:atax}. The Orio-tuned version that incorporates OpenMP directives achieves the best performance for most problem sizes, while the
+The extended Matlab code for the ATAX operation, $y = A' * (A * x)$, and the corresponding performance results are shown in Figure~\ref{fig:atax}. The Orio-tuned version that incorporates PLuTo-generated loop fusion optimizations and Orio unrolling and parallelization directives achieves the best performance for most problem sizes, outperforming the Intel MKL version by a factor of 2 to 5.7 and the compiler-optimized C version by a factor of 4 to 7.
 
 
 
@@ -308,7 +402,7 @@ out
 \subsection{GEMVER}
 
 
-The extended Matlab code for the GEMVER operation and the corresponding performance results are shown in Figure~\ref{fig:gemver}.
+The extended MATLAB code for the GEMVER operation and the corresponding performance results are shown in Figure~\ref{fig:gemver}. As in the ATAX example, the parallel Orio version achieves the best performance, although in this case the sequential Orio version performance almost as well.
 
 
 
@@ -420,7 +514,10 @@ out
 
 \subsection{BiCG Kernel}
 
-$q = A * p$, $s = A' * r$
+% No pluto
+The extended Matlab code for the BiCG Kernel operation,$q = A * p$, $s = A' * r$,
+and the corresponding performance results are shown in Figure~\ref{fig:gesummv}. For this operation, the PLuTo analysis did not result in performance improvement, thus we are showing the results obtained only through Orio transformations, which included vectorization, scalar replacement, and unroll and jam. Again the best performance was exhibited by the parallel Orio version, while all the BLAS versions performed worse than the compiler-optimized C loop version.
+
 
 \begin{figure}[htp]
 \centering
@@ -454,11 +551,9 @@ out
 
 \section{Conclusions and Future Work}
 
-The positive initial results from our three-pronged approach to generating tuned linear algebra routines motivate several future lines of investigation. At present there are a number of manual steps involved in obtaining a compiled tuned linear algebra library from the high-level extended MATLAB descriptions. We will next delve into each manual step and create the software that automates it and in effect serves as the ``glue'' between the different tools. We will also investigate extending the supported functionality beyond composed BLAS operations, thus benefiting a wider spectrum of applications.
+The positive initial results from our three-pronged approach to generating tuned linear algebra routines motivate several future lines of investigation. At present there are a number of manual steps involved in obtaining a compiled tuned linear algebra library from the high-level extended MATLAB descriptions. We will next delve into each manual step and create the software that automates it and in effect serves as the ``glue'' between the different tools. This would enable application developers to easily produce custom linear algebra libraries tuned for specific architectures. We will also investigate extending the supported functionality of our MATLAB compiler beyond composed BLAS operations, thus benefiting a wider spectrum of applications. 
 
 Ultimately, the tuning process should result in more than one version of the computation since different versions are optimal for different problem sizes.
-
-This motivates further work on automating more parts of the process, so that these tools can be used by application developers to automatically produce custom linear algebra libraries tuned for specific architectures.
 
 % BN: moved from search space section above
 %Yotov:2005kx
@@ -471,5 +566,17 @@ We plan to use a fast analytic cost function to prune out regions of the search 
 
 
 
+
+
+% Current bibtex warnings:
+This is BibTeX, Version 0.99c (Web2C 7.5.4)
+The top-level auxiliary file: paper.aux
+The style file: siam.bst
+Database file #1: paper.bib
+Warning--can't use both volume and number fields in TCE
+(There was 1 warning)
+
+
+% Put bibtex here only if you do not have access to the subversion repository, otherwise insert them into paper.bib
 
 
