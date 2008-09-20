@@ -21,26 +21,26 @@
 
 \title{Generating Empirically Optimized Numerical Software from MATLAB Prototypes}
 
-\author{
-Elizabeth Jessup,$^1$ Boyana Norris,$^2$ Albert Hartono,$^3$ and Jeremy Siek$^4$\\
-\\
-\vspace{-.05in}
-{\small $^1$University of Colorado at Boulder Dept. of Computer Science, Boulder, CO~80309}\\
-\vspace{-.05in}
-{\small \url{jessup@cs.colorado.edu}}\\
-\vspace{-.05in}
-{\small $^2$Argonne National Laboratory Mathematics and Computer Science Division, Argonne, IL~60439}\\
-\vspace{-.05in}
-{\small \url{norris@mcs.anl.gov}}\\
-\vspace{-.05in}
-{\small $^3$Ohio State University Dept. of Computer Science and Engineering, Columbus, OH~43210}\\
-\vspace{-.05in}
-{\small \url{hartonoa@cse.ohio-state.edu}}\\
-\vspace{-.05in}
-{\small $^4$University of Colorado at Boulder Dept. of Electrical and Computer Engineering, Boulder, CO~80309}\\
-\vspace{-.05in}
-{\small \url{jeremy.siek@colorado.edu}}
-}
+%\author{
+%Elizabeth Jessup,$^1$ Boyana Norris,$^2$ Albert Hartono,$^3$ and Jeremy Siek$^4$\\
+%\\
+%\vspace{-.05in}
+%{\small $^1$University of Colorado at Boulder Dept. of Computer Science, Boulder, CO~80309}\\
+%\vspace{-.05in}
+%{\small \url{jessup@cs.colorado.edu}}\\
+%\vspace{-.05in}
+%{\small $^2$Argonne National Laboratory Mathematics and Computer Science Division, Argonne, IL~60439}\\
+%\vspace{-.05in}
+%{\small \url{norris@mcs.anl.gov}}\\
+%\vspace{-.05in}
+%{\small $^3$Ohio State University Dept. of Computer Science and Engineering, Columbus, OH~43210}\\
+%\vspace{-.05in}
+%{\small \url{hartonoa@cse.ohio-state.edu}}\\
+%\vspace{-.05in}
+%{\small $^4$University of Colorado at Boulder Dept. of Electrical and Computer Engineering, Boulder, CO~80309}\\
+%\vspace{-.05in}
+%{\small \url{jeremy.siek@colorado.edu}}
+%}
 
 \begin{document}
 
@@ -103,7 +103,10 @@ Composed routines are the focus of the work presented here, but much of what we 
 \caption{Overview of the code generation and tuning process, optional steps are indicated with dashed arrows.}
 \label{fig:process}
 \end{figure}
-To generate highly optimized code from a MATLAB prototype of the composed BLAS operation, we follow a three-step approach, illustrated in Figure~\ref{fig:process}.  To begin, we have developed a compiler that converts a MATLAB script into simple C code~\cite{Siek}.  After generating the C code from the high-level MATLAB prototype, we (optionally) use the source-to-source automatic parallelization tool PLuTo\cite{Pluto} developed at Ohio State University to optimize for coarse-grained parallelism and locality simultaneously. Using the results of the PLuTo analysis, we insert annotations into the C code, which are then processed by our extensible annotation system Orio to generate many tuned versions of the same operation using different optimization parameters. Orio then performs an empirical search to select the best among the multiple optimized code variants.
+To generate highly optimized code from a MATLAB prototype of the composed BLAS operation, we follow a three-step approach, illustrated in Figure~\ref{fig:process}.  To begin, we have developed a compiler that converts a MATLAB script into simple C code.
+%~\cite{Siek}. 
+After generating the C code from the high-level MATLAB prototype, we (optionally) use the source-to-source automatic parallelization tool PLuTo\cite{Pluto} %developed at Ohio State University
+to optimize for coarse-grained parallelism and locality simultaneously. Using the results of the PLuTo analysis, we insert annotations into the C code, which are then processed by our extensible annotation system Orio to generate many tuned versions of the same operation using different optimization parameters. Orio then performs an empirical search to select the best among the multiple optimized code variants.
 
 %Probably need some words about WHY this multipronged approach is a good idea.
 
@@ -112,7 +115,7 @@ In the remainder of this section we describe each of the tools developed by the 
 \subsection{A MATLAB Compiler}
 \label{sec:matlab}
 
-We have developed a compiler that translates MATLAB scripts into C code.    Figure~\ref{fig:compiler} gives an overview of the compilation process. The MATLAB kernel specification is parsed into a high-level intermediate representation in the form of a dataflow graph.  This dataflow graph is then iteratively processed until all of the implementation choices have been made.  The compilation process consists of three phases: analysis, lowering, and optimization, which are together iterated until all of the implementation decisions have been made.  The graph is then translated into C code.
+In this section we describe the design and operation of the MATLAB to C compiler we have developed.    Figure~\ref{fig:compiler} gives an overview of the compilation process. The MATLAB kernel specification is parsed into a high-level intermediate representation in the form of a dataflow graph.  This dataflow graph is then iteratively processed until all of the implementation choices have been made.  The compilation process consists of three phases: analysis, lowering, and optimization, which are together iterated until all of the implementation decisions have been made.  The graph is then translated into C code.
 
 \begin{figure}[htbp]
 \centering
@@ -186,7 +189,8 @@ A graph that cannot be further refined has been reduced to a collection of subgr
 \subsection{Orio}
 \label{sec:orio}
 
-Orio~\cite{Norris:2007} is an empirical tuning tool that takes as input annotated C code and generates multiple tuned versions. Orio does not parse the application code; rather, it relies on annotations expressed as structured comments, which contain a simplified expression of the computation, as well as directives on what transformations to apply.
+%~\cite{Norris:2007}
+Orio is an empirical tuning tool that takes as input annotated C code and generates multiple tuned versions. Orio does not parse the application code; rather, it relies on annotations expressed as structured comments, which contain a simplified expression of the computation, as well as directives on what transformations to apply.
 
 Figure~\ref{fig:orio} illustrates the tuning process using Orio. In the simplest case, Orio can be used to improve code performance by performing source-to-source transformations, such as loop unrolling and memory alignment optimizations. First, the input to Orio is C code, which contains syntactically structured comments that contain both the computation to be tuned, as well as various performance-tuning directives. Orio scans the annotated input code and extracts all annotated regions. Each annotated region is then passed to the code transformation modules for potential optimizations. The code generator then produces the final code incorporating the newly generated optimized C code corresponding to the annotation. The original C code is not parsed (only the annotation comments are processed) and is preserved in the new version. The user has the option of selecting either the original or the tuned code by using a compile-time macro.
 
@@ -291,7 +295,7 @@ On the right-hand side of Figure~\ref{fig:orio-example}, we show a separate tuni
 \label{sec:search}
 
 % BN: moved to its own section since multiple tools deal with the search space problem.
-The set of all possible combinations of implementation and optimization choices is called the search space~\cite{Kisuki:2000uq,Triantafyllis:2003uq, Cooper:2005kx}.  Although the dataflow graphs are quite small in our setting (usually less than 100 nodes), it is still important to prune the search space to avoid an exponential compilation time. Our prototype MATLAB compiler already performs some pruning: the optimization rewrite rules only apply under certain circumstances. 
+The set of all possible combinations of implementation and optimization choices is called the search space~\cite{Kisuki:2000uq,Triantafyllis:2003uq,Cooper:2005kx}.  Although the dataflow graphs are quite small in our setting (usually less than 100 nodes), it is still important to prune the search space to avoid an exponential compilation time. Our prototype MATLAB compiler already performs some pruning: the optimization rewrite rules only apply under certain circumstances. 
 %
 % BN: commented out below since it's more future work
 %However, as mentioned above we are sometimes overly aggressive in applying optimizations.
@@ -320,7 +324,9 @@ For the Xeon experiments, we used the Intel icc compiler (version 10.1) with the
 \label{sec:vadd}
 
 The VADD operation computes the sum of three arrays, storing the result in a fourth: $x = w + y + z$.
-We optimized the performance for the VADD operation on the Blue Gene/P at Argonne National Laboratory using the IBM XLC compiler version 9.0. We measured the performance for two scenarios: using one core per processor and using all 4 cores on each processor. In the single-core case, the codes were compiled with the following options: \texttt{-O3 -qstrict -qarch=450d -qtune=450 -qhot -qsmp=noauto}. For the multicore case, the only difference in the compilation was that for the non-Orio versions, the \texttt{-qsmp=auto} option was used. The parallel Orio version differs from the sequential in that it contains parallelization directives, which result in the placement of OpenMP pragmas in the generated code.
+We optimized the performance for the VADD operation on a Blue Gene/P
+%at Argonne National Laboratory
+using the IBM XLC compiler version 9.0. We measured the performance for two scenarios: using one core per processor and using all 4 cores on each processor. In the single-core case, the codes were compiled with the following options: \texttt{-O3 -qstrict -qarch=450d -qtune=450 -qhot -qsmp=noauto}. For the multicore case, the only difference in the compilation was that for the non-Orio versions, the \texttt{-qsmp=auto} option was used. The parallel Orio version differs from the sequential in that it contains parallelization directives, which result in the placement of OpenMP pragmas in the generated code.
 
 \begin{figure}[htp]
 \centering
@@ -552,30 +558,30 @@ Finally, while Orio currently generates various loop transformations, it does no
 
 \singlespacing
 %% or stuff it in a footnote
-\section*{Acknowledgments}
-This work was supported by the Mathematical, Information, and
-Computational Sciences Division subprogram of the Office of Advanced
-Scientific Computing Research, Office of Science, U.S. Dept. of Energy,
-under Contract DE-AC02-06CH11357. 
+%\section*{Acknowledgments}
+%This work was supported by the Mathematical, Information, and
+%Computational Sciences Division subprogram of the Office of Advanced
+%Scientific Computing Research, Office of Science, U.S. Dept. of Energy,
+%under Contract DE-AC02-06CH11357. 
 %TODO: need Colorado and Ohio acknowledgments
 
 \bibliographystyle{acm}
 \bibliography{paper}
 
-\vfill
-\begin{flushright}
-\scriptsize
-\framebox{\parbox{2.4in}{The submitted manuscript has been created by
-UChicago Argonne, LLC, Operator of Argonne National Laboratory
-("Argonne").  Argonne, a U.S. Department of Energy Office
-of Science laboratory, is operated under Contract No.
-DE-AC02-06CH11357.  The U.S. Government retains for itself, and
-others acting on its behalf, a paid-up, nonexclusive, irrevocable
-worldwide license in said article to reproduce, prepare derivative works,
-distribute copies to the public, and perform publicly and display
-publicly, by or on behalf of the Government.}}
-\normalsize
-\end{flushright}
+%\vfill
+%\begin{flushright}
+%\scriptsize
+%\framebox{\parbox{2.4in}{The submitted manuscript has been created by
+%UChicago Argonne, LLC, Operator of Argonne National Laboratory
+%("Argonne").  Argonne, a U.S. Department of Energy Office
+%of Science laboratory, is operated under Contract No.
+%DE-AC02-06CH11357.  The U.S. Government retains for itself, and
+%others acting on its behalf, a paid-up, nonexclusive, irrevocable
+%worldwide license in said article to reproduce, prepare derivative works,
+%distribute copies to the public, and perform publicly and display
+%publicly, by or on behalf of the Government.}}
+%\normalsize
+%\end{flushright}
 
 \end{document}
 
