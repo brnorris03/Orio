@@ -1,0 +1,56 @@
+\documentclass[12pt]{article}
+%\usepackage{latex8}
+%\usepackage[]{rotating} 
+\usepackage{ifpdf}
+\usepackage{url} 
+\usepackage{comment} 
+\usepackage{cite} 
+\usepackage{graphicx} 
+\usepackage{subfigure}  
+\usepackage{wrapfig}
+\usepackage{times}
+\usepackage{amsmath,amsthm}
+\usepackage[letterpaper,margin=1in]{geometry}
+
+\ifpdf
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\else
+\DeclareGraphicsExtensions{.eps,.ps}
+\fi
+
+\newenvironment{itemizer}{\begin{itemize}\setlength{\parsep}{0cm}\setlength{\itemsep}{-.3em}}{\end{itemize}}
+
+\long\def\comment#1{}
+\date{}
+
+\title{\vspace{-.6in}Annotation-Based Empirical Performance Tuning\\ Using Orio}
+
+\author{
+Albert Hartono$^1$, Boyana Norris$^2$, and P. Sadayappan$^1$ \\
+{\small $^1$Ohio State University, Dept. of Computer Science and Engineering, Columbus, OH 43210}\\
+{\small \texttt{\{hartonoa, saday\}@cse.ohio-state.edu}}\\
+{\small $^2$Argonne National Laboratory, Mathematics and Computer Science Division, Argonne, IL 60439}\\
+{\small \texttt{norris@mcs.anl.gov}}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+
+\input{motivation}
+\input{related}
+\input{implementation}
+\input{integration}
+\input{results} 
+\input{conclusions} 
+
+\small
+\bibliographystyle{abbrv} 
+\bibliography{paper}
+
+\end{document}
+
