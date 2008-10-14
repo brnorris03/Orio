@@ -33,7 +33,7 @@ class Loop(module.module.Module):
         indent = ' ' * self.indent_size
         extra_indent = '  '
         cgen = codegen.CodeGen()
-        transformed_code = ''
+        transformed_code = '\n'
         for s in transformed_stmts:
             transformed_code += cgen.generate(s, indent, extra_indent)
 
