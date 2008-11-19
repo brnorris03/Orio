@@ -1,0 +1,56 @@
+%NOTES about the experiments
+
+%Results already obtained:
+% -gemver (orio/testsuite/gemver/cookie directory)
+% -gesummv (orio/testsuite/gesummv/cookie directory)
+% -bicgkernel (orio/testsuite/bicgkernel/cookie directory)
+% -atax (orio/testsuite/atax/cookie directory)
+
+%* All results were obtained on the cookie machine (eight-core Intel Xeon)
+
+%* Compiler used: icc 10.1
+%* Optimization flags used: -O3 (-parallel for parallel matlab code) (-openmp for parallel orio code)
+
+%* We compare two types of codes:
+%  1. matlab
+%  2. orio
+%1. 'matlab' code is the original code produced by the matlab c compiler.
+%2. 'orio' is obtained first from the Pluto-generated code (use loop fusion, NO loop tiling,
+%   NO unrolling, NO parallelization, NO vectorization), then was decorated with
+%   performance annotations before being tuned by Orio.
+
+%* Each code has two versions: one with static arrays, and another with dynamic arrays.
+
+%* Conversion from/to static arrays to/from dynamic arrays was done manually.
+
+%* I run Pluto first to maximally fuse all loops (using polycc <file>
+%--maxfuse option) and see the resulting fused loop(s). And then tune the
+%fused loop using Orio. Sometimes, the fused loop gets very complicated
+%because of Pluto's various transformations (e.g. skewing). In that case, I
+%don't use Pluto's loop fusion. For example, gemver and gesummv results use
+%Pluto's loop fusion, but bicgkernel doesn't use Pluto's loop fusion at
+%all.
+
+%* All experiment files are in <kernel-name>/cookie directory
+
+%* All generated codes (the base Matlab codes, and the Orio-tuned codes),
+%results, script for running the experiments are in
+%<kernel-name>/cookie/exp
+
+%* I tuned 4 different versions for each kernel:
+% 1. sequential (static arrays)
+% 2. sequential (dynamic arrays)
+% 3. parallel (static arrays)
+% 4. parallel (dynamic arrays)
+
+%The annotated source code for 1 and 3 is in <kernel-name>.src1.c
+%The annotated source code for 3 and 4 is in <kernel-name>.src2.c
+
+%The final code for 1 and 2 is in <kernel-name>.orio.seq.c
+%The final code for 3 and 4 is in <kernel-name>.orio.par.c
+
+%* <kernel-name>.matlab.c contains the original Matlab code (for both
+%static and dynamics arrays)
+
+%* The best performance parameters for each version can be seen in
+%results.txt file.
