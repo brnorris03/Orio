@@ -1,5 +1,5 @@
 #
-# The classes for the abstract syntax tree (AST)
+# The class definitions of the Abstract Syntax Tree (AST)
 #
 #  AST 
 #   |
@@ -15,25 +15,15 @@
 #   |    +-- ParenthExp
 #   |
 #   +-- Stmt 
-#   |    |
-#   |    +-- ExpStmt 
-#   |    +-- CompStmt 
-#   |    +-- IfStmt 
-#   |    +-- ForStmt 
-#   |    +-- TransformStmt 
-#   |
-#   +-- NewAST 
 #        |
-#        +-- VarDecl 
-#        +-- Pragma 
-#        +-- Container
-#
-# - The NewAST is an AST used only in the output code generation. Such separation is needed to
-#   simplify the input language.
+#        +-- ExpStmt 
+#        +-- CompStmt 
+#        +-- IfStmt 
+#        +-- ForStmt 
 #
 
 import sys
-import codegen
+import pprinter
 
 #-----------------------------------------------
 # AST - Abstract Syntax Tree
@@ -52,12 +42,12 @@ class AST:
 
     def __repr__(self):
         '''Return a string representation for this AST object'''
-        return codegen.CodeGen().generate(self)
+        return pprinter.PrettyPrinter().pprint(self)
 
     def __str__(self):
         '''Return a string representation for this AST object'''
         return repr(self)
-    
+
 #-----------------------------------------------
 # Expression
 #-----------------------------------------------
@@ -299,88 +289,13 @@ class ForStmt(Stmt):
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
         r_in = self.init
-        r_t = self.test
+        r_ts = self.test
         r_it = self.iter
         if r_in:
             r_in = r_in.replicate()
-        if r_t:
-            r_t = r_t.replicate()
+        if r_ts:
+            r_ts = r_ts.replicate()
         if r_it:
             r_it = r_it.replicate()
-        return ForStmt(r_in, r_t, r_it, self.stmt.replicate(), self.line_no)
-
-#-----------------------------------------------
-# Transformation
-#-----------------------------------------------
-
-class TransformStmt(Stmt):
-
-    def __init__(self, name, args, stmt, line_no = ''):
-        '''Create a transformation statement'''
-        Stmt.__init__(self, line_no)
-        self.name = name
-        self.args = args
-        self.stmt = stmt
-
-    def replicate(self):
-        '''Replicate this abstract syntax tree node'''
-        return TransformStmt(self.name, self.args[:], self.stmt.replicate(), self.line_no)
-
-#-----------------------------------------------
-# New AST
-#-----------------------------------------------
-
-class NewAST(AST):
-
-    def __init__(self, line_no = ''):
-        '''Create a newly-added statement'''
-        AST.__init__(self, line_no)
-
-#-----------------------------------------------
-# Variable Declaration
-#-----------------------------------------------
-
-class VarDecl(NewAST):
-
-    def __init__(self, type_name, var_names, line_no = ''):
-        '''Create a variable declaration'''
-        NewAST.__init__(self, line_no)
-        self.type_name = type_name
-        self.var_names = var_names
-
-    def replicate(self):
-        '''Replicate this abstract syntax tree node'''
-        return VarDecl(self.type_name, self.var_names[:], self.line_no)
-
-#-----------------------------------------------
-# Pragma Directive
-#-----------------------------------------------
-
-class Pragma(NewAST):
-
-    def __init__(self, pstring, line_no = ''):
-        '''Create a pragma directive'''
-        NewAST.__init__(self, line_no)
-        self.pstring = pstring
-
-    def replicate(self):
-        '''Replicate this abstract syntax tree node'''
-        return Pragma(self.pstring, self.line_no)
-
-#-----------------------------------------------
-# Container
-#-----------------------------------------------
-
-class Container(NewAST):
-
-    def __init__(self, ast, line_no = ''):
-        '''Create a container AST (to protect the contained AST from any code transformations)'''
-        NewAST.__init__(self, line_no)
-        self.ast = ast
-
-    def replicate(self):
-        '''Replicate this abstract syntax tree node'''
-        return Container(self.ast.replicate(), self.line_no)
-
-
+        return ForStmt(r_in, r_ts, r_it, self.stmt.replicate(), self.line_no)
 
