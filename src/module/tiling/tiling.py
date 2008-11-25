@@ -3,7 +3,7 @@
 #
 
 import sys
-import ann_parser, module.module
+import ann_parser, code_parser, module.module, pprinter
 
 #-----------------------------------------
 
@@ -25,17 +25,22 @@ class Tiling(module.module.Module):
         # parse the text in the annotation module body to extract tiling information
         tile_info_list = ann_parser.AnnParser(self.perf_params).parse(self.module_body_code)
 
-        print tile_info_list
-        print '----------'
-        print self.module_body_code
-        print '----------'
-        print self.annot_body_code
-        
-        sys.exit(1)
-        
-        # parse to obtain AST
-        stmts = parser.getParser(self.line_no).parse(self.annot_body_code)
-        
-        print '----- force to exit -----'
+        # parse the code to be tiled (in the annotation body) to extract the corresponding AST
+        code_stmts = code_parser.getParser().parse(self.annot_body_code)
+
+        # generate the code of the tiled code
+        tiled_code = ''
+        for s in code_stmts:
+            tiled_code = tiled_code + pprinter.PrettyPrinter().pprint(s)
+        if tiled_code[0] != '\n':
+            tiled_code = '\n' + tiled_code
+        if tiled_code[-1] != '\n':
+            tiled_code = tiled_code + '\n'
+
+        print tiled_code
+
+        print '----- forced to exit -----'
         sys.exit(1)
 
+        # return the tiled code
+        return tiled_code
