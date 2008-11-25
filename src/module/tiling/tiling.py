@@ -3,7 +3,7 @@
 #
 
 import sys
-import ann_parser, code_parser, module.module, pprinter
+import ann_parser, code_parser, module.module, pprinter, transformator
 
 #-----------------------------------------
 
@@ -28,6 +28,10 @@ class Tiling(module.module.Module):
         # parse the code to be tiled (in the annotation body) to extract the corresponding AST
         code_stmts = code_parser.getParser().parse(self.annot_body_code)
 
+        # perform loop-tiling transformation
+        code_stmts = transformator.Transformator(self.perf_params).transform(code_stmts,
+                                                                             tile_info_list)
+        
         # generate the code of the tiled code
         tiled_code = ''
         for s in code_stmts:
@@ -44,3 +48,4 @@ class Tiling(module.module.Module):
 
         # return the tiled code
         return tiled_code
+

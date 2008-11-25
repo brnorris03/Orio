@@ -112,7 +112,7 @@ def t_NEWLINE(t):
     
 # syntactical error
 def t_error(t):
-    print 'error:%s: syntactical error: "%s"' % (getLineNumber(t.lineno), t.value[0])
+    print 'error:Tiling:%s: syntactical error: "%s"' % (getLineNumber(t.lineno), t.value[0])
     sys.exit(1)
     
 #------------------------------------------------
@@ -216,11 +216,11 @@ def p_assignment_expression_2(p):
         elif (p[2] == '-='):
             rhs = ast.BinOpExp(p[1], p[3], ast.BinOpExp.SUB, getLineNumber(p.lineno(1)))
         else:
-            print 'internal error: unknown assignment operator'
+            print 'internal error:Tiling: unknown assignment operator'
             sys.exit(1)
         p[0] = ast.BinOpExp(lhs, rhs, ast.BinOpExp.EQ_ASGN, getLineNumber(p.lineno(1)))
     else:
-        print 'internal error: unknown assignment operator'
+        print 'internal error:Tiling: unknown assignment operator'
         sys.exit(1)
 
 # assignment-operator:
@@ -264,7 +264,7 @@ def p_equality_expression_2(p):
     elif p[2] == '!=':
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.NE, getLineNumber(p.lineno(1)))
     else:
-        print 'internal error: unknown equality operator'
+        print 'internal error:Tiling: unknown equality operator'
         sys.exit(1)
 
 # equality-operator:
@@ -289,7 +289,7 @@ def p_relational_expression_2(p):
     elif (p[2] == '>='):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.GE, getLineNumber(p.lineno(1)))
     else:
-        print 'internal error: unknown relational operator'
+        print 'internal error:Tiling: unknown relational operator'
         sys.exit(1)
         
 # relational-operator
@@ -312,7 +312,7 @@ def p_additive_expression_2(p):
     elif (p[2] == '-'):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.SUB, getLineNumber(p.lineno(1)))
     else:
-        print 'internal error: unknown additive operator' 
+        print 'internal error:Tiling: unknown additive operator' 
         sys.exit(1)
 
 # additive-operator:
@@ -335,7 +335,7 @@ def p_multiplicative_expression_2(p):
     elif (p[2] == '%'):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.MOD, getLineNumber(p.lineno(1)))
     else:
-        print 'internal error: unknown multiplicative operator'
+        print 'internal error:Tiling: unknown multiplicative operator'
         sys.exit(1)
 
 # multiplicative-operator
@@ -367,7 +367,7 @@ def p_unary_expression_4(p):
     elif p[1] == '!':
         p[0] = ast.UnaryExp(p[2], ast.UnaryExp.LNOT, getLineNumber(p.lineno(1)))
     else:
-        print 'internal error: unknown unary operator'
+        print 'internal error:Tiling: unknown unary operator'
         sys.exit(1)
 
 # unary-operator
@@ -441,7 +441,7 @@ def p_argument_expression_list_2(p):
 
 # grammatical error
 def p_error(p):
-    print 'error:%s: grammatical error: "%s"' % (getLineNumber(p.lineno), p.value)
+    print 'error:Tiling:%s: grammatical error: "%s"' % (getLineNumber(p.lineno), p.value)
     sys.exit(1)
 
 #------------------------------------------------
