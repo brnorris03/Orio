@@ -30,7 +30,7 @@ class AnnParser:
         for index_name, tile_size_name, tile_size_value in tile_info_list:
 
             # check the tile size value
-            if tile_size_value:
+            if tile_size_value != None:
                 try:
                     v = eval(tile_size_value, self.perf_params)
                 except Exception, e:
