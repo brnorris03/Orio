@@ -237,45 +237,7 @@ class ASTUtil:
                 stride_exp = stride_exp.exp
             it = ast.BinOpExp(index_id.replicate(), stride_exp.replicate(), ast.BinOpExp.ADD)
             iter_exp = ast.BinOpExp(index_id.replicate(), it, ast.BinOpExp.EQ_ASGN)
+        if not isinstance(loop_body, ast.CompStmt):
+            loop_body = ast.CompStmt([loop_body])
         return ast.ForStmt(init_exp, test_exp, iter_exp, loop_body.replicate())
     
-    #---------------------------------------------------------------
-
-    def normalizeLoopFormat(self, stmt):
-        '''
-        To change the format of all for-loops to a fixed form as described below:
-          for (<id> = <exp>; <id> <= <exp>; <id> += <exp>) {
-            <stmt>
-            <stmt>
-            ...
-            <stmt>
-          }
-        '''
-        
-        if isinstance(stmt, ast.ExpStmt):
-            return stmt
-
-        elif isinstance(stmt, ast.CompStmt):
-            stmt.stmts = [self.normalizeLoopFormat(s) for s in stmt.stmts]
-            return stmt
-        
-        elif isinstance(stmt, ast.IfStmt):
-            stmt.true_stmt = self.normalizeLoopFormat(stmt.true_stmt)
-            if stmt.false_stmt:
-                stmt.false_stmt = self.normalizeLoopFormat(stmt.false_stmt)
-            return stmt
-            
-        elif isinstance(stmt, ast.ForStmt):
-            stmt.stmt = self.normalizeLoopFormat(stmt.stmt)
-            (index_id, lbound_exp, ubound_exp, stride_exp, loop_body) = self.getForLoopInfo(stmt)
-            if isinstance(stmt, ast.ForStmt) and not isinstance(stmt.stmt, ast.CompStmt):
-                loop_body = ast.CompStmt([loop_body])
-            stmt = self.createForLoop(index_id, lbound_exp, ubound_exp, stride_exp, loop_body)
-            return stmt
-            
-        else:
-            print 'internal error:Tiling: unknown type of AST: %s' % stmt.__class__.__name__
-            sys.exit(1)
-
-
-
