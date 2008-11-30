@@ -3,7 +3,7 @@
 #
 
 import sys
-import ann_parser, code_parser, module.module, pprinter, transformator
+import ann_parser, code_parser, module.module, pprinter, semant, transformator
 
 #-----------------------------------------
 
@@ -22,15 +22,21 @@ class Tiling(module.module.Module):
     def transform(self):
         '''To apply loop tiling on the annotated code'''
 
-        # parse the text in the annotation module body to extract tiling information
-        tile_info_list = ann_parser.AnnParser(self.perf_params).parse(self.module_body_code)
-
-        # parse the code to be tiled (in the annotation body) to extract the corresponding AST
+        # parse the code (in the annotation body) to extract the corresponding AST
         code_stmts = code_parser.getParser().parse(self.annot_body_code)
 
+        # analyze the AST semantics
+        code_stmts = semant.SemanticAnalyzer().analyze(code_stmts)
+
+        # parse the text in the annotation module body to extract tiling information
+        tiling_info = ann_parser.AnnParser(self.perf_params).parse(self.module_body_code)
+
         # perform loop-tiling transformation
-        code_stmts = transformator.Transformator(self.perf_params).transform(code_stmts,
-                                                                             tile_info_list)
+        code_stmts = transformator.Transformator(self.perf_params, tiling_info).transform(code_stmts)
+
+        print '-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-'
+        print code_stmts
+        sys.exit(1)
         
         # generate the code of the tiled code
         tiled_code = ''

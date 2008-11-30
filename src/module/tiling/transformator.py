@@ -10,184 +10,153 @@ import ast, ast_util
 class Transformator:
     '''The code transformator that performs loop tiling'''
 
-    def __init__(self, perf_params):
+    def __init__(self, perf_params, tiling_info):
         '''To instantiate a code transformator'''
 
         self.perf_params = perf_params
+        self.num_level, self.tiling_table = tiling_info
         self.ast_util = ast_util.ASTUtil()
 
     #----------------------------------------------
 
-    def __getInterTileLoopIndexName(self, index_name):
-        '''Generate a new index name used as the inter-tile loop index name'''
-        return index_name + 't'
+    def __getNewIteratorName(self, index_name, level):
+        '''Generate a new iterator name for inter-tile loop'''
+        return index_name + ('t' * level)
+
+    def __getNewTileSizeName(self, index_name, level):
+        '''Generate a new variable name for the tile size'''
+        return 'T' + (index_name * level)
 
     #----------------------------------------------
 
-    def __createIntraTileLoop(self, index_id, tile_size_id, stride_exp, loop_body):
+    def __createInterTileLoop(self, level, index_name, lbound_exp, ubound_exp, stride_exp, loop_body):
         '''
-        Generate an intra-tile loop statement that corresponds to the given input arguments
-          for (i=it; i<=it+(Ts-St); i+=St)
+        Generate an inter-tile loop
+          for (it=lb; it<=ub-(Ti-St); it+=Ti)
             <loop-body>
         '''
-
-        lbound_exp = tile_size_id
-        e = ast.BinOpExp(tile_size_id, stride_exp, ast.BinOpExp.SUB)
-        inter_tile_index_id = ast.IdentExp(self.__getInterTileLoopIndexName(index_id.name))
-        ubound_exp = ast.BinOpExp(inter_tile_index_id, ast.ParenthExp(e), ast.BinOpExp.ADD)
-        return self.ast_util.createForLoop(index_id, lbound_exp, ubound_exp, stride_exp, loop_body)
+        
+        id = ast.IdentExp(self.__getNewIteratorName(index_name, level))
+        st = ast.IdentExp(self.__getNewTileSizeName(index_name, level))
+        lb = lbound_exp.replicate()
+        tmp = ast.BinOpExp(self.__getNewTileSizeName(index_name, level),
+                           ast.ParenthExp(stride_exp.replicate()), ast.BinOpExp.SUB)
+        ub = ast.BinOpExp(ubound_exp.replicate(), ast.ParenthExp(tmp), ast.BinOpExp.SUB)
+        bod = loop_body.replicate()
+        return self.ast_util.createForLoop(id, lb, ub, st, bod)
 
     #----------------------------------------------
 
-    def __createInterTileLoop(self, index_id, tile_size_id, lbound_exp, ubound_exp, loop_body):
+    def __createIntraTileLoop(self, level, index_name, stride_exp, loop_body):
         '''
-        Generate an inter-tile loop statement that corresponds to the given input arguments
-          for (it=lb; it<=ub-(Ts-1); it+=Ts)
+        Generate an intra-tile loop:
+          for (i=it; i<=it+(Ti-St); i+=St)
             <loop-body>
         '''
-
-        inter_tile_index_id = ast.IdentExp(self.__getInterTileLoopIndexName(index_id.name))
-        e = ast.BinOpExp(tile_size_id, ast.NumLitExp(1, ast.NumLitExp.INT), ast.BinOpExp.SUB)
-        ubound_exp = ast.BinOpExp(ubound_exp, ast.ParenthExp(e), ast.BinOpExp.SUB)
-        return self.ast_util.createForLoop(inter_tile_index_id, lbound_exp, ubound_exp,
-                                           tile_size_id, loop_body)
+        
+        id = ast.IdentExp(index_name)
+        st = stride_exp.replicate()
+        lb = ast.IdentExp(self.__getNewIteratorName(index_name, level))
+        tmp = ast.BinOpExp(self.__getNewTileSizeName(index_name, level),
+                           ast.ParenthExp(stride_exp.replicate()), ast.BinOpExp.SUB)
+        ub = ast.BinOpExp(ast.IdentExp(self.__getNewIteratorName(index_name, level)),
+                          ast.ParenthExp(tmp), ast.BinOpExp.ADD)
+        bod = loop_body.replicate()        
+        return self.ast_util.createForLoop(id, lb, ub, st, bod)
 
     #----------------------------------------------
 
-    def __tileLoopBody(self, stmt, tile_info_table, new_integer_vars, outer_tiled_loop_seq):
-        '''Apply loop tiling to the given loop body statement'''
+    def __tile(self, stmt, new_integer_vars, outer_loops, preceding_untiled_stmts):
+        '''Apply tiling on the given statement'''
 
-        if not isinstance(stmt, ast.CompStmt):
-            print 'error:Tiling: statement is not a compound statement'
+        if isinstance(stmt, ast.ExpStmt):
+            tiled_stmts = []
+            untiled_stmts = preceding_untiled_stmts + [stmt]
+            return (tiled_stmts, untiled_stmts)
+
+        elif isinstance(stmt, ast.CompStmt):
+            print ('internal error:Tiling: unexpected compound statement directly nested inside ' +
+                   'another compound statement')
             sys.exit(1)
 
-        #XXX
+        elif isinstance(stmt, ast.IfStmt):
+            return ([], preceding_untiled_stmts + [stmt])
+
+        elif isinstance(stmt, ast.ForStmt):
+
+            # first get all needed information
+            for_loop_info = self.ast_util.getForLoopInfo(stmt)
+            (index_id, lbound_exp, ubound_exp, stride_exp, loop_body) = for_loop_info
+            outer_loop_inames = [iname for iname, linfo in outer_loops]
+            outer_loop_infos = [linfo for iname, linfo in outer_loops]
+
+            # check if this loop does not have any tiling information
+            if index_id.name not in self.tiling_table:
+                print ('error:Tiling: missing loop "%s" in the list of loops to be tiled' %
+                       index_id.name)
+                sys.exit(1)
+
+            # find all outer loop iterator names that are used in the loop expressions
+            bound_inames = []
+            for i in outer_loop_inames:
+                if (self.ast_util.containIdentName(lbound_exp, index_id.name) or
+                    self.ast_util.containIdentName(ubound_exp, index_id.name)):
+                    bound_inames.append(i)
+
+            #  
+                
+                
+                
+            
+            return ([stmt], [])
+
+        else:
+            print 'internal error:Tiling: unknown type of statement: %s' % stmt.__class__.__name__
+            sys.exit(1)
         
+    
+
+    #----------------------------------------------
+
+    def __startTiling(self, stmt, new_integer_vars):
+        '''Find loops to be tiled and apply loop-tiling transformation on each of them'''
 
         if isinstance(stmt, ast.ExpStmt):
             return stmt
 
         elif isinstance(stmt, ast.CompStmt):
-            stmt.stmts = [self.__tile(s, tile_info_table, outer_index_names, new_integer_vars)
-                          for s in stmt.stmts]
+            stmt.stmts = [self.__startTiling(s, new_integer_vars) for s in stmt.stmts]
             return stmt
 
         elif isinstance(stmt, ast.IfStmt):
-            stmt.true_stmt = self.__tile(stmt.true_stmt, tile_info_table,
-                                         outer_index_names, new_integer_vars)
+            stmt.true_stmt = self.__startTiling(stmt.true_stmt, new_integer_vars)
             if stmt.false_stmt:
-                stmt.false_stmt = self.__tile(stmt.false_stmt, tile_info_table,
-                                              outer_index_names, new_integer_vars)
+                stmt.false_stmt = self.__startTiling(stmt.false_stmt, new_integer_vars)
             return stmt
 
         elif isinstance(stmt, ast.ForStmt):
-
-            # extract information about this loop structure
-            for_loop_info = self.ast_util.getForLoopInfo(stmt)
-            (index_id, lbound_exp, ubound_exp, stride_exp, loop_body) = for_loop_info
-
-            # perform tiling if this loop is to be tiled
-            if index_id.name in tile_info_table:
-                tiled_loop = self.__tileLoop(stmt, tile_info_table,
-                                             outer_index_names, new_integer_vars)
-                return tiled_loop
-                
-            # don't perform tiling on this loop
-            else:
-                stmt.stmt = self.__tile(stmt.stmt, tile_info_table,
-                                        outer_index_names, new_integer_vars)
-                return stmt
+            tiled_stmts, untiled_stmts = self.__tile(stmt, new_integer_vars, [], [])
+            if len(untiled_stmts) > 0:
+                print 'internal error:Tiling: untiled statements must be empty at this point'
+                sys.exit(1)
+            if len(tiled_stmts) != 1:
+                print 'internal error:Tiling: only one tiled statement is expected'
+                sys.exit(1)
+            return tiled_stmts[0]
 
         else:
-            print 'internal error:Tiling: unknown type of AST: %s' % stmt.__class__.__name__
+            print 'internal error:Tiling: unknown type of statement: %s' % stmt.__class__.__name__
             sys.exit(1)
 
     #----------------------------------------------
 
-    def __tileLoop(self, stmt, tile_info_table, new_integer_vars, outer_tiled_loop_seq):
-        '''Apply tiling to the given loop statement'''
-
-        # extract information about this loop structure
-        for_loop_info = self.ast_util.getForLoopInfo(stmt)
-        (index_id, lbound_exp, ubound_exp, stride_exp, loop_body) = for_loop_info
-        
-        # get the tiling information that corresponds to this loop
-        index_name = index_id.name
-        tile_size_name, tile_size_value = tile_info_table[index_name]
-
-        # recursively apply tiling to the loop body
-        n_outer_tiled_loop_seq = n_outer_tiled_loop_seq + [index_name]
-        tiled_loop_body = self.__tileLoopBody(stmt.stmt, tile_info_table, new_integer_vars,
-                                              n_outer_tiled_loop_seq)
-
-        # generate the tiled loop
-        tile_size_id = ast.IdentExp(tile_size_name)
-        tiled_loop = self.__createInterTileLoop(index_id, tile_size_id, lbound_exp,
-                                                ubound_exp, tiled_loop_body)
-
-        # return the tiled loop
-        return tiled_loop
-
-    #----------------------------------------------
-
-    def __tile(self, stmt, tile_info_table, new_integer_vars):
-        '''
-        Apply tiling to the loops with matching index names as specified in the tiling information
-        '''
-
-        if isinstance(stmt, ast.ExpStmt):
-            return stmt
-
-        elif isinstance(stmt, ast.CompStmt):
-            stmt.stmts = [self.__tile(s, tile_info_table, new_integer_vars) for s in stmt.stmts]
-            return stmt
-
-        elif isinstance(stmt, ast.IfStmt):
-            stmt.true_stmt = self.__tile(stmt.true_stmt, tile_info_table, new_integer_vars)
-            if stmt.false_stmt:
-                stmt.false_stmt = self.__tile(stmt.false_stmt, tile_info_table, new_integer_vars)
-            return stmt
-
-        elif isinstance(stmt, ast.ForStmt):
-
-            # extract information about this loop structure
-            for_loop_info = self.ast_util.getForLoopInfo(stmt)
-            (index_id, lbound_exp, ubound_exp, stride_exp, loop_body) = for_loop_info
-
-            # perform tiling if this loop is to be tiled
-            if index_id.name in tile_info_table:
-                tiled_loop = self.__tileLoop(stmt, tile_info_table, new_integer_vars, [])
-                return tiled_loop
-                
-            # don't perform tiling on this loop
-            else:
-                stmt.stmt = self.__tile(stmt.stmt, tile_info_table, new_integer_vars)
-                return stmt
-
-        else:
-            print 'internal error:Tiling: unknown type of AST: %s' % stmt.__class__.__name__
-            sys.exit(1)
-
-    #----------------------------------------------
-
-    def transform(self, code_stmts, tile_info_list):
+    def transform(self, code_stmts):
         '''To apply loop-tiling transformation on the given code'''
-
-        # put all tiling information into a hashtable
-        tile_info_table = {}
-        for index_name, tile_size_name, tile_size_value in tile_info_list:
-            if tile_size_value != None:
-                tile_size_value = eval(tile_size_value, self.perf_params)
-            tile_info_table[index_name] = (tile_size_name, tile_size_value)
-
-        # normalize the format of all for-loops
-        code_stmts = [ast_util.ASTUtil().normalizeLoopFormat(s) for s in code_stmts]
 
         # perform loop tiling on each statement
         new_integer_vars = []
-        tiled_code_stmts = [self.__tile(s, tile_info_table, new_integer_vars) for s in code_stmts]
+        tiled_code_stmts = [self.__startTiling(s, new_integer_vars) for s in code_stmts]
 
         # return the tiled code statements
         return tiled_code_stmts
-
 
