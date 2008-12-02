@@ -22,36 +22,47 @@ class Tiling(module.module.Module):
     def transform(self):
         '''To apply loop tiling on the annotated code'''
 
-        # parse the code (in the annotation body) to extract the corresponding AST
-        code_stmts = code_parser.getParser().parse(self.annot_body_code)
-
-        # analyze the AST semantics
-        code_stmts = semant.SemanticAnalyzer().analyze(code_stmts)
-
         # parse the text in the annotation module body to extract tiling information
         tiling_info = ann_parser.AnnParser(self.perf_params).parse(self.module_body_code)
 
+        # parse the code (in the annotation body) to extract the corresponding AST
+        stmts = code_parser.getParser().parse(self.annot_body_code)
+
+        # analyze the AST semantics
+        stmts = semant.SemanticAnalyzer(tiling_info).analyze(stmts)
+
         # perform loop-tiling transformation
-        code_stmts = transformator.Transformator(self.perf_params, tiling_info).transform(code_stmts)
+        t = transformator.Transformator(self.perf_params, tiling_info)
+        (stmts, new_int_vars) = t.transform(stmts)
 
-        print '-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-'
-        print code_stmts
-        sys.exit(1)
-        
-        # generate the code of the tiled code
-        tiled_code = ''
+        # generate the declaration code for the newly declared integer variables
+        code = ''
+        for i,iv in enumerate(new_int_vars):
+            if i%8 == 0:
+                code += '\n  int '
+            code += iv
+            if i%8 == 7 or i == len(new_int_vars)-1:
+                code += ';'
+            else:
+                code += ','
+        if new_int_vars:
+            code += '\n\n'
+
+        # generate the tiled code
         for s in code_stmts:
-            tiled_code = tiled_code + pprinter.PrettyPrinter().pprint(s)
-        if tiled_code[0] != '\n':
-            tiled_code = '\n' + tiled_code
-        if tiled_code[-1] != '\n':
-            tiled_code = tiled_code + '\n'
+            code += pprinter.PrettyPrinter().pprint(s)
 
-        print tiled_code
+        # append and prepend newlines (if necessary)
+        if code[0] != '\n':
+            code = '\n' + code
+        if code[-1] != '\n':
+            code = code + '\n'
+
+        print code
 
         print '----- forced to exit -----'
         sys.exit(1)
 
         # return the tiled code
-        return tiled_code
+        return code
 
