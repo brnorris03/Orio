@@ -1,5 +1,5 @@
 #
-# The pretty printer for the AST structure
+# The pretty printer for the AST
 #
 
 import sys

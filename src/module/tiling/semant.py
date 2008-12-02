@@ -10,9 +10,15 @@ import ast, ast_util
 class SemanticAnalyzer:
     '''The semantic analyzer class that provides methods for check and enforcing AST semantics'''
 
-    def __init__(self):
+    def __init__(self, tiling_info):
         '''To instantiate a semantic analyzer'''
 
+        num_level, tiling_table = tiling_info
+        tiled_loop_inames = tiling_table.keys()
+        tile_size_table = tiling_table
+
+        self.num_level = num_level
+        self.tiled_loop_inames = tiled_loop_inames
         self.ast_util = ast_util.ASTUtil()
 
     #-----------------------------------------------------
@@ -65,7 +71,7 @@ class SemanticAnalyzer:
                 
     #-----------------------------------------------------
 
-    def __checkStmt(self, stmt, oloop_iters = []):
+    def __checkStmt(self, stmt, oloop_inames = []):
         '''
         To complain if there is a sublevel of compound statement directly nested inside
         a compound statement.
@@ -81,7 +87,7 @@ class SemanticAnalyzer:
 
         elif isinstance(stmt, ast.CompStmt):
             for s in stmt.stmts:
-                self.__checkStmt(s, oloop_iters)
+                self.__checkStmt(s, oloop_inames)
             for s in stmt.stmts:
                 if isinstance(s, ast.CompStmt):
                     print ('error:Tiling: does not support a compound statement directly nested ' +
@@ -89,17 +95,20 @@ class SemanticAnalyzer:
                     sys.exit(1)
         
         elif isinstance(stmt, ast.IfStmt):
-            self.__checkStmt(stmt.true_stmt, oloop_iters)
+            self.__checkStmt(stmt.true_stmt, oloop_inames)
             if stmt.false_stmt:
-                self.__checkStmt(stmt.false_stmt, oloop_iters)
+                self.__checkStmt(stmt.false_stmt, oloop_inames)
 
         elif isinstance(stmt, ast.ForStmt):
             (id, lb, ub, st, bod) = self.ast_util.getForLoopInfo(stmt)
-            if id.name in oloop_iters:
+            if id.name in oloop_inames:
                 print ('error:Tiling: illegal loop nest where an inner loop has the same iterator ' +
                        'name as the outer loop')
                 sys.exit(1)
-            self.__checkStmt(stmt.stmt, oloop_iters + [id.name])
+            if id.name not in self.tiled_loop_inames:
+                print 'error:Tiling: missing tiled-loop iterator name: "%s"' % id.name
+                sys.exit(1)
+            self.__checkStmt(stmt.stmt, oloop_inames + [id.name])
             
         else:
             print 'internal error:Tiling: unknown type of statement: %s' % stmt.__class__.__name__
