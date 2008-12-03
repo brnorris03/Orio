@@ -29,10 +29,11 @@ class SimpleLoops:
 
     #----------------------------------------------
 
-    def addLoop(self, iter_names_seq, stmt):
+    def insertLoop(self, iter_names_seq, stmt):
         '''
-        To add the given loop into this sequence of loops; where the given loop is represented
-        with the sequence of the iterator names and the enclosed statement.
+        To add the given loop into this sequence of loops. Loop fusion is applied whenever possible.
+        The given loop is represented with the sequence of the iterator names and
+        the enclosed statement.
         '''
 
         # check if the given loop can be fused into one of the existing loops
@@ -65,7 +66,7 @@ class SimpleLoops:
 
     #----------------------------------------------
 
-    def convertToStmts(self, loop_info_table, node = None):
+    def convertToASTs(self, loop_info_table, node = None):
         '''To generate a sequence of ASTs that correspond to this sequence of loops'''
 
         if node == None:
@@ -79,11 +80,11 @@ class SimpleLoops:
             tmp = ast.BinOpExp(ast.IdentExp(tsize_name), ast.ParenthExp(st_exp), ast.BinOpExp.SUB)
             ub = ast.BinOpExp(lb_exp, ast.ParenthExp(tmp), ast.BinOpExp.ADD)
             st = st_exp
-            lbody = self.convertToStmts(loop_info_table, subnodes)
+            lbody = self.convertToASTs(loop_info_table, subnodes)
             return self.ast_util.createForLoop(id, lb, ub, st, lbody)
 
         elif isinstance(node, list):
-            return [self.convertToStmts(loop_info_table, n) for n in node]
+            return [self.convertToASTs(loop_info_table, n) for n in node]
 
         else:
             return node
@@ -223,7 +224,7 @@ class Transformator:
                                  ast.FunCallExp(ast.IdentExp('max'), [ast.IdentExp(lb_name),
                                                                       lb_exp.replicate()]),
                                  ast.BinOpExp.EQ_ASGN)
-                scan_loops.addLoop(lb_inames, a)
+                scan_loops.insertLoop(lb_inames, a)
             else:
                 a = ast.BinOpExp(ast.IdentExp(lb_name), lb_exp.replicate(), ast.BinOpExp.EQ_ASGN)
                 scan_stmts.append(a)
@@ -234,7 +235,7 @@ class Transformator:
                                  ast.FunCallExp(ast.IdentExp('min'), [ast.IdentExp(ub_name),
                                                                       ub_exp.replicate()]),
                                  ast.BinOpExp.EQ_ASGN)                
-                scan_loops.addLoop(ub_inames, a)
+                scan_loops.insertLoop(ub_inames, a)
             else:
                 a = ast.BinOpExp(ast.IdentExp(ub_name), ub_exp.replicate(), ast.BinOpExp.EQ_ASGN)
                 scan_stmts.append(a)
@@ -244,20 +245,71 @@ class Transformator:
             n_loop_info_table[iname] = (self.__getTileSizeName(iname, self.num_level),
                                         ast.IdentExp(self.__getIterName(iname, self.num_level)),
                                         st_exp)
-        scan_stmts.extend(scan_loops.convertToStmts(n_loop_info_table))
+        scan_stmts.extend(scan_loops.convertToASTs(n_loop_info_table))
                 
         # return all necessary information
         return (scan_stmts, lbound_info_seq, new_int_vars)
 
     #----------------------------------------------
 
-    def __tile(self, stmt, new_int_vars, outer_loop_infos, preceding_untiled_stmts, lbound_names):
+    def __convertToASTs(self, dstmts, loop_inames, loop_info_table):
+        '''
+        To convert the given list of "modified/decorated" statements to a sequence of AST statements.
+        Below is a grammar that describes the given list of "modified/decorated" statements:
+          <dstmts> ::= (<bool> , <stmts>) <dstmts>*
+                     | <test-exp> <dstmts> <dstmts> <dstmts>*
+        '''
+
+        asts = []
+        i = 0
+        while i < len(dstmts):
+            s = dstmts[i]
+            if isinstance(s, tuple):
+                is_tiled, stmts = s
+                stmts = [s.replicate() for s in stmts]
+                if is_tiled:
+                    asts.extend(stmts)
+                else:
+                    lbody = ast.CompStmt(stmts)
+                    st_exps = []
+                    for iname in loop_inames:
+                        _,_,_,st_exp,_ = loop_info_table[iname]
+                        st_exps.append(st_exp)
+                    l = self.__getMultiLevelTileLoop(self.num_level, loop_inames, st_exps, lbody)
+                    asts.append(l)
+                i += 1
+            else:
+                if not isinstance(s, ast.BinOpExp):
+                    print 'internal error:Tiling: a test expression is expected'
+                    sys.exit(1)
+                i += 1
+                t1 = self.__convertToASTs(dstmts[i], loop_inames, loop_info_table)
+                i += 1
+                t2 = self.__convertToASTs(dstmts[i], loop_inames, loop_info_table)
+                test_exp = s.replicate()
+                true_stmt = ast.CompStmt(t1)
+                false_stmt = ast.CompStmt(t2)
+                asts.append(ast.IfStmt(test_exp, true_stmt, false_stmt))
+                i += 1
+        return asts
+
+    #----------------------------------------------
+
+    def __tile(self, stmt, new_int_vars, outer_loop_infos, preceding_stmts, lbound_info):
         '''Apply tiling on the given statement'''
 
         if isinstance(stmt, ast.ExpStmt):
-            tiled_stmts = []
-            untiled_stmts = preceding_untiled_stmts + [stmt]
-            return (tiled_stmts, untiled_stmts)
+            preceding_stmts = preceding_stmts[:]
+            if preceding_stmts:
+                is_tiled, last_stmts = preceding_stmts.pop()
+                if is_tiled:
+                    preceding_stmts.append((is_tiled, last_stmts))                    
+                    preceding_stmts.append((False, [stmt]))
+                else:
+                    preceding_stmts.append((False, last_stmts + [stmt]))
+            else:
+                preceding_stmts.append((False, [stmt]))
+            return preceding_stmts
 
         elif isinstance(stmt, ast.CompStmt):
             print ('internal error:Tiling: unexpected compound statement directly nested inside ' +
@@ -265,21 +317,131 @@ class Transformator:
             sys.exit(1)
 
         elif isinstance(stmt, ast.IfStmt):
-            tiled_stmts = []
-            untiled_stmts = preceding_untiled_stmts + [stmt]
-            return (tiled_stmts, untiled_stmts)
+            preceding_stmts = preceding_stmts[:]
+            if preceding_stmts:
+                is_tiled, last_stmts = preceding_stmts.pop()
+                if is_tiled:
+                    preceding_stmts.append((is_tiled, last_stmts))                    
+                    preceding_stmts.append((False, [stmt]))
+                else:
+                    preceding_stmts.append((False, last_stmts + [stmt]))
+            else:
+                preceding_stmts.append((False, [stmt]))
+            return preceding_stmts
 
         elif isinstance(stmt, ast.ForStmt):
 
-            id, 
+            # extract loop structure information
+            this_linfo = self.ast_util.getForLoopInfo(stmt) 
+            this_id, this_lb_exp, this_ub_exp, this_st_exp, this_lbody = this_linfo
+            this_iname = this_id.name
             
+            # provide information the (extended) tiled outer loops
+            n_outer_loop_infos = outer_loop_infos + [(this_iname, this_linfo)]
+            outer_loop_inames = [i for i,_ in outer_loop_infos]
+            loop_info_table = dict(outer_loop_infos)
+            n_outer_loop_inames = [i for i,_ in n_outer_loop_infos]
+            n_loop_info_table = dict(n_outer_loop_infos)
 
+            # get explicit loop-bound scanning code
+            t = self.__getLoopBoundScanningStmts(this_lbody.stmts, n_outer_loop_inames,
+                                                 n_loop_info_table)
+            scan_stmts, lbound_info_seq, ivars = t
+            
+            # update the newly declared integer variables
+            new_int_vars.extend(ivars)
+            
+            # prepare loop bounds information
+            need_prolog = False
+            need_epilog = False     
+            rect_lb_exp = this_lb_exp
+            rect_ub_exp = this_ub_exp
+            if lbound_info:
+                lb_name, ub_name, need_prolog, need_epilog = lbound_info
+                rect_lb_exp = ast.IdentExp(lb_name)
+                rect_ub_exp = ast.IdentExp(ub_name)
+
+            # initialize the resulting statements
+            res_stmts = preceding_stmts[:]
+
+            # generate the prolog code
+            prolog_code = None
+            if need_prolog:
+                ub = ast.BinOpExp(rect_lb_exp, ast.ParentExp(st_exp), ast.BinOpExp.SUB)
+                prolog_code = ast.ast_util.createForLoop(this_id, this_lb_exp, ub,
+                                                         this_st_exp, this_lbody)
+                if res_stmts:
+                    is_tiled, last_stmts = res_stmts.pop()
+                    if is_tiled:
+                        res_stmts.append((is_tiled, last_stmts))
+                        res_stmts.append((False, [prolog_code]))
+                    else:
+                        res_stmts.append((False, last_stmts + [prolog_code]))
+                else:
+                    res_stmts.append((False, [prolog_code]))
+                
+            # generate the main rectangularly tiled code
+            processed_stmts = []
+            if_branches = [processed_stmts]
+            for s, binfo in zip(this_lbody.stmts, lbound_info_seq):
+                n_if_branches = []
+                for p_stmts in if_branches:
+                    if binfo == None:
+                        n_p_stmts = self.__tile(s, new_int_vars, n_outer_loop_infos, p_stmts, binfo)
+                        while len(p_stmts) > 0:
+                            p_stmts.pop()
+                        p_stmts.extend(n_p_stmts)
+                        n_if_branches.append(p_stmts)
+                    else:
+                        if len(p_stmts) > 0:
+                            p = p_stmts.pop()
+                            last_p_stmts = [p]
+                        else:
+                            last_p_stmts = []
+                        n_p_stmts = self.__tile(s, new_int_vars, n_outer_loop_infos,
+                                                last_p_stmts, binfo)
+                        true_p_stmts = n_p_stmts
+                        false_p_stmts = last_p_stmts
+                        if false_p_stmts:
+                            is_tiled, last_stmts = false_p_stmts.pop()
+                            if is_tiled:
+                                false_p_stmts.append((is_tiled, last_stmts))                    
+                                false_p_stmts.append((False, [s]))
+                            else:
+                                false_p_stmts.append((False, last_stmts + [s]))
+                        else:
+                            false_p_stmts.append((False, [s]))
+                        lbn,ubn,_,_ = binfo
+                        test_exp = ast.BinOpExp(ast.IdentExp(lbn), ast.IdentExp(ubn), ast.BinOpExp.LT)
+                        p_stmts.append(test_exp)
+                        p_stmts.append(true_p_stmts)
+                        p_stmts.append(false_p_stmts)
+                        n_if_branches.append(true_p_stmts)
+                        n_if_branches.append(false_p_stmts)
+                if_branches = n_if_branches
+            lbody_stmts = []
+            lbody_stmts.extend(scan_stmts)
+            lbody_stmts.extend(self.__convertToASTs(processed_stmts, outer_loop_inames,
+                                                    loop_info_table))
+            lbody = ast.CompStmt(lbody_stmts)
+            iname = self.__getIterName(this_iname, self.num_level)
+            tname = self.__getTileSizeName(this_iname, self.num_level)
+            main_tiled_code = self.__getInterTileLoop(iname, tname, rect_lb_exp, rect_ub_exp,
+                                                      this_st_exp, lbody)
+            res_stmts.append((True, [main_tiled_code]))
+            
+            # generate the cleanup code (the epilog code is already fused with this cleanup code)
+            lb = ast.IdentExp(self.__getIterName(this_iname, self.num_level))
+            cleanup_code = self.ast_util.createForLoop(this_id, lb, this_ub_exp,
+                                                       this_st_exp, this_lbody)
+            res_stmts.append((False, [cleanup_code]))
+
+            # return the resulting statements
+            return res_stmts
 
         else:
             print 'internal error:Tiling: unknown type of statement: %s' % stmt.__class__.__name__
             sys.exit(1)
-        
-    
 
     #----------------------------------------------
 
@@ -307,8 +469,10 @@ class Transformator:
             return stmt
 
         elif isinstance(stmt, ast.ForStmt):
-            tiled_stmts, untiled_stmts = self.__tile(stmt, new_int_vars, [], [], None)
-            return ast.CompStmt(tiled_stmts + untiled_stmts)
+            tstmts = []
+            for _,stmts in self.__tile(stmt, new_int_vars, [], [], None):
+                tstmts.extend(stmts)
+            return ast.CompStmt(tstmts)
 
         else:
             print 'internal error:Tiling: unknown type of statement: %s' % stmt.__class__.__name__
