@@ -58,11 +58,6 @@ class Tiling(module.module.Module):
         if code[-1] != '\n':
             code = code + '\n'
 
-        print code
-
-        print '----- forced to exit -----'
-        sys.exit(1)
-
         # return the tiled code
         return code
 
