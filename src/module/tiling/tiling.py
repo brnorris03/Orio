@@ -49,7 +49,7 @@ class Tiling(module.module.Module):
             code += '\n\n'
 
         # generate the tiled code
-        for s in code_stmts:
+        for s in stmts:
             code += pprinter.PrettyPrinter().pprint(s)
 
         # append and prepend newlines (if necessary)
