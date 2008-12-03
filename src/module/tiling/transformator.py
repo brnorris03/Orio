@@ -421,8 +421,8 @@ class Transformator:
                 if_branches = n_if_branches
             lbody_stmts = []
             lbody_stmts.extend(scan_stmts)
-            lbody_stmts.extend(self.__convertToASTs(processed_stmts, outer_loop_inames,
-                                                    loop_info_table))
+            lbody_stmts.extend(self.__convertToASTs(processed_stmts, n_outer_loop_inames,
+                                                    n_loop_info_table))
             lbody = ast.CompStmt(lbody_stmts)
             iname = self.__getIterName(this_iname, self.num_level)
             tname = self.__getTileSizeName(this_iname, self.num_level)
