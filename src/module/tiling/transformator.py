@@ -62,7 +62,7 @@ class SimpleLoops:
             l = stmt
             for iname in inames_seq:
                 l = (iname, [l])
-            loops.append(s)        
+            loops.append(l)
 
     #----------------------------------------------
 
@@ -80,7 +80,7 @@ class SimpleLoops:
             tmp = ast.BinOpExp(ast.IdentExp(tsize_name), ast.ParenthExp(st_exp), ast.BinOpExp.SUB)
             ub = ast.BinOpExp(lb_exp, ast.ParenthExp(tmp), ast.BinOpExp.ADD)
             st = st_exp
-            lbody = self.convertToASTs(loop_info_table, subnodes)
+            lbody = ast.CompStmt(self.convertToASTs(loop_info_table, subnodes))
             return self.ast_util.createForLoop(id, lb, ub, st, lbody)
 
         elif isinstance(node, list):
@@ -187,7 +187,7 @@ class Transformator:
     
     #----------------------------------------------
 
-    def __getLoopBoundScanningStmts(self, stmts, outer_loop_inames. loop_info_table):
+    def __getLoopBoundScanningStmts(self, stmts, outer_loop_inames, loop_info_table):
         '''
         Generate an explicit loop-bound scanning code used at runtime to determine the latest start
         and the earliest end of scanning full tiles.
@@ -219,26 +219,26 @@ class Transformator:
             lbound_info_seq.append(lbinfo)
             if need_prolog:
                 a = ast.BinOpExp(ast.IdentExp(lb_name), min_int.replicate(), ast.BinOpExp.EQ_ASGN)
-                scan_stmts.append(a)
+                scan_stmts.append(ast.ExpStmt(a))
                 a = ast.BinOpExp(ast.IdentExp(lb_name),
                                  ast.FunCallExp(ast.IdentExp('max'), [ast.IdentExp(lb_name),
                                                                       lb_exp.replicate()]),
                                  ast.BinOpExp.EQ_ASGN)
-                scan_loops.insertLoop(lb_inames, a)
+                scan_loops.insertLoop(lb_inames, ast.ExpStmt(a))
             else:
                 a = ast.BinOpExp(ast.IdentExp(lb_name), lb_exp.replicate(), ast.BinOpExp.EQ_ASGN)
-                scan_stmts.append(a)
+                scan_stmts.append(ast.ExpStmt(a))
             if need_epilog:
                 a = ast.BinOpExp(ast.IdentExp(ub_name), max_int.replicate(), ast.BinOpExp.EQ_ASGN)
-                scan_stmts.append(a)
+                scan_stmts.append(ast.ExpStmt(a))
                 a = ast.BinOpExp(ast.IdentExp(ub_name),
                                  ast.FunCallExp(ast.IdentExp('min'), [ast.IdentExp(ub_name),
                                                                       ub_exp.replicate()]),
                                  ast.BinOpExp.EQ_ASGN)                
-                scan_loops.insertLoop(ub_inames, a)
+                scan_loops.insertLoop(ub_inames, ast.ExpStmt(a))
             else:
                 a = ast.BinOpExp(ast.IdentExp(ub_name), ub_exp.replicate(), ast.BinOpExp.EQ_ASGN)
-                scan_stmts.append(a)
+                scan_stmts.append(ast.ExpStmt(a))
         n_loop_info_table = {}
         for iname, linfo in loop_info_table.items():
             _,_,_,st_exp,_ = linfo
@@ -347,7 +347,7 @@ class Transformator:
             t = self.__getLoopBoundScanningStmts(this_lbody.stmts, n_outer_loop_inames,
                                                  n_loop_info_table)
             scan_stmts, lbound_info_seq, ivars = t
-            
+
             # update the newly declared integer variables
             new_int_vars.extend(ivars)
             
@@ -367,9 +367,9 @@ class Transformator:
             # generate the prolog code
             prolog_code = None
             if need_prolog:
-                ub = ast.BinOpExp(rect_lb_exp, ast.ParentExp(st_exp), ast.BinOpExp.SUB)
-                prolog_code = ast.ast_util.createForLoop(this_id, this_lb_exp, ub,
-                                                         this_st_exp, this_lbody)
+                ub = ast.BinOpExp(rect_lb_exp, ast.ParenthExp(this_st_exp), ast.BinOpExp.SUB)
+                prolog_code = self.ast_util.createForLoop(this_id, this_lb_exp, ub,
+                                                          this_st_exp, this_lbody)
                 if res_stmts:
                     is_tiled, last_stmts = res_stmts.pop()
                     if is_tiled:
