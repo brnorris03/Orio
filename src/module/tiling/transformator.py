@@ -486,8 +486,13 @@ class Transformator:
         # reset the counter (used for generating new variable names)
         self.counter = 1
 
-        # perform loop tiling on each statement
+        # add new integer variable names for inter-tile loop iterators
         new_int_vars = []
+        for iname in self.tiled_loop_inames:
+            for level in range(1, self.num_level+1):
+                new_int_vars.append(self.__getIterName(iname, level))
+
+        # perform loop tiling on each statement
         stmts = [self.__startTiling(s, new_int_vars) for s in stmts]
 
         # return the tiled statements and the newly declared integer variables
