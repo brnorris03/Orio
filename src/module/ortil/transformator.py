@@ -280,7 +280,7 @@ class Transformator:
                 i += 1
             else:
                 if not isinstance(s, ast.BinOpExp):
-                    print 'internal error:Tiling: a test expression is expected'
+                    print 'internal error:OrTil: a test expression is expected'
                     sys.exit(1)
                 i += 1
                 t1 = self.__convertToASTs(dstmts[i], loop_inames, loop_info_table)
@@ -312,7 +312,7 @@ class Transformator:
             return preceding_stmts
 
         elif isinstance(stmt, ast.CompStmt):
-            print ('internal error:Tiling: unexpected compound statement directly nested inside ' +
+            print ('internal error:OrTil: unexpected compound statement directly nested inside ' +
                    'another compound statement')
             sys.exit(1)
 
@@ -440,7 +440,7 @@ class Transformator:
             return res_stmts
 
         else:
-            print 'internal error:Tiling: unknown type of statement: %s' % stmt.__class__.__name__
+            print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
             sys.exit(1)
 
     #----------------------------------------------
@@ -475,7 +475,7 @@ class Transformator:
             return ast.CompStmt(tstmts)
 
         else:
-            print 'internal error:Tiling: unknown type of statement: %s' % stmt.__class__.__name__
+            print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
             sys.exit(1)
 
     #----------------------------------------------

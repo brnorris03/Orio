@@ -66,7 +66,7 @@ class SemanticAnalyzer:
             return stmt
         
         else:
-            print 'internal error:Tiling: unknown type of statement: %s' % stmt.__class__.__name__
+            print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
             sys.exit(1)
                 
     #-----------------------------------------------------
@@ -90,7 +90,7 @@ class SemanticAnalyzer:
                 self.__checkStmt(s, oloop_inames)
             for s in stmt.stmts:
                 if isinstance(s, ast.CompStmt):
-                    print ('error:Tiling: does not support a compound statement directly nested ' +
+                    print ('error:OrTil: does not support a compound statement directly nested ' +
                            'inside another compound statement')
                     sys.exit(1)
         
@@ -102,16 +102,16 @@ class SemanticAnalyzer:
         elif isinstance(stmt, ast.ForStmt):
             (id, lb, ub, st, bod) = self.ast_util.getForLoopInfo(stmt)
             if id.name in oloop_inames:
-                print ('error:Tiling: illegal loop nest where an inner loop has the same iterator ' +
+                print ('error:OrTil: illegal loop nest where an inner loop has the same iterator ' +
                        'name as the outer loop')
                 sys.exit(1)
             if id.name not in self.tiled_loop_inames:
-                print 'error:Tiling: missing tiled-loop iterator name: "%s"' % id.name
+                print 'error:OrTil: missing tiled-loop iterator name: "%s"' % id.name
                 sys.exit(1)
             self.__checkStmt(stmt.stmt, oloop_inames + [id.name])
             
         else:
-            print 'internal error:Tiling: unknown type of statement: %s' % stmt.__class__.__name__
+            print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
             sys.exit(1)
 
     #-----------------------------------------------------

@@ -38,7 +38,7 @@ class Transformator:
         self.use_jam = True
         
         # to use full unrolling (or just use an intra-tile loop) for handling unjammable statements
-        self.use_full_unroll = False
+        self.use_full_unroll = True
 
         # to use non-rectangular register tiling
         self.use_nonrect_tile = True

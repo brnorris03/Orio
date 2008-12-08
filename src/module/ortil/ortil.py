@@ -7,7 +7,7 @@ import ann_parser, code_parser, module.module, pprinter, semant, transformator
 
 #-----------------------------------------
 
-class Tiling(module.module.Module):
+class OrTil(module.module.Module):
     '''The class definition for the tiling transformation module'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
