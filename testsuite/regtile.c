@@ -5,7 +5,7 @@
  {
    for (j=0; j<=N-1; j++)
    {
-     for (k=i; k<=O-1; k++)
+     for (k=i; k<=i+O-1; k++)
      {
        S(i,j,k);
      }
