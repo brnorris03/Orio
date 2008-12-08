@@ -56,7 +56,7 @@ class PrettyPrinter:
             elif tnode.op_type == tnode.POST_DEC:
                 s = s + '-- '
             else:
-                print 'internal error:Tiling: unknown unary operator type: %s' % tnode.op_type
+                print 'internal error:OrTil: unknown unary operator type: %s' % tnode.op_type
                 sys.exit(1)
 
         elif isinstance(tnode, ast.BinOpExp):
@@ -92,7 +92,7 @@ class PrettyPrinter:
             elif tnode.op_type == tnode.EQ_ASGN:
                 s += '='
             else:
-                print 'internal error:Tiling: unknown binary operator type: %s' % tnode.op_type
+                print 'internal error:OrTil: unknown binary operator type: %s' % tnode.op_type
                 sys.exit(1)
             s += self.pprint(tnode.rhs, indent, extra_indent)
 
@@ -150,7 +150,7 @@ class PrettyPrinter:
                 s += self.pprint(tnode.stmt, indent + extra_indent, extra_indent)
 
         else:
-            print 'internal error:Tiling: unrecognized type of AST: %s' % tnode.__class__.__name__
+            print 'internal error:OrTil: unrecognized type of AST: %s' % tnode.__class__.__name__
             sys.exit(1)
 
         return s

@@ -22,7 +22,7 @@ class AnnParser:
         try:
             val = eval(text, self.perf_params)
         except Exception, e:
-            print ('error:Tiling: failed to evaluate expression: "%s"' % text)
+            print ('error:OrTil: failed to evaluate expression: "%s"' % text)
             print ' --> %s: %s' % (e.__class__.__name__, e)
             sys.exit(1)
         return val
@@ -55,12 +55,12 @@ class AnnParser:
         # get all iterator names of the loops to be tiled
         m = re.match(__oparenth_re, text)
         if not m:
-            print 'error:Tiling: annotation syntax error: "%s"' % orig_text
+            print 'error:OrTil: annotation syntax error: "%s"' % orig_text
             sys.exit(1)
         text = text[m.end():]        
         m = re.search(__cparenth_re, text)
         if not m:
-            print 'error:Tiling: annotation syntax error: "%s"' % orig_text
+            print 'error:OrTil: annotation syntax error: "%s"' % orig_text
             sys.exit(1)
         itext = text[:m.end()-1]
         text = text[m.end():]
@@ -70,11 +70,11 @@ class AnnParser:
                 break
             m = re.match(__var_re, itext)
             if not m:
-                print 'error:Tiling: annotation syntax error: "%s"' % orig_text
+                print 'error:OrTil: annotation syntax error: "%s"' % orig_text
                 sys.exit(1)
             iname = m.group(1)
             if iname in iter_names:
-                print 'error:Tiling: repeated iterator name: "%s"' % iname
+                print 'error:OrTil: repeated iterator name: "%s"' % iname
                 sys.exit(1)
             iter_names.append(iname)
             itext = itext[m.end():]
@@ -93,7 +93,7 @@ class AnnParser:
         # get a colon
         m = re.match(__colon_re, text)
         if not m:
-            print 'error:Tiling: annotation syntax error: "%s"' % orig_text
+            print 'error:OrTil: annotation syntax error: "%s"' % orig_text
             sys.exit(1)
         text = text[m.end():]
 
@@ -102,7 +102,7 @@ class AnnParser:
         if not m:
             m = re.match(__var_re, text)
         if not m:
-            print 'error:Tiling: annotation syntax error: "%s"' % orig_text
+            print 'error:OrTil: annotation syntax error: "%s"' % orig_text
             sys.exit(1)
         text = text[m.end():]
         num_level = m.group(1)
@@ -110,7 +110,7 @@ class AnnParser:
 
         # check the semantic of the number of tiling levels
         if not isinstance(num_level, int) or num_level <= 0:
-            print 'error:Tiling: the number of tiling levels must be a positive integer'
+            print 'error:OrTil: the number of tiling levels must be a positive integer'
             sys.exit(1)
 
         # insert the obtained number of tiling levels into the tiling information
@@ -123,7 +123,7 @@ class AnnParser:
         # get a colon
         m = re.match(__colon_re, text)
         if not m:
-            print 'error:Tiling: annotation syntax error: "%s"' % orig_text
+            print 'error:OrTil: annotation syntax error: "%s"' % orig_text
             sys.exit(1)
         text = text[m.end():]
 
@@ -132,12 +132,12 @@ class AnnParser:
         for tlevel in range(0,num_level):
             m = re.match(__oparenth_re, text)
             if not m:
-                print 'error:Tiling: annotation syntax error: "%s"' % orig_text
+                print 'error:OrTil: annotation syntax error: "%s"' % orig_text
                 sys.exit(1)
             text = text[m.end():]        
             m = re.search(__cparenth_re, text)
             if not m:
-                print 'error:Tiling: annotation syntax error: "%s"' % orig_text
+                print 'error:OrTil: annotation syntax error: "%s"' % orig_text
                 sys.exit(1)
             itext = text[:m.end()-1]
             text = text[m.end():]
@@ -150,7 +150,7 @@ class AnnParser:
                 if not m:
                     m = re.match(__var_re, itext)
                 if not m:
-                    print 'error:Tiling: annotation syntax error: "%s"' % orig_text
+                    print 'error:OrTil: annotation syntax error: "%s"' % orig_text
                     sys.exit(1)
                 tsize = self.__evalExp(m.group(1))
                 tile_size_sets[-1].append(tsize)
@@ -159,12 +159,12 @@ class AnnParser:
                 if m:
                     itext = itext[m.end():]
             if itext and not itext.isspace():
-                print 'error:Tiling: annotation syntax error: "%s"' % orig_text
+                print 'error:OrTil: annotation syntax error: "%s"' % orig_text
                 sys.exit(1)
 
         # is there any trailing texts?
         if text and not text.isspace():
-            print 'error:Tiling: annotation syntax error: "%s"' % orig_text
+            print 'error:OrTil: annotation syntax error: "%s"' % orig_text
             sys.exit(1)
 
         # insert the obtained tile sizes into the tiling table
@@ -177,12 +177,12 @@ class AnnParser:
             tsizes = tiling_table[iname]
             for t in tsizes:
                 if not isinstance(t, int) or t <= 0:
-                    print 'error:Tiling: a tile size must be a positive integer, obtained: "%s"' % t
+                    print 'error:OrTil: a tile size must be a positive integer, obtained: "%s"' % t
                     sys.exit(1)
             for i, cur_t in enumerate(tsizes):
                 for j, next_t in enumerate(tsizes[i+1:]):
                     if cur_t % next_t != 0:
-                        print (('error:Tiling: level-%s tile size (i.e., %s) must be divisible by ' +
+                        print (('error:OrTil: level-%s tile size (i.e., %s) must be divisible by ' +
                                 'level-%s tile size of (i.e., %s)') % (i+1, cur_t, i+1+j+1, next_t))
                         sys.exit(1)
         
