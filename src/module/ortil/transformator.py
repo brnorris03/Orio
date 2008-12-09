@@ -56,7 +56,7 @@ class SimpleLoops:
                 is_done = True
                 break
 
-        # create a new loop and add it into the sequence of loops 
+        # fusing is not possible, thus create a new loop and add it into the sequence of loops 
         if not is_done:
             inames_seq.reverse()
             l = stmt
@@ -67,7 +67,7 @@ class SimpleLoops:
     #----------------------------------------------
 
     def convertToASTs(self, loop_info_table, node = None):
-        '''To generate a sequence of ASTs that correspond to this sequence of loops'''
+        '''To generate a sequence of ASTs that correspond to this sequence of "simple" loops'''
 
         if node == None:
             node = self.loops
@@ -100,23 +100,31 @@ class Transformator:
         num_level, tiling_table = tiling_info
         tiled_loop_inames = tiling_table.keys()
         tile_size_table = tiling_table
-
+        
         self.perf_params = perf_params
         self.num_level = num_level
         self.tiled_loop_inames = tiled_loop_inames
         self.tile_size_table = tile_size_table
         self.ast_util = ast_util.ASTUtil()
+
+        # used for variable name generation
         self.counter = 1
+
+        # to turn on/off the static determination of loop bound values for scanning the full tiles
+        self.affine_lbound_exps = False
 
     #----------------------------------------------
 
     def __getIterName(self, iter_name, level):
+        '''Generate a new variable name for inter-tile loop iterator'''
         return iter_name + ('t%s' % level)
 
     def __getTileSizeName(self, iter_name, level):
+        '''Generate a new variable name for tile size variable'''
         return ('T%s' % level) + iter_name
 
     def __getLoopBoundNames(self):
+        '''Generate new variable names for both lower and upper loop bounds'''
         lb_name = 'lb%s' % self.counter
         ub_name = 'ub%s' % self.counter
         self.counter += 1
@@ -187,10 +195,133 @@ class Transformator:
     
     #----------------------------------------------
 
-    def __getLoopBoundScanningStmts(self, stmts, outer_loop_inames, loop_info_table):
+    def __findMinMaxVal(self, min_or_max, exp, var_names, val_table, up_sign = 1):
         '''
-        Generate an explicit loop-bound scanning code used at runtime to determine the latest start
-        and the earliest end of scanning full tiles.
+        To statically find the actual min/max value of the given expression, based on the given 
+        bound variables. The given table records the lowest and highest values of each bound variable.
+        The up_sign argument carries the positive/negative sign from the upper level of the AST.
+        '''
+
+        # numerical expression
+        if isinstance(exp, ast.NumLitExp):
+            return exp
+        
+        # string expression
+        elif isinstance(exp, ast.StringLitExp):
+            print 'error:OrTil: invalid string expression found in loop bound expression: %s' % exp
+            sys.exit(1)
+        
+        # identifier expression
+        elif isinstance(exp, ast.IdentExp):
+            
+            # do nothing if the identifier is not in the given list of variables to be replaced
+            if exp.name not in var_names:
+                return exp
+            
+            # replace the identifier with its apropriate value (depending on min/max, and upper sign)
+            lval, uval = val_table[exp.name]
+            if min_or_max == 'max':
+                if up_sign == 1:
+                    val = ast.ParenthExp(uval.replicate())
+                else:
+                    val = ast.ParenthExp(lval.replicate())
+            elif min_or_max == 'min':
+                if up_sign == 1:
+                    val = ast.ParenthExp(lval.replicate())
+                else:
+                    val = ast.ParenthExp(uval.replicate())
+            else:
+                print 'internal error:OrTil: unrecognized min/max argument value'
+                sys.exit(1)
+
+            # return the obtained min/max value
+            return val
+
+        # array reference expression
+        elif isinstance(exp, ast.ArrayRefExp):
+            print ('error:OrTil: invalid array-reference expression found in loop bound ' +
+                   'expression: %s' % exp)
+            sys.exit(1)
+
+        # function call expression
+        elif isinstance(exp, ast.FunCallExp):
+            
+            # check the function name
+            if (not isinstance(exp.exp, ast.IdentExp)) or exp.exp.name not in ('min', 'max'):
+                print (('error:OrTil: function name found in loop bound expression must be ' +
+                        'min/max, obtained: %s') % exp.exp)
+                sys.exit(1)
+
+            # recursion on each function argument
+            exp.args = [self.__findMinMaxVal(min_or_max, a, var_names, val_table, up_sign) 
+                        for a in exp.args]
+
+            # return the computed expression
+            return exp
+
+        # unary operation expression
+        elif isinstance(exp, ast.UnaryExp):
+            
+            # check the unary operation
+            if exp.op_type not in (ast.UnaryExp.PLUS, ast.UnaryExp.MINUS):
+                print (('error:OrTil: unary operation found in loop bound expression must ' +
+                        'be +/-, obtained: %s') % exp.exp)
+                sys.exit(1)
+
+            # update the sign, and do recursion on the inner expression
+            if exp.op_type == ast.UnaryExp.MINUS:
+                up_sign *= -1
+            exp.exp = self.__findMinMaxVal(min_or_max, exp.exp, var_names, val_table, up_sign)
+
+            # return the computed expression
+            return exp
+
+        # binary operation expression
+        elif isinstance(exp, ast.BinOpExp):
+            
+            # check the binary operation
+            if exp.op_type not in (ast.BinOpExp.ADD, ast.BinOpExp.SUB, ast.BinOpExp.MUL):
+                print (('error:OrTil: binary operation found in loop bound expression must ' +
+                        'be +/-/*, obtained: %s') % exp)
+                sys.exit(1)
+
+            # do recursion on both operands
+            exp.lhs = self.__findMinMaxVal(min_or_max, exp.lhs, var_names, val_table, up_sign)
+            if exp.op_type == ast.BinOpExp.SUB:
+                up_sign *= -1
+            exp.rhs = self.__findMinMaxVal(min_or_max, exp.rhs, var_names, val_table, up_sign)
+
+            # return the computed expression
+            return exp
+
+        # parenthesized expression
+        elif isinstance(exp, ast.ParenthExp):
+            parenth_before = isinstance(exp.exp, ast.ParenthExp)
+            exp.exp = self.__findMinMaxVal(min_or_max, exp.exp, var_names, val_table, up_sign)
+            parenth_after = isinstance(exp.exp, ast.ParenthExp)
+            if (not parenth_before) and parenth_after:
+                return exp.exp
+            return exp
+
+        # unrecognized expression
+        else:
+            print 'internal error:OrTil: unknown type of expression: %s' % exp.__class__.__name__
+            sys.exit(1)
+
+    #----------------------------------------------
+
+    def __staticLoopBoundScanning(self, stmts, outer_loop_inames, loop_info_table):
+        ''' 
+        Assuming that the loop-bound expressions are affine functions of outer loop iterators and 
+        global parameters, we can determine the loop bounds of full tiles in compile time.
+        This is an optimization strategy to produce more efficient code.
+        Assumptions: 
+          1. Lower bound expression must be in the form of: max(e_1,e_2,e_3,...,e_n)
+          2. Upper bound expression must be in the form of: min(e_1,e_2,e_3,...,e_n)
+          where e_i is an affine function of outer loop iterators and global parameters
+        Note that max(x,y,z) is implemented as nested binary max functions: max(z,max(y,z)). The same
+        condition applies for min function.
+        When n=1, max/min function is not needed.
         '''
 
         # initialize all returned variables
@@ -198,54 +329,189 @@ class Transformator:
         lbound_info_seq = []
         new_int_vars = []
 
-        # iterate over each statement
-        min_int = ast.NumLitExp(-2147483648, ast.NumLitExp.INT)
-        max_int = ast.NumLitExp(2147483647, ast.NumLitExp.INT)
-        scan_loops = SimpleLoops()
+        # generate the lower and upper values of each inter-tile loop
+        val_table = {}
+        for iname in outer_loop_inames:
+            _,_,_,st_exp,_ = loop_info_table[iname]
+            lval = ast.IdentExp(self.__getIterName(iname, self.num_level))
+            t = ast.BinOpExp(ast.IdentExp(self.__getTileSizeName(iname, self.num_level)),
+                             ast.ParenthExp(st_exp.replicate()), ast.BinOpExp.SUB)
+            uval = ast.BinOpExp(lval.replicate(), ast.ParenthExp(t), ast.BinOpExp.ADD)
+            val_table[iname] = (lval, uval)
+
+        # iterate over each statement to determine loop bounds that are affine functions 
+        # of outer loop iterators
+        lb_exps_table = {}
+        ub_exps_table = {}
         for stmt in stmts:
+            
+            # skip all non loop statements
             if not isinstance(stmt, ast.ForStmt):
                 lbound_info_seq.append(None)
                 continue
+
+            # extract this loop structure
             id, lb_exp, ub_exp, st_exp, lbody = self.ast_util.getForLoopInfo(stmt)
+
+            # see if the loop bound expressions are bound/free of outer loop iterators 
             lb_inames = filter(lambda i: self.ast_util.containIdentName(lb_exp, i), outer_loop_inames)
             ub_inames = filter(lambda i: self.ast_util.containIdentName(ub_exp, i), outer_loop_inames)
+
+            # skip loops with bound expressions that are free of outer loop iterators
             if not lb_inames and not ub_inames:
                 lbound_info_seq.append(None)
                 continue
+
+            # generate new variable names for both the new lower and upper loop bounds
             lb_name, ub_name = self.__getLoopBoundNames()
+
+            # remember the new names
             new_int_vars.extend([lb_name, ub_name])
+
+            # generate booleans to indicate the needs of prolog and epilog
             need_prolog, need_epilog = (len(lb_inames) > 0, len(ub_inames) > 0)
+
+            # append information about the new loop bounds
             lbinfo = (lb_name, ub_name, need_prolog, need_epilog)
             lbound_info_seq.append(lbinfo)
-            if need_prolog:
-                a = ast.BinOpExp(ast.IdentExp(lb_name), min_int.replicate(), ast.BinOpExp.EQ_ASGN)
-                scan_stmts.append(ast.ExpStmt(a))
-                a = ast.BinOpExp(ast.IdentExp(lb_name),
-                                 ast.FunCallExp(ast.IdentExp('max'), [ast.IdentExp(lb_name),
-                                                                      lb_exp.replicate()]),
-                                 ast.BinOpExp.EQ_ASGN)
-                scan_loops.insertLoop(lb_inames, ast.ExpStmt(a))
+
+            # determine the value of the new lower loop bound
+            if str(lb_exp) in lb_exps_table:
+                lb_var = lb_exps_table[str(lb_exp)]
+                a = ast.BinOpExp(ast.IdentExp(lb_name), lb_var.replicate(), ast.BinOpExp.EQ_ASGN)
             else:
-                a = ast.BinOpExp(ast.IdentExp(lb_name), lb_exp.replicate(), ast.BinOpExp.EQ_ASGN)
-                scan_stmts.append(ast.ExpStmt(a))
-            if need_epilog:
-                a = ast.BinOpExp(ast.IdentExp(ub_name), max_int.replicate(), ast.BinOpExp.EQ_ASGN)
-                scan_stmts.append(ast.ExpStmt(a))
-                a = ast.BinOpExp(ast.IdentExp(ub_name),
-                                 ast.FunCallExp(ast.IdentExp('min'), [ast.IdentExp(ub_name),
-                                                                      ub_exp.replicate()]),
-                                 ast.BinOpExp.EQ_ASGN)                
-                scan_loops.insertLoop(ub_inames, ast.ExpStmt(a))
+                if need_prolog:
+                    t = self.__findMinMaxVal('max', lb_exp.replicate(), lb_inames, val_table)
+                    a = ast.BinOpExp(ast.IdentExp(lb_name), t.replicate(), ast.BinOpExp.EQ_ASGN)
+                else:
+                    a = ast.BinOpExp(ast.IdentExp(lb_name), lb_exp.replicate(), ast.BinOpExp.EQ_ASGN)
+                lb_exps_table[str(lb_exp)] = ast.IdentExp(lb_name)
+            scan_stmts.append(ast.ExpStmt(a))
+
+            # determine the value of the new upper loop bound
+            if str(ub_exp) in ub_exps_table:
+                ub_var = ub_exps_table[str(ub_exp)]
+                a = ast.BinOpExp(ast.IdentExp(ub_name), ub_var.replicate(), ast.BinOpExp.EQ_ASGN)
             else:
-                a = ast.BinOpExp(ast.IdentExp(ub_name), ub_exp.replicate(), ast.BinOpExp.EQ_ASGN)
-                scan_stmts.append(ast.ExpStmt(a))
+                if need_epilog:
+                    t = self.__findMinMaxVal('min', ub_exp.replicate(), ub_inames, val_table)
+                    a = ast.BinOpExp(ast.IdentExp(ub_name), t.replicate(), ast.BinOpExp.EQ_ASGN)
+                else:
+                    a = ast.BinOpExp(ast.IdentExp(ub_name), ub_exp.replicate(), ast.BinOpExp.EQ_ASGN)
+                ub_exps_table[str(ub_exp)] = ast.IdentExp(ub_name)
+            scan_stmts.append(ast.ExpStmt(a))
+        
+        # return all necessary information
+        return (scan_stmts, lbound_info_seq, new_int_vars)
+
+    #----------------------------------------------
+
+    def __getLoopBoundScanningStmts(self, stmts, outer_loop_inames, loop_info_table):
+        '''
+        Generate an explicit loop-bound scanning code used at runtime to determine the latest start
+        and the earliest end of scanning full tiles.
+        '''
+
+        # (optimization) generate code that determines the loop bounds of full tiles at compile time
+        if self.affine_lbound_exps:
+            return self.__staticLoopBoundScanning(stmts, outer_loop_inames, loop_info_table)
+
+        # initialize all returned variables
+        scan_stmts = []
+        lbound_info_seq = []
+        new_int_vars = []
+
+        # iterate over each statement to find loop bounds that are functions of outer loop iterators
+        min_int = ast.NumLitExp(-2147483648, ast.NumLitExp.INT)
+        max_int = ast.NumLitExp(2147483647, ast.NumLitExp.INT)
+        lb_exps_table = {}
+        ub_exps_table = {}
+        pre_scan_stmts = []
+        post_scan_stmts = []
+        scan_loops = SimpleLoops()
+        for stmt in stmts:
+        
+            # skip all non loop statements
+            if not isinstance(stmt, ast.ForStmt):
+                lbound_info_seq.append(None)
+                continue
+
+            # extract this loop structure
+            id, lb_exp, ub_exp, st_exp, lbody = self.ast_util.getForLoopInfo(stmt)
+
+            # see if the loop bound expressions are bound/free of outer loop iterators 
+            lb_inames = filter(lambda i: self.ast_util.containIdentName(lb_exp, i), outer_loop_inames)
+            ub_inames = filter(lambda i: self.ast_util.containIdentName(ub_exp, i), outer_loop_inames)
+
+            # skip loops with bound expressions that are free of outer loop iterators
+            if not lb_inames and not ub_inames:
+                lbound_info_seq.append(None)
+                continue
+
+            # generate new variable names for both the new lower and upper loop bounds
+            lb_name, ub_name = self.__getLoopBoundNames()
+
+            # remember the new names
+            new_int_vars.extend([lb_name, ub_name])
+
+            # generate booleans to indicate the needs of prolog and epilog
+            need_prolog, need_epilog = (len(lb_inames) > 0, len(ub_inames) > 0)
+
+            # append information about the new loop bounds
+            lbinfo = (lb_name, ub_name, need_prolog, need_epilog)
+            lbound_info_seq.append(lbinfo)
+
+            # generate code for the prolog
+            if str(lb_exp) in lb_exps_table:
+                lb_var = lb_exps_table[str(lb_exp)]
+                a = ast.BinOpExp(ast.IdentExp(lb_name), lb_var.replicate(), ast.BinOpExp.EQ_ASGN)
+                post_scan_stmts.append(ast.ExpStmt(a))
+            else:
+                if need_prolog:
+                    a = ast.BinOpExp(ast.IdentExp(lb_name), min_int.replicate(), ast.BinOpExp.EQ_ASGN)
+                    pre_scan_stmts.append(ast.ExpStmt(a))
+                    a = ast.BinOpExp(ast.IdentExp(lb_name),
+                                     ast.FunCallExp(ast.IdentExp('max'), [ast.IdentExp(lb_name),
+                                                                          lb_exp.replicate()]),
+                                     ast.BinOpExp.EQ_ASGN)
+                    scan_loops.insertLoop(lb_inames, ast.ExpStmt(a))
+                else:
+                    a = ast.BinOpExp(ast.IdentExp(lb_name), lb_exp.replicate(), ast.BinOpExp.EQ_ASGN)
+                    pre_scan_stmts.append(ast.ExpStmt(a))
+                lb_exps_table[str(lb_exp)] = ast.IdentExp(lb_name)
+
+            # generate code for the epilog
+            if str(ub_exp) in ub_exps_table:
+                ub_var = ub_exps_table[str(ub_exp)]
+                a = ast.BinOpExp(ast.IdentExp(ub_name), ub_var.replicate(), ast.BinOpExp.EQ_ASGN)
+                post_scan_stmts.append(ast.ExpStmt(a))
+            else:
+                if need_epilog:
+                    a = ast.BinOpExp(ast.IdentExp(ub_name), max_int.replicate(), ast.BinOpExp.EQ_ASGN)
+                    pre_scan_stmts.append(ast.ExpStmt(a))
+                    a = ast.BinOpExp(ast.IdentExp(ub_name),
+                                     ast.FunCallExp(ast.IdentExp('min'), [ast.IdentExp(ub_name),
+                                                                          ub_exp.replicate()]),
+                                     ast.BinOpExp.EQ_ASGN)                
+                    scan_loops.insertLoop(ub_inames, ast.ExpStmt(a))
+                else:
+                    a = ast.BinOpExp(ast.IdentExp(ub_name), ub_exp.replicate(), ast.BinOpExp.EQ_ASGN)
+                    pre_scan_stmts.append(ast.ExpStmt(a))
+                lb_exps_table[str(lb_exp)] = ast.IdentExp(lb_name)
+            
+        # build a new loop information table specifically only for loop scanning generation
         n_loop_info_table = {}
         for iname, linfo in loop_info_table.items():
             _,_,_,st_exp,_ = linfo
             n_loop_info_table[iname] = (self.__getTileSizeName(iname, self.num_level),
                                         ast.IdentExp(self.__getIterName(iname, self.num_level)),
                                         st_exp)
-        scan_stmts.extend(scan_loops.convertToASTs(n_loop_info_table))
+
+        # convert the "SimpleLoop" abstractions into loop ASTs
+        scan_loop_stmts = scan_loops.convertToASTs(n_loop_info_table)
+
+        # merge all scanning statements
+        scan_stmts = pre_scan_stmts + scan_loop_stmts + post_scan_stmts
                 
         # return all necessary information
         return (scan_stmts, lbound_info_seq, new_int_vars)
@@ -298,6 +564,7 @@ class Transformator:
     def __tile(self, stmt, new_int_vars, outer_loop_infos, preceding_stmts, lbound_info):
         '''Apply tiling on the given statement'''
 
+        # expression statement
         if isinstance(stmt, ast.ExpStmt):
             preceding_stmts = preceding_stmts[:]
             if preceding_stmts:
@@ -311,11 +578,13 @@ class Transformator:
                 preceding_stmts.append((False, [stmt]))
             return preceding_stmts
 
+        # compound statement
         elif isinstance(stmt, ast.CompStmt):
             print ('internal error:OrTil: unexpected compound statement directly nested inside ' +
                    'another compound statement')
             sys.exit(1)
 
+        # if statement
         elif isinstance(stmt, ast.IfStmt):
             preceding_stmts = preceding_stmts[:]
             if preceding_stmts:
@@ -328,7 +597,8 @@ class Transformator:
             else:
                 preceding_stmts.append((False, [stmt]))
             return preceding_stmts
-
+        
+        # for loop statement
         elif isinstance(stmt, ast.ForStmt):
 
             # extract loop structure information
@@ -336,7 +606,7 @@ class Transformator:
             this_id, this_lb_exp, this_ub_exp, this_st_exp, this_lbody = this_linfo
             this_iname = this_id.name
             
-            # provide information the (extended) tiled outer loops
+            # provide information about the (extended) tiled outer loops
             n_outer_loop_infos = outer_loop_infos + [(this_iname, this_linfo)]
             outer_loop_inames = [i for i,_ in outer_loop_infos]
             loop_info_table = dict(outer_loop_infos)
@@ -438,7 +708,8 @@ class Transformator:
 
             # return the resulting statements
             return res_stmts
-
+        
+        # unknown statement
         else:
             print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
             sys.exit(1)
@@ -447,10 +718,12 @@ class Transformator:
 
     def __startTiling(self, stmt, new_int_vars):
         '''Find the loops to be tiled and then apply loop-tiling transformation on each of them'''
-
+        
+        # expression statement
         if isinstance(stmt, ast.ExpStmt):
             return stmt
 
+        # compound statement
         elif isinstance(stmt, ast.CompStmt):
             tstmts = []
             for s in stmt.stmts:
@@ -462,18 +735,21 @@ class Transformator:
             stmt.stmts = tstmts
             return stmt
 
+        # if statement
         elif isinstance(stmt, ast.IfStmt):
             stmt.true_stmt = self.__startTiling(stmt.true_stmt, new_int_vars)
             if stmt.false_stmt:
                 stmt.false_stmt = self.__startTiling(stmt.false_stmt, new_int_vars)
             return stmt
 
+        # for loop statement
         elif isinstance(stmt, ast.ForStmt):
             tstmts = []
             for _,stmts in self.__tile(stmt, new_int_vars, [], [], None):
                 tstmts.extend(stmts)
             return ast.CompStmt(tstmts)
 
+        # unknown statement
         else:
             print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
             sys.exit(1)
@@ -486,7 +762,7 @@ class Transformator:
         # reset the counter (used for generating new variable names)
         self.counter = 1
 
-        # add new integer variable names for inter-tile loop iterators
+        # add new integer variable names used for inter-tile loop iterators
         new_int_vars = []
         for iname in self.tiled_loop_inames:
             for level in range(1, self.num_level+1):
