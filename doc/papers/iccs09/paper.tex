@@ -110,8 +110,7 @@ Composed routines are the focus of the work presented here, but much of what we 
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=.7\textwidth]{figures/process.png}
-
+\includegraphics[width=0.7\textwidth]{figures/process.eps}
 \caption{Overview of the code generation and tuning process, optional steps are indicated with dashed arrows.}
 \label{fig:process}
 \end{figure}
@@ -131,7 +130,7 @@ In this section we describe the design and operation of the MATLAB to C compiler
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=.7\textwidth]{figures/compile.png}
+\includegraphics[width=.7\textwidth]{figures/compile.eps}
 
 \caption{Overview of the MATLAB compiler.}
 \label{fig:compiler}
@@ -149,7 +148,7 @@ Each node represents a parameter of the kernel or an operation.  The arrows indi
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=.7\textwidth]{figures/gemver-dataflow.png}
+\includegraphics[width=.7\textwidth]{figures/gemver-dataflow.eps}
  
 \caption{Dataflow graph for the GEMVER kernel.}
 \label{fig:gemver-dataflow}
@@ -180,7 +179,7 @@ The second pass of refinement introduces another subgraph to implement the inner
 
 \begin{figure}[hbtp]
   \centering
-  \includegraphics[width=\textwidth]{figures/refine-mv-dot.png}
+  \includegraphics[width=\textwidth]{figures/refine-mv-dot.eps}
 
   \caption{The refinement of a matrix-vector product to a set of inner products and the refinement of inner products to scalar multiplications and additions.}
   \label{fig:refine-mv-dot}
@@ -210,7 +209,7 @@ Figure~\ref{fig:orio} illustrates the tuning process using Orio. In the simplest
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=.7\textwidth]{figures/orio.png}
+\includegraphics[width=.7\textwidth]{figures/orio.eps}
 \caption{Overview of the Orio empirical tuning process.}
 \label{fig:orio}
 \end{figure}
@@ -364,7 +363,7 @@ out
 \end{minipage}
 &
 \begin{minipage}[b]{.6\textwidth}
-\includegraphics[width=\textwidth]{figures/vadd_bgp.png}
+\includegraphics[width=1.0\textwidth]{figures/vadd_bgp.eps}
 \end{minipage}\\
 \end{tabular}
 \caption{Annotated MATLAB code (left) and MFLOP/s (right) for the VADD operation using different code versions.}
@@ -403,7 +402,7 @@ out
 \end{minipage}
 &
 \begin{minipage}[b]{.6\textwidth}
-\includegraphics[width=\textwidth]{figures/atax.png}
+\includegraphics[width=\textwidth]{figures/atax.eps}
 \end{minipage}\\
 \end{tabular}
 \caption{Annotated MATLAB code (left) and wall-clock time in seconds (right) for the ATAX operation using different code versions.}
@@ -440,7 +439,7 @@ out
 \end{minipage}
 &
 \begin{minipage}[b]{.6\textwidth}
-\includegraphics[width=\textwidth]{figures/gemver.png}
+\includegraphics[width=\textwidth]{figures/gemver.eps}
 \end{minipage}\\
 \end{tabular}
 \caption{Annotated MATLAB code (left) and wall-clock time in seconds (right) for the GEMVER operation using different code versions.}
@@ -493,7 +492,7 @@ out
 \end{minipage}
 &
 \begin{minipage}[b]{.6\textwidth}
-\includegraphics[width=\textwidth]{figures/gesummv.png}
+\includegraphics[width=\textwidth]{figures/gesummv.eps}
 \end{minipage}\\
 \end{tabular}
 \caption{Annotated MATLAB code (left) and wall-clock time in seconds (right) for the GESUMMV operation using different code versions.}
@@ -551,7 +550,7 @@ out
 \end{minipage}
 &
 \begin{minipage}[b]{.6\textwidth}
-\includegraphics[width=\textwidth]{figures/bicgkernel.png}
+\includegraphics[width=\textwidth]{figures/bicgkernel.eps}
 \end{minipage}\\
 \end{tabular}
 \caption{Annotated MATLAB code (left) and wall-clock time in seconds (right) for the BiCG kernel operation using different code versions.}
