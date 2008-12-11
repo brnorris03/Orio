@@ -123,7 +123,7 @@ Composed routines are the focus of the work presented here, but much of what we 
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{figures/process.eps}
+\includegraphics[width=0.7\textwidth]{figures/process.png}
 \caption{Overview of the code generation and tuning process, optional steps are indicated with dashed arrows.}
 \label{fig:process}
 \end{figure}
@@ -143,7 +143,7 @@ In this section we describe the design and operation of the MATLAB to C compiler
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=.7\textwidth]{figures/compile.eps}
+\includegraphics[width=.7\textwidth]{figures/compile.png}
 
 \caption{Overview of the MATLAB compiler.}
 \label{fig:compiler}
@@ -161,7 +161,7 @@ Each node represents a parameter of the kernel or an operation.  The arrows indi
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=.7\textwidth]{figures/gemver-dataflow.eps}
+\includegraphics[width=.7\textwidth]{figures/gemver-dataflow.png}
  
 \caption{Dataflow graph for the GEMVER kernel.}
 \label{fig:gemver-dataflow}
@@ -192,7 +192,7 @@ The second pass of refinement introduces another subgraph to implement the inner
 
 \begin{figure}[hbtp]
   \centering
-  \includegraphics[width=\textwidth]{figures/refine-mv-dot.eps}
+  \includegraphics[width=\textwidth]{figures/refine-mv-dot.png}
 
   \caption{The refinement of a matrix-vector product to a set of inner products and the refinement of inner products to scalar multiplications and additions.}
   \label{fig:refine-mv-dot}
@@ -244,7 +244,7 @@ process.
 \begin{figure}[tb]
 \vspace{-.1in}
 \begin{center}
-\includegraphics[width=.65\textwidth]{figures/orio.eps}
+\includegraphics[width=.65\textwidth]{figures/orio.png}
 \end{center}
 \vspace{-.25in}
 \caption{Overview of the Orio empirical tuning process.}
@@ -356,13 +356,13 @@ quad-core E5462 Xeon processors (8 cores total) running at 2.8 GHz
 (1600 MHz FSB) with 2 GB RAM, running Ubuntu 8.04. Intel C compiler
 (v10.1) was used with \texttt{-O3} option (and
 \texttt{-parallel}/\texttt{-openmp} for automatic/manual
-parallelization). Each node of the Blue Gene/P has four 850 MHz
-PowerPC 450 processors with a dual floating-point unit and 2 GB total
-memory per node, running a proprietary operating system. On Blue
-Gene/P, we used IBM XLC compiler (v9.0), with \texttt{-O3 -qstrict
--qarch=450d -qtune=450 -qhot} options (and
+parallelization, respectively). Each node of the Blue Gene/P has four
+850 MHz PowerPC 450 processors with a dual floating-point unit and 2
+GB total memory per node, running a proprietary operating system. On
+Blue Gene/P, we used IBM XLC compiler (v9.0), with \texttt{-O3
+-qstrict -qarch=450d -qtune=450 -qhot} options (and
 \texttt{-qsmp=auto}/\texttt{-qsmp=noauto} for automatic/manual
-parallelization).
+parallelization, respectively).
 
 Table~\ref{tbl:blas-ops} lists the composed BLAS operations used in
 our experiments, along with their input and output variables. Vectors
@@ -392,12 +392,12 @@ $\overrightarrow{x} = \overrightarrow{w} + \overrightarrow{y} + \overrightarrow{
 ATAX & $A$,$\overrightarrow{x}$ & $\overrightarrow{y}$ & 
 $\overrightarrow{y} = A' * (A * \overrightarrow{x})$ \\ 
 \hline 
-BiCG Kernel & ${\bf A}$,$\overrightarrow{p}$,$\overrightarrow{r}$ & $\overrightarrow{q}$,$\overrightarrow{s}$ & $\overrightarrow{q} = {\bf A} * \overrightarrow{p}$ \\
-& & & $\overrightarrow{s} = {\bf A}' * \overrightarrow{r}$\\
-\hline 
  & ${\bf A}$,$a$,$b$, & ${\bf B}$, & ${\bf B} = {\bf A} + \overrightarrow{u_1} * \overrightarrow{v_1}' + \overrightarrow{u_2} * \overrightarrow{v_2}'$\\
 GEMVER & $\overrightarrow{u_1}$,$\overrightarrow{u_2}$,$\overrightarrow{v_1}$,$\overrightarrow{v_2}$, & $\overrightarrow{x}$,$\overrightarrow{w}$ & $\overrightarrow{x} = b * ({\bf B}' * \overrightarrow{y}) + \overrightarrow{z}$\\
 & $\overrightarrow{y}$,$\overrightarrow{z}$ & & $\overrightarrow{w} = a * ({\bf B} * \overrightarrow{x})$\\
+\hline 
+BiCG Kernel & ${\bf A}$,$\overrightarrow{p}$,$\overrightarrow{r}$ & $\overrightarrow{q}$,$\overrightarrow{s}$ & $\overrightarrow{q} = {\bf A} * \overrightarrow{p}$ \\
+& & & $\overrightarrow{s} = {\bf A}' * \overrightarrow{r}$\\
 \hline 
 \end{tabular} 
 \vspace{-.2in} 
@@ -410,21 +410,21 @@ GEMVER & $\overrightarrow{u_1}$,$\overrightarrow{u_2}$,$\overrightarrow{v_1}$,$\
 \begin{tabular}{cc}
 
 \begin{minipage}[b]{.515\textwidth}
-\includegraphics[width=\textwidth]{figures/vadd_bgp.eps}
+\includegraphics[width=\textwidth]{figures/vadd_bgp.png}
 \end{minipage}
 &
 \begin{minipage}[b]{.515\textwidth}
-\includegraphics[width=\textwidth]{figures/atax.eps}
+\includegraphics[width=\textwidth]{figures/atax.png}
 \end{minipage}\\
 
 (a) VADD & (b) ATAX \\
 
 \begin{minipage}[b]{.515\textwidth}
-\includegraphics[width=\textwidth]{figures/gemver.eps}
+\includegraphics[width=\textwidth]{figures/gemver.png}
 \end{minipage}
 &
 \begin{minipage}[b]{.515\textwidth}
-\includegraphics[width=\textwidth]{figures/bicgkernel.eps}
+\includegraphics[width=\textwidth]{figures/bicgkernel.png}
 \end{minipage}\\
 
 (c) GEMVER & (d) BiCG Kernel \\
