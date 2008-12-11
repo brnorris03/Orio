@@ -25,6 +25,19 @@
 
 \newenvironment{itemizer}{\begin{itemize}\setlength{\parsep}{0cm}\setlength{\itemsep}{-.3em}}{\end{itemize}}
 
+% formatting cheats
+\renewcommand{\baselinestretch}{0.92}  
+\renewcommand\floatpagefraction{.9} 
+\renewcommand\topfraction{.9} 
+\renewcommand\bottomfraction{.9} 
+\renewcommand\textfraction{.1} 
+\setcounter{totalnumber}{50} 
+\setcounter{topnumber}{50} 
+\setcounter{bottomnumber}{50} 
+\setlength{\textwidth}{12.5cm} 
+\setlength{\textheight}{19.5cm} 
+
+
 \begin{document}
 
 \mainmatter  % start of an individual contribution
@@ -33,7 +46,7 @@
 \title{Generating Empirically Optimized Numerical Software from MATLAB Prototypes}
 
         % a short form should be given in case it is too long for the running head
-        \titlerunning{Empiriclaly Optimized Numerical Software from MATLAB}
+        \titlerunning{Empirically Optimized Numerical Software from MATLAB}
 
         % the name(s) of the author(s) follow(s) next
         %
@@ -201,60 +214,73 @@ A graph that cannot be further refined has been reduced to a collection of subgr
 \label{sec:orio}
 
 %~\cite{Norris:2007}
-Orio is an empirical tuning tool that takes as input annotated C code and generates multiple tuned versions. Orio does not parse the application code; rather, it relies on annotations expressed as structured comments, which contain a simplified expression of the computation, as well as directives on what transformations to apply.
+Orio is an empirical tuning tool that takes annotated C code as input,
+generates multiple transformed versions of the annotated code, and
+empirically evaluates the performance of the generated codes,
+ultimately choosing the best-performing version to use in production
+runs.
 
-Figure~\ref{fig:orio} illustrates the tuning process using Orio. In the simplest case, Orio can be used to improve code performance by performing source-to-source transformations, such as loop unrolling and memory alignment optimizations. First, the input to Orio is C code, which contains syntactically structured comments that contain both the computation to be tuned, as well as various performance-tuning directives. Orio scans the annotated input code and extracts all annotated regions. Each annotated region is then passed to the code transformation modules for potential optimizations. The code generator then produces the final code incorporating the newly generated optimized C code corresponding to the annotation. The original C code is not parsed (only the annotation comments are processed) and is preserved in the new version. The user has the option of selecting either the original or the tuned code by using a compile-time macro.
+Figure~\ref{fig:orio} illustrates the tuning process implemented in
+Orio. The input to Orio is C code containing semantic comments that
+describe both the computation, as well as various performance-tuning
+directives. Orio first extracts all annotation code regions by parsing
+the marked-up input code. Each annotated region is then passed to code
+transformator and code generator for potential optimizations. Then the
+transformed C code with various incorporated optimizations
+corresponding to the specified annotations is produced. The
+source-to-source transformation system of Orio generates an optimized
+code version for each distinct combination of performance parameter
+values. Each generated code variant is then executed and its
+performance cost evaluated. After iteratively testing all code
+variants, the best-performing code is selected as the final output of
+Orio. Because the search space of all possible optimized code variants
+can be exponentially large, the search engine implements a number of
+search heuristics (i.e., random, simplex, and simulated annealing) to
+effectively narrow the search for near-optimal performance. The tuning
+specifications, written by users in the form of annotations, contains
+information required for guiding the transformation and tuning
+process.
 
-
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=.7\textwidth]{figures/orio.eps}
+\begin{figure}[tb]
+\vspace{-.1in}
+\begin{center}
+\includegraphics[width=.65\textwidth]{figures/orio.eps}
+\end{center}
+\vspace{-.25in}
 \caption{Overview of the Orio empirical tuning process.}
 \label{fig:orio}
 \end{figure}
 
-
-Orio can also be used as an automatic performance tuning tool. The system uses its code transformation modules and code generator to generate an optimized code version for each distinct combination of performance parameters. Then the optimized code versions are executed and their performance measured, which is subsequently compared to the performances of other previously tested code variants. After iteratively evaluating all code variants under consideration, the best-performing code is selected as the final output of Orio. The tuning specifications, written by users in the form of annotations (either embedded in the source code or in separate files), are parsed and used by Orio to guide the search and tuning process. These specifications include important information such as the used compilers, the search strategy, the program transformation parameters, the input data sizes, etc.
-
-We use the VADD operation, $x = w + y + z$, as a simple example of the annotations and tuning specification used by Orio. Figure~\ref{fig:orio-example} shows the C code with annotation comments indicating that Orio should perform memory alignment and loop transformations. In addition to simple source transformation annotations in the example above, Orio supports a number of other transformations, including loop unroll and jam, composite optimizations, and architecture-specific directives (e.g., for generation of calls to SIMD intrinsics on the Blue Gene/P).
-
-\begin{figure}[htp]
+\begin{figure}[htb]
 \centering
 \begin{tabular}{cc}
 \begin{minipage}[b]{.45\textwidth}
 \scriptsize
 \begin{verbatim}
 void vadd(int n, double *y, double *x1,
-               double *x2, double *x3)
-{
-    int i;
+          double *x2, double *x3) {
+/*@ begin PerfTuning(
+  import spec vadd_tune_spec;
+) @*/
 
-/*@ begin Align (x1[],x2[],x3[],y[]) @*/
-/*@ begin Loop (
-  transform Unroll(ufactor=20, parallelize=True)
-    for (i=0; i < n; i++)
-      y[i] = x1[i] + x2[i] + x3[i];
-      ) @*/
+ register int i;
 
-    for (i=0; i < n ; i++)
-        y[i] = x1[i] + x2[i] + x3[i];
+/*@ begin BGP_Align(y[],x1[],
+                    x2[],x3[]) @*/
+/*@ begin Loop(
+ transform Unroll(ufactor=UF, 
+                  parallelize=PAR)
+ for (i=0; i<=n-1; i++)
+   y[i] = x1[i] + x2[i] + x3[i];
+) @*/
+
+ for (i=0; i<=n-1; i++)
+   y[i] = x1[i] + x2[i] + x3[i];
 
 /*@ end @*/
 /*@ end @*/
-
+/*@ end @*/
 }
-
-
-
-
-
-
-
-
-
-
-
 
 \end{verbatim}
 \end{minipage}
@@ -262,300 +288,205 @@ void vadd(int n, double *y, double *x1,
 \begin{minipage}[b]{.45\textwidth}
 \scriptsize
 \begin{verbatim}
-spec align_unroll {
- def build  
- { 
-   arg build_command = 'mpixlc -O3 -qstrict -lm'; 
+spec vadd_tune_spec {
+ def build { 
+  arg build_command = 'mpixlc -O3 -qstrict -lm';
+  arg batch_command = 'qsub -n 64 -t 10';
+  arg status_command = 'qstat';
+  arg num_procs = 64;
+ }
+ def performance_params { 
+  param UF[] = range(1,32);
+  param PAR[] = [True, False];
  } 
- def performance_counter  
- { 
-   arg method = 'basic timer'; 
-   arg repetitions = 10000;
+ def input_params { 
+  param N = [10,100,1000,10**4,10**5,10**6,10**7];
  } 
- def performance_params 
- { 
-   param UF[] = range(1,20);
- } 
- def input_params 
- { 
-   param SIZE = @THESIZE@;
-   decl int n = SIZE;
-   decl double x1[n] = random;   
-   decl double x2[n] = random;   
-   decl double x3[n] = random;   
-   decl double y[n] = 0;
- } 
- def search
- {
-   arg algorithm = 'Exhaustive';
-   arg time_limit = 20;
-   arg run_command = 'cqsub -n 64 -t 10 -q short ';
-   arg num_processes = 64;
+ def input_vars {
+  decl int n = N;
+  decl double y[N] = 0;
+  decl double x1[N] = random;   
+  decl double x2[N] = random;   
+  decl double x3[N] = random;   
+ }
+ def search {
+  arg algorithm = 'Exhaustive';
  }
 }
 \end{verbatim}
 \end{minipage}\\
 \end{tabular}
-\caption{Orio example: Annotated C source code (left) and a sample tuning specification for the Blue Gene/P (right).}
+\vspace{-.1in}
+\caption{Orio example: Annotated C source code (left) and tuning specifications for Blue Gene/P (right).}
 \label{fig:orio-example}
+\vspace{-.2in}
 \end{figure}
 
-On the right-hand side of Figure~\ref{fig:orio-example}, we show a separate tuning specification example, which contains the information required for creating complete executable tests and running them, including variable types, initializations (e.g., random), the search heuristic (in this case, exhaustive search is indicated, other options are random, simplex, and simulated annealing), and execution environment details. When parallel resources are available, Orio executes multiple variants in the same parallel job (the granularity is indicated by the \texttt{num\_processes} field in the search portion of the tuning specification. At present the tuning specification must be created manually. When Orio is used in conjunction with compiler tools, such as the MATLAB compiler described in this paper, it should eventually be possible to generate most of this tuning specification automatically.
+Figure~\ref{fig:orio-example} shows an annotation example used by Orio
+to empirically optimize VADD operation on Blue Gene/P. The annotations
+contain performance hints that instruct Orio to perform memory
+alignment optimization, loop unrolling, and multicore parallelization
+(using OpenMP). In addition to these simple optimizations, Orio
+supports other transformations such as loop blocking, loop
+permutation, scalar replacement, array copy optimization, and other
+architecture-dependent optimizations (e.g., SIMDization for Intel and
+Blue Gene/P architectures). The right-hand side of
+Figure~\ref{fig:orio-example} shows separate tuning specifications
+used for building and running executable tests, including performance
+parameter values, execution environment details, input variable
+information, and the search algorithm. Orio also supports parallel
+search when parallel resources are available. In this example, the
+parallel Orio driver simultaneously executes 64 code variants in the
+same parallel job. The commands used by Orio to submit a parallel job
+and to query its status are also specified in the tuning
+specifications. At present, users must create the tuning
+specifications manually. When Orio is used in conjunction with
+compiler tools, such as the MATLAB compiler described in this paper,
+it should eventually be possible to automatically generate the tuning
+specifications.
 
-\subsection{Search Space Exploration and Evaluation}
-\label{sec:search}
-
-% BN: moved to its own section since multiple tools deal with the search space problem.
-The set of all possible combinations of implementation and optimization choices is called the search space~\cite{Kisuki:2000uq,Triantafyllis:2003uq,Cooper:2005kx}.  Although the dataflow graphs are quite small in our setting (usually less than 100 nodes), it is still important to prune the search space to avoid an exponential compilation time. Our prototype MATLAB compiler already performs some pruning: the optimization rewrite rules only apply under certain circumstances. 
-%
-% BN: commented out below since it's more future work
-%However, as mentioned above we are sometimes overly aggressive in applying optimizations.
-%To solve this problem we plan to use a combination of analytic methods and empirical methods~\cite{Chen:2007vn}.
-%
-Orio provides a number of different search heuristics to narrow the search space for near-optimal performance, including random, simplex, and simulated annealing searches. The search algorithm is one of the user-defined values in the Orio tuning specification.
+\vspace{-0.1in}
 
 \section{Experimental Results}
 \label{sec:experiments}
 
-In this section we present performance results for a number of composed BLAS operations. The experiment described in Section~\ref{sec:vadd} were performed on Blue Gene/P, while the remaining experiments described in this section were all performed on an Intel Xeon 2.80 GHz Intel(R) E5462 dual quad-core workstation with a 1600Mhz front-side bus and 16GB DDR2 FBDIMM RAM, running Ubuntu 8.04.
+We evaluated our approach by running experiments on an Intel Xeon
+workstation and the Blue Gene/P at Argonne. The Intel machine has dual
+quad-core E5462 Xeon processors (8 cores total) running at 2.8 GHz
+(1600 MHz FSB) with 2 GB RAM, running Ubuntu 8.04. Intel C compiler
+(v10.1) was used with \texttt{-O3} option (and
+\texttt{-parallel}/\texttt{-openmp} for automatic/manual
+parallelization). Each node of the Blue Gene/P has four 850 MHz
+PowerPC 450 processors with a dual floating-point unit and 2 GB total
+memory per node, running a proprietary operating system. On Blue
+Gene/P, we used IBM XLC compiler (v9.0), with \texttt{-O3 -qstrict
+-qarch=450d -qtune=450 -qhot} options (and
+\texttt{-qsmp=auto}/\texttt{-qsmp=noauto} for automatic/manual
+parallelization).
 
-% Include peak numbers?
-
-For the Xeon experiments, we used the Intel icc compiler (version 10.1) with the \texttt{-O3 -parallel} optimization flags. We generated and tested the following different implementations of each operation:
-\begin{itemizer}
-\item C from MATLAB: C code generated by the MATLAB compiler described in Section~\ref{sec:matlab}.
-\item BLAS: A version implemented using multiple BLAS calls and linked with the default BLAS library available on Ubutnu 8.04.
-\item Intel MKL: The same code as the BLAS version, but linked to the Intel MKL libraries.
-\item ATLAS: The same code as the BLAS version, but linked to the ATLAS libraries tuned for this machine.
-\item Orio (Seq.): The C code generated by the MATLAB compiler annotated with sequential-only optimization directives.
-\item Orio (Par.) : The C code generated by the MATLAB compiler annotated with both sequential and parallel optimization directives (note that the code is the same as for Orio (Seq.), the only difference is the value of a parallelization parameter in the separate tuning specification). This version was compiled with the \texttt{-O3 -openmp} options.
-\end{itemizer}
-
-\subsection{VADD}
-\label{sec:vadd}
-
-The VADD operation computes the sum of three arrays, storing the result in a fourth: $x = w + y + z$.
-We optimized the performance for the VADD operation on a Blue Gene/P
-%at Argonne National Laboratory
-using the IBM XLC compiler version 9.0. We measured the performance for two scenarios: using one core per processor and using all 4 cores on each processor. In the single-core case, the codes were compiled with the following options: \texttt{-O3 -qstrict -qarch=450d -qtune=450 -qhot -qsmp=noauto}. For the multicore case, the only difference in the compilation was that for the non-Orio versions, the \texttt{-qsmp=auto} option was used. The parallel Orio version differs from the sequential in that it contains parallelization directives, which result in the placement of OpenMP pragmas in the generated code.
-
-\begin{figure}[htp]
-\centering
-\begin{tabular}{cc}
-\begin{minipage}[b]{.25\textwidth}
-\footnotesize
-\begin{verbatim}
-VADD
-in
-  w : vector,
-  y : vector,
-  z : vector
-out
-  x : vector
-{
-  x = w + y + z
-}
+Table~\ref{tbl:blas-ops} lists the composed BLAS operations used in
+our experiments, along with their input and output variables. Vectors
+are typeset in lowercase with an overhead arrow. Scalars and matrices
+are represented as lowercase and uppercase letters, respectively. A
+regular uppercase denotes a row matrix, whereas a bold uppercase
+symbolizes a column matrix. The extended MATLAB code that corresponds
+to each operation can be seen in the last column of
+Table~\ref{tbl:blas-ops}.
 
 
-
-
-\end{verbatim}
-\end{minipage}
-&
-\begin{minipage}[b]{.6\textwidth}
-\includegraphics[width=1.0\textwidth]{figures/vadd_bgp.eps}
-\end{minipage}\\
-\end{tabular}
-\caption{Annotated MATLAB code (left) and MFLOP/s (right) for the VADD operation using different code versions.}
-\label{fig:vadd}
-\end{figure}
-
-The "Base" label designates the simple loop C implementation generated by the Matlab compiler, which was simply compiled with the options mentioned earlier and executed. We tested the performance of the IBM ESSL library and Goto BLAS for the two calls to \texttt{daxpy} used in the BLAS version of the code. Finally, we annotated the simple C loop version with memory alignment and loop unrolling directives, and then used Orio to select the best tuned version for the single-core and multicore scenarios. We observe that even for a very simple operation, such as the vector addition above, the compiler alone is unable to obtain the same level of performance as the empirically tuned versions. Furthermore, as expected, the BLAS performance was worse than that of the single loop implementation, however, selecting the correct compiler options was crucial for achieving good performance of the base version.
-
-\subsection{ATAX}
-
-The extended Matlab code for the ATAX operation, $y = A' * (A * x)$, and the corresponding performance results are shown in Figure~\ref{fig:atax}. The Orio-tuned version that incorporates PLuTo-generated loop fusion optimizations and Orio parallelization directives achieves the best performance for most problem sizes, outperforming the Intel MKL version by a factor of 2 to 5.7 and the compiler-optimized C version by a factor of 4 to 7. The optimizations performed by both Orio versions include scalar replacement, vectorization, and unroll and jam.
-
+\begin{table}[htb] 
+\vspace{-.1in} 
+\caption{Composed BLAS operations used in our experiments}
+\label{tbl:blas-ops}
+\small
+\centering 
+\vspace{-.1in} 
+\begin{tabular}{|c|c|c|c|} 
+\hline 
+Name & Input & Output & C code from MATLAB compiler \\
+\hline 
+\hline 
+VADD & $\overrightarrow{w}$,$\overrightarrow{y}$,$\overrightarrow{z}$ & $\overrightarrow{x}$ &
+$\overrightarrow{x} = \overrightarrow{w} + \overrightarrow{y} + \overrightarrow{z}$ \\ 
+\hline 
+ATAX & $A$,$\overrightarrow{x}$ & $\overrightarrow{y}$ & 
+$\overrightarrow{y} = A' * (A * \overrightarrow{x})$ \\ 
+\hline 
+BiCG Kernel & ${\bf A}$,$\overrightarrow{p}$,$\overrightarrow{r}$ & $\overrightarrow{q}$,$\overrightarrow{s}$ & $\overrightarrow{q} = {\bf A} * \overrightarrow{p}$ \\
+& & & $\overrightarrow{s} = {\bf A}' * \overrightarrow{r}$\\
+\hline 
+ & ${\bf A}$,$a$,$b$, & ${\bf B}$, & ${\bf B} = {\bf A} + \overrightarrow{u_1} * \overrightarrow{v_1}' + \overrightarrow{u_2} * \overrightarrow{v_2}'$\\
+GEMVER & $\overrightarrow{u_1}$,$\overrightarrow{u_2}$,$\overrightarrow{v_1}$,$\overrightarrow{v_2}$, & $\overrightarrow{x}$,$\overrightarrow{w}$ & $\overrightarrow{x} = b * ({\bf B}' * \overrightarrow{y}) + \overrightarrow{z}$\\
+& $\overrightarrow{y}$,$\overrightarrow{z}$ & & $\overrightarrow{w} = a * ({\bf B} * \overrightarrow{x})$\\
+\hline 
+\end{tabular} 
+\vspace{-.2in} 
+\end{table} 
 
 
 \begin{figure}[htp]
+{\small
 \centering
 \begin{tabular}{cc}
-\begin{minipage}[b]{.3\textwidth}
-\footnotesize
-\begin{verbatim}
-ATAX
-in
-  A : row matrix,
-  x : vector
-out
-  y : vector
-{
-  y = A' * (A * x)
-}
 
-
-
-
-
-\end{verbatim}
+\begin{minipage}[b]{.515\textwidth}
+\includegraphics[width=\textwidth]{figures/vadd_bgp.eps}
 \end{minipage}
 &
-\begin{minipage}[b]{.6\textwidth}
+\begin{minipage}[b]{.515\textwidth}
 \includegraphics[width=\textwidth]{figures/atax.eps}
 \end{minipage}\\
-\end{tabular}
-\caption{Annotated MATLAB code (left) and wall-clock time in seconds (right) for the ATAX operation using different code versions.}
-\label{fig:atax}
-\end{figure}
 
-\subsection{GEMVER}
+(a) VADD & (b) ATAX \\
 
-
-The extended MATLAB code for the GEMVER operation and the corresponding performance results are shown in Figure~\ref{fig:gemver}. Here we used the same PLuTo and Orio optimizations as for the ATAX example and similarly the parallel Orio version achieves the best performance, although in this case the sequential Orio version performs almost as well suggesting that the compiler was not able to parallelize the code very effectively. For this operation, there are substantial performance differences between different BLAS versions, with the Intel MKL version achieving performance close to that of the simple compiler code.
-\begin{figure}[htp]
-\centering
-\begin{tabular}{cc}
-\begin{minipage}[b]{.3\textwidth}
-\footnotesize
-\begin{verbatim}
-GEMVER
-in
-  A : column matrix,
-  u1 : vector, u2 : vector,
-  v1 : vector, v2 : vector,
-  a : scalar, b : scalar,
-  y : vector, z : vector
-out
-  B : column matrix,
-  x : vector, w : vector
-{
-  B = A + u1 * v1'
-           + u2 * v2'
-  x = b * (B' * y) + z
-  w = a * (B * x)
-}
-\end{verbatim}
-\end{minipage}
-&
-\begin{minipage}[b]{.6\textwidth}
+\begin{minipage}[b]{.515\textwidth}
 \includegraphics[width=\textwidth]{figures/gemver.eps}
-\end{minipage}\\
-\end{tabular}
-\caption{Annotated MATLAB code (left) and wall-clock time in seconds (right) for the GEMVER operation using different code versions.}
-\label{fig:gemver}
-\end{figure}
-
-% Data (Dual quad-core Intel Xeon E5462, 16GB RAM)
-%--- Sequential: seconds (dynamic arrays) ---
-%cmatlab= [0.038, 0.157, 0.352, 0.626, 0.976, 1.406, 1.909, 2.494, 3.143, 3.886]
-%orio= [0.029, 0.118, 0.263, 0.480, 0.759, 1.075, 1.447, 1.899, 2.338, 2.978]
-%blas= [0.064, 0.265, 0.598, 1.091, 1.711, 2.456, 3.340, 4.345, 5.480, 6.840]
-%mkl=  [0.073, 0.147, 0.331, 0.591, 0.923, 1.326, 1.803, 2.350, 2.975, 3.676]
-%atlas=[0.039, 0.163, 0.401, 0.796, 1.225, 1.916, 2.582, 3.381, 4.210, 4.756]
-%
-%--- Parallel: seconds (dynamic arrays) --- N=10,000, cores=1-8
-%cmatlab= [0.976, 0.976, 0.976, 0.976, 0.976, 0.976, 0.975, 0.976]
-%orio= [0.754, 0.738, 0.666, 0.649, 0.664, 0.664, 0.647, 0.668]
-
-
-\subsection{GESUMMV}
-
-
-The extended Matlab code for the GESUMMV operation, $y = a * (A * x) + b * (B * x)$,
-and the corresponding performance results are shown in Figure~\ref{fig:gesummv}. Unlike all the other operations we tested, the best performing version is the ATLAS one, which substantially outperforms all the alternatives. The next best performance is exhibited by the parallel Orio version. This result motivates the development of transformations that enable the generation of code with calls to existing optimizing libraries in addition to the low-level loop transformations targeted by the current tools (PLuTo and Orio).
-
-
-\begin{figure}[htp]
-\centering
-\begin{tabular}{cc}
-\begin{minipage}[b]{.3\textwidth}
-\footnotesize
-\begin{verbatim}
-GESUMMV
-in
-  A : row matrix,
-  B : row matrix,
-  x : vector,
-  a : scalar,
-  b : scalar
-out
-  y : vector
-{
-  y = a * (A * x)
-       + b * (B * x)
-}
-
-
-
-\end{verbatim}
 \end{minipage}
 &
-\begin{minipage}[b]{.6\textwidth}
-\includegraphics[width=\textwidth]{figures/gesummv.eps}
-\end{minipage}\\
-\end{tabular}
-\caption{Annotated MATLAB code (left) and wall-clock time in seconds (right) for the GESUMMV operation using different code versions.}
-\label{fig:gesummv}
-\end{figure}
-
-
-% BN: ATLAS's dgemv is annihilating everything else, even though it's called twice... wow.
-% I did check the result and it was correct, i'm still somewhat baffled
-% The Time and MFLOPS data for the above are (with icc):
-% (Dual quad-core Intel Xeon E5462, 16GB RAM)
-% ops = (4*N*N+3*N)
-% --- Parallel: seconds (dynamic arrays) ---
-%matlabc= [0.019, 0.075, 0.170, 0.301, 0.471, 0.678, 0.923, 1.205, 1.529, 1.887]
-%blas= [0.00006, 0.00018, 0.00039, 0.00060, 0.00090, 0.00126, 0.00168, 0.00216, 0.00270, 0.00330]
-%orio= [0.013, 0.035, 0.076, 0.133, 0.210, 0.300, 0.410, 0.533, 0.676, 0.831]
-%--- Parallel: Mflops/sec (dynamic arrays) ---
-%matlabc= [846.565, 848.425, 849.028, 849.503, 849.690, 849.968, 849.605, 849.946, 847.893, 848.023]
-%blas= [271288.136, 347891.304, 367392.857, 421785.832, 480228.091, 497440.415, 508787.800, 516153.226, 524930.741, 530172.300]
-%orio= [1231.989, 1846.163, 1885.595, 1918.746, 1907.976, 1920.818, 1910.867, 1920.502, 1915.970, 1924.623]
-%
-% and gcc behaves similarly, so it's not icc being smart and detecting 2 calls to dgemv
-% time: blas= [0.000, 0.000, 0.000, 0.001, 0.001, 0.001, 0.002, 0.002, 0.003, 0.003]
-% mflops: blas= [254063.492, 346010.811, 393491.803, 421785.832, 439593.407, 453214.792, 463108.092, 470394.120, 462381.020, 469088.244]
-
-
-
-\subsection{BiCG Kernel}
-
-% No pluto
-The extended Matlab code for the BiCG Kernel operation,$q = A * p$, $s = A' * r$,
-and the corresponding performance results are shown in Figure~\ref{fig:gesummv}. For this operation, the PLuTo analysis did not result in performance improvement, thus we are showing the results obtained only through Orio transformations, which included vectorization, scalar replacement, and unroll and jam. Again the best performance was exhibited by the parallel Orio version, while all the BLAS versions performed worse than the compiler-optimized C loop version.
-
-
-\begin{figure}[htp]
-\centering
-\begin{tabular}{cc}
-\begin{minipage}[b]{.3\textwidth}
-\footnotesize
-\begin{verbatim}
-BICG
-in
-  A : column matrix,
-  p : vector, r : vector
-out
-  q : vector, s : vector
-{
-  q = A * p
-  s = A' * r
-}
-
-
-
-\end{verbatim}
-\end{minipage}
-&
-\begin{minipage}[b]{.6\textwidth}
+\begin{minipage}[b]{.515\textwidth}
 \includegraphics[width=\textwidth]{figures/bicgkernel.eps}
 \end{minipage}\\
+
+(c) GEMVER & (d) BiCG Kernel \\
+
 \end{tabular}
-\caption{Annotated MATLAB code (left) and wall-clock time in seconds (right) for the BiCG kernel operation using different code versions.}
-\label{fig:bicgkernel}
+}
+\caption{Performance numbers for different implementations of various composed of BLAS operations}
+\label{fig:results}
 \end{figure}
+
+The performance results of tuning the VADD operation are given in
+Figure~\ref{fig:results}(a). The ``Base'' label designates the simple
+loop C implementation generated by the MATLAB compiler, which was
+simply compiled with the options mentioned earlier and executed. We
+tested the performance of the IBM ESSL library and Goto BLAS for the
+two calls to \texttt{daxpy} used in the BLAS version of the code.
+Finally, we tuned the simple C loop version using Orio, with the
+performance annotations previously shown in
+Figure~\ref{fig:orio-example}. In this experiment, we measured the
+performance for both the sequential and parallel scenarios. We observe
+that even for a very simple operation, such as the vector addition
+above, the compiler alone is unable to obtain the same level of
+performance as the empirically tuned versions. Furthermore, as
+expected, the BLAS performance was worse than that of the single loop
+implementation, however, selecting the correct compiler options was
+crucial for achieving good performance of the base version.
+
+The experiments of the remaining operations were performed on the
+multicore Intel Xeon. Included in these experiments are performance
+numbers for six code variants: the C code generated by the MATLAB
+compiler (''C from MATLAB''), three BLAS-based implementations that
+use Intel MKL, ATLAS, and the default BLAS library on Ubuntu 8.04, and
+the sequential and parallel code variants tuned by Orio (``Orio
+(Seq.)'' and ``Orio (Par.)'', respectively).
+
+The performance results of ATAX are shown in
+Figure~\ref{fig:results}(b). The Orio-tuned version that incorporates
+PLuTo-generated loop fusion optimizations and Orio parallelization
+directives achieves the best performance for most problem sizes,
+outperforming the Intel MKL version by a factor of 2 to 5.7 and the
+compiler-optimized C version by a factor of 4 to 7. The optimizations
+performed by both Orio versions include scalar replacement,
+vectorization, and loop unroll/jam.
+
+Figure~\ref{fig:results}(c) exhibits the performance results of the
+GEMVER operation. Here we used the same PLuTo and Orio optimizations
+as for the ATAX example and, similarly, the parallel Orio version
+achieves the best performance, although in this case the sequential
+Orio version performs almost the same, suggesting that the compiler was
+not able to parallelize the code very effectively. For this operation,
+there are substantial performance differences between different BLAS
+versions, with the Intel MKL version achieving performance close to
+that of the simple compiler code.
+
+The experimental results of BiCG Kernel operation are provided in
+Figure~\ref{fig:results}(d). For this operation, the PLuTo analysis
+did not result in performance improvement, thus we are showing the
+results obtained only through Orio transformations, which included
+vectorization, scalar replacement, and loop unroll/jam. Again the best
+performance was demonstrated by the parallel Orio version, while all
+the BLAS versions performed worse than the compiler-optimized C loop
+version.
 
 \section{Conclusions and Future Work}
 
