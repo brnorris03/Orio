@@ -1,8 +1,10 @@
-% CGO 09: http://www.cgo.org/
-% svn co https://svn.mcs.anl.gov/repos/performance/orio/doc/papers/cgo08
-% Max 22 pages, double-spaced, 11pt or larger font
-% Abstract 300 words: Sep. 12, 2008
-% Full paper: Sep. 19, 2008
+% ICCS'09 http://www.iccs-meeting.org/iccs2009/
+% svn co https://svn.mcs.anl.gov/repos/performance/orio/doc/papers/iccs09
+% Important dates:
+% Full papers submission (extended)       December 20, 2008
+% Notification of acceptance of papers    February 2, 2009
+% Camera ready papers                        February 15, 2009
+% Max 10 pages, llncs style
 
 \documentclass[runningheads]{llncs}
 
@@ -135,7 +137,8 @@ Existing optimizing MATLAB compilers, such as the MaJIC MATLAB compiler~\cite{Ma
 include limited local optimizations for matrix expressions, but do not
 perform optimizations such as loop fusion across multiple operations as we do
 with the tools described in this paper. The telescoping languages
-project~\cite{telescopingurl,teleoverview,Ken99} uses techniques such as
+%~\cite{telescopingurl,teleoverview,Ken99} 
+project~\cite{telescopingurl} uses techniques such as
 strength reduction, vectorization, and procedure specialization to optimize
 MATLAB scripts, but do not generate reusable optimized linear algebra
 routines as described in this paper.
@@ -147,29 +150,32 @@ are well-understood~\cite{Goedecker01}.  It requires a significant amount of
 time and effort. Optimizing code for one particular platform may in fact make
 it less efficient on other platforms and often makes it complex and hard to
 understand or maintain.  An alternative is the use of tuned libraries of key
-numerical algorithms (e.g., BLAS~\cite{Dongarra:1990fk} and
-LAPACK~\cite{LAPACK} for dense linear algebra, SPARSPAK~\cite{sparspak} for
-sparse linear algebra, and BLITZ++~\cite{blitz} to support scientific
-computing in C++, or GPULib by Tech-X, an open source library for
-accelerating numerical computations on Graphics Processing
-Units~\cite{gpulib}, to name just a few). Such libraries are difficult to
-develop, and they generally cannot adapt to execution context: as we note in
-Section~\ref{sec:approach}, a series of calls to library routines can incur
-high memory costs.
+numerical algorithms, for example BLAS~\cite{Dongarra:1990fk} and
+LAPACK~\cite{LAPACK} for dense linear algebra.
+%, SPARSPAK~\cite{sparspak} for
+%sparse linear algebra, and BLITZ++~\cite{blitz} to support scientific
+%computing in C++, or GPULib by Tech-X, an open source library for
+%accelerating numerical computations on Graphics Processing
+%Units~\cite{gpulib}, to name just a few). Such libraries are difficult to
+%develop, and they generally cannot adapt to execution context: as we note in
+%Section~\ref{sec:approach}, a series of calls to library routines can incur
+%high memory costs.
 
 Specialized code generators circumvent the high costs of manual code
 generation . They include tools for basic dense linear algebra operations
-(ATLAS~\cite{WN147}, PhiPAC~\cite{bilmes97optimizing,phipacwww}), sparse
-linear algebra (OSKI~\cite{vuduc05}), FFTs~\cite{FFTW,Spiral}), stencil-based
-operations~\cite{kamil06}, and tensor computations (TCE~\cite{TCE}) among
-others.  While these libraries target a specific kernel, our approach aims 
+(ATLAS~\cite{WN147}, PhiPAC~\cite{bilmes97optimizing},
+%,phipacwww})
+sparse linear algebra (OSKI~\cite{vuduc05}), 
+%FFTs~\cite{FFTW,Spiral}), stencil-based
+
+%operations~\cite{kamil06}, and tensor computations (TCE~\cite{TCE}) among
+among others.  While these libraries target a specific kernel, our approach aims 
 at enabling the definition of arbitrary kernels involving dense matrix linear algebra.
-%It is often impossible to predict the performance of code precisely
-%on modern computer architectures. Thus, many of these specialized code
-%generators exploit search strategies to identify the best (or nearly best)
-%code for a particular choice of problem parameters and machine. Such
-%autotuning tools are not general but rather each is valuable in one specific
-%problem domain. 
+It is often impossible to predict the performance of code precisely
+on modern computer architectures. Thus, many of these specialized code
+generators exploit search strategies to identify the best (or nearly best)
+code for a particular choice of problem parameters and machine. Most existing
+autotuning tools are not general but rather focus on a specific domain or algorithm.
 %While not all applications can be written in terms of available libraries,
 %the performance achieved with autotuning tools does convincingly demonstrate
 %the benefits of automated source code transformations.
@@ -190,38 +196,45 @@ developed at Rice University, supports annotation-based loop fusion,
 unroll-and-jam, skewing and tiling.  A relatively new tool, POET~\cite{POET}
 also supports a number of loop transformations. POET offers a complex
 template-based syntax for defining transformations in a language-independent
-manner. Other recent research efforts whose goal, at least in part, is to
-enable optimizations of source code to be augmented with performance-related
-information include the X language~\cite{XLanguage} (a macro C-like language
-for annotating C code), the Broadway~\cite{broadway} compiler, and various
-meta-programming
-techniques~\cite{veldhuizen95,weise93,kiczales91,chiba95}. PLuTo~\cite{Pluto,uday08cc}
-is a source-to-source transformation tool for optimizing sequences of nested
-loops. PLuTo employs a polyhedral model of nested loops, where the dynamic
-instance (iteration) of each statement is viewed as an integer point in a
-well-defined space, called the statement's polyhedron. Combined with a
-characterization of data dependences, this representation allows the
-construction of mathematically correct complex loop transformations. The
-transformations target both improved cache locality and parallelism.
+manner (but currently only C++ is supported). 
+%Other recent research efforts whose goal, at least in part, is to
+%enable optimizations of source code to be augmented with performance-related
+%information include the X language~\cite{XLanguage} (a macro C-like language
+%for annotating C code), the Broadway~\cite{broadway} compiler, and various
+%meta-programming
+%~\cite{veldhuizen95,weise93,kiczales91,chiba95}
+%techniques (e.g., ~\cite{veldhuizen95,chiba95}). 
+PLuTo~\cite{Pluto}
+%uday08cc} 
+is a source-to-source transformation tool for
+optimizing sequences of nested loops. PLuTo employs a polyhedral model of
+nested loops, where the dynamic instance (iteration) of each statement is
+viewed as an integer point in a well-defined space, called the statement's
+polyhedron. Combined with a characterization of data dependences, this
+representation allows the construction of mathematically correct complex loop
+transformations. The transformations target both improved cache locality and
+parallelism.
 
 \section{Optimizing Composed BLAS Operations}
 \label{sec:approach}
 
 Codes based on matrix algebra are generally constructed as a sequence of
 calls to the Basic Linear Algebra Subprograms
-(BLAS)~\cite{Dongarra:1988uq,Lawson:1979kx,Dongarra:1990fk} and similar
+(BLAS)
+%~\cite{Dongarra:1988uq,Lawson:1979kx,Dongarra:1990fk} 
+and similar
 sparse matrix libraries~\cite{Saad:fr,George:1981uq}. Writing programs in
 this way promotes readability and maintainability but can be costly in terms
 of memory efficiency. Specifically, the retrieval of a large order matrix at
 each routine call can have a profound effect on performance even when highly
-tuned implementations of the BLAS
-(e.g.~\cite{Bilmes:1997ye,Whaley:1998fk,IntelMath:oq,ESSL:kl,Goto:2006fk})
+tuned implementations of the BLAS (e.g.,~\cite{Goto:2006fk})
+%(e.g.~\cite{Bilmes:1997ye,Whaley:1998fk,IntelMath:oq,ESSL:kl,Goto:2006fk})
 are used.
 
 The authors and other researchers have observed that it can be much more
 efficient to call a single specialized routine that performs multiple
 operations than to make successive calls to separate BLAS routines (e.g., see
-~\cite{Blackford:2002vn,baker03lgmres,,gropp01,Vuduc:2003kl}.
+~\cite{gropp01,Vuduc:2003kl}.
 %~\cite{Ashby:uq,Blackford:2002vn,baker03blgmres,baker03lgmres,Dennis:2005tg,Howell:2008,gropp01,Vuduc:2003kl}.
 Single routines that carry out more than one linear algebra operation are
 known as \emph{composed} BLAS. As an example, consider the pair of
@@ -241,26 +254,31 @@ here, but much of what we discuss generalizes to a much broader array of
 computations.
 
 To generate highly optimized code from a MATLAB prototype of the composed BLAS operation, we follow a three-step approach, illustrated in Figure~\ref{fig:process}.  To begin,
+we have developed a compiler that converts a MATLAB script into simple C code~\cite{Siek}.
+After generating the C code from the high-level MATLAB prototype, 
 %
 \begin{wrapfigure}{r}{3in}
 \vspace{-.2in}
 \centering
 \includegraphics[width=3in]{figures/process.png}
-\caption{Overview of the code generation and tuning process, optional steps are indicated with dashed arrows.}
+\caption{The code generation and tuning process.}
 \label{fig:process}
-\vspace{-.1in}
+\vspace{-.2in}
 \end{wrapfigure}
 %
-%~\cite{Siek}.  
-we have developed a compiler that converts a MATLAB script into simple C code.
-After generating the C code from the high-level MATLAB prototype, we (optionally) use the source-to-source automatic parallelization tool PLuTo\cite{Pluto} %developed at Ohio State University
-to optimize for coarse-grained parallelism and locality simultaneously. Using the results of the PLuTo analysis, we insert annotations into the C code, which are then processed by our extensible annotation system Orio to generate many tuned versions of the same operation using different optimization parameters. Orio then performs an empirical search to select the best among the multiple optimized code variants.
+we (optionally) use the source-to-source automatic parallelization tool PLuTo~\cite{Pluto} %developed at Ohio State University
+to optimize for coarse-grained parallelism and locality simultaneously. Using
+the results of the PLuTo analysis, we insert annotations into the C code,
+which are then processed by our extensible annotation system Orio to generate
+many tuned versions of the same operation using different optimization
+parameters. Orio then performs an empirical search to select the best among
+the multiple optimized code variants.
 
 %Probably need some words about WHY this multipronged approach is a good idea.
 
 In the remainder of this section we describe each of the tools developed by the authors of this paper, namely the MATLAB to C compiler and the Orio empirical tuning tool.
 
-\vspace{-.2in}
+%\vspace{-.2in}
 \subsection{A MATLAB Compiler}
 \label{sec:matlab}
 %\input{matlab}
@@ -274,11 +292,23 @@ In this section we describe the design and operation of the MATLAB to C compiler
 \label{fig:compiler}
 \vspace{-.3in}
 \end{wrapfigure}
-The MATLAB kernel specification is parsed into a high-level intermediate representation in the form of a dataflow graph.  This dataflow graph is then iteratively processed until all of the implementation choices have been made.  The compilation process consists of three phases: analysis, lowering, and optimization, which are together iterated until all of the implementation decisions have been made.  The graph is then translated into C code.
-
-\subsubsection{The Dataflow Graph.}
-
-An example dataflow graph for the GEMVER kernel, defined below, is given in figure~\ref{fig:gemver-dataflow}.
+The MATLAB kernel specification is parsed into a high-level intermediate
+representation in the form of a dataflow graph.  This dataflow graph is then
+iteratively processed until all of the implementation choices have been made.
+The compilation process consists of three phases: analysis, refinement, and
+optimization, which are together iterated until all of the implementation
+decisions have been made.  The graph is then translated into C code.
+%\subsubsection{The Dataflow Graph.}
+%
+An example dataflow graph for the GEMVER kernel, defined below, is shown
+in Figure~\ref{fig:gemver-dataflow}.
+Each node represents a parameter of the kernel or an operation.  The arrows
+indicate the flow of data. At first the graph specifies what operations are
+to be performed but does not contain any implementation details. The symbol
+$\times$ in the depicted graph stands variously for outer product,
+matrix-vector multiplication, and scalar-vector multiplication, and it does
+not yet specify, for example, whether the outer products compute a row or a
+column at a time of the result matrix.
 \begin{figure}[ht]
 \begin{minipage}{.3\textwidth}
 \begin{align*}
@@ -294,60 +324,116 @@ An example dataflow graph for the GEMVER kernel, defined below, is given in figu
 \label{fig:gemver-dataflow}
 \end{figure}
 
-Each node represents a parameter of the kernel or an operation.  The arrows 
-indicate the flow of data. At first the graph specifies what operations are to be performed but does not contain any implementation details. The symbol $\times$ in the depicted graph stands variously for outer product, matrix-vector multiplication, and scalar-vector multiplication, and it does not yet specify, for example, whether the outer products compute a row or a column at a time of the result matrix.
+Here we briefly describe the analysis, refinement, and optimization of the
+dataflow graph, which are discussed in more detail in~\cite{Siek}. During the
+analysis phase, all types of intermediate nodes are computed and
+assigned. The algorithm choice and storage format determination are computed
+simultaneously. For example, the $\times$ symbol in the graph in
+Figure~\ref{fig:gemver-dataflow} having the inputs $u_1$ and $v_1^T$ can be
+implemented by iterating over rows first, or over columns first. The choice
+depends on how the result is used downstream in the dataflow graph.  In this
+case, the result is added to the outer product of $u_2$ and $v_2^T$, so we
+still could choose either option as long as we make the same choice for both
+outer products. 
+%Going one more step downstream, there is an addition with
+%$A$, which was annotated in Figure~\ref{fig:gemver} to be column major. At
+%this point it is clear that the outer-products should be computed in
+%column-major order.
 
-\subsubsection{Analyze the Dataflow Graph.}
+The information on implementation possibilities for basic linear algebra
+operations are not hard-coded in the compiler; rather, these data are stored
+in a database, called the \emph{linear algebra database}.  This separation
+allows us to add new matrix formats, operations, and basic linear algebra
+algorithms without changes to the compiler algorithm.
 
-At the beginning of the analysis phase, each input and output node of the dataflow graph is labeled with its kind (scalar, vector, matrix, or unknown) and storage format (dense row-major, dense column-major, or unknown) according to the annotation given by the user.  During analysis, the kind and storage format are computed for the intermediate nodes and algorithms are assigned to operation nodes. The choice of algorithm and the determination of kinds of storage formats are interrelated so they must be computed together.  For example, the $\times$ symbol in the graph in Figure~\ref{fig:gemver-dataflow} having the inputs $u_1$ and $v_1^T$ can be implemented by iterating over rows first, or over columns first. The choice depends on how the result is used downstream in the dataflow graph.  In this case, the result is added to the outer product of $u_2$ and $v_2^T$, so we still could choose either option as long as we make the same choice for both outer products. Going one more step downstream, there is an addition with $A$, which was annotated in Figure~\ref{fig:gemver} to be column major. At this point it is clear that the outer-products should be computed in column-major order.
+The analysis algorithm makes implementation choices using the
+most-con\-strained-first strategy (also known as minimum remaining
+values)~\cite{Russell:2003mz}.  The compiler chooses the node with the fewest
+matching implementations (in the linear algebra database) and assigns an
+algorithm name to the node.  If there is more than one match, the prototype
+compiler picks the first.  This process is repeated with all remaining nodes
+in the graph.
 
-We do not hard code this knowledge of basic linear algebra in the compiler algorithm itself, but instead use a data-driven approach and store information regarding how to implement basic linear algebra in a separate database, which we refer to as the \emph{linear algebra database}.  This separation allows us to add new matrix formats, operations, and basic linear algebra algorithms without changes to the
-compiler algorithm. 
+%Once
+%we add backtracking we will push each alternative onto the stack to be
+%explored later. Once the choice is made, the kind and storage format labels
+%for the operation node itself and for the input nodes are updated with the
+%labels specified in the linear algebra database for the chosen algorithm. The
+%algorithm then goes on to find the next node with the fewest matching
+%implementations and repeats.  In this phase, only the name of the algorithm
+%is assigned to the operation node.  The details of the implementation are not
+%specified until the refinement phase.
 
-The analysis algorithm makes implementation choices using the most-constrained first strategy (also called minimum remaining values)
-from the artificial intelligence literature~\cite{Russell:2003mz}.
-%This may need to be updated depending on how we decide to talk about the empirical search. -Jeremy 8/6/08 10:15 AM 
-The compiler chooses the node with the fewest matching implementations (in the linear algebra database) and assigns a matching implementation to the node.  If there is more than one match, the prototype compiler picks the first.  Once we add backtracking we will push each alternative onto the stack to be explored later. Once the choice is made, the kind and storage format labels for the operation node itself and for the input nodes are updated with the labels specified in the linear algebra database for the chosen algorithm. The algorithm then goes on to find the next node with the fewest matching implementations and repeats.  In this phase, only the name of the algorithm is assigned to the operation node.  The details of the implementation are not specified until the refinement phase.
+The refinement phase resolves the implementation for each operation node in
+the graph into a subgraph defining the details of the chosen algorithm.  Each
+subgraph is an abstract representation of the loop that implements the given
+operation that also contains an iteration strategy for traversing the
+elements of the matrix or vector.
 
-
-\subsubsection{Refine the Dataflow Graph.}
-\label{sec:refine}
-
-The refinement phase resolves the implementation for each operation node in the graph into a subgraph defining the details of the chosen algorithm.  Each subgraph is an abstract representation of the loop that implements the given operation.  In each case, the subgraph has an iteration strategy that specifies how to traverse the elements of the matrix or vector.
-
-Figure~\ref{fig:refine-mv-dot} shows two steps of refinement for a matrix-vector multiplication. The first step expands the matrix-vector multiplication according to the mv-dot algorithm: $(Ax)(i) = A(i,:)x$.  The refinement step replaces the $\times$ node with a subgraph that computes the inner product of a row of the matrix---the node labeled $(i,:)$---with the vector, storing the result in the $i$th element of the result vector---the node labeled $(i)$. The subgraph is labeled with $i=1\!:\!m$ indicating that the iteration strategy is to traverse the rows of the dense matrix.
+%Figure~\ref{fig:refine-mv-dot} shows two steps of refinement for a matrix-vector multiplication. The first step expands the matrix-vector multiplication according to the mv-dot algorithm: $(Ax)(i) = A(i,:)x$.  The refinement step replaces the $\times$ node with a subgraph that computes the inner product of a row of the matrix---the node labeled $(i,:)$---with the vector, storing the result in the $i$th element of the result vector---the node labeled $(i)$. The subgraph is labeled with $i=1\!:\!m$ indicating that the iteration strategy is to traverse the rows of the dense matrix.
 %
-The second pass of refinement introduces another subgraph to implement the inner products. The new subgraph iterates through each dense row, as indicated by the $j=1:n$ annotation. The sign $\Sigma$ indicates that the sum of all of the iterations is computed.
+%The second pass of refinement introduces another subgraph to implement the inner products. The new subgraph iterates through each dense row, as indicated by the $j=1:n$ annotation. The sign $\Sigma$ indicates that the sum of all of the iterations is computed.
 
 
-\begin{figure}[hbtp]
-  \centering
-  \includegraphics[width=\textwidth]{figures/refine-mv-dot.png}
+%\begin{figure}[hbtp]
+%  \centering
+%  \includegraphics[width=\textwidth]{figures/refine-mv-dot.png}
 
-  \caption{The refinement of a matrix-vector product to a set of inner products and the refinement of inner products to scalar multiplications and additions.}
-  \label{fig:refine-mv-dot}
-\end{figure}
+%  \caption{The refinement of a matrix-vector product to a set of inner products and the refinement of inner products to scalar multiplications and additions.}
+%  \label{fig:refine-mv-dot}
+%\end{figure}
 
+%\subsubsection{Optimize the Dataflow Graph.}
 
+In the optimization step, we apply conditional rewrite rules to optimize the
+dataflow graph, for example merging two subgraphs when they share a common
+operand.
+%but are not dependent on one another.
+%  One example rewrite rule is
+%\emph{Merge Operand Sharing Subgraphs}: if two subgraphs share a common
+%operand but do not depend on one another, and if the iteration strategies of
+%the two subgraphs are compatible, then merge the subgraphs into a single
+%subgraph.  
+This rule is responsible for fusing the loops of the two
+matrix-vector products in the GEMVER kernel.  
+%Another example rule is
+%\emph{Merge Dependent Subgraphs}: if one subgraph depends on another
+%subgraph, and the iteration strategies of the two subgraphs are compatible,
+%then merge them into a single subgraph.  This rule, for example, is
+%responsible for fusing the loops of the two outer products in the GEMVER
+%kernel.
 
+%The choice of which optimizations to apply to various parts of the graph
+%depends on the characteristics of the kernel, the algorithm, the matrix order
+%and kind, and architectural features.  
 
-\subsubsection{Optimize the Dataflow Graph.}
+%The following is an instructive
+%example: $y \gets A^T A (x + z + w)$.  Assume that the compiler has already
+%merged the two vector additions into one subgraph, call it $S_1$, and the two
+%matrix products into another subgraph, call it $S_2$. The question then is
+%whether it is profitable to apply the Merge Dependent Subgraphs rule one more
+%time to merge $S_1$ and $S_2$. If the three vectors plus a row of $A$ do not
+%fit in cache, then the merger will not be profitable because it will cause
+%each row of $A$ to fall out of cache before the row gets used a second time.
+%On the other hand, if all three vectors plus a row of $A$ do it in cache,
+%then $S_1$ and $S_2$ should be merged.  In general, we need a way to search
+%through the many different combinations of optimization choices and choose a
+%combination that minimizes memory traffic.
 
-In the optimization step, the dataflow graph is optimized by applying conditional graph rewrite rules.  One example rewrite rule is \emph{Merge Operand Sharing Subgraphs}: if two subgraphs share a common operand but do not depend on one another, and if the iteration strategies of the two subgraphs are compatible, then merge the subgraphs into a single subgraph.  This rule is responsible for fusing the loops of the two matrix-vector products in the GEMVER kernel.  Another example rule is \emph{Merge Dependent Subgraphs}: if one subgraph depends on another subgraph, and the iteration strategies of the two subgraphs are compatible, then merge them into a single subgraph.  This rule, for example, is responsible for fusing the loops of the two outer products in the GEMVER kernel.
+%\subsubsection{Translate the Dataflow Graph to C.}
 
-The choice of which optimizations to apply to various parts of the graph depends on the characteristics of the kernel, the algorithm, the matrix order and kind, and architectural features.  The following is an instructive example: $y \gets A^T A (x + z + w)$.  Assume that the compiler has already merged the two vector additions into one subgraph, call it $S_1$, and the two matrix products into another subgraph, call it $S_2$. The question then is whether it is profitable to apply the Merge Dependent Subgraphs rule one more time to merge $S_1$ and $S_2$. If the three vectors plus a row of $A$ do not fit in cache, then the merger will not be profitable because it will cause each row of $A$ to fall out of cache before the row gets used a second time.  On the other hand, if all three vectors plus a row of $A$ do it in cache, then $S_1$ and $S_2$ should be merged.  In general, we need a way to search through the many different combinations of optimization choices and choose a combination that minimizes memory traffic.
+The final step performed by the MATLAB compiler when the graph cannot be
+refined further is the generation of C code. The generator outputs a C loop
+for each subgraph based on a topological sort of the graph. 
 
-\subsubsection{Translate the Dataflow Graph to C.}
-
-A graph that cannot be further refined has been reduced to a collection of subgraphs representing loops over scalar operations. The generator outputs a C loop for each subgraph.  A topological sort is performed to determine the order in which the loops and scalar operations within the loops appear in the output.
 \subsection{Orio}
 \label{sec:orio}
 
 %~\cite{Norris:2007}
-Orio\cite{Norris:2007,ipdps09} is an empirical tuning tool that takes annotated C code as input,
-generates multiple transformed versions of the annotated code, and
-empirically evaluates the performance of the generated codes,
-ultimately choosing the best-performing version to use in production
+Orio\cite{Norris:2007,Hartono:IPDPS09} is an empirical tuning tool that takes
+annotated C code as input, generates multiple transformed versions of the
+annotated code, and empirically evaluates the performance of the generated
+codes, ultimately choosing the best-performing version to use in production
 runs.
 
 Figure~\ref{fig:orio} illustrates the tuning process implemented in
@@ -447,7 +533,7 @@ spec vadd_tune_spec {
 \end{minipage}\\
 \end{tabular}
 \vspace{-.1in}
-\caption{Orio example: Annotated C source code (left) and tuning specifications for Blue Gene/P (right).}
+\caption{Orio example: Annotated C source code (left) and tuning specification excerpt for the Blue Gene/P (right).}
 \label{fig:orio-example}
 \vspace{-.2in}
 \end{figure}
@@ -539,29 +625,29 @@ BiCG Kernel & ${\bf A}$,$\overrightarrow{p}$,$\overrightarrow{r}$ & $\overrighta
 \centering
 \begin{tabular}{cc}
 
-\begin{minipage}[b]{.515\textwidth}
-\includegraphics[width=\textwidth]{figures/vadd_bgp.png}
+\begin{minipage}[b]{.5\textwidth}
+\includegraphics[height=2in,width=\textwidth]{figures/vadd_bgp.png}
 \end{minipage}
 &
-\begin{minipage}[b]{.515\textwidth}
-\includegraphics[width=\textwidth]{figures/atax.png}
+\begin{minipage}[b]{.5\textwidth}
+\includegraphics[height=2in,width=\textwidth]{figures/atax.png}
 \end{minipage}\\
 
 (a) VADD & (b) ATAX \\
 
-\begin{minipage}[b]{.515\textwidth}
-\includegraphics[width=\textwidth]{figures/gemver.png}
+\begin{minipage}[b]{.5\textwidth}
+\includegraphics[height=2in,width=\textwidth]{figures/gemver.png}
 \end{minipage}
 &
-\begin{minipage}[b]{.515\textwidth}
-\includegraphics[width=\textwidth]{figures/bicgkernel.png}
+\begin{minipage}[b]{.5\textwidth}
+\includegraphics[height=2in,width=\textwidth]{figures/bicgkernel.png}
 \end{minipage}\\
 
 (c) GEMVER & (d) BiCG Kernel \\
 
 \end{tabular}
 }
-\caption{Performance numbers for different implementations of various composed of BLAS operations}
+\caption{Performance results for different implementations of several composed BLAS operations.}
 \label{fig:results}
 \end{figure}
 
@@ -620,14 +706,55 @@ version.
 
 \section{Conclusions and Future Work}
 
-We have described an approach to generating tuned linear algebra libraries from high-level annotated MATLAB code that involves a suite of tools to (1) translate the MATLAB code to C, (2) analyze the resulting loops and identify locatility and parallelism-enhancing optimizations using PLuTo, and (3) annotate the resulting C code with syntactic performance directives and use Orio to generate multiple optimized versions and empirically select the one with the best performance. Preliminary results from experiments with several composed BLAS operations show that in almost all cases, the optimized code generated by this suite of tools significantly outperforms the versions using tuned BLAS and aggressive compiler optimizations.
+We have described an approach to generating tuned linear algebra libraries
+from high-level annotated MATLAB code that involves a suite of tools to (1)
+translate the MATLAB code to C, (2) analyze the resulting loops and identify
+locatility and parallelism-enhancing optimizations using PLuTo, and (3)
+annotate the resulting C code with syntactic performance directives and use
+Orio to generate multiple optimized versions and empirically select the one
+with the best performance. Preliminary results from experiments with several
+composed BLAS operations show that the optimized code generated by this suite
+of tools significantly outperforms the versions using tuned BLAS and
+aggressive compiler optimizations.
 
-The positive initial results from our approach to generating tuned linear algebra routines motivate several future lines of investigation. At present there are a number of manual steps involved in obtaining a compiled tuned linear algebra library from the high-level extended MATLAB descriptions. We will work on interfacing our separately developed tools more closely and automating their interactions. This would enable application developers to easily produce custom linear algebra libraries tuned for specific architectures. We will also investigate extending the supported functionality of our MATLAB compiler beyond composed BLAS operations, thus benefiting a wider spectrum of applications.
+The positive initial results from our approach to generating tuned linear
+algebra routines motivate several future lines of investigation. At present
+there are a number of manual steps involved in obtaining a compiled tuned
+linear algebra library from the high-level extended MATLAB descriptions. We
+will work on the more close coupling of our separately developed tools and
+fully automating their interactions. This would enable application developers
+to easily produce custom linear algebra libraries tuned for specific
+architectures. We will also investigate extending the supported functionality
+of our MATLAB compiler beyond composed BLAS operations, thus benefiting a
+wider spectrum of applications.
 
-Orio is growing in a number of directions. While it automates much of the tuning process, a number of steps still require nontrivial manual input. Orio's modular design allows new transformations to be added easily, which presents many opportunities for expanding the existing set of optimizations with new ones implemented from scratch or through interfaces to other tools, as we have successfully done with PLuTo. We are also working on generating code that contains special cases for different input parameter values since in many cases different optimizations are optimal for different input sizes.  We will also continue developing the parallel empirical search infrastructure; it is clear that more feedback between the MATLAB compiler and Orio will result in automation of the performance directive annotation process and a much more effective exploration of the search space. We plan to use a fast analytic cost function in the MATLAB compiler implementation to prune out regions of the search space that will not produce competitive implementations. The cost function is based on a model of the computer architecture, but does not necessarily account for all the details. Once the search space is narrowed, we will use the Orio empirical testing results with representative data sets to determine the exact performance of the alternatives and choose the best one.
+%Orio is growing in a number of directions. While it automates much of the
+%tuning process, a number of steps still require nontrivial manual
+%input. Orio's modular design allows new transformations to be added easily,
+%which presents many opportunities for expanding the existing set of
+%optimizations with new ones implemented from scratch or through interfaces to
+%other tools, as we have successfully done with PLuTo. We are also working on
+%generating code that contains special cases for different input parameter
+%values since in many cases different optimizations are optimal for different
+%input sizes.  We will also continue developing the parallel empirical search
+%infrastructure; it is clear that more feedback between the MATLAB compiler
+%and Orio will result in automation of the performance directive annotation
+%process and a much more effective exploration of the search space. We plan to
+%use a fast analytic cost function in the MATLAB compiler implementation to
+%prune out regions of the search space that will not produce competitive
+%implementations. The cost function is based on a model of the computer
+%architecture, but does not necessarily account for all the details. Once the
+%search space is narrowed, we will use the Orio empirical testing results with
+%representative data sets to determine the exact performance of the
+%alternatives and choose the best one.
 
-Finally, while Orio currently generates various loop transformations, it does not generate calls to existing library implementations. For this paper, we implemented the BLAS versions of all operations manually. Our past success with identifying Blue Gene/L intrinsics from expression graphs motivate further research on identifying BLAS and other established library operations from the expression graphs of the MATLAB code.
-\cite{Siek}
+%Finally, while Orio currently generates various loop transformations, it does
+%not generate calls to existing library implementations. For this paper, we
+%implemented the BLAS versions of all operations manually. Our past success
+%with identifying Blue Gene/L intrinsics from expression graphs motivate
+%further research on identifying BLAS and other established library operations
+%from the expression graphs of the MATLAB code.
+
 %\singlespacing
 %% or stuff it in a footnote
 %\section*{Acknowledgments}
