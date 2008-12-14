@@ -132,8 +132,8 @@ class PrettyPrinter:
                     s += self.pprint(tnode.false_stmt, indent + extra_indent, extra_indent)
 
         elif isinstance(tnode, ast.ForStmt):
-            if tnode.label:
-                s += indent + '/* %s */\n' % tnode.label
+            if tnode.start_label:
+                s += indent + '/* %s */\n' % tnode.start_label
             s += indent + 'for ('
             if tnode.init:
                 s += self.pprint(tnode.init, indent, extra_indent)
@@ -150,6 +150,8 @@ class PrettyPrinter:
             else:
                 s += '\n'
                 s += self.pprint(tnode.stmt, indent + extra_indent, extra_indent)
+            if tnode.end_label:
+                s += indent + '/* %s */\n' % tnode.end_label
 
         else:
             print 'internal error:OrTil: unrecognized type of AST: %s' % tnode.__class__.__name__
