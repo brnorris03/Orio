@@ -94,17 +94,13 @@ class SimpleLoops:
 class Transformator:
     '''The code transformator that performs loop tiling'''
 
-    def __init__(self, perf_params, tiling_info):
+    def __init__(self, tiling_info):
         '''To instantiate a code transformator'''
 
-        num_level, tiling_table = tiling_info
-        tiled_loop_inames = tiling_table.keys()
-        tile_size_table = tiling_table
-        
-        self.perf_params = perf_params
+        num_level, iter_names = tiling_info
+
         self.num_level = num_level
-        self.tiled_loop_inames = tiled_loop_inames
-        self.tile_size_table = tile_size_table
+        self.iter_names = iter_names
         self.ast_util = ast_util.ASTUtil()
 
         # used for variable name generation
@@ -626,13 +622,18 @@ class Transformator:
         while True:
             if not isinstance(s, ast.ForStmt):
                 return
-            if s.label and s.label.startswith('full core tiles'):
+            if s.start_label and s.start_label.startswith('start full core tiles'):
                 return 
             id, lb_exp, ub_exp, st_exp, lbody = self.ast_util.getForLoopInfo(s)
             if id.name == outer_loop_inames[0]:
-                s.label = 'full core tiles:'
-                for i in outer_loop_inames:
-                    s.label += ' %s' % i
+                s.start_label = 'start full core tiles: '
+                s.end_label = 'end full core tiles: '
+                for i,iname in enumerate(outer_loop_inames):
+                    if i:
+                        s.start_label += ','
+                        s.end_label += ','
+                    s.start_label += '%s' % iname
+                    s.end_label += '%s' % iname
                 return
             if len(s.stmt.stmts) != 1:
                 return
@@ -938,8 +939,8 @@ class Transformator:
 
         # add new integer variable names used for both inter-tile and intra-tile loop iterators
         int_vars = []
-        int_vars.extend(self.tiled_loop_inames)
-        for iname in self.tiled_loop_inames:
+        int_vars.extend(self.iter_names)
+        for iname in self.iter_names:
             for level in range(1, self.num_level+1):
                 int_vars.append(self.__getIterName(iname, level))
 

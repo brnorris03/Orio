@@ -32,20 +32,20 @@ class OrTil(module.module.Module):
         stmts = semant.SemanticAnalyzer(tiling_info).analyze(stmts)
 
         # perform loop-tiling transformation
-        t = transformator.Transformator(self.perf_params, tiling_info)
-        (stmts, new_int_vars) = t.transform(stmts)
+        t = transformator.Transformator(tiling_info)
+        (stmts, int_vars) = t.transform(stmts)
 
         # generate the declaration code for the newly declared integer variables
         code = ''
-        for i,iv in enumerate(new_int_vars):
+        for i,iv in enumerate(int_vars):
             if i%8 == 0:
                 code += '\n  int '
             code += iv
-            if i%8 == 7 or i == len(new_int_vars)-1:
+            if i%8 == 7 or i == len(int_vars)-1:
                 code += ';'
             else:
                 code += ','
-        if new_int_vars:
+        if int_vars:
             code += '\n\n'
 
         # generate the tiled code

@@ -13,12 +13,10 @@ class SemanticAnalyzer:
     def __init__(self, tiling_info):
         '''To instantiate a semantic analyzer'''
 
-        num_level, tiling_table = tiling_info
-        tiled_loop_inames = tiling_table.keys()
-        tile_size_table = tiling_table
+        num_level, iter_names = tiling_info
 
         self.num_level = num_level
-        self.tiled_loop_inames = tiled_loop_inames
+        self.iter_names = iter_names
         self.ast_util = ast_util.ASTUtil()
 
     #-----------------------------------------------------
@@ -105,7 +103,7 @@ class SemanticAnalyzer:
                 print ('error:OrTil: illegal loop nest where an inner loop has the same iterator ' +
                        'name as the outer loop')
                 sys.exit(1)
-            if id.name not in self.tiled_loop_inames:
+            if id.name not in self.iter_names:
                 print 'error:OrTil: missing tiled-loop iterator name: "%s"' % id.name
                 sys.exit(1)
             self.__checkStmt(stmt.stmt, oloop_inames + [id.name])
