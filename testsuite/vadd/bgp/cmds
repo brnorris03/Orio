@@ -1,0 +1,39 @@
+
+# ESSL (no SMP)
+
+bgxlc_r -O3 -qstrict -qsmp=noauto -DN=100000 -DREPS=10 vadd.blas.c
+-L/bgsys/ibm_essl/sles10/prod/opt/ibmmath/lib -lesslbg
+-L/opt/ibmcmp/xlf/bg/11.1/bglib -lxlf90_r -lxlomp_ser -lxlfmath -lm
+
+# ESSL (with SMP) 
+
+bgxlc_r -O3 -qstrict -qsmp=auto -DN=100000 -DREPS=10 vadd.blas.c
+-L/bgsys/ibm_essl/sles10/prod/opt/ibmmath/lib -lesslsmpbg
+-L/opt/ibmcmp/xlf/bg/11.1/bglib -lxlf90_r -lxlfmath -lm
+
+# Goto (no SMP) 
+
+bgxlc_r -O3 -qstrict -qsmp=noauto -DN=100000 -DREPS=10 vadd.blas.c -L/soft/apps/LIBGOTO
+-lgoto -L/opt/ibmcmp/xlf/bg/11.1/bglib -lxlf90_r -lpthread -lxlfmath -lm
+
+# Goto (with SMP) 
+
+bgxlc_r -O3 -qstrict -qsmp=auto -DN=100000 -DREPS=10 vadd.blas.c -L/soft/apps/LIBGOTO
+-lgoto -L/opt/ibmcmp/xlf/bg/11.1/bglib -lxlf90_r -lpthread -lxlfmath -lm
+
+# Orio (no SMP)
+
+bgxlc_r -O3 -qstrict -qsmp=omp:noauto -DN=100000 -DREPS=10 vadd.orio.c
+fun_vadd.orio.seq.c
+
+# Orio (with SMP)
+
+bgxlc_r -O3 -qstrict -qsmp=omp:noauto -DN=100000 -DREPS=10 vadd.orio.c
+fun_vadd.orio.seq_par.c
+
+# Original (no SMP)
+bgxlc_r -O3 -qstrict -qsmp=noauto -DN=100000 -DREPS=10 vadd.base.c
+
+# Original (no SMP)
+bgxlc_r -O3 -qstrict -qsmp=auto -DN=100000 -DREPS=10 vadd.base.c
+
