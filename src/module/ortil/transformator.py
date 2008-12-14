@@ -110,9 +110,10 @@ class Transformator:
         # used for variable name generation
         self.counter = 1
 
-        # to turn on/off the static determination of loop bound values for scanning the full tiles
-        self.affine_lbound_exps = False
-
+        # booleans to switch on/off some (not all) of the complementary optimizations
+        self.affine_lbound_exps = True        # to use static loop-bound value determination
+        self.simplify_one_time_loop = True    # to use one-time loop simplification
+        
     #----------------------------------------------
 
     def __getIterName(self, iter_name, level):
@@ -362,18 +363,34 @@ class Transformator:
                 lbound_info_seq.append(None)
                 continue
 
+            # check if this loop runs only once
+            is_one_time_loop = str(lb_exp) == str(ub_exp)
+
+            # generate booleans to indicate the needs of prolog, epilog, and main tiled loop
+            if is_one_time_loop:
+                need_main_tiled_loop = False
+                need_prolog = False
+                need_epilog = False
+            else:
+                need_main_tiled_loop = True
+                need_prolog = len(lb_inames) > 0
+                need_epilog = len(ub_inames) > 0
+
             # generate new variable names for both the new lower and upper loop bounds
-            lb_name, ub_name = self.__getLoopBoundNames()
-
-            # remember the new names
-            int_vars.extend([lb_name, ub_name])
-
-            # generate booleans to indicate the needs of prolog and epilog
-            need_prolog, need_epilog = (len(lb_inames) > 0, len(ub_inames) > 0)
+            if need_main_tiled_loop:
+                lb_name, ub_name = self.__getLoopBoundNames()
+                int_vars.extend([lb_name, ub_name])
+            else:
+                lb_name = ''
+                ub_name = ''
 
             # append information about the new loop bounds
-            lbinfo = (lb_name, ub_name, need_prolog, need_epilog)
+            lbinfo = (lb_name, ub_name, need_prolog, need_epilog, need_main_tiled_loop)
             lbound_info_seq.append(lbinfo)
+
+            # skip generating loop-bound scanning code (if it's a one-time loop)
+            if not need_main_tiled_loop:
+                continue
 
             # determine the value of the new lower loop bound
             if str(lb_exp) in lb_exps_table:
@@ -597,6 +614,32 @@ class Transformator:
 
     #----------------------------------------------
 
+    def __labelFullCoreTiledLoop(self, stmt, outer_loop_inames):
+        '''To traverse the given statement and label the fully rectangularly tiled loop nest'''
+
+        # there is no outer tiled loops
+        if not outer_loop_inames:
+            return
+
+        # find the starting loop nest that iterates the full rectangular tiles
+        s = stmt
+        while True:
+            if not isinstance(s, ast.ForStmt):
+                return
+            if s.label and s.label.startswith('full core tiles'):
+                return 
+            id, lb_exp, ub_exp, st_exp, lbody = self.ast_util.getForLoopInfo(s)
+            if id.name == outer_loop_inames[0]:
+                s.label = 'full core tiles:'
+                for i in outer_loop_inames:
+                    s.label += ' %s' % i
+                return
+            if len(s.stmt.stmts) != 1:
+                return
+            s = s.stmt.stmts[0]
+
+    #----------------------------------------------
+
     def __tile(self, stmt, int_vars, outer_loop_infos, preceding_stmts, lbound_info):
         '''Apply tiling on the given statement'''
 
@@ -739,9 +782,9 @@ class Transformator:
                     else:
                         last_p_stmts = []
 
-                    # do a recursion here
+                    # perform a recursion to further tile this rectangularly tiled loop
                     n_p_stmts = self.__tile(s, int_vars, n_outer_loop_infos, last_p_stmts, binfo)
-                        
+
                     # compute the processed statements for both true and false conditions
                     true_p_stmts = n_p_stmts
                     false_p_stmts = last_p_stmts
@@ -782,6 +825,9 @@ class Transformator:
             main_tiled_code = self.__getInterTileLoop(iname, tname, rect_lb_exp, rect_ub_exp,
                                                       this_st_exp, lbody)
             res_stmts.append((True, [main_tiled_code]))
+
+            # mark the loop if it's a loop iterating the full rectangular tiles
+            self.__labelFullCoreTiledLoop(main_tiled_code, n_outer_loop_inames)
             
             # generate the cleanup code (the epilog is already fused)
             lb = ast.IdentExp(self.__getIterName(this_iname, self.num_level))
@@ -904,7 +950,8 @@ class Transformator:
         stmts = [s.replicate() for s in stmts]
 
         # (optimization) simplify one-time loop
-        stmts = [self.__simplifyOneTimeLoop(s) for s in stmts]
+        if self.simplify_one_time_loop:
+            stmts = [self.__simplifyOneTimeLoop(s) for s in stmts]
 
         # return the tiled statements and the newly declared integer variables
         return (stmts, int_vars)

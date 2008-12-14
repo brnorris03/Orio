@@ -286,6 +286,11 @@ class ForStmt(Stmt):
         self.iter = iter      # may be null
         self.stmt = stmt
 
+        # this is a quick hack! this is a field with a string value, used to mark loops. 
+        # an instance of use of this field is to mark whether this loop nest iterates 
+        # full rectangular tiles.
+        self.label = ''
+
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
         r_in = self.init
@@ -297,5 +302,7 @@ class ForStmt(Stmt):
             r_ts = r_ts.replicate()
         if r_it:
             r_it = r_it.replicate()
-        return ForStmt(r_in, r_ts, r_it, self.stmt.replicate(), self.line_no)
+        f = ForStmt(r_in, r_ts, r_it, self.stmt.replicate(), self.line_no)
+        f.label = self.label
+        return f
 
