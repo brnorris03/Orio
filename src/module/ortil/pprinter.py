@@ -132,6 +132,8 @@ class PrettyPrinter:
                     s += self.pprint(tnode.false_stmt, indent + extra_indent, extra_indent)
 
         elif isinstance(tnode, ast.ForStmt):
+            if tnode.label:
+                s += indent + '/* %s */\n' % tnode.label
             s += indent + 'for ('
             if tnode.init:
                 s += self.pprint(tnode.init, indent, extra_indent)
