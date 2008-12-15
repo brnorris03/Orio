@@ -10,7 +10,7 @@ import ast, ast_util
 class Transformator:
     '''The code transformator that performs several code optimizations'''
 
-    def __init__(self):
+    def __init__(self, unroll, vectorize, scalar_replacement, constant_folding):
         '''To instantiate a code transformator'''
         
         self.ast_util = ast_util.ASTUtil()
@@ -587,20 +587,6 @@ class Transformator:
         # create a table that maps each tile size variable to its corresponding unroll factors
         unroll_factor_table = dict(zip(iter_names, iter_vals))
 
-        # get the used iterator names only
-        used_iter_names = []
-        s = stmt
-        while True:
-            if isinstance(s, ast.ForStmt):
-                id,_,_,_,_ = self.ast_util.getForLoopInfo(s)
-                if id.name in iter_names:
-                    used_iter_names.append(id.name)
-                s = s.stmt
-            elif isinstance(s, ast.CompStmt) and len(s.stmts) == 1:
-                s = s.stmts[0]
-            else:
-                break
-        
         # apply loop unrolling
         if self.unroll:
             stmt = self.__unroll(stmt, unroll_factor_table)
@@ -627,7 +613,7 @@ class Transformator:
         # insert the initializations for the used loop iterators
         if self.unroll:
             iter_init_code = '\n'
-            for i in used_iter_names:
+            for i in iter_names:
                 iter_init_code += '  %s = %st1; \n' % (i, i)
             transformed_code = iter_init_code + transformed_code
 

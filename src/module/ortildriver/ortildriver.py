@@ -88,7 +88,25 @@ class OrTilDriver(module.module.Module):
         '''To apply loop tiling on the annotated code'''
 
         # parse the text in the annotation module body to extract variable value pairs
-        tile_sizes = ann_parser.AnnParser(self.perf_params).parse(self.module_body_code)
+        var_val_pairs = ann_parser.AnnParser(self.perf_params).parse(self.module_body_code)
+
+        # filter out some variables used for turning on/off the optimizations
+        unroll = 1
+        vectorize = 1
+        scalar_replacement = 1
+        constant_folding = 1
+        tile_sizes = []
+        for var,val in var_val_pairs:
+            if var == 'unroll':
+                unroll = val
+            elif var == 'vectorize':
+                vectorize = val
+            elif var == 'scalar_replacement':
+                scalar_replacement = val
+            elif var == 'constant_folding':
+                constant_folding = val
+            else:
+                tile_sizes.append((var, val))
 
         # remove all annotations from the annotation body text
         ann_re = r'/\*@\s*(.|\n)*?\s*@\*/'
@@ -118,7 +136,9 @@ class OrTilDriver(module.module.Module):
                 transformed_code += cr
                 continue
             i,v,s = cr
-            transformed_code += transformator.Transformator().transform(i,v,s)
+            t = transformator.Transformator(unroll, vectorize, scalar_replacement, constant_folding)
+            transformed_code += t.transform(i,v,s)
+            
 
         # insert the declaration code for the tile sizes
         decl_code = ''
