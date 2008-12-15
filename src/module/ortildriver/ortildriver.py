@@ -148,11 +148,6 @@ class OrTilDriver(module.module.Module):
             transformed_code = '\n' + transformed_code
         transformed_code = '\n' + decl_code + transformed_code
         
-        print transformed_code
-
-        print '11'
-        sys.exit(1)
-
         # return the transformed code
         return transformed_code
 
