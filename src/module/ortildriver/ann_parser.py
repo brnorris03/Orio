@@ -80,9 +80,6 @@ class AnnParser:
         n_var_val_pairs = []
         for var, val in var_val_pairs:
             val = self.__evalExp(val)
-            if not isinstance(val, int) or val <= 0:
-                print 'error:OrTilDriver: variable value must be a positive integer'
-                sys.exit(1)
             n_var_val_pairs.append((var, val))
         var_val_pairs = n_var_val_pairs
 

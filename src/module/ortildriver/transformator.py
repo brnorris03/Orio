@@ -16,11 +16,12 @@ class Transformator:
         self.ast_util = ast_util.ASTUtil()
 
         # booleans to switch on/off optimizations
-        self.unroll = True
-        self.vectorize = True
-        self.scalar_replacement = True
-        self.constant_folding = True   # constant-folding optimization on array index expressions
-                                       # (strict assumption: expressions must be affine function)
+        self.unroll = unroll
+        self.vectorize = vectorize
+        self.scalar_replacement = scalar_replacement
+        self.constant_folding = constant_folding   # constant-folding optimization on array index 
+                                                   # expressions (strict assumption: expressions 
+                                                   # must be affine function)
         
     #----------------------------------------------
 
