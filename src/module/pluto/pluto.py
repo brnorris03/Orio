@@ -157,6 +157,10 @@ class Pluto(module.module.Module):
             print 'error: failed to remove file: %s' % plutogen_fname
             sys.exit(1)
 
+        # remove some macro definitions
+        line_pos = pluto_code.index('\n')
+        pluto_code = '\n' + pluto_code[line_pos+1:]
+
         # return the Pluto-generated code
         return pluto_code
 
