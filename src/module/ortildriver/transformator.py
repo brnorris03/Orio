@@ -435,11 +435,12 @@ class Transformator:
 
         # create identifier assignments and array element stores
         type_name = 'double'
-        assgn_code = ''
-        store_code = ''
+        assgn_code = '\n'
+        store_code = '\n'
         for a,v in zip(repl_arefs, new_var_names):
-            assgn_code += '%s %s = %s; \n' % (type_name, v, a)
-            store_code += '%s = %s; \n' % (a, v)
+            assgn_code += '  %s %s = %s; \n' % (type_name, v, a)
+            store_code += '  %s = %s; \n' % (a, v)
+            
 
         # return all needed information about scalar replacement
         return (tnode, assgn_code, store_code)
@@ -556,7 +557,7 @@ class Transformator:
                 self.__countArrRefs(tnode.exp, count_table, aref_seq)
 
         elif isinstance(tnode, ast.CompStmt):
-            for s in exp.stmts:
+            for s in tnode.stmts:
                 self.__countArrRefs(s, count_table, aref_seq)
 
         elif isinstance(tnode, ast.IfStmt):
@@ -585,6 +586,20 @@ class Transformator:
         
         # create a table that maps each tile size variable to its corresponding unroll factors
         unroll_factor_table = dict(zip(iter_names, iter_vals))
+
+        # get the used iterator names only
+        used_iter_names = []
+        s = stmt
+        while True:
+            if isinstance(s, ast.ForStmt):
+                id,_,_,_,_ = self.ast_util.getForLoopInfo(s)
+                if id.name in iter_names:
+                    used_iter_names.append(id.name)
+                s = s.stmt
+            elif isinstance(s, ast.CompStmt) and len(s.stmts) == 1:
+                s = s.stmts[0]
+            else:
+                break
         
         # apply loop unrolling
         if self.unroll:
@@ -596,12 +611,25 @@ class Transformator:
             
         # generate the transformed code
         transformed_code = str(stmt)
-        
-        # insert the 
+
+        # insert identifier assignments and array stores for scalar replacements
+        if self.scalar_replacement:
+            start_pos = transformed_code.index('{')
+            end_pos = transformed_code.index('}')
+            transformed_code = (transformed_code[:start_pos+1] + assgn_code + 
+                                transformed_code[start_pos+1:end_pos] + store_code +
+                                transformed_code[end_pos:])
 
         # apply vectorization
         if self.vectorize:
             transformed_code = '\n#pragma ivdep \n#pragma vector always \n' + transformed_code
+
+        # insert the initializations for the used loop iterators
+        if self.unroll:
+            iter_init_code = '\n'
+            for i in used_iter_names:
+                iter_init_code += '  %s = %st1; \n' % (i, i)
+            transformed_code = iter_init_code + transformed_code
 
         # return the transformed loop
         return transformed_code
