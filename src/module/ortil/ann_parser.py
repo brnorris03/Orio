@@ -33,7 +33,7 @@ class AnnParser:
         '''
         Parse the given text to extract tiling information.
         The given code text has the following syntax:
-          <num-tiling-level> : (<loop-iter>, ...) : (<tile-size>, ...), ...
+          (<loop-iter>, ...) : <num-tiling-level>
         '''
 
         # remember the given code text
