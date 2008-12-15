@@ -1,0 +1,81 @@
+#
+# The implementation of annotation parser
+#
+
+import re, sys
+
+#----------------------------------------------------------------
+
+class AnnParser:
+    '''The class definition for the annotation parser'''
+
+    def __init__(self, perf_params):
+        '''To instantiate the annotation parser'''
+
+        self.perf_params = perf_params
+    
+    #------------------------------------------------------------
+
+    def __evalExp(self, text):
+        '''To evaluate the given expression text'''
+
+        try:
+            val = eval(text, self.perf_params)
+        except Exception, e:
+            print ('error:Pluto: failed to evaluate expression: "%s"' % text)
+            print ' --> %s: %s' % (e.__class__.__name__, e)
+            sys.exit(1)
+        return val
+
+    #------------------------------------------------------------
+
+    def parse(self, text):
+        '''To parse the annotation text to get variable-value pairs'''
+
+        # remember the given code text
+        orig_text = text
+
+        # regular expressions
+        __python_exp_re = r'\s*((.|\n)*?);\s*'
+        __var_re = r'\s*([A-Za-z_]\w*)\s*'
+        __semi_re = r'\s*;\s*'
+        __equal_re = r'\s*=\s*'
+
+        # initialize the data structure to store all variable-value pairs
+        var_val_pairs = []
+
+        # get all variable-value pairs
+        while True:
+            if (not text) or text.isspace():
+                break
+            m = re.match(__var_re, text)
+            if not m:
+                print 'error:Pluto: annotation syntax error: "%s"' % orig_text
+                sys.exit(1)
+            text = text[m.end():]
+            var = m.group(1)
+            m = re.match(__equal_re, text)
+            if not m:
+                print 'error:Pluto: annotation syntax error: "%s"' % orig_text
+                sys.exit(1)
+            text = text[m.end():]
+            if text.count(';') == 0:
+                print 'error:Pluto: annotation syntax error: "%s"' % orig_text
+                sys.exit(1)
+            m = re.match(__python_exp_re, text)
+            if not m:
+                print 'error:Pluto: annotation syntax error: "%s"' % orig_text
+                sys.exit(1)
+            text = text[m.end():]
+            val = m.group(1)
+            var_val_pairs.append((var, val))
+
+        # evaluate all values and check their semantics
+        n_var_val_pairs = []
+        for var, val in var_val_pairs:
+            val = self.__evalExp(val)
+            n_var_val_pairs.append((var, val))
+        var_val_pairs = n_var_val_pairs
+
+        # return all variable value pairs
+        return var_val_pairs
