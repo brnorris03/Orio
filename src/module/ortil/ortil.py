@@ -1,5 +1,6 @@
 #
 # The main file (and class) for the tiling transformation module
+# ORTIL = ORio TILing
 #
 
 import sys
@@ -8,11 +9,11 @@ import ann_parser, code_parser, module.module, pprinter, semant, transformator
 #-----------------------------------------
 
 class OrTil(module.module.Module):
-    '''The class definition for the tiling transformation module'''
+    '''The class definition for OrTil tiling module'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
                  line_no, indent_size):
-        '''To instantiate a tiling transformation module'''
+        '''To instantiate an OrTil tiling module'''
         
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       cmd_line_opts, line_no, indent_size)
