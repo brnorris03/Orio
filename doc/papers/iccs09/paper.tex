@@ -1,4 +1,4 @@
-% ICCS'09 http://www.iccs-meeting.org/iccs2009/
+% ICCS'09 http://www.iccs-meeting.org/iccs2009/}
 % svn co https://svn.mcs.anl.gov/repos/performance/orio/doc/papers/iccs09
 % Important dates:
 % Full papers submission (extended)       December 20, 2008
@@ -49,21 +49,22 @@
         % a short form should be given in case it is too long for the running head
         \titlerunning{Empirically Optimized Numerical Software from MATLAB}
 
-\author{Elizabeth Jessup\inst{1} 
-  \and Boyana Norris\inst{2}
-  \and Albert Hartono\inst{3}
-  \and Jeremy Siek\inst{1}}
-
-\authorrunning{Jessup, Norris, Hartono, Siek}
-
-\institute{University of Colorado at Boulder \\
-  \email{\{elisabeth.jessup,jeremy.siek\}@colorado.edu}
-  \and Argonne National Laboratory \\
-  \email{\{norris\}@mcs.anl.gov}
+\author{Boyana Norris\thanks{The work of this author was supported by the Office of Advanced Scientific Computing Research, Office of Science, U.S. Dept. of Energy, under Contract DE-AC02-06CH11357.}\inst{1}
+  \and Albert Hartono\inst{2}
+  \and Elizabeth Jessup\thanks{The work of this author was supported by the
+  National Science Foundation under grants no. CCF-0430646 and CCF-830458.}\inst{3}
+  \and Jeremy Siek\inst{3}
+%
+\authorrunning{Norris, Hartono, Jessup, Siek}
+%
+\institute{Argonne National Laboratory \\
+  \email{norris@mcs.anl.gov}
   \and Ohio State University \\
-  \email{\{hartonoa\}@cse.ohio-state.edu}}
+  \email{hartonoa@cse.ohio-state.edu}
+  \and University of Colorado at Boulder \\
+  \email{\{elisabeth.jessup,jeremy.siek\}@colorado.edu}}}
 
-\tocauthor{Elizabeth Jessup, Boyana Norris, Albert Hartono, and Jeremy Siek}
+\tocauthor{B. Norris, A. Hartono, E. Jessup, and J. Siek}
 \maketitle
 
 \input{abstract}
@@ -290,7 +291,7 @@ In this section we describe the design and operation of the MATLAB to C compiler
 \includegraphics[width=2in]{figures/compile.png}
 \caption{The MATLAB compiler.}
 \label{fig:compiler}
-\vspace{-.3in}
+\vspace{-.2in}
 \end{wrapfigure}
 The MATLAB kernel specification is parsed into a high-level intermediate
 representation in the form of a dataflow graph.  This dataflow graph is then
@@ -322,6 +323,7 @@ column at a time of the result matrix.
 \end{minipage}
 \caption{Dataflow graph (right) for the GEMVER kernel (left).}
 \label{fig:gemver-dataflow}
+\vspace{-.2in}
 \end{figure}
 
 Here we briefly describe the analysis, refinement, and optimization of the
@@ -458,13 +460,14 @@ information required for guiding the transformation and tuning
 process.
 
 \begin{figure}[tb]
-\vspace{-.1in}
+\vspace{-.3in}
 \begin{center}
 \includegraphics[width=.65\textwidth]{figures/orio.png}
 \end{center}
 \vspace{-.25in}
 \caption{Overview of the Orio empirical tuning process.}
 \label{fig:orio}
+\vspace{-.2in}
 \end{figure}
 
 \begin{figure}[htb]
@@ -592,31 +595,34 @@ Table~\ref{tbl:blas-ops}.
 
 \begin{table}[htb] 
 \vspace{-.1in} 
-\caption{Composed BLAS operations used in our experiments}
+\caption{Composed BLAS operations used in our experiments.}
 \label{tbl:blas-ops}
 \small
 \centering 
-\vspace{-.1in} 
+%\vspace{-.1in} 
 \begin{tabular}{|c|c|c|c|} 
 \hline 
-Name & Input & Output & C code from MATLAB compiler \\
+Name & Input & Output & C code from MATLAB compiler \\ 
 \hline 
 \hline 
+%& & & \\
 VADD & $\overrightarrow{w}$,$\overrightarrow{y}$,$\overrightarrow{z}$ & $\overrightarrow{x}$ &
-$\overrightarrow{x} = \overrightarrow{w} + \overrightarrow{y} + \overrightarrow{z}$ \\ 
+$\overrightarrow{x} = \overrightarrow{w} + \overrightarrow{y} + \overrightarrow{z}$ \\ [1ex]
 \hline 
+%& & & \\
 ATAX & $A$,$\overrightarrow{x}$ & $\overrightarrow{y}$ & 
-$\overrightarrow{y} = A' * (A * \overrightarrow{x})$ \\ 
+$\overrightarrow{y} = A' * (A * \overrightarrow{x})$ \\ [1ex]
 \hline 
- & ${\bf A}$,$a$,$b$, & ${\bf B}$, & ${\bf B} = {\bf A} + \overrightarrow{u_1} * \overrightarrow{v_1}' + \overrightarrow{u_2} * \overrightarrow{v_2}'$\\
-GEMVER & $\overrightarrow{u_1}$,$\overrightarrow{u_2}$,$\overrightarrow{v_1}$,$\overrightarrow{v_2}$, & $\overrightarrow{x}$,$\overrightarrow{w}$ & $\overrightarrow{x} = b * ({\bf B}' * \overrightarrow{y}) + \overrightarrow{z}$\\
-& $\overrightarrow{y}$,$\overrightarrow{z}$ & & $\overrightarrow{w} = a * ({\bf B} * \overrightarrow{x})$\\
+%& & & \\
+ & ${\bf A}$,$a$,$b$, &  & ${\bf B} = {\bf A} + \overrightarrow{u_1} * \overrightarrow{v_1}' + \overrightarrow{u_2} * \overrightarrow{v_2}'$\\
+GEMVER & $\overrightarrow{u_1}$,$\overrightarrow{u_2}$,$\overrightarrow{v_1}$,$\overrightarrow{v_2}$, & ${\bf B}$,  & $\overrightarrow{x} = b * ({\bf B}' * \overrightarrow{y}) + \overrightarrow{z}$\\
+& $\overrightarrow{y}$,$\overrightarrow{z}$ & $\overrightarrow{x}$,$\overrightarrow{w}$ & $\overrightarrow{w} = a * ({\bf B} * \overrightarrow{x})$\\ [1ex]
 \hline 
-BiCG Kernel & ${\bf A}$,$\overrightarrow{p}$,$\overrightarrow{r}$ & $\overrightarrow{q}$,$\overrightarrow{s}$ & $\overrightarrow{q} = {\bf A} * \overrightarrow{p}$ \\
-& & & $\overrightarrow{s} = {\bf A}' * \overrightarrow{r}$\\
+& & & $\overrightarrow{q} = {\bf A} * \overrightarrow{p}$ \\
+BiCG Kernel & ${\bf A}$,$\overrightarrow{p}$,$\overrightarrow{r}$ & $\overrightarrow{q}$,$\overrightarrow{s}$ & $\overrightarrow{s} = {\bf A}' * \overrightarrow{r}$\\ [1ex]
 \hline 
 \end{tabular} 
-\vspace{-.2in} 
+%\vspace{-.2in} 
 \end{table} 
 
 
@@ -626,21 +632,21 @@ BiCG Kernel & ${\bf A}$,$\overrightarrow{p}$,$\overrightarrow{r}$ & $\overrighta
 \begin{tabular}{cc}
 
 \begin{minipage}[b]{.5\textwidth}
-\includegraphics[height=2in,width=\textwidth]{figures/vadd_bgp.png}
+\includegraphics[width=\textwidth]{figures/vadd_bgp.png}
 \end{minipage}
 &
 \begin{minipage}[b]{.5\textwidth}
-\includegraphics[height=2in,width=\textwidth]{figures/atax.png}
+\includegraphics[width=\textwidth]{figures/atax.png}
 \end{minipage}\\
 
 (a) VADD & (b) ATAX \\
 
 \begin{minipage}[b]{.5\textwidth}
-\includegraphics[height=2in,width=\textwidth]{figures/gemver.png}
+\includegraphics[width=\textwidth]{figures/gemver.png}
 \end{minipage}
 &
 \begin{minipage}[b]{.5\textwidth}
-\includegraphics[height=2in,width=\textwidth]{figures/bicgkernel.png}
+\includegraphics[width=\textwidth]{figures/bicgkernel.png}
 \end{minipage}\\
 
 (c) GEMVER & (d) BiCG Kernel \\
@@ -671,7 +677,7 @@ crucial for achieving good performance of the base version.
 The experiments of the remaining operations were performed on the
 multicore Intel Xeon. Included in these experiments are performance
 numbers for six code variants: the C code generated by the MATLAB
-compiler (''C from MATLAB''), three BLAS-based implementations that
+compiler (``C from MATLAB''), three BLAS-based implementations that
 use Intel MKL, ATLAS, and the default BLAS library on Ubuntu 8.04, and
 the sequential and parallel code variants tuned by Orio (``Orio
 (Seq.)'' and ``Orio (Par.)'', respectively).
@@ -767,6 +773,22 @@ wider spectrum of applications.
 \bibliographystyle{splncs}
 \bibliography{paper}
 
+%\vfill
+%\begin{flushright}
+%\scriptsize
+%\framebox{\parbox{2.4in}{The submitted manuscript has been created by
+%UChicago Argonne, LLC, Operator of Argonne National Laboratory
+%("Argonne").  Argonne, a U.S. Department of Energy Office
+%of Science laboratory, is operated under Contract No.
+%DE-AC02-06CH11357.  The U.S. Government retains for itself, and
+%others acting on its behalf, a paid-up, nonexclusive, irrevocable
+%worldwide license in said article to reproduce, prepare derivative works,
+%distribute copies to the public, and perform publicly and display
+%publicly, by or on behalf of the Government.}}
+%\normalsize
+%\end{flushright}
+
+%\newpage
 %\vfill
 %\begin{flushright}
 %\scriptsize
