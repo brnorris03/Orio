@@ -292,6 +292,10 @@ class ForStmt(Stmt):
         self.start_label = ''
         self.end_label = ''
 
+        # this is a hack too! this field is used to indicate whether the loop is the fully tiled
+        # loop or the partially tiled loop (i.e., the cleanup loop).
+        self.fully_tiled = False
+
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
         r_in = self.init
@@ -306,5 +310,6 @@ class ForStmt(Stmt):
         f = ForStmt(r_in, r_ts, r_it, self.stmt.replicate(), self.line_no)
         f.start_label = self.start_label
         f.end_label = self.end_label
+        f.fully_tiled = self.fully_tiled
         return f
 

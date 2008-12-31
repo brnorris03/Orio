@@ -29,6 +29,7 @@ class Transformator:
         # booleans to switch on/off some (not all) of the complementary optimizations
         self.affine_lbound_exps = False        # to use static loop-bound value determination
         self.simplify_one_time_loop = True     # to use one-time loop simplification
+        self.use_boundary_tiling = True        # to recursively tile all boundary tiles
 
     #----------------------------------------------
 
@@ -467,7 +468,8 @@ class Transformator:
 
     #----------------------------------------------
 
-    def __convertToASTs(self, dstmts, tile_level, contain_loop, loop_inames, loop_info_table):
+    def __convertToASTs(self, dstmts, tile_level, contain_loop, loop_inames, loop_info_table,
+                        int_vars):
         '''
         To recursively convert the given list, containing processed statements and possibly 
         if-branching statements, to AST. A sample of the given list is as follows:
@@ -495,6 +497,8 @@ class Transformator:
 
                 # need to enclose with a single-level inter-tile loop nest
                 elif contain_loop:
+
+                    # add single-level tiled loop
                     rev_inames = loop_inames[:]
                     rev_inames.reverse()
                     l = ast.CompStmt(stmts)
@@ -502,8 +506,15 @@ class Transformator:
                         tname = self.__getTileSizeName(iname, tile_level)
                         lb_exp = ast.IdentExp(self.__getTileIterName(iname, tile_level))
                         _,_,_,st_exp,_ = loop_info_table[iname]
-                        lbody = l              
+                        lbody = l             
                         l = self.__getIntraTileLoop(iname, tname, lb_exp, st_exp, lbody)
+                        l.fully_tiled = True
+
+                    # to recursively tile all boundary tiles
+                    if self.use_boundary_tiling and tile_level > 1:
+                        l = self.__startTiling(l, tile_level-1, int_vars)
+
+                    # insert the tiled loop to the AST list
                     asts.append(l)
 
                 # need to enclose with a multilevel inter-tile loop nest
@@ -527,11 +538,11 @@ class Transformator:
 
                 # generate AST for the true statement
                 t1 = self.__convertToASTs(dstmts[i+1], tile_level, contain_loop,
-                                          loop_inames, loop_info_table)
+                                          loop_inames, loop_info_table, int_vars)
 
                 # generate AST for the false statement
                 t2 = self.__convertToASTs(dstmts[i+2], tile_level, contain_loop,
-                                          loop_inames, loop_info_table)
+                                          loop_inames, loop_info_table, int_vars)
 
                 # generate AST for the if-statement
                 test_exp = s.replicate()
@@ -608,6 +619,9 @@ class Transformator:
 
         # to tile the given for-loop statement
         if isinstance(stmt, ast.ForStmt):
+
+            # check if this loop is already tiled and whether it's fully tiled
+            this_fully_tiled = stmt.fully_tiled
             
             # extract loop structure information
             this_linfo = self.ast_util.getForLoopInfo(stmt) 
@@ -754,7 +768,7 @@ class Transformator:
             
             # convert the processed statements into AST
             lbody_stmts.extend(self.__convertToASTs(processed_stmts, tile_level, contain_loop,
-                                                    n_outer_loop_inames, n_loop_info_table))
+                                                    n_outer_loop_inames, n_loop_info_table, int_vars))
 
             # generate the main rectangularly tiled code
             lbody = ast.CompStmt(lbody_stmts)
@@ -768,10 +782,11 @@ class Transformator:
             self.__labelFullCoreTiledLoop(main_tiled_code, n_outer_loop_inames)
             
             # generate the cleanup code (the epilog is already fused)
-            lb = ast.IdentExp(self.__getTileIterName(this_iname, tile_level))
-            cleanup_code = self.ast_util.createForLoop(this_id, lb, this_ub_exp,
-                                                       this_st_exp, this_lbody)
-            res_stmts.append((False, [cleanup_code]))
+            if not this_fully_tiled:
+                lb = ast.IdentExp(self.__getTileIterName(this_iname, tile_level))
+                cleanup_code = self.ast_util.createForLoop(this_id, lb, this_ub_exp,
+                                                           this_st_exp, this_lbody)
+                res_stmts.append((False, [cleanup_code]))
 
             # return the resulting statements
             return res_stmts
@@ -816,7 +831,9 @@ class Transformator:
 
             # return the tiled AST
             t_stmts = []
-            for _,stmts in tiling_results:
+            for is_tiled, stmts in tiling_results:
+                if self.use_boundary_tiling and not is_tiled and tile_level > 1:
+                    stmts = [self.__startTiling(s, tile_level-1, int_vars) for s in stmts]
                 t_stmts.extend(stmts)
             tiled_ast = ast.CompStmt(t_stmts)
 
