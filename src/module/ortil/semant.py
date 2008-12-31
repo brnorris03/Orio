@@ -23,17 +23,17 @@ class SemanticAnalyzer:
 
     def __normalizeStmt(self, stmt):
         '''
-        To change the format of all for-loops to a fixed form as described below:
-          for (<id> = <exp>; <id> <= <exp>; <id> += <exp>) {
-            <stmts>
-          }
-        To change the format of all if-statements to a fixed form as described below:
-          if (<exp>) {
-            <stmts>
-          } else {
-            <stmts>
-          }
-        To remove meaningless scopings inside each compound statement.
+        * To change the format of all for-loops to a fixed form as described below:
+           for (<id> = <exp>; <id> <= <exp>; <id> += <exp>) {
+             <stmts>
+           }
+        * To change the format of all if-statements to a fixed form as described below:
+           if (<exp>) {
+             <stmts>
+           } else {
+             <stmts>
+           } 
+        * To remove meaningless scopings inside each compound statement.
         '''
 
         if isinstance(stmt, ast.ExpStmt):
@@ -71,13 +71,13 @@ class SemanticAnalyzer:
 
     def __checkStmt(self, stmt, oloop_inames = []):
         '''
-        To complain if there is a sublevel of compound statement directly nested inside
-        a compound statement.
-        To complain if there is an illegal loop nest, where an inner loop has the same iterator
-        name as the outer loop. The following instance is invalid:
-         for i
+        * To complain if there is a sublevel of compound statement directly nested inside
+          a compound statement.
+        * To complain if there is an illegal loop nest, where an inner loop has the same iterator
+          name as the outer loop. The following instance is invalid:
            for i
-             S
+            for i
+              S
         '''
 
         if isinstance(stmt, ast.ExpStmt):
@@ -117,11 +117,23 @@ class SemanticAnalyzer:
     def analyze(self, stmts):
         '''To check and enforce AST semantics'''
 
-        # transform the given AST so that its semantics are legal for the loop tiling transformation
+        # normalize the given statements
         stmts = [self.__normalizeStmt(s) for s in stmts]
 
         # check the correctness of the AST semantics
-        for s in stmts: self.__checkStmt(s)
+        for s in stmts:
+            self.__checkStmt(s)
+
+        # check if there is a specified loop iterator that is not used in the actual code
+        used_iter_names = {}
+        for s in stmts:
+            inames = self.ast_util.getLoopIters(s)
+            for i in inames:
+                used_iter_names[i] = None
+        for i in self.iter_names:
+            if i not in used_iter_names:
+                print 'error:OrTil: unused tiled-loop iterator name: "%s"' % i
+                sys.exit(1)
 
         # return the semantically correct statements
         return stmts

@@ -7,112 +7,32 @@ import ast, ast_util
 
 #-------------------------------------------------
 
-class SimpleLoops:
-    '''A simple abstraction used to represent a sequence of loops'''
-
-    def __init__(self):
-        '''
-        To instantiate a sequence of loops.
-        For instance, the following loop:
-         for i
-           S1
-           for j
-             for k
-               S2
-           S3
-        is internally represented as follows:
-         ('i', [S1, ('j', [('k', [S2])]), S3])
-        '''
-
-        self.loops = []
-        self.ast_util = ast_util.ASTUtil()
-
-    #----------------------------------------------
-
-    def insertLoop(self, iter_names_seq, stmt):
-        '''
-        To add the given loop into this sequence of loops. Loop fusion is applied whenever possible.
-        The given loop is represented with the sequence of the iterator names and
-        the enclosed statement.
-        '''
-
-        # check if the given loop can be fused into one of the existing loops
-        loops = self.loops
-        inames_seq = iter_names_seq[:]
-        is_done = False
-        while inames_seq:
-            iname = inames_seq[0]
-            matching_loop = None
-            for l in loops:
-                if isinstance(l, tuple) and l[0] == iname:
-                    matching_loop = l
-            if matching_loop == None:
-                break
-            inames_seq.pop(0)
-            if inames_seq:
-                loops = matching_loop[1]
-            else:
-                matching_loop[1].append(stmt)
-                is_done = True
-                break
-
-        # fusing is not possible, thus create a new loop and add it into the sequence of loops 
-        if not is_done:
-            inames_seq.reverse()
-            l = stmt
-            for iname in inames_seq:
-                l = (iname, [l])
-            loops.append(l)
-
-    #----------------------------------------------
-
-    def convertToASTs(self, loop_info_table, node = None):
-        '''To generate a sequence of ASTs that correspond to this sequence of "simple" loops'''
-
-        if node == None:
-            node = self.loops
-
-        if isinstance(node, tuple):
-            iname, subnodes = node
-            tsize_name, lb_exp, st_exp = loop_info_table[iname]
-            id = ast.IdentExp(iname)
-            lb = lb_exp
-            tmp = ast.BinOpExp(ast.IdentExp(tsize_name), ast.ParenthExp(st_exp), ast.BinOpExp.SUB)
-            ub = ast.BinOpExp(lb_exp, ast.ParenthExp(tmp), ast.BinOpExp.ADD)
-            st = st_exp
-            lbody = ast.CompStmt(self.convertToASTs(loop_info_table, subnodes))
-            return self.ast_util.createForLoop(id, lb, ub, st, lbody)
-
-        elif isinstance(node, list):
-            return [self.convertToASTs(loop_info_table, n) for n in node]
-
-        else:
-            return node
-
-#-------------------------------------------------
-
 class Transformator:
     '''The code transformator that performs loop tiling'''
 
     def __init__(self, tiling_info):
         '''To instantiate a code transformator'''
 
-        num_level, iter_names = tiling_info
+        # unpack the tiling information
+        num_tile_level, iter_names = tiling_info
 
-        self.num_level = num_level
+        # the used tiling information
+        self.num_tile_level = num_tile_level
         self.iter_names = iter_names
+
+        # a library that provides common AST utility functions
         self.ast_util = ast_util.ASTUtil()
 
         # used for variable name generation
         self.counter = 1
 
         # booleans to switch on/off some (not all) of the complementary optimizations
-        self.affine_lbound_exps = True        # to use static loop-bound value determination
-        self.simplify_one_time_loop = True    # to use one-time loop simplification
-        
+        self.affine_lbound_exps = False        # to use static loop-bound value determination
+        self.simplify_one_time_loop = True     # to use one-time loop simplification
+
     #----------------------------------------------
 
-    def __getIterName(self, iter_name, level):
+    def __getTileIterName(self, iter_name, level):
         '''Generate a new variable name for inter-tile loop iterator'''
         return iter_name + ('t%s' % level)
 
@@ -159,7 +79,7 @@ class Transformator:
 
     #----------------------------------------------
 
-    def __getMultiLevelTileLoop(self, num_level, iter_names, st_exps, lbody):
+    def __getMultiLevelTileLoop(self, tile_level, iter_names, st_exps, lbody):
         '''
         Generate a multilevel-tile loop (for instance, suppose that the given iterator names is (i,j)
         and the given number of tiling levels is 2):
@@ -175,17 +95,17 @@ class Transformator:
         st_exps = st_exps[:]
         st_exps.reverse()
         loop = lbody
-        for level in range(1, num_level+1):
+        for level in range(1, tile_level+1):
             if level == 1:
                 for iname, st_exp in zip(iter_names, st_exps):
                     n_tsize_name = self.__getTileSizeName(iname, level)
-                    lb = ast.IdentExp(self.__getIterName(iname, level))
+                    lb = ast.IdentExp(self.__getTileIterName(iname, level))
                     loop = self.__getIntraTileLoop(iname, n_tsize_name, lb, st_exp, loop)
             else:
                 for iname in iter_names:
-                    c_iname = self.__getIterName(iname, level-1)
+                    c_iname = self.__getTileIterName(iname, level-1)
                     n_tsize_name = self.__getTileSizeName(iname, level)
-                    lb = ast.IdentExp(self.__getIterName(iname, level))
+                    lb = ast.IdentExp(self.__getTileIterName(iname, level))
                     st = ast.IdentExp(self.__getTileSizeName(iname, level-1))
                     loop = self.__getIntraTileLoop(c_iname, n_tsize_name, lb, st, loop)
         return loop
@@ -307,7 +227,7 @@ class Transformator:
 
     #----------------------------------------------
 
-    def __staticLoopBoundScanning(self, stmts, outer_loop_inames, loop_info_table):
+    def __staticLoopBoundScanning(self, stmts, tile_level, outer_loop_inames, loop_info_table):
         ''' 
         Assuming that the loop-bound expressions are affine functions of outer loop iterators and 
         global parameters, we can determine the loop bounds of full tiles in compile time.
@@ -330,8 +250,8 @@ class Transformator:
         val_table = {}
         for iname in outer_loop_inames:
             _,_,_,st_exp,_ = loop_info_table[iname]
-            lval = ast.IdentExp(self.__getIterName(iname, self.num_level))
-            t = ast.BinOpExp(ast.IdentExp(self.__getTileSizeName(iname, self.num_level)),
+            lval = ast.IdentExp(self.__getTileIterName(iname, tile_level))
+            t = ast.BinOpExp(ast.IdentExp(self.__getTileSizeName(iname, tile_level)),
                              ast.ParenthExp(st_exp.replicate()), ast.BinOpExp.SUB)
             uval = ast.BinOpExp(lval.replicate(), ast.ParenthExp(t), ast.BinOpExp.ADD)
             val_table[iname] = (lval, uval)
@@ -419,7 +339,7 @@ class Transformator:
 
     #----------------------------------------------
 
-    def __getLoopBoundScanningStmts(self, stmts, outer_loop_inames, loop_info_table):
+    def __getLoopBoundScanningStmts(self, stmts, tile_level, outer_loop_inames, loop_info_table):
         '''
         Generate an explicit loop-bound scanning code used at runtime to determine the latest start
         and the earliest end of scanning full tiles.
@@ -427,7 +347,8 @@ class Transformator:
 
         # (optimization) generate code that determines the loop bounds of full tiles at compile time
         if self.affine_lbound_exps:
-            return self.__staticLoopBoundScanning(stmts, outer_loop_inames, loop_info_table)
+            return self.__staticLoopBoundScanning(stmts, tile_level, outer_loop_inames,
+                                                  loop_info_table)
 
         # initialize all returned variables
         scan_stmts = []
@@ -526,18 +447,17 @@ class Transformator:
                 else:
                     a = ast.BinOpExp(ast.IdentExp(ub_name), ub_exp.replicate(), ast.BinOpExp.EQ_ASGN)
                     pre_scan_stmts.append(ast.ExpStmt(a))
-                lb_exps_table[str(lb_exp)] = ast.IdentExp(lb_name)
-            
-        # build a new loop information table specifically only for loop-bound scanning code generation
+                ub_exps_table[str(ub_exp)] = ast.IdentExp(ub_name)
+
+        # build a new loop information tabe for generating the loop-bound scanning code
         n_loop_info_table = {}
         for iname, linfo in loop_info_table.items():
             _,_,_,st_exp,_ = linfo
-            n_loop_info_table[iname] = (self.__getTileSizeName(iname, self.num_level),
-                                        ast.IdentExp(self.__getIterName(iname, self.num_level)),
-                                        st_exp)
+            n_loop_info_table[iname] = (self.__getTileSizeName(iname, tile_level),
+                                        self.__getTileIterName(iname, tile_level), st_exp)
 
         # convert the "SimpleLoop" abstractions into loop ASTs
-        scan_loop_stmts = scan_loops.convertToASTs(n_loop_info_table)
+        scan_loop_stmts = scan_loops.convertToASTs(tile_level, n_loop_info_table)
 
         # merge all scanning statements
         scan_stmts = pre_scan_stmts + scan_loop_stmts + post_scan_stmts
@@ -547,10 +467,10 @@ class Transformator:
 
     #----------------------------------------------
 
-    def __convertToASTs(self, dstmts, loop_inames, loop_info_table):
+    def __convertToASTs(self, dstmts, tile_level, contain_loop, loop_inames, loop_info_table):
         '''
         To recursively convert the given list, containing processed statements and possibly 
-        if-branching statements. A sample of the given list is as follows:
+        if-branching statements, to AST. A sample of the given list is as follows:
            [s1, t-exp, [s2, s3], [s4]]
         which represents the following AST:
            s1; if (t-exp) {s2; s3;} else s4;
@@ -572,16 +492,31 @@ class Transformator:
                 # already tiled; no need to enclose with an inter-tile loop nest
                 if is_tiled:
                     asts.extend(stmts)
-                    
-                # need to enclose with an inter-tile loop nest
+
+                # need to enclose with a single-level inter-tile loop nest
+                elif contain_loop:
+                    rev_inames = loop_inames[:]
+                    rev_inames.reverse()
+                    l = ast.CompStmt(stmts)
+                    for iname in rev_inames:
+                        tname = self.__getTileSizeName(iname, tile_level)
+                        lb_exp = ast.IdentExp(self.__getTileIterName(iname, tile_level))
+                        _,_,_,st_exp,_ = loop_info_table[iname]
+                        lbody = l              
+                        l = self.__getIntraTileLoop(iname, tname, lb_exp, st_exp, lbody)
+                    asts.append(l)
+
+                # need to enclose with a multilevel inter-tile loop nest
                 else:
                     lbody = ast.CompStmt(stmts)
                     st_exps = []
                     for iname in loop_inames:
                         _,_,_,st_exp,_ = loop_info_table[iname]
                         st_exps.append(st_exp)
-                    l = self.__getMultiLevelTileLoop(self.num_level, loop_inames, st_exps, lbody)
-                    asts.append(l)
+                    l = self.__getMultiLevelTileLoop(tile_level, loop_inames, st_exps, lbody)
+                    asts.append(l)                    
+
+                # increment index
                 i += 1
 
             # if it's an if-statement's test expression
@@ -591,19 +526,21 @@ class Transformator:
                     sys.exit(1)
 
                 # generate AST for the true statement
-                i += 1
-                t1 = self.__convertToASTs(dstmts[i], loop_inames, loop_info_table)
+                t1 = self.__convertToASTs(dstmts[i+1], tile_level, contain_loop,
+                                          loop_inames, loop_info_table)
 
                 # generate AST for the false statement
-                i += 1
-                t2 = self.__convertToASTs(dstmts[i], loop_inames, loop_info_table)
+                t2 = self.__convertToASTs(dstmts[i+2], tile_level, contain_loop,
+                                          loop_inames, loop_info_table)
 
                 # generate AST for the if-statement
                 test_exp = s.replicate()
                 true_stmt = ast.CompStmt(t1)
                 false_stmt = ast.CompStmt(t2)
                 asts.append(ast.IfStmt(test_exp, true_stmt, false_stmt))
-                i += 1
+
+                # increment index
+                i += 3
 
         # return the list of ASTs
         return asts
@@ -641,31 +578,22 @@ class Transformator:
 
     #----------------------------------------------
 
-    def __tile(self, stmt, int_vars, outer_loop_infos, preceding_stmts, lbound_info):
+    def __tile(self, stmt, tile_level, outer_loop_infos, preceding_stmts, lbound_info, int_vars):
         '''Apply tiling on the given statement'''
 
-        # expression statement
-        if isinstance(stmt, ast.ExpStmt):
-            preceding_stmts = preceding_stmts[:]
-            if preceding_stmts:
-                is_tiled, last_stmts = preceding_stmts.pop()
-                if is_tiled:
-                    preceding_stmts.append((is_tiled, last_stmts))                    
-                    preceding_stmts.append((False, [stmt]))
-                else:
-                    preceding_stmts.append((False, last_stmts + [stmt]))
-            else:
-                preceding_stmts.append((False, [stmt]))
-            return preceding_stmts
+        # complain if the tiling level is not a positive integer
+        if not isinstance(tile_level, int) or tile_level <= 0:
+            print 'internal error:OrTil: invalid tiling level: %s' % tile_level
+            sys.exit(1)
 
-        # compound statement
-        elif isinstance(stmt, ast.CompStmt):
+        # cannot handle a directly nested compound statement
+        if isinstance(stmt, ast.CompStmt):
             print ('internal error:OrTil: unexpected compound statement directly nested inside ' +
                    'another compound statement')
             sys.exit(1)
 
-        # if statement
-        elif isinstance(stmt, ast.IfStmt):
+        # to handle the given expression statement or if statement
+        if isinstance(stmt, ast.ExpStmt) or isinstance(stmt, ast.IfStmt):
             preceding_stmts = preceding_stmts[:]
             if preceding_stmts:
                 is_tiled, last_stmts = preceding_stmts.pop()
@@ -677,25 +605,25 @@ class Transformator:
             else:
                 preceding_stmts.append((False, [stmt]))
             return preceding_stmts
-        
-        # for loop statement
-        elif isinstance(stmt, ast.ForStmt):
+
+        # to tile the given for-loop statement
+        if isinstance(stmt, ast.ForStmt):
             
             # extract loop structure information
             this_linfo = self.ast_util.getForLoopInfo(stmt) 
             this_id, this_lb_exp, this_ub_exp, this_st_exp, this_lbody = this_linfo
             this_iname = this_id.name
             
-            # provide information about the (extended) tiled outer loops
-            n_outer_loop_infos = outer_loop_infos + [(this_iname, this_linfo)]
+            # get information about the (extended) tiled outer loops
             outer_loop_inames = [i for i,_ in outer_loop_infos]
             loop_info_table = dict(outer_loop_infos)
+            n_outer_loop_infos = outer_loop_infos + [(this_iname, this_linfo)]
             n_outer_loop_inames = [i for i,_ in n_outer_loop_infos]
             n_loop_info_table = dict(n_outer_loop_infos)
 
-            # prepare loop bounds information (for iterating rectangular full tiles)
+            # prepare loop bounds information (for iterating full rectangular tiles)
             need_prolog = False
-            need_epilog = False     
+            need_epilog = False
             rect_lb_exp = this_lb_exp
             rect_ub_exp = this_ub_exp
             if lbound_info:
@@ -708,7 +636,7 @@ class Transformator:
                     sys.exit(1)
 
             # get explicit loop-bound scanning code
-            t = self.__getLoopBoundScanningStmts(this_lbody.stmts, n_outer_loop_inames,
+            t = self.__getLoopBoundScanningStmts(this_lbody.stmts, tile_level, n_outer_loop_inames,
                                                  n_loop_info_table)
             scan_stmts, lbound_info_seq, ivars = t
 
@@ -719,7 +647,6 @@ class Transformator:
             res_stmts = preceding_stmts[:]
 
             # generate the prolog code
-            prolog_code = None
             if need_prolog:
                 ub = ast.BinOpExp(rect_lb_exp, ast.ParenthExp(this_st_exp), ast.BinOpExp.SUB)
                 prolog_code = self.ast_util.createForLoop(this_id, this_lb_exp, ub,
@@ -741,18 +668,27 @@ class Transformator:
             #   s1; if (t-exp) {s2; s3;} else s4;
             # is represented as the following list:
             #   [s1, t-exp, [s2, s3], [s4]]
+            contain_loop = False
             processed_stmts = []
             if_branches = [processed_stmts]     # a container for storing list of if-branch statements
             for s, binfo in zip(this_lbody.stmts, lbound_info_seq):
+
+                # check if one of the enclosed statements is a loop
+                if isinstance(s, ast.ForStmt):
+                    contain_loop = True
 
                 # perform transformation on each if-branch statements
                 n_if_branches = []
                 for p_stmts in if_branches:
 
+                    # replicate the statement (just to be safe)
+                    s = s.replicate()
+
                     # this is NOT a loop statement with bound expressions that are functions of
                     # outer loop iterators
                     if binfo == None:
-                        n_p_stmts = self.__tile(s, int_vars, n_outer_loop_infos, p_stmts, binfo)
+                        n_p_stmts = self.__tile(s, tile_level, n_outer_loop_infos,
+                                                p_stmts, binfo, int_vars)
                         while len(p_stmts) > 0:
                             p_stmts.pop()
                         p_stmts.extend(n_p_stmts)
@@ -784,7 +720,8 @@ class Transformator:
                         last_p_stmts = []
 
                     # perform a recursion to further tile this rectangularly tiled loop
-                    n_p_stmts = self.__tile(s, int_vars, n_outer_loop_infos, last_p_stmts, binfo)
+                    n_p_stmts = self.__tile(s.replicate(), tile_level, n_outer_loop_infos,
+                                            last_p_stmts, binfo, int_vars)
 
                     # compute the processed statements for both true and false conditions
                     true_p_stmts = n_p_stmts
@@ -816,22 +753,22 @@ class Transformator:
             lbody_stmts.extend(scan_stmts)
             
             # convert the processed statements into AST
-            lbody_stmts.extend(self.__convertToASTs(processed_stmts, n_outer_loop_inames,
-                                                    n_loop_info_table))
+            lbody_stmts.extend(self.__convertToASTs(processed_stmts, tile_level, contain_loop,
+                                                    n_outer_loop_inames, n_loop_info_table))
 
             # generate the main rectangularly tiled code
             lbody = ast.CompStmt(lbody_stmts)
-            iname = self.__getIterName(this_iname, self.num_level)
-            tname = self.__getTileSizeName(this_iname, self.num_level)
+            iname = self.__getTileIterName(this_iname, tile_level)
+            tname = self.__getTileSizeName(this_iname, tile_level)
             main_tiled_code = self.__getInterTileLoop(iname, tname, rect_lb_exp, rect_ub_exp,
                                                       this_st_exp, lbody)
             res_stmts.append((True, [main_tiled_code]))
-
+            
             # mark the loop if it's a loop iterating the full rectangular tiles
             self.__labelFullCoreTiledLoop(main_tiled_code, n_outer_loop_inames)
             
             # generate the cleanup code (the epilog is already fused)
-            lb = ast.IdentExp(self.__getIterName(this_iname, self.num_level))
+            lb = ast.IdentExp(self.__getTileIterName(this_iname, tile_level))
             cleanup_code = self.ast_util.createForLoop(this_id, lb, this_ub_exp,
                                                        this_st_exp, this_lbody)
             res_stmts.append((False, [cleanup_code]))
@@ -840,14 +777,13 @@ class Transformator:
             return res_stmts
         
         # unknown statement
-        else:
-            print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
-            sys.exit(1)
+        print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
+        sys.exit(1)
 
     #----------------------------------------------
 
-    def __startTiling(self, stmt, int_vars):
-        '''Find the loops to be tiled and then apply loop-tiling transformation on each of them'''
+    def __startTiling(self, stmt, tile_level, int_vars):
+        '''To apply loop-tiling transformation on each of loop'''
         
         # expression statement
         if isinstance(stmt, ast.ExpStmt):
@@ -857,7 +793,7 @@ class Transformator:
         elif isinstance(stmt, ast.CompStmt):
             tstmts = []
             for s in stmt.stmts:
-                ts = self.__startTiling(s, int_vars)
+                ts = self.__startTiling(s, tile_level, int_vars)
                 if isinstance(ts, ast.CompStmt):
                     tstmts.extend(ts.stmts)
                 else:
@@ -867,17 +803,25 @@ class Transformator:
 
         # if statement
         elif isinstance(stmt, ast.IfStmt):
-            stmt.true_stmt = self.__startTiling(stmt.true_stmt, int_vars)
+            stmt.true_stmt = self.__startTiling(stmt.true_stmt, tile_level, int_vars)
             if stmt.false_stmt:
-                stmt.false_stmt = self.__startTiling(stmt.false_stmt, int_vars)
+                stmt.false_stmt = self.__startTiling(stmt.false_stmt, tile_level, int_vars)
             return stmt
 
         # for loop statement
         elif isinstance(stmt, ast.ForStmt):
-            tstmts = []
-            for _,stmts in self.__tile(stmt, int_vars, [], [], None):
-                tstmts.extend(stmts)
-            return ast.CompStmt(tstmts)
+
+            # apply loop tiling on this loop
+            tiling_results = self.__tile(stmt, tile_level, [], [], None, int_vars)
+
+            # return the tiled AST
+            t_stmts = []
+            for _,stmts in tiling_results:
+                t_stmts.extend(stmts)
+            tiled_ast = ast.CompStmt(t_stmts)
+
+            # return the tiled AST
+            return tiled_ast
 
         # unknown statement
         else:
@@ -914,6 +858,8 @@ class Transformator:
 
         # for loop statement
         elif isinstance(stmt, ast.ForStmt):
+
+            # recurse on the loop body
             id, lb_exp, ub_exp, st_exp, lbody = self.ast_util.getForLoopInfo(stmt) 
             tbody = self.__simplifyOneTimeLoop(stmt.stmt)
             
@@ -941,13 +887,13 @@ class Transformator:
         int_vars = []
         int_vars.extend(self.iter_names)
         for iname in self.iter_names:
-            for level in range(1, self.num_level+1):
-                int_vars.append(self.__getIterName(iname, level))
+            for level in range(1, self.num_tile_level+1):
+                int_vars.append(self.__getTileIterName(iname, level))
 
         # perform loop tiling on each statement
-        stmts = [self.__startTiling(s, int_vars) for s in stmts]
+        stmts = [self.__startTiling(s, self.num_tile_level, int_vars) for s in stmts]
 
-        # perform replication of AST (just to be safe)
+        # perform replication of AST (just to be safe -- to avoid a node sharing the AST structure)
         stmts = [s.replicate() for s in stmts]
 
         # (optimization) simplify one-time loop
@@ -956,4 +902,89 @@ class Transformator:
 
         # return the tiled statements and the newly declared integer variables
         return (stmts, int_vars)
+
+#-------------------------------------------------
+
+class SimpleLoops:
+    '''A simple abstraction used to represent a sequence of loops'''
+
+    def __init__(self):
+        '''
+        To instantiate a sequence of loops.
+        For instance, the following loop:
+         for i
+           S1
+           for j
+             for k
+               S2
+           S3
+        is internally represented as follows:
+         ('i', [S1, ('j', [('k', [S2])]), S3])
+        '''
+
+        self.loops = []
+        self.ast_util = ast_util.ASTUtil()
+
+    #----------------------------------------------
+
+    def insertLoop(self, iter_names_seq, stmt):
+        '''
+        To add the given loop into this sequence of loops. Loop fusion is applied whenever possible.
+        The given loop is represented with the sequence of the iterator names and
+        the enclosed statement.
+        '''
+
+        # check if the given loop can be fused into one of the existing loops
+        loops = self.loops
+        inames_seq = iter_names_seq[:]
+        is_done = False
+        while inames_seq:
+            iname = inames_seq[0]
+            matching_loop = None
+            for l in loops:
+                if isinstance(l, tuple) and l[0] == iname:
+                    matching_loop = l
+            if matching_loop == None:
+                break
+            inames_seq.pop(0)
+            if inames_seq:
+                loops = matching_loop[1]
+            else:
+                matching_loop[1].append(stmt)
+                is_done = True
+                break
+
+        # fusing is not possible, thus create a new loop and add it into the sequence of loops 
+        if not is_done:
+            inames_seq.reverse()
+            l = stmt
+            for iname in inames_seq:
+                l = (iname, [l])
+            loops.append(l)
+
+    #----------------------------------------------
+
+    def convertToASTs(self, tile_level, loop_info_table, node = None):
+        '''To generate a sequence of ASTs that correspond to this sequence of "simple" loops'''
+
+        if node == None:
+            node = self.loops
+        
+        if isinstance(node, tuple):
+            iname, subnodes = node
+            tsize_name, titer_name, st_exp = loop_info_table[iname]
+            id = ast.IdentExp(iname)
+            lb = ast.IdentExp(titer_name)
+            tmp = ast.BinOpExp(ast.IdentExp(tsize_name), ast.ParenthExp(st_exp), ast.BinOpExp.SUB)
+            ub = ast.BinOpExp(lb, ast.ParenthExp(tmp), ast.BinOpExp.ADD)
+            st = st_exp
+            lbody = ast.CompStmt(self.convertToASTs(tile_level, loop_info_table, subnodes))
+            return self.ast_util.createForLoop(id, lb, ub, st, lbody)
+
+        elif isinstance(node, list):
+            return [self.convertToASTs(tile_level, loop_info_table, n) for n in node]
+
+        else:
+            return node
+
 

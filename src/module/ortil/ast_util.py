@@ -16,6 +16,42 @@ class ASTUtil:
 
     #---------------------------------------------------------------
 
+    def getLoopIters(self, stmt):
+        '''Return all loop iterator names used in the given statement'''
+
+        if isinstance(stmt, ast.ExpStmt):
+            return []
+        
+        elif isinstance(stmt, ast.CompStmt):
+            inames = []
+            for s in stmt.stmts:
+                for i in self.getLoopIters(s):
+                    if i not in inames:
+                        inames.append(i)
+            return inames
+
+        elif isinstance(stmt, ast.IfStmt):
+            inames = self.getLoopIters(stmt.true_stmt)
+            if stmt.false_stmt:
+                for i in self.getLoopIters(stmt.false_stmt):
+                    if i not in inames:
+                        inames.append(i)
+            return inames
+                    
+        elif isinstance(stmt, ast.ForStmt):
+            (id, lb, ub, st, bod) = self.getForLoopInfo(stmt)
+            inames = [id.name]
+            for i in self.getLoopIters(stmt.stmt):
+                if i not in inames:
+                    inames.append(i)
+            return inames
+                
+        else:
+            print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
+            sys.exit(1)
+            
+    #---------------------------------------------------------------
+
     def containIdentName(self, exp, iname):
         '''
         Check if the given expression contains an identifier whose name matches to the given name
