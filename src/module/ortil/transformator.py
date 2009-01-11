@@ -27,9 +27,14 @@ class Transformator:
         self.counter = 1
 
         # booleans to switch on/off some (not all) of the complementary optimizations
-        self.affine_lbound_exps = False        # to use static loop-bound value determination
+        self.affine_lbound_exps = True         # to use static loop-bound value determination
         self.simplify_one_time_loop = True     # to use one-time loop simplification
         self.use_boundary_tiling = True        # to recursively tile all boundary tiles
+
+        # transformation parameters
+        self.recursive_tile_level = self.num_tile_level   # the highest level of tiling used to 
+                                                          # further tile the boundary tiles
+        #self.recursive_tile_level = 2
 
     #----------------------------------------------
 
@@ -511,8 +516,10 @@ class Transformator:
                         l.fully_tiled = True
 
                     # to recursively tile all boundary tiles
-                    if self.use_boundary_tiling and tile_level > 1:
-                        l = self.__startTiling(l, tile_level-1, int_vars)
+                    if self.use_boundary_tiling:
+                        new_tile_level = min(tile_level-1, self.recursive_tile_level)
+                        if new_tile_level > 0:
+                            l = self.__startTiling(l, new_tile_level, int_vars)
 
                     # insert the tiled loop to the AST list
                     asts.append(l)
@@ -569,9 +576,9 @@ class Transformator:
         s = stmt
         while True:
             if not isinstance(s, ast.ForStmt):
-                return
-            if s.start_label and s.start_label.startswith('start full core tiles'):
-                return 
+                break
+            if s.start_label and s.start_label.startswith('start full core tiles: '):
+                break 
             id, lb_exp, ub_exp, st_exp, lbody = self.ast_util.getForLoopInfo(s)
             if id.name == outer_loop_inames[0]:
                 s.start_label = 'start full core tiles: '
@@ -582,9 +589,9 @@ class Transformator:
                         s.end_label += ','
                     s.start_label += '%s' % iname
                     s.end_label += '%s' % iname
-                return
+                break
             if len(s.stmt.stmts) != 1:
-                return
+                break
             s = s.stmt.stmts[0]
 
     #----------------------------------------------
@@ -832,8 +839,10 @@ class Transformator:
             # return the tiled AST
             t_stmts = []
             for is_tiled, stmts in tiling_results:
-                if self.use_boundary_tiling and not is_tiled and tile_level > 1:
-                    stmts = [self.__startTiling(s, tile_level-1, int_vars) for s in stmts]
+                if self.use_boundary_tiling and not is_tiled:
+                    new_tile_level = min(tile_level-1, self.recursive_tile_level)
+                    if new_tile_level > 0:
+                        stmts = [self.__startTiling(s, new_tile_level, int_vars) for s in stmts]
                 t_stmts.extend(stmts)
             tiled_ast = ast.CompStmt(t_stmts)
 
@@ -894,6 +903,89 @@ class Transformator:
 
     #----------------------------------------------
 
+    def __removeInvalidFullCoreLoops(self, stmt):
+        '''To remove invalid full-core loops that may appear after one-time loop removal'''
+
+        # expression statement
+        if isinstance(stmt, ast.ExpStmt):
+            return
+
+        # compound statement
+        elif isinstance(stmt, ast.CompStmt):
+            for s in stmt.stmts:
+                self.__removeInvalidFullCoreLoops(s)
+
+        # if statement
+        elif isinstance(stmt, ast.IfStmt):
+            self.__removeInvalidFullCoreLoops(stmt.true_stmt)
+            if stmt.false_stmt:
+                self.__removeInvalidFullCoreLoops(stmt.false_stmt)
+
+        # for loop statement
+        elif isinstance(stmt, ast.ForStmt):
+            self.__removeInvalidFullCoreLoops(stmt.stmt)
+
+            # check if this is a labeled full core tile loop
+            if stmt.start_label.startswith('start full core tiles: '):
+
+                # check the validity of the full core tile loop
+                ipos = stmt.start_label.find(':')
+                iter_names = stmt.start_label[ipos+1:].split(',')
+                iter_names = [i.strip() for i in iter_names]
+                valid = True
+                cur_stmt = stmt
+                while iter_names:
+                    if not isinstance(cur_stmt, ast.ForStmt):
+                        valid = False
+                        break
+                    id,_,_,_,_ = self.ast_util.getForLoopInfo(cur_stmt)
+                    if id.name != iter_names[0]:
+                        valid = False
+                        break
+                    iter_names.pop(0)
+                    if not iter_names:
+                        if isinstance(cur_stmt.stmt, ast.CompStmt):
+                            stmts = cur_stmt.stmt.stmts[:]
+                            contain_loop = False
+                            while stmts:
+                                s = stmts.pop(0)
+                                if isinstance(s, ast.ForStmt):
+                                    contain_loop = True
+                                    break
+                                if isinstance(s, ast.CompStmt):
+                                    stmts.extend(s.stmts)
+                                elif isinstance(s, ast.IfStmt):
+                                    stmts.append(s.true_stmt)
+                                    if s.false_stmt:
+                                        stmts.append(s.false_stmt)
+                            if contain_loop:
+                                valid = False
+                                break
+                        else:
+                            if isinstance(cur_stmt.stmt, ast.ForStmt):
+                                valid = False
+                                break
+                        break
+                    if isinstance(cur_stmt.stmt, ast.CompStmt):
+                        if len(cur_stmt.stmt.stmts) != 1:
+                            valid = False
+                            break
+                        cur_stmt = cur_stmt.stmt.stmts[0]
+                    else:
+                        cur_stmt = cur_stmt.stmt
+
+                # remove labels if it's not a valid full core tile loop
+                if not valid:
+                    stmt.start_label = ''
+                    stmt.end_label = ''
+
+        # unknown statement
+        else:
+            print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
+            sys.exit(1)
+
+    #----------------------------------------------
+
     def transform(self, stmts):
         '''To apply loop-tiling transformation on the given statements'''
 
@@ -916,6 +1008,11 @@ class Transformator:
         # (optimization) simplify one-time loop
         if self.simplify_one_time_loop:
             stmts = [self.__simplifyOneTimeLoop(s) for s in stmts]
+
+        # remove all invalid labeled full core tiles loops that may appear after 
+        # removing all one-time loops
+        for s in stmts:
+            self.__removeInvalidFullCoreLoops(s)
 
         # return the tiled statements and the newly declared integer variables
         return (stmts, int_vars)

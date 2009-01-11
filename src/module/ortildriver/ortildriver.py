@@ -138,12 +138,11 @@ class OrTilDriver(module.module.Module):
             i,v,s = cr
             t = transformator.Transformator(unroll, vectorize, scalar_replacement, constant_folding)
             transformed_code += t.transform(i,v,s)
-            
 
         # insert the declaration code for the tile sizes
         decl_code = ''
         for i, (tvar, tval) in enumerate(tile_sizes):
-            decl_code += '  int %s = %s;\n' % (tvar, tval)
+            decl_code += '  %s = %s;\n' % (tvar, tval)
         if transformed_code[0] != '\n':
             transformed_code = '\n' + transformed_code
         transformed_code = '\n' + decl_code + transformed_code
