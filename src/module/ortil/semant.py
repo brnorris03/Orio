@@ -130,10 +130,12 @@ class SemanticAnalyzer:
             inames = self.ast_util.getLoopIters(s)
             for i in inames:
                 used_iter_names[i] = None
+        unused_iter_names = []
         for i in self.iter_names:
             if i not in used_iter_names:
-                print 'error:OrTil: unused tiled-loop iterator name: "%s"' % i
-                sys.exit(1)
+                unused_iter_names.append(i)
+        for i in unused_iter_names:
+            self.iter_names.remove(i)
 
         # return the semantically correct statements
         return stmts
