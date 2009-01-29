@@ -2,7 +2,7 @@
 # Dynamic loader is used to dynamically load a Python module and a Python class
 #
 
-import sys
+import sys, traceback, os
 
 #----------------------------------------------
 
@@ -33,6 +33,8 @@ class DynLoader:
         except Exception, e:
             print 'error: failed to load module "%s"' % mod_name
             print ' --> %s: %s' % (e.__class__.__name__, e)
+            if 'ORIO_DEBUG' in os.environ.keys() and os.environ['ORIO_DEBUG'] == '1':
+                traceback.print_stack()                    
             sys.exit(1)
 
         # remember the currently loaded module
