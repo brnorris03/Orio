@@ -23,7 +23,7 @@ for root, dirs, files in os.walk(src_dir, topdown=True):
 
 # make a call to the setup function
 setup(name = 'orio',
-      version = '0.1.2',
+      version = '0.2.0',
       description = 'ORIO -- An Annotation-Based Performance Tuning Tool',
       author = 'Albert Hartono',
       author_email = 'hartonoa@cse.ohio-state.edu',
