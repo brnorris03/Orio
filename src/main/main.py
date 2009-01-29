@@ -17,7 +17,12 @@ def start(argv, lang):
 
     # check for Fortran source, which is not supported yet now
     if lang == FORTRAN:
-        print 'error: no support for Fortran yet'
+        language = 'fortran'
+        print 'warning: Fortran support is limited'
+    elif lang == C_CPP:
+        language = 'c'
+    else:
+        print 'error: Language not supported at this time.'
         sys.exit(1)
 
     # include the annotation tool in the Python's search path
@@ -70,7 +75,7 @@ def start(argv, lang):
 
     # perform optimizations based on information specified in the annotations
     if verbose: print '\n----- begin optimizations -----'
-    odriver = opt_driver.OptDriver(specs_map, cline_opts)
+    odriver = opt_driver.OptDriver(specs_map, cline_opts, language=language)
     optimized_code_seq = odriver.optimizeCodeFrags(cfrags, {}, True)
     if verbose: print '----- finish optimizations -----'
 

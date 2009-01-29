@@ -10,10 +10,10 @@ import module.loop.submodule.submodule, module.loop.submodule.unrolljam.unrollja
 class Unroll(module.loop.submodule.submodule.SubModule):
     '''The unrolling transformation submodule'''
     
-    def __init__(self, perf_params = None, transf_args = None, stmt = None):
+    def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
         '''To instantiate an unrolling transformation submodule'''
         
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt)
+        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
         self.ujam_smod = module.loop.submodule.unrolljam.unrolljam.UnrollJam()
         

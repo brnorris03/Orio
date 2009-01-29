@@ -10,10 +10,10 @@ import module.loop.submodule.submodule, transformator
 class Pragma(module.loop.submodule.submodule.SubModule):
     '''The pragma directive insertion submodule'''
     
-    def __init__(self, perf_params = None, transf_args = None, stmt = None):
+    def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
         '''To instantiate a pragma insertion submodule'''
 
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt)
+        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
     #-----------------------------------------------------------------
 

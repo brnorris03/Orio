@@ -6,7 +6,7 @@ class Module:
     '''The abstract class of Orio's code transformation module'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code,
-                 cmd_line_opts, line_no, indent_size):
+                 cmd_line_opts, line_no, indent_size, language='C'):
         '''
         The class constructor used to instantiate a program transformation module.
         
@@ -26,6 +26,7 @@ class Module:
         self.annot_body_code = annot_body_code
         self.cmd_line_opts = cmd_line_opts
         self.line_no = line_no
+        self.language = language
         self.indent_size = indent_size
         
         # a boolean value to indicate if the results of the running transformation need to be shown
