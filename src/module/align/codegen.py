@@ -11,10 +11,38 @@ class CodeGen:
 
     def __init__(self, vars, annot_body_code, indent):
         '''To instantiate a code generator instance'''
+
+        self.generator = None
         
+        if language.lower() in ['c','c++','cxx']:
+            self.generator = CodeGen_C()
+        elif language.lower() in ['f', 'f90', 'fortran']:
+            self.generator = CodeGen_F()
+        else:
+            print 'Error: Unknown language specified for code generation: %s' % language
+            sys.exit(1)
+            
         self.vars = vars
         self.annot_body_code = annot_body_code
         self.indent = indent
+        pass
+        
+    #------------------------------------------------------
+
+    def generate(self):
+
+        # return the generated code
+        return self.generator.generate()
+    
+    
+class CodeGen_C(CodeGen):
+    '''The code generator for the Blue Gene's memory alignment optimizer'''
+
+    def __init__(self, vars, annot_body_code, indent):
+        '''To instantiate a code generator instance'''
+        
+        codegen.CodeGen(self, vars, annot_body_code, indent)
+        pass
 
     #------------------------------------------------------
 
@@ -65,3 +93,4 @@ class CodeGen:
         # return the generated code
         return s
     
+

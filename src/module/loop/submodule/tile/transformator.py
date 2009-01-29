@@ -10,11 +10,12 @@ import module.loop.ast, module.loop.ast_lib.constant_folder, module.loop.ast_lib
 class Transformator:
     '''Code transformator'''
 
-    def __init__(self, tsize, tindex, stmt):
+    def __init__(self, tsize, tindex, stmt, language='C'):
         '''To instantiate a code transformator object'''
 
         self.tsize = tsize
         self.tindex = tindex
+        self.language = language
         self.stmt = stmt
         
         self.flib = module.loop.ast_lib.forloop_lib.ForLoopLib()

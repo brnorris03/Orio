@@ -15,11 +15,12 @@ TSUBMOD_NAME = 'module.loop.submodule'
 class Transformator:
     '''Code transformator'''
 
-    def __init__(self, perf_params, verbose):
+    def __init__(self, perf_params, verbose, language='C'):
         '''To instantiate a code transformator object'''
 
         self.perf_params = perf_params
         self.verbose = verbose
+        self.language = language
         self.dloader = main.dyn_loader.DynLoader()
         
     #--------------------------------------
@@ -64,7 +65,7 @@ class Transformator:
             
             # apply code transformations
             try:
-                t = submod_class(self.perf_params, stmt.args, stmt.stmt)
+                t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language)
                 transformed_stmt = t.transform()
             except Exception, e:
                 print (('error:%s: encountered an error as optimizing the transformation ' +

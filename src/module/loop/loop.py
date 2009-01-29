@@ -11,11 +11,11 @@ class Loop(module.module.Module):
     '''Loop transformation module'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
-                 line_no, indent_size):
+                 line_no, indent_size, language='C'):
         '''To instantiate a loop transformation module'''
         
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
-                                      cmd_line_opts, line_no, indent_size)
+                                      cmd_line_opts, line_no, indent_size, language)
 
     #---------------------------------------------------------------------
     
@@ -32,7 +32,7 @@ class Loop(module.module.Module):
         # generate code for the transformed ASTs
         indent = ' ' * self.indent_size
         extra_indent = '  '
-        cgen = codegen.CodeGen()
+        cgen = codegen.CodeGen(self.language)
         transformed_code = '\n'
         for s in transformed_stmts:
             transformed_code += cgen.generate(s, indent, extra_indent)
