@@ -2,7 +2,7 @@
 # The optimization driver used to initiate the optimization process
 #
 
-import sys, traceback
+import sys, traceback, os
 import code_frag, dyn_loader, tuner.tuner
 
 #----------------------------------------------------------------
@@ -124,7 +124,8 @@ class OptDriver:
                     print ('error:%s: encountered an error when transforming annotation "%s"' %
                            (cfrag.leader_ann.mod_name_line_no, cfrag.leader_ann.mod_name))
                     print ' --> %s: %s' % (e.__class__.__name__, e)
-                    traceback.print_stack()                    
+                    if 'ORIO_DEBUG' in os.environ.keys() and os.environ['ORIO_DEBUG'] == '1':
+                        traceback.print_stack()                    
                     sys.exit(1)
 
                 # create the optimized code sequence
