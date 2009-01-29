@@ -18,10 +18,10 @@ import module.loop.submodule.arrcopy.arrcopy
 class Composite(module.loop.submodule.submodule.SubModule):
     '''The composite loop transformation submodule'''
     
-    def __init__(self, perf_params = None, transf_args = None, stmt = None):
+    def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
         '''To instantiate a composite loop transformation submodule'''
         
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt)
+        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
         # transformation submodules
         self.tile_smod = module.loop.submodule.tile.tile.Tile()

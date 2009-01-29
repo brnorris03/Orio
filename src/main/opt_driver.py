@@ -2,7 +2,7 @@
 # The optimization driver used to initiate the optimization process
 #
 
-import sys
+import sys, traceback
 import code_frag, dyn_loader, tuner.tuner
 
 #----------------------------------------------------------------
@@ -18,10 +18,11 @@ TMOD_NAME = 'module'
 class OptDriver:
     '''The optimization driver whose function is to initiate the optimization process'''
 
-    def __init__(self, specs_map, cmd_line_opts):
+    def __init__(self, specs_map, cmd_line_opts, language='C'):
         '''To instantiate an optimization driver'''
         self.specs_map = specs_map
         self.cmd_line_opts = cmd_line_opts
+        self.lang = language
         self.ptuner = tuner.tuner.PerfTuner(specs_map, self)
         self.dloader = dyn_loader.DynLoader()
 
@@ -115,12 +116,15 @@ class OptDriver:
                                               optimized_body_code,
                                               self.cmd_line_opts,
                                               cfrag.leader_ann.mod_code_line_no,
-                                              cfrag.leader_ann.indent_size)
+                                              cfrag.leader_ann.indent_size,
+                                              language=self.lang)
+                    
                     optimized_code = transformator.transform()
                 except Exception, e:
                     print ('error:%s: encountered an error when transforming annotation "%s"' %
                            (cfrag.leader_ann.mod_name_line_no, cfrag.leader_ann.mod_name))
                     print ' --> %s: %s' % (e.__class__.__name__, e)
+                    traceback.print_stack()                    
                     sys.exit(1)
 
                 # create the optimized code sequence

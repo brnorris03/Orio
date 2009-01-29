@@ -10,10 +10,10 @@ import module.loop.submodule.submodule, transformator
 class Permut(module.loop.submodule.submodule.SubModule):
     '''The loop permutation transformation submodule'''
     
-    def __init__(self, perf_params = None, transf_args = None, stmt = None):
+    def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
         '''To instantiate a loop permutation transformation submodule'''
         
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt)
+        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
     #-----------------------------------------------------------------
 
