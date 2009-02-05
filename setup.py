@@ -21,6 +21,24 @@ for root, dirs, files in os.walk(src_dir, topdown=True):
 
 #-----------------------------------------------------------
 
+# to remove certain packages not included in the source distribution
+if False:
+    removed_packages = ['orio.module.polysyn', 'orio.module.spmv', 
+                        'orio.module.align', 'orio.module.loop', 
+                        'orio.module.simplyrewrite', 'orio.module.pragma',
+                        'orio.module.pluto', ]
+    n_py_packages = []
+    for p in py_packages:
+        is_removed = False
+        for r in removed_packages:
+            if p.startswith(r):
+                is_removed = True
+        if not is_removed:
+            n_py_packages.append(p)
+    py_packages = n_py_packages
+
+#-----------------------------------------------------------
+
 # make a call to the setup function
 setup(name = 'orio',
       version = '0.2.0',
