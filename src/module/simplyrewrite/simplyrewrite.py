@@ -11,11 +11,11 @@ import module.module
 class SimplyRewrite(module.module.Module):
     '''A simple rewriting module'''
 
-    def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts, line_no, indent_size):
+    def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts, line_no, indent_size, language='C'):
         '''To instantiate a simple rewriting module'''
 
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
-                                      cmd_line_opts, line_no, indent_size)
+                                      cmd_line_opts, line_no, indent_size, language)
 
     #---------------------------------------------------------------------
     

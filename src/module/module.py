@@ -19,6 +19,7 @@ class Module:
           line_no             the starting line position of the module code in the source code
           indent_size         an integer representing the number of whitespace characters that
                               preceed the leader annotation
+          language            the language of the input code (C or Fortran)
         '''
 
         self.perf_params = perf_params

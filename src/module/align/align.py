@@ -11,11 +11,11 @@ class Align(module.module.Module):
     '''Memory-alignment transformation module'''
 
     def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
-                 line_no, indent_size):
+                 line_no, indent_size, language='C'):
         '''To instantiate a memory-alignment transformation module'''
         
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
-                                      cmd_line_opts, line_no, indent_size)
+                                      cmd_line_opts, line_no, indent_size, language)
 
     #---------------------------------------------------------------------
     
