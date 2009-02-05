@@ -34,7 +34,7 @@ class Transformator:
         # transformation parameters
         self.recursive_tile_level = self.num_tile_level   # the highest level of tiling used to 
                                                           # further tile the boundary tiles
-        #self.recursive_tile_level = 2
+        #self.recursive_tile_level = 0
 
     #----------------------------------------------
 
