@@ -12,11 +12,11 @@ class OrTil(module.module.Module):
     '''The class definition for OrTil tiling module'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
-                 line_no, indent_size):
+                 line_no, indent_size, language='C'):
         '''To instantiate an OrTil tiling module'''
         
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
-                                      cmd_line_opts, line_no, indent_size)
+                                      cmd_line_opts, line_no, indent_size, language)
         
     #---------------------------------------------------------------------
     
