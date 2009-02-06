@@ -30,7 +30,7 @@ to execute orcc command as given below as an example.
 
   description: compile shell for Orio
 
-  usage: orcc [options] <ifile> 
+  usage: orcc [options] <ifile>
     <ifile>   input file containing the annotated code
 
   options:
