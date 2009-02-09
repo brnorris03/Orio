@@ -11,7 +11,7 @@ class PrettyPrinter:
     '''The pretty printer of the AST structure'''
 
     def __init__(self):
-        '''To instantiate a pretty printer'''
+        '''To instantiate the pretty printer'''
         pass
 
     #----------------------------------------------
