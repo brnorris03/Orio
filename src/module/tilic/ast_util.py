@@ -11,7 +11,7 @@ class ASTUtil:
     '''A class definition that provides utility methods for AST traversal and manipulation'''
 
     def __init__(self):
-        '''To instantiate an AST utility'''
+        '''To instantiate the AST utility'''
         pass
 
     #---------------------------------------------------------------

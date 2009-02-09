@@ -24,6 +24,7 @@ class AnnParser:
         first_depth = 1                  # the first loop depth to be tiled
         last_depth = -1                  # the last loop depth to be tiled
         max_boundary_tiling_level = -1   # the maximum tiling level used to tile boundary tiles
+        affine_lbound_exps = True        # assuming the loop bound expressions to be affine functions
         
         # iterate over all assignments
         for var, val in assigns:
@@ -52,12 +53,18 @@ class AnnParser:
                     sys.exit(1)
                 max_boundary_tiling_level = val
 
+            elif var == 'affine_lbound_exps':
+                if not isinstance(val, bool):
+                    print 'error:Tilic: the value of affine loop-bound expressions must be a boolean: "%s"' % val
+                    sys.exit(1)
+                affine_lbound_exps = val
+
             else:
                 print 'error:Tilic: unknown tiling parameter: "%s"' % var
                 sys.exit(1)
 
         # return the tiling parameters
-        return (num_tiling_levels, first_depth, last_depth, max_boundary_tiling_level)
+        return (num_tiling_levels, first_depth, last_depth, max_boundary_tiling_level, affine_lbound_exps)
 
     #------------------------------------------------------------
 

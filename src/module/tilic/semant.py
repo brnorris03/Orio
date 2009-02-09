@@ -11,7 +11,7 @@ class SemanticChecker:
     '''The semantic checker class that provides methods for checking and enforcing the AST semantics'''
 
     def __init__(self):
-        '''To instantiate a semantic checker'''
+        '''To instantiate the semantic checker'''
 
         self.ast_util = ast_util.ASTUtil()
 
