@@ -12,7 +12,7 @@ class Tilic(module.module.Module):
     
     def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
                  line_no, indent_size, language='C'):
-        '''To instantiate an Tilic tiling module'''
+        '''To instantiate the Tilic tiling module'''
         
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       cmd_line_opts, line_no, indent_size, language)
