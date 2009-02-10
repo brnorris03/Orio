@@ -3,7 +3,7 @@
 #
 
 import re, sys
-from tool.zestyparser.ZestyParser import *
+from tool.ZestyParser import *
 
 #--------------------------------------------------------------------------------
 
