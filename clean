@@ -18,7 +18,5 @@ rm *~ */*~ */*/*~ */*/*/*~ */*/*/*/*~ */*/*/*/*/*~ */*/*/*/*/*/*~ */*/*/*/*/*/*/
 rm testsuite/_*.* testsuite/*~
 rm testsuite/*/_*.* testsuite/*/*~
 
-mv src/tool/zestyparser/ZestyParser.pyc_ src/tool/zestyparser/ZestyParser.pyc
-
 rm -rf dist build
 rm MANIFEST
