@@ -122,12 +122,10 @@ class AbstractToken (object):
     to = None
 
     #'as' is deprecated in favor of 'to' since it's becoming a reserved word
-    def __init__(self, desc, callback=None, to=None, as=None, name=None):
+    def __init__(self, desc, callback=None, to=None, name=None):
         self.desc = desc
         self.callback = callback
-        self.to = to or as
-        if as:
-            warnings.warn('`as` argument is deprecated; use `to`', DeprecationWarning, stacklevel=2)
+        self.to = to 
         self.name = name
     
     def __repr__(self):
