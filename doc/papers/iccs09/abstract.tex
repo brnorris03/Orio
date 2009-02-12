@@ -16,7 +16,7 @@ for the optimization of the matrix algebra kernels that are a foundational
 part of many scientific applications.  To generate highly optimized code from
 a high-level MATLAB prototype, we define a three-step approach.  To begin, we
 have developed a compiler that converts a MATLAB script into simple C code.
-We then use the polyhedral optimization system PLuTo to optimize that code
+We then use the polyhedral optimization system Pluto to optimize that code
 for coarse-grained parallelism and locality simultaneously. Finally, we
 annotate the resulting code with performance-tuning directives and use the
 empirical performance-tuning system Orio to generate many tuned versions of

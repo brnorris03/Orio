@@ -127,7 +127,7 @@ tuned libraries for matrix algebra computations.  In
 Section~\ref{sec:background} we briefly discuss relevant prior and current
 research efforts. In Section~\ref{sec:approach} we describe our
 MATLAB-to-C compiler and the empirical performance
-tuning system Orio and its use in conjunction with the PLuTo tool suite to
+tuning system Orio and its use in conjunction with the Pluto tool suite to
 generate and empirically evaluate many tuned versions of the C code generated
 by the MATLAB compiler.  In Section~\ref{sec:experiments} we provide
 performance results on two architectures. In Section~\ref{sec:conclusion} we conclude 
@@ -208,10 +208,10 @@ manner (but currently only C++ is supported).
 %meta-programming
 %~\cite{veldhuizen95,weise93,kiczales91,chiba95}
 %techniques (e.g., ~\cite{veldhuizen95,chiba95}). 
-PLuTo~\cite{Pluto}
+Pluto~\cite{Pluto}
 %uday08cc} 
 is a source-to-source transformation tool for
-optimizing sequences of nested loops. PLuTo employs a polyhedral model of
+optimizing sequences of nested loops. Pluto employs a polyhedral model of
 nested loops, where the dynamic instance (iteration) of each statement is
 viewed as an integer point in a well-defined space, called the statement's
 polyhedron. Combined with a characterization of data dependences, this
@@ -273,9 +273,9 @@ Figure~\ref{fig:process}.
 To begin, we have developed a compiler that
 converts a MATLAB script into simple C code~\cite{Siek}.  After generating
 the C code from the high-level MATLAB prototype, we (optionally) use 
-the source-to-source automatic parallelization tool PLuTo~\cite{Pluto} %developed at Ohio State University
+the source-to-source automatic parallelization tool Pluto~\cite{Pluto} %developed at Ohio State University
 to optimize for coarse-grained parallelism and locality simultaneously. Using
-the results of the PLuTo analysis, we insert annotations into the C code,
+the results of the Pluto analysis, we insert annotations into the C code,
 which are then processed by our extensible annotation system Orio to generate
 many tuned versions of the same operation using different optimization
 parameters. Orio then performs an empirical search to select the best among
@@ -660,7 +660,7 @@ the sequential and parallel code variants tuned by Orio (``Orio
 
 The Xeon performance results (in seconds) of ATAX are shown in
 Figure~\ref{fig:results}(b). The Orio-tuned version that incorporates
-PLuTo-generated loop fusion optimizations and Orio parallelization
+Pluto-generated loop fusion optimizations and Orio parallelization
 directives achieves the best performance for most problem sizes,
 outperforming the Intel MKL version by a factor of 2 to 5.7 and the
 compiler-optimized C version by a factor of 4 to 7. The optimizations
@@ -668,7 +668,7 @@ performed by both Orio versions include scalar replacement,
 vectorization, and loop unroll/jam.
 
 Figure~\ref{fig:results}(c) shows the performance (in seconds) of the GEMVER
-operation on the Xeon workstation. Here we used the same PLuTo and Orio
+operation on the Xeon workstation. Here we used the same Pluto and Orio
 optimizations as for the ATAX example. Similarly, the parallel Orio version
 achieved the best performance, although in this case the sequential Orio
 version performs almost the same, suggesting that the compiler was not able
@@ -678,7 +678,7 @@ the Intel MKL version achieving performance close to that of the simple
 compiler code.
 
 The performance (in seconds) for the BiCG kernel operation is shown in
-Figure~\ref{fig:results}(d). For this operation, the PLuTo analysis did not
+Figure~\ref{fig:results}(d). For this operation, the Pluto analysis did not
 result in performance improvement. Thus we are showing the results obtained
 only through Orio transformations, which included vectorization, scalar
 replacement, and loop unroll/jam. Again the best performance was achieved
@@ -691,7 +691,7 @@ than the compiler-optimized C loop version.
 We have described an approach to generating tuned linear algebra libraries
 from high-level annotated MATLAB code that involves a suite of tools to (1)
 translate the MATLAB code to C, (2) analyze the resulting loops and identify
-locality and parallelism-enhancing optimizations using PLuTo, and (3)
+locality and parallelism-enhancing optimizations using Pluto, and (3)
 annotate the resulting C code with syntactic performance directives and use
 Orio to generate multiple optimized versions and empirically select the one
 with the best performance. Preliminary results from experiments with several
@@ -720,7 +720,7 @@ more automation at each step.
 %input. Orio's modular design allows new transformations to be added easily,
 %which presents many opportunities for expanding the existing set of
 %optimizations with new ones implemented from scratch or through interfaces to
-%other tools, as we have successfully done with PLuTo. We are also working on
+%other tools, as we have successfully done with Pluto. We are also working on
 %generating code that contains special cases for different input parameter
 %values since in many cases different optimizations are optimal for different
 %input sizes.  We will also continue developing the parallel empirical search
