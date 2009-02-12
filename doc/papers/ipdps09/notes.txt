@@ -25,7 +25,7 @@ is designed to support both architecture-independent and
 architecture-specific code optimizations. Given the annotated code as
 input, Orio generates many tuned versions of the same operation and
 empirically evaluates the alternatives to select the best performing
-version for production use. We have also enabled the use of the PLuTo
+version for production use. We have also enabled the use of the Pluto
 automatic parallelization tool in conjunction with Orio to generate
 efficient OpenMP-based parallel code. We describe our experimental results
 involving a number of computational kernels, including dense array and
