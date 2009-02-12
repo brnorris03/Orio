@@ -7,7 +7,7 @@ workstation has dual quad-core E5462 Xeon processors (8 cores total) running
 at 2.8 GHz (1600 MHz FSB) with 32 KB L1 cache, 12 MB of L2 cache (6 MB shared
 per core pair), and 2 GB of DDR2 FBDIMM RAM, running Linux kernel version
 2.6.25 (x86-64). Each compute node of the Blue Gene/P is equipped with four
-850MHz IBM PowerPC 450 processors with a dual floating-point unit and 2GB
+850 MHz IBM PowerPC 450 processors with a dual floating-point unit and 2 GB
 total memory per node, private L1 (32 KB) and L2 (4 MB) caches, a shared L3
 cache (8 MB), and running a proprietary lightweight operating system. We used
 version 10.1 of the Intel and version 9.0 of the IBM XL C/C++ V9.0 compilers
@@ -89,7 +89,7 @@ for (i=0; i<num_rows; i++)
 \\
 \end{tabular}
 
-\caption{(a) Compressed sparse row (CSR) format (b) Basic implementation of CSR-based SpMV.}
+\caption{(a) Compressed sparse row (CSR) format; (b) Basic implementation of CSR-based SpMV.}
 \label{fig:spmv}
 \end{figure}
 
@@ -111,7 +111,7 @@ matrix data elements.
 The SpMV operation computes $\forall_{A_{i,j}} \neq 0:y_{i}
 \leftarrow y_{i} + A_{i,j} \cdot x_{j}$, where $A$ is a sparse matrix,
 and $x$, $y$ are dense vectors. Each element of $A$ is used precisely once
-and element reuse is only possible for $x$ and $y$. Thus, to optimize SpMV,
+and element reuse is possible for $x$ and $y$. Thus, to optimize SpMV,
 one should use compact data structures for $A$ and try to maximize temporal
 reuse of $x$ and $y$. One of the most commonly used data structures for
 storing a sparse matrix is compressed sparse row (CSR) storage
@@ -130,7 +130,7 @@ matrices. For example, the sparse matrix shown in Figure~\ref{fig:spmv}(a)
 contains three inodes. The first inode is of size two because it holds two
 adjacent rows (i.e., the first and the second rows) with the same nonzero
 structure. The second inode contains three consecutive rows with identical
-nonzero structure, while the last inode only has a single row. Knowing the
+nonzero structure, and the last inode only has a single row. Knowing the
 properties of each inode at runtime enables maximum reuse of vector $x$ since
 multiple elements of $x$ can be loaded and used exactly once for all rows in
 the same inode structure. To accomplish this, one must use a
@@ -140,7 +140,7 @@ various optimization strategies including register blocking, SIMDization,
 memory alignment optimization, loop-control optimization, accumulator
 expansion, and thread-level parallelization (with OpenMP). We then used Orio
 to automatically select the best version of the optimized inode SpMV. Only
-the outer loop which iterates over inodes was parallelized by using OpenMP.
+the outer loop that iterates over inodes was parallelized by using OpenMP.
 
 To evaluate the performance of the tuned SpMV routine, we conducted the
 experiment using a 2-D driven cavity flow simulation
@@ -154,10 +154,10 @@ included in PETSc releases.
 Figure~\ref{fig:ex27-cookie-results} shows the performance results on the
 Intel Xeon. The problem size is the number of grid points in the $x$ and $y$
 directions, not the size of the sparse input matrix. The matrix dimension is
-based the grid size and the number of field components computed for each grid
-point, for example, an $8 \times 8$ problem involves sparse matrices of
+based on the grid size and the number of field components computed for each grid
+point; for example, an $8 \times 8$ problem involves sparse matrices of
 dimension 900 with 17,040 nonzero entries. In this experiment, we ran in
-three different multicore modes: SMP (one MPI process, eight
+three multicore modes: SMP (one MPI process, eight
 threads/process), dual (four MPI processes, two threads/process), and virtual
 node or VN (eight MPI processes, one thread/process). The code tuned by Orio
 consistently outperforms the alternatives. Furthermore, the performance of
@@ -202,7 +202,7 @@ exploiting thread-level parallelism, the Orio-optimized code performs better
 than the hand-tuned version when the number of threads per process increases
 and the number of nodes decreases. For the single-thread cases (VN mode),
 thread-level parallelism is not exploited; nevertheless, the Orio version
-still performs better than the other two alternatives.
+still performs better than the other two choices.
 %This validates the
 %effectiveness of Orio in empirically tuning sequential codes.
 
@@ -367,10 +367,10 @@ same.
 %We used Orio to generate two code variants: one for small problem sizes
 %and another for large problem sizes. 
 When the input arrays are small, Orio discovers that applying
-Pluto's polyhedral transformations is not beneficial, and therefore,
+Pluto's polyhedral transformations is not beneficial, and therefore
 it employs only its syntactic transformations on the original FDTD
 code. For large problem sizes, Orio exploits some of the Pluto's code
-transformations and enhances it further with its syntactic
+transformations and enhances them further with its syntactic
 optimizations, resulting in performance consistently and significantly
 higher than both the base and Pluto codes (up to 86\% over Pluto).
 
@@ -378,14 +378,15 @@ higher than both the base and Pluto codes (up to 86\% over Pluto).
 %By tuning the sequential code with Orio,
 %the attainable performance enhancement over Pluto is up to 86\%.
  
-Figure~\ref{fig:fdtd-2d-cookie-par} shows the multicore performance obtained
-for $tmax=500$ and $nx=ny=2000$. The results indicate that whereas icc is
-unable to auto-parallelize the code, Pluto detects the existence of pipelined
-parallelism and then successfully parallelizes the code. Optimizing and
-tuning by Orio additionally improves the Pluto performance by up to
-78\%. Moreover, we observe that because of memory contention between the two
-quad-core Intel processors, the speedup of both the Pluto and Orio codes
-slightly decreases when the number of cores used is greater than four.
+Figure~\ref{fig:fdtd-2d-cookie-par} shows the multicore performance
+obtained for $tmax=500$ and $nx=ny=2000$. The results indicate that
+whereas icc is unable to auto-parallelize the code, Pluto detects the
+existence of pipelined parallelism and then successfully parallelizes
+the code. Locality-exploiting optimizations by Orio additionally
+improve the Pluto performance by up to 78\%. Moreover, we observe
+that because of memory contention between the two quad-core Intel
+processors, the speedup of both the Pluto and Orio codes slightly
+decreases when the number of cores used is greater than four.
  
 \begin{figure*}%[htb] 
 \begin{center} 
@@ -434,7 +435,7 @@ slightly decreases when the number of cores used is greater than four.
 
 \subsubsection{3-D Gauss-Seidel Successive Over-Relaxation Method}  
 Figure~\ref{fig:seidel-code} shows the 3-D Gauss-Seidel computation, 
-which is sometimes is referred to as
+which is sometimes referred to as
 \emph{successive displacement method}, indicating the dependence of the 
 iterations on the ordering. If the ordering is changed, the components
 of the new iterations will change as well.
