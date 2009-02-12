@@ -110,8 +110,8 @@ matrix data elements.
 
 The SpMV operation computes $\forall_{A_{i,j}} \neq 0:y_{i}
 \leftarrow y_{i} + A_{i,j} \cdot x_{j}$, where $A$ is a sparse matrix,
-and $x$, $y$ are dense vectors. Each element of $A$ is used precisely once
-and element reuse is possible for $x$ and $y$. Thus, to optimize SpMV,
+and $x$, $y$ are dense vectors. Each element of $A$ is used precisely once,
+and element reuse is possible only for $x$ and $y$. Thus, to optimize SpMV,
 one should use compact data structures for $A$ and try to maximize temporal
 reuse of $x$ and $y$. One of the most commonly used data structures for
 storing a sparse matrix is compressed sparse row (CSR) storage
@@ -130,7 +130,7 @@ matrices. For example, the sparse matrix shown in Figure~\ref{fig:spmv}(a)
 contains three inodes. The first inode is of size two because it holds two
 adjacent rows (i.e., the first and the second rows) with the same nonzero
 structure. The second inode contains three consecutive rows with identical
-nonzero structure, and the last inode only has a single row. Knowing the
+nonzero structure, and the last inode has only a single row. Knowing the
 properties of each inode at runtime enables maximum reuse of vector $x$ since
 multiple elements of $x$ can be loaded and used exactly once for all rows in
 the same inode structure. To accomplish this, one must use a
@@ -160,7 +160,7 @@ dimension 900 with 17,040 nonzero entries. In this experiment, we ran in
 three multicore modes: SMP (one MPI process, eight
 threads/process), dual (four MPI processes, two threads/process), and virtual
 node or VN (eight MPI processes, one thread/process). The code tuned by Orio
-consistently outperforms the alternatives. Furthermore, the performance of
+consistently outperforms the others. Furthermore, the performance of
 the hand-tuned code is almost equivalent to that of the icc-optimized simple
 code. Performance differences between the Orio version and the hand-tuned
 version become more significant as more threads per process are employed to
@@ -308,7 +308,7 @@ L1 cache, \texttt{--l2tile} to employ loop tiling for L2 cache, and
 an additional \texttt{--parallel} option. We used Pluto's default tile
 sizes (L1: 32x32 or 32x32x32; L2: 256x256 or 256x256x256) and default
 unroll factors (64 for 1-D unrolling and 8x8 for 2-D
-unroll/jamming). All codes were compiled with the Intel C Compiler
+unroll/jamming). All codes were compiled with the Intel C compiler
 using the \texttt{-O3} optimization flag to enable auto-vectorization
 and other advanced optimizations, and
 \texttt{-parallel} (or \texttt{-openmp} in the case of manual OpenMP parallelization) 
@@ -321,7 +321,7 @@ and L2 tilings and unroll/jamming as ``Pluto (L1+L2 tiling).'' The code
 tuned by Orio is referred to as ``Pluto+Orio.''
  
 \subsubsection{2-D Finite-Difference Time-Domain Method for Computational Electromagnetics}  
-We consider the two-dimensional Finite Difference Time Domain (FDTD)
+We consider the two-dimensional finite difference time domain (FDTD)
 algorithm, a popular method for solving the time-dependent Maxwell's
 equations in the context of computational electrodynamic problems. As
 shown in Figure~\ref{fig:fdtd-2d-code}, the 2-D FDTD method is
@@ -370,7 +370,7 @@ When the input arrays are small, Orio discovers that applying
 Pluto's polyhedral transformations is not beneficial, and therefore
 it employs only its syntactic transformations on the original FDTD
 code. For large problem sizes, Orio exploits some of the Pluto's code
-transformations and enhances them further with its syntactic
+transformations and enhances these further with its syntactic
 optimizations, resulting in performance consistently and significantly
 higher than both the base and Pluto codes (up to 86\% over Pluto).
 
@@ -380,7 +380,7 @@ higher than both the base and Pluto codes (up to 86\% over Pluto).
  
 Figure~\ref{fig:fdtd-2d-cookie-par} shows the multicore performance
 obtained for $tmax=500$ and $nx=ny=2000$. The results indicate that
-whereas icc is unable to auto-parallelize the code, Pluto detects the
+whereas icc is unable to autoparallelize the code, Pluto detects the
 existence of pipelined parallelism and then successfully parallelizes
 the code. Locality-exploiting optimizations by Orio additionally
 improve the Pluto performance by up to 78\%. Moreover, we observe
@@ -433,7 +433,7 @@ decreases when the number of cores used is greater than four.
 %size of the generated loop nest, which led to an impractically huge 
 %compile time. 
 
-\subsubsection{3-D Gauss-Seidel Successive Over-Relaxation Method}  
+\subsubsection{3-D Gauss-Seidel Successive Overrelaxation Method}  
 Figure~\ref{fig:seidel-code} shows the 3-D Gauss-Seidel computation, 
 which is sometimes referred to as
 \emph{successive displacement method}, indicating the dependence of the 
@@ -511,7 +511,7 @@ for (k=0; k<=N-1; k++) {
 \end{verbatim} 
 \end{minipage} 
 \end{center}
-\caption{LU Decomposition code.} 
+\caption{LU decomposition code.} 
 \label{fig:lu-code} 
 \end{figure}
 %
