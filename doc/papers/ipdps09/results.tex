@@ -351,7 +351,7 @@ tuned by Orio is referred to as ``Pluto+Orio.''
   \includegraphics[width=.45\textwidth]{figures/seidel-cookie/par.eps} 
   \label{fig:seidel-cookie-par} } 
 \end{center}
-\caption{3-D Gauss-Seidel performance on eight-core Intel machine.} 
+\caption{3-D Gauss-Seidel performance on eight-core Intel Xeon.} 
 \label{fig:seidel-cookie-results} 
 \end{figure*} 
 
@@ -363,7 +363,7 @@ tuned by Orio is referred to as ``Pluto+Orio.''
   \includegraphics[width=.45\textwidth]{figures/lu-cookie/par.eps} 
   \label{fig:lu-cookie-par} } 
 \end{center} 
-\caption{LU Decomposition performance on eight-core Intel machine.} 
+\caption{LU decomposition performance on eight-core Intel Xeon.} 
 \label{fig:lu-cookie-results} 
 \end{figure*} 
 
@@ -467,7 +467,7 @@ higher than both the base and Pluto codes (up to 86\% over Pluto).
  
 Figure~\ref{fig:fdtd-2d-cookie-par} shows the multicore performance
 obtained for $tmax=500$ and $nx=ny=2000$. The results indicate that
-whereas icc is unable to autoparallelize the code, Pluto detects the
+whereas icc is unable to auto-parallelize the code, Pluto detects the
 existence of pipelined parallelism and then successfully parallelizes
 the code. Locality-exploiting optimizations by Orio additionally
 improve the Pluto performance by up to 78\%. Moreover, we observe
