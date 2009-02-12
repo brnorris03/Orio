@@ -1,4 +1,6 @@
-\documentclass[12pt]{article}
+\documentclass[conference]{IEEEtran}
+
+%\documentclass[12pt]{article}
 %\usepackage{latex8}
 %\usepackage[]{rotating} 
 \usepackage{ifpdf}
@@ -10,36 +12,51 @@
 \usepackage{wrapfig}
 \usepackage{times}
 \usepackage{amsmath,amsthm}
-\usepackage[letterpaper,margin=1in]{geometry}
 
-\ifpdf
-\DeclareGraphicsExtensions{.pdf,.png,.jpg}
-\else
-\DeclareGraphicsExtensions{.eps,.ps}
-\fi
+%\usepackage[letterpaper,margin=1in]{geometry}
 
-\newenvironment{itemizer}{\begin{itemize}\setlength{\parsep}{0cm}\setlength{\itemsep}{-.3em}}{\end{itemize}}
+%\ifpdf
+%\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+%\else
+%\DeclareGraphicsExtensions{.eps,.ps}
+%\fi
+
+%\newenvironment{itemizer}{\begin{itemize}\setlength{\parsep}{0cm}\setlength{\itemsep}{-.3em}}{\end{itemize}}
 
 \long\def\comment#1{}
 \date{}
 
-\title{\vspace{-.6in}Annotation-Based Empirical Performance Tuning\\ Using Orio}
+\begin{document}
+
+\title{Annotation-Based Empirical Performance Tuning Using Orio}
 
 \author{
-Albert Hartono$^1$, Boyana Norris$^2$, and P. Sadayappan$^1$ \\
-{\small $^1$Ohio State University, Dept. of Computer Science and Engineering, Columbus, OH 43210}\\
-{\small \texttt{\{hartonoa, saday\}@cse.ohio-state.edu}}\\
-{\small $^2$Argonne National Laboratory, Mathematics and Computer Science Division, Argonne, IL 60439}\\
-{\small \texttt{norris@mcs.anl.gov}}
-}
-
-\begin{document}
+\IEEEauthorblockN{Albert Hartono} 
+\IEEEauthorblockA{\small Dept. of Computer Science and Engg.\\ 
+Ohio State University\\ 
+Columbus, Ohio 43210--1277\\ 
+Email: hartonoa@cse.ohio-state.edu} 
+\and 
+\IEEEauthorblockN{Boyana Norris} 
+\IEEEauthorblockA{\small Mathematics and Computer Science Division\\ 
+Argonne National Laboratory\\ 
+Argonne, Illinois 60439--4844\\
+Email: norris@mcs.anl.gov} 
+\and 
+\IEEEauthorblockN{P. Sadayappan} 
+\IEEEauthorblockA{\small Dept. of Computer Science and Engg.\\ 
+Ohio State University\\ 
+Columbus, Ohio 43210--1277\\ 
+Email: saday@cse.ohio-state.edu}
+} 
 
 \maketitle
 
 \begin{abstract}
 \input{abstract}
 \end{abstract}
+
+\IEEEpeerreviewmaketitle
 
 \input{motivation}
 \input{related}
@@ -48,9 +65,15 @@ Albert Hartono$^1$, Boyana Norris$^2$, and P. Sadayappan$^1$ \\
 \input{results} 
 \input{conclusions} 
 
+\section*{Acknowledgment} 
+The authors would like to thank Uday Bondhugula of IBM Research for
+many productive discussions and his valuable help with Pluto. This
+work was supported in part by the U.S. Dept. of Energy under Contract
+DE-AC02-06CH11357.
+
 \small
-\bibliographystyle{abbrv} 
-\bibliography{paper}
+\bibliographystyle{IEEEtran} 
+\bibliography{IEEEabrv,paper} 
 
 \end{document}
 

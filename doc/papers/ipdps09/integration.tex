@@ -51,14 +51,13 @@ permutation, loop unroll/jamming, scalar replacement, and explicit
 auto-vectorization). Finally, Orio optimizes the annotated hotspots as 
 described in Section~\ref{sec:implm}.
 
-\begin{figure}[tb]
+\begin{figure*}%[!t]
 \begin{center}
 \includegraphics[width=0.6\textwidth]{figures/pluto-orio.eps}    
 \end{center}   
-\vspace{-.2in}
 \caption{Integration of Pluto into Orio's code transformation module.}
 \label{fig:pluto-orio}
-\end{figure}  
+\end{figure*}  
 
 Pluto also performs syntactic loop unroll/jamming as a post-processing
 pass. The target loops, however, are limited only to innermost loops with a

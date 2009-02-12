@@ -33,17 +33,13 @@ requiring reimplementation. This ensures that the significant investments in
 the development of complex scientific codes is leveraged to the greatest
 extent possible.
 
-%\subsection{Overall Approach} 
-%\label{sec:overall}
-\begin{figure}[tb]
-\vspace{-.2in}
-\begin{center}  
+\begin{figure*}%[!t]
+\begin{center}
 \includegraphics[width=0.6\textwidth]{figures/orio.eps}   
-\end{center}  
-\vspace{-.2in}
+\end{center}
 \caption{Overview of Orio's code generation and empirical tuning process.}  
-\label{fig:orio}  
-\end{figure}  
+\label{fig:orio}
+\end{figure*}  
 
 Figure~\ref{fig:orio} contains a high-level graphical depiction of the code
 generation and tuning process implemented in Orio.  Orio can be used to
@@ -92,7 +88,7 @@ computation and several performance hints are coded in the module body inside
 the leader annotation. A trailer annotation, which has a fixed form (i.e.,
 \texttt{/*@ end @*/}), closes an annotation region.
 
-\begin{figure}[thb]
+\begin{figure*}%[!t]
 \begin{center} 
 \begin{tabular}{rrl} 
 $<$annotation-region$>$ & ::= & $<$leader-annotation$>$ $<$annotation-body$>$ $<$trailer-annotation$>$\\ 
@@ -100,10 +96,9 @@ $<$leader-annotation$>$ & ::= & \texttt{/*@ begin} $<$module-name$>$ \texttt{(} 
 $<$trailer-annotation$>$ & ::= & \texttt{/*@ end @*/} \\
 \end{tabular} 
 \end{center}  
-\vspace{-.1in}
 \caption{Annotation language grammar excerpt.}  
 \label{fig:ann-lang}
-\end{figure}  
+\end{figure*}  
 
 \subsection{Orio Input Example}
 \label{sec:example}
@@ -142,36 +137,36 @@ performance parameters values, and execution environment details.  The tuning
 specifications can be either integrated in the source code or defined in a
 separate file, as in this example.
 
-\begin{figure}[thb] 
+\begin{figure*}%[!t] 
 \centering 
 \begin{tabular}{cc} 
 \begin{minipage}{.5\textwidth}  
 \scriptsize
 \begin{verbatim}  
-void axpy4(int N, double *y, 
- double a1, double *x1, double a2, double *x2, 
- double a3, double *x3, double a4, double *x4) {
+ void axpy4(int N, double *y, 
+  double a1, double *x1, double a2, double *x2, 
+  double a3, double *x3, double a4, double *x4) {
 
- /*@ begin PerfTuning (
-   import spec axpy4_tune_spec;
- ) @*/
+  /*@ begin PerfTuning (
+    import spec axpy4_tune_spec;
+  ) @*/
 
- register int i;
+  register int i;
 
- /*@ begin BGP_Align (x1[],x2[],x3[],x4[],y[]) @*/ 
- /*@ begin Loop ( 
-  transform Unroll (ufactor=UF, parallelize=PAR)
+  /*@ begin BGP_Align (x1[],x2[],x3[],x4[],y[]) @*/ 
+  /*@ begin Loop ( 
+   transform Unroll (ufactor=UF, parallelize=PAR)
+   for (i=0; i<=N-1; i++) 
+     y[i] += a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i]; 
+  ) @*/ 
+
   for (i=0; i<=N-1; i++) 
-    y[i] += a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i]; 
- ) @*/ 
+    y[i] += a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i];
 
- for (i=0; i<=N-1; i++) 
-   y[i] += a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i];
-
- /*@ end @*/ 
- /*@ end @*/
- /*@ end @*/
-}
+  /*@ end @*/ 
+  /*@ end @*/
+  /*@ end @*/
+ }
 
 
 
@@ -187,50 +182,46 @@ void axpy4(int N, double *y,
 \begin{minipage}{.5\textwidth}  
 \scriptsize
 \begin{verbatim}  
-spec axpy4_tune_spec {
- def build { 
-  arg build_command = 
-   'mpixlc_r -O3 -qstrict -qhot -qsmp=omp:noauto'; 
-  arg batch_command = 
-   'qsub -n 128 -t 20 --env "OMP_NUM_THREADS=4"'; 
-  arg status_command = 'qstat';
-  arg num_procs = 128; 
- } 
- def performance_counter { 
-  arg method = 'basic timer';
-  arg repetitions = 10000;
- } 
- def performance_params { 
-  param UF[] = range(1,33);
-  param PAR[] = [True,False]; 
+ spec axpy4_tune_spec {
+  def build { 
+   arg build_command = 
+    'mpixlc_r -O3 -qstrict -qhot -qsmp=omp:noauto'; 
+   arg batch_command = 
+    'qsub -n 128 -t 20 --env "OMP_NUM_THREADS=4"'; 
+   arg status_command = 'qstat';
+   arg num_procs = 128; 
+  } 
+  def performance_counter { 
+   arg method = 'basic timer';
+   arg repetitions = 10000;
+  } 
+  def performance_params { 
+   param UF[] = range(1,33);
+   param PAR[] = [True,False]; 
+  }
+  def input_params { 
+   param N[] = [10,100,1000,10**4,10**5,
+                10**6,10**7]; 
+  }
+  def input_vars { 
+   decl dynamic double y[N] = 0; 
+   decl dynamic double x1[N] = random; 
+   decl double a1 = random; 
+   decl double a2 = random; 
+   # ... ommitted ...
+  } 
+  def search { 
+   arg algorithm = 'Exhaustive'; 
+   arg time_limit = 20;
+  }
  }
- def input_params { 
-  param N[] = [10,100,1000,10**4,10**5,
-               10**6,10**7]; 
- }
- def input_vars { 
-  decl dynamic double y[N] = 0; 
-  decl dynamic double x1[N] = random; 
-  decl double a1 = random; 
-  decl double a2 = random; 
-  # ... ommitted ...
- } 
- def search { 
-  arg algorithm = 'Exhaustive'; 
-  arg time_limit = 20;
- }
-}
 \end{verbatim}  
 \end{minipage}
 \\
-%(a) Annotated AXPY-4 source code
-%& 
-%(b) Tuning specification for the Blue Gene/P\\
 \end{tabular}
 \caption{Orio input example; annotated AXPY-4 source code (left) and tuning specification for the Blue Gene/P (right).}
 \label{fig:orio-example}  
-%\vspace{-.2in}
-\end{figure} 
+\end{figure*} 
 
 The annotated AXPY-4 code (left side of Figure~\ref{fig:orio-example}) uses two
 performance parameters whose values are defined in the tuning specification:
@@ -400,56 +391,53 @@ drastically trimmed down from 32,768 points (i.e., $32*32*32$) to only 65
 points. This example also demonstrates that a set of constraints can also be
 imposed on input parameters to decide what input problem sizes to consider.
 
-\begin{figure}[htp] 
+\begin{figure*}%[!t] 
 \centering 
 \begin{tabular}{cc} 
-\begin{minipage}{.4\textwidth}  
+\begin{minipage}{.5\textwidth}  
 \scriptsize
 \begin{verbatim}  
-/*@ begin Loop (
-transform UnrollJam(ufactor=Ui)
-for (i=0; i<=M-1; i++)
-  transform UnrollJam(ufactor=Uj)
+ /*@ begin Loop (
+ transform UnrollJam(ufactor=Ui)
+ for (i=0; i<=M-1; i++)
+   transform UnrollJam(ufactor=Uj)
+   for (j=0; j<=N-1; j++)
+     transform UnrollJam(ufactor=Uk)   
+     for (k=0; k<=O-1; k++)
+       A[i][j] += B[i][k]*C[k][j];
+ ) @*/
+ for (i=0; i<=M-1; i++)
   for (j=0; j<=N-1; j++)
-    transform UnrollJam(ufactor=Uk)   
-    for (k=0; k<=O-1; k++)
-      A[i][j] += B[i][k]*C[k][j];
-) @*/
-for (i=0; i<=M-1; i++)
- for (j=0; j<=N-1; j++)
-  for (k=0; k<=O-1; k++)
-    A[i][j] += B[i][k]*C[k][j];
-/*@ end @*/
+   for (k=0; k<=O-1; k++)
+     A[i][j] += B[i][k]*C[k][j];
+ /*@ end @*/
 \end{verbatim}  
 \end{minipage}
 &
-\begin{minipage}{.45\textwidth}  
+\begin{minipage}{.5\textwidth}  
 \scriptsize
 \begin{verbatim}  
-def performance_params {
-  param Ui[] = range(1,33);
-  param Uj[] = range(1,33);
-  param Uk[] = range(1,33);
-  constraint reg_capacity = Ui*Uj+Ui*Uk+Uk*Uj<=32;
-}
+ def performance_params {
+   param Ui[] = range(1,33);
+   param Uj[] = range(1,33);
+   param Uk[] = range(1,33);
+   constraint reg_capacity = Ui*Uj+Ui*Uk+Uk*Uj<=32;
+ }
 
-def input_params {
-  param M[] = [10,50,100,500,1000];
-  param N[] = [10,50,100,500,1000];
-  param O[] = [10,50,100,500,1000];
-  constraint square_matrices = (M==N) and (N==O);
-}
+ def input_params {
+   param M[] = [10,50,100,500,1000];
+   param N[] = [10,50,100,500,1000];
+   param O[] = [10,50,100,500,1000];
+   constraint square_matrices = (M==N) and (N==O);
+ }
 
 \end{verbatim}  
 \end{minipage}
 \\
-%(a) Annotated code of matrix-matrix multiplication
-%& 
-%(b) Orio's parameter specifications\\
 \end{tabular}
 \caption{Example of specifying parameter constraints in Orio; annotated code for matrix-matrix multiplication (left) and constraint specification (right).}
 \label{fig:par-constraint}  
-\end{figure} 
+\end{figure*} 
 
 Orio also supports parallel search when parallel resources are available,
 e.g., when tuning on the Blue Gene/P. The parallel Orio driver concurrently
