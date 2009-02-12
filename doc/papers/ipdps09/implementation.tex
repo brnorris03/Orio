@@ -1,3 +1,24 @@
+
+\begin{figure*}%[b]
+\begin{center}
+\includegraphics[width=0.6\textwidth]{figures/orio.eps}   
+\end{center}
+\caption{Overview of Orio's code generation and empirical tuning process.}  
+\label{fig:orio}
+\end{figure*}  
+
+\begin{figure*}%[b]
+\begin{center} 
+\begin{tabular}{rrl} 
+$<$annotation-region$>$ & ::= & $<$leader-annotation$>$ $<$annotation-body$>$ $<$trailer-annotation$>$\\ 
+$<$leader-annotation$>$ & ::= & \texttt{/*@ begin} $<$module-name$>$ \texttt{(} $<$module-body$>$ \texttt{) @*/} \\
+$<$trailer-annotation$>$ & ::= & \texttt{/*@ end @*/} \\
+\end{tabular} 
+\end{center}  
+\caption{Annotation language grammar excerpt.}  
+\label{fig:ann-lang}
+\end{figure*}  
+
 \section{Orio Design and Implementation}
 \label{sec:implm}
 
@@ -32,14 +53,6 @@ Finally, Orio is usable in real scientific applications without
 requiring reimplementation. This ensures that the significant investments in
 the development of complex scientific codes is leveraged to the greatest
 extent possible.
-
-\begin{figure*}%[!t]
-\begin{center}
-\includegraphics[width=0.6\textwidth]{figures/orio.eps}   
-\end{center}
-\caption{Overview of Orio's code generation and empirical tuning process.}  
-\label{fig:orio}
-\end{figure*}  
 
 Figure~\ref{fig:orio} contains a high-level graphical depiction of the code
 generation and tuning process implemented in Orio.  Orio can be used to
@@ -87,18 +100,6 @@ generate the annotated application code. A high-level description of the
 computation and several performance hints are coded in the module body inside
 the leader annotation. A trailer annotation, which has a fixed form (i.e.,
 \texttt{/*@ end @*/}), closes an annotation region.
-
-\begin{figure*}%[!t]
-\begin{center} 
-\begin{tabular}{rrl} 
-$<$annotation-region$>$ & ::= & $<$leader-annotation$>$ $<$annotation-body$>$ $<$trailer-annotation$>$\\ 
-$<$leader-annotation$>$ & ::= & \texttt{/*@ begin} $<$module-name$>$ \texttt{(} $<$module-body$>$ \texttt{) @*/} \\
-$<$trailer-annotation$>$ & ::= & \texttt{/*@ end @*/} \\
-\end{tabular} 
-\end{center}  
-\caption{Annotation language grammar excerpt.}  
-\label{fig:ann-lang}
-\end{figure*}  
 
 \subsection{Orio Input Example}
 \label{sec:example}
@@ -221,6 +222,54 @@ separate file, as in this example.
 \end{tabular}
 \caption{Orio input example; annotated AXPY-4 source code (left) and tuning specification for the Blue Gene/P (right).}
 \label{fig:orio-example}  
+\end{figure*} 
+
+\begin{figure*}%[!t] 
+\centering 
+\begin{tabular}{cc} 
+\begin{minipage}{.5\textwidth}  
+\scriptsize
+\begin{verbatim}  
+ /*@ begin Loop (
+ transform UnrollJam(ufactor=Ui)
+ for (i=0; i<=M-1; i++)
+   transform UnrollJam(ufactor=Uj)
+   for (j=0; j<=N-1; j++)
+     transform UnrollJam(ufactor=Uk)   
+     for (k=0; k<=O-1; k++)
+       A[i][j] += B[i][k]*C[k][j];
+ ) @*/
+ for (i=0; i<=M-1; i++)
+  for (j=0; j<=N-1; j++)
+   for (k=0; k<=O-1; k++)
+     A[i][j] += B[i][k]*C[k][j];
+ /*@ end @*/
+\end{verbatim}  
+\end{minipage}
+&
+\begin{minipage}{.5\textwidth}  
+\scriptsize
+\begin{verbatim}  
+ def performance_params {
+   param Ui[] = range(1,33);
+   param Uj[] = range(1,33);
+   param Uk[] = range(1,33);
+   constraint reg_capacity = Ui*Uj+Ui*Uk+Uk*Uj<=32;
+ }
+
+ def input_params {
+   param M[] = [10,50,100,500,1000];
+   param N[] = [10,50,100,500,1000];
+   param O[] = [10,50,100,500,1000];
+   constraint square_matrices = (M==N) and (N==O);
+ }
+
+\end{verbatim}  
+\end{minipage}
+\\
+\end{tabular}
+\caption{Example of specifying parameter constraints in Orio; annotated code for matrix-matrix multiplication (left) and constraint specification (right).}
+\label{fig:par-constraint}  
 \end{figure*} 
 
 The annotated AXPY-4 code (left side of Figure~\ref{fig:orio-example}) uses two
@@ -390,54 +439,6 @@ parameter constraints, the search space of performance parameter values is
 drastically trimmed down from 32,768 points (i.e., $32*32*32$) to only 65
 points. This example also demonstrates that a set of constraints can also be
 imposed on input parameters to decide what input problem sizes to consider.
-
-\begin{figure*}%[!t] 
-\centering 
-\begin{tabular}{cc} 
-\begin{minipage}{.5\textwidth}  
-\scriptsize
-\begin{verbatim}  
- /*@ begin Loop (
- transform UnrollJam(ufactor=Ui)
- for (i=0; i<=M-1; i++)
-   transform UnrollJam(ufactor=Uj)
-   for (j=0; j<=N-1; j++)
-     transform UnrollJam(ufactor=Uk)   
-     for (k=0; k<=O-1; k++)
-       A[i][j] += B[i][k]*C[k][j];
- ) @*/
- for (i=0; i<=M-1; i++)
-  for (j=0; j<=N-1; j++)
-   for (k=0; k<=O-1; k++)
-     A[i][j] += B[i][k]*C[k][j];
- /*@ end @*/
-\end{verbatim}  
-\end{minipage}
-&
-\begin{minipage}{.5\textwidth}  
-\scriptsize
-\begin{verbatim}  
- def performance_params {
-   param Ui[] = range(1,33);
-   param Uj[] = range(1,33);
-   param Uk[] = range(1,33);
-   constraint reg_capacity = Ui*Uj+Ui*Uk+Uk*Uj<=32;
- }
-
- def input_params {
-   param M[] = [10,50,100,500,1000];
-   param N[] = [10,50,100,500,1000];
-   param O[] = [10,50,100,500,1000];
-   constraint square_matrices = (M==N) and (N==O);
- }
-
-\end{verbatim}  
-\end{minipage}
-\\
-\end{tabular}
-\caption{Example of specifying parameter constraints in Orio; annotated code for matrix-matrix multiplication (left) and constraint specification (right).}
-\label{fig:par-constraint}  
-\end{figure*} 
 
 Orio also supports parallel search when parallel resources are available,
 e.g., when tuning on the Blue Gene/P. The parallel Orio driver concurrently
