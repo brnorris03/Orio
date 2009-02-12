@@ -113,6 +113,51 @@ matrix data elements.
 %optimization and runtime tuning is a big distinction from the dense
 %matrix-vector multiplication.
 
+The SpMV operation computes $\forall_{A_{i,j}} \neq 0:y_{i}
+\leftarrow y_{i} + A_{i,j} \cdot x_{j}$, where $A$ is a sparse matrix,
+and $x$, $y$ are dense vectors. Each element of $A$ is used precisely once,
+and element reuse is possible only for $x$ and $y$. Thus, to optimize SpMV,
+one should use compact data structures for $A$ and try to maximize temporal
+reuse of $x$ and $y$. One of the most commonly used data structures for
+storing a sparse matrix is compressed sparse row (CSR) storage
+~\cite{vuduc-thesis},
+illustrated in Figure~\ref{fig:spmv}(a). Elements in each row of $A$ are
+packed together in a dense array, \texttt{Aval}, and a corresponding array of
+integers \texttt{Aind} stores the column indices. The \texttt{Aptr} array
+designates where each sparse row begins in \texttt{Aval} and
+\texttt{Aind}. An implementation of SpMV using CSR storage is
+shown in Figure~\ref{fig:spmv}(b).
+
+PETSc's implementation of SpMV used in this experiment exploits matrix
+structure by using \textit{inodes}, which represent rows with identical
+nonzero structure.  PETSc detects inodes automatically in arbitrary sparse
+matrices. For example, the sparse matrix shown in Figure~\ref{fig:spmv}(a)
+contains three inodes. The first inode is of size two because it holds two
+adjacent rows (i.e., the first and the second rows) with the same nonzero
+structure. The second inode contains three consecutive rows with identical
+nonzero structure, and the last inode has only a single row. Knowing the
+properties of each inode at runtime enables maximum reuse of vector $x$ since
+multiple elements of $x$ can be loaded and used exactly once for all rows in
+the same inode structure. To accomplish this, one must use a
+register-blocking transformation. To optimize the inode-based SpMV routine,
+we incorporated a new transformation module inside Orio that implements
+various optimization strategies including register blocking, SIMDization,
+memory alignment optimization, loop-control optimization, accumulator
+expansion, and thread-level parallelization (with OpenMP). We then used Orio
+to automatically select the best version of the optimized inode SpMV. Only
+the outer loop that iterates over inodes was parallelized by using OpenMP.
+
+To evaluate the performance of the tuned SpMV routine, we conducted the
+experiment using a 2-D driven cavity flow simulation
+application~\cite{coff:kell:keye} (SNES ex27 in PETSc), on both the Xeon and
+Blue Gene/P. The ``Compiler-optimized'' label is used as a base case that
+represents the performance of the naive implementation of SpMV (shown in
+Figure~\ref{fig:spmv}(b)) optimized by the native compiler. We also tested
+the performance of the hand-tuned (by PETSc developers) SpMV code, which is
+included in PETSc releases.
+
+
+
 \begin{figure*}%[ht]
 \begin{center} 
   \subfigure[SMP: $p=1$, $t/p=8$]{
@@ -216,49 +261,6 @@ matrix data elements.
 }
 
 
-
-The SpMV operation computes $\forall_{A_{i,j}} \neq 0:y_{i}
-\leftarrow y_{i} + A_{i,j} \cdot x_{j}$, where $A$ is a sparse matrix,
-and $x$, $y$ are dense vectors. Each element of $A$ is used precisely once,
-and element reuse is possible only for $x$ and $y$. Thus, to optimize SpMV,
-one should use compact data structures for $A$ and try to maximize temporal
-reuse of $x$ and $y$. One of the most commonly used data structures for
-storing a sparse matrix is compressed sparse row (CSR) storage
-~\cite{vuduc-thesis},
-illustrated in Figure~\ref{fig:spmv}(a). Elements in each row of $A$ are
-packed together in a dense array, \texttt{Aval}, and a corresponding array of
-integers \texttt{Aind} stores the column indices. The \texttt{Aptr} array
-designates where each sparse row begins in \texttt{Aval} and
-\texttt{Aind}. An implementation of SpMV using CSR storage is
-shown in Figure~\ref{fig:spmv}(b).
-
-PETSc's implementation of SpMV used in this experiment exploits matrix
-structure by using \textit{inodes}, which represent rows with identical
-nonzero structure.  PETSc detects inodes automatically in arbitrary sparse
-matrices. For example, the sparse matrix shown in Figure~\ref{fig:spmv}(a)
-contains three inodes. The first inode is of size two because it holds two
-adjacent rows (i.e., the first and the second rows) with the same nonzero
-structure. The second inode contains three consecutive rows with identical
-nonzero structure, and the last inode has only a single row. Knowing the
-properties of each inode at runtime enables maximum reuse of vector $x$ since
-multiple elements of $x$ can be loaded and used exactly once for all rows in
-the same inode structure. To accomplish this, one must use a
-register-blocking transformation. To optimize the inode-based SpMV routine,
-we incorporated a new transformation module inside Orio that implements
-various optimization strategies including register blocking, SIMDization,
-memory alignment optimization, loop-control optimization, accumulator
-expansion, and thread-level parallelization (with OpenMP). We then used Orio
-to automatically select the best version of the optimized inode SpMV. Only
-the outer loop that iterates over inodes was parallelized by using OpenMP.
-
-To evaluate the performance of the tuned SpMV routine, we conducted the
-experiment using a 2-D driven cavity flow simulation
-application~\cite{coff:kell:keye} (SNES ex27 in PETSc), on both the Xeon and
-Blue Gene/P. The ``Compiler-optimized'' label is used as a base case that
-represents the performance of the naive implementation of SpMV (shown in
-Figure~\ref{fig:spmv}(b)) optimized by the native compiler. We also tested
-the performance of the hand-tuned (by PETSc developers) SpMV code, which is
-included in PETSc releases.
 
 Figure~\ref{fig:ex27-cookie-results} shows the performance results on the
 Intel Xeon. The problem size is the number of grid points in the $x$ and $y$
