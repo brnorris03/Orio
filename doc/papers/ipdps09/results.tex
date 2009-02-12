@@ -35,21 +35,20 @@ code variants: a simple loop implementation without any library calls
 Goto BLAS~\cite{Goto:2006fk} and the ESSL~\cite{ESSL} libraries, and the
 Orio-tuned version.
 
-\begin{figure}[thb] 
+\begin{figure*}%[t] 
 \begin{center} 
   \subfigure[Sequential (single core)]{ 
-  \includegraphics[width=.4\textwidth]{figures/axpy4_bgp/seq.eps}  
+  \includegraphics[width=.45\textwidth]{figures/axpy4_bgp/seq.eps}  
   \label{fig:axpy4-bgp-seq} 
   } 
   \subfigure[Parallel (four cores)]{ 
-  \includegraphics[width=.4\textwidth]{figures/axpy4_bgp/par.eps}  
+  \includegraphics[width=.45\textwidth]{figures/axpy4_bgp/par.eps}  
   \label{fig:axpy4-bgp-par} 
   } 
 \end{center}
-\vspace{-.2in} 
 \caption{Performance of AXPY-4 operations on the Blue Gene/P.} 
 \label{fig:axpy4-bgp-results} 
-\end{figure} 
+\end{figure*} 
 
 The performance results shown in Figure~\ref{fig:axpy4-bgp-results} indicate
 that the code tuned by Orio consistently outperforms the other three versions
@@ -64,6 +63,35 @@ and temporal localities, resulting in inferior memory performance.
 %simple loop implementation is more efficient than the BLAS codes.
 
 \subsection{Sparse Matrix Computations} 
+
+\begin{figure}%[tb]
+\begin{tabular}{c}
+\begin{minipage}[b]{.47\textwidth}
+\centering
+\includegraphics[width=1.0\textwidth]{figures/spmv.eps}  
+\end{minipage}
+\\
+{\footnotesize (a)}
+\\
+\begin{minipage}[b]{.3\textwidth}
+\scriptsize
+\begin{verbatim}
+
+
+for (i=0; i<num_rows; i++)
+  for (j=Aptr[i]; j<Aptr[i+1]; j++)
+    y[i] += Aval[j]*x[Aind[j]];
+
+\end{verbatim}
+\end{minipage}
+\\
+{\footnotesize (b)}
+\\
+\end{tabular}
+
+\caption{(a) Compressed sparse row (CSR) format (b) Basic implementation of CSR-based SpMV.}
+\label{fig:spmv}
+\end{figure}
 
 In this section we examine the effectiveness of Orio in optimizing key
 computations in PETSc~\cite{petsc-user-ref}, a toolkit for the parallel
@@ -86,41 +114,14 @@ and $x$, $y$ are dense vectors. Each element of $A$ is used precisely once
 and element reuse is only possible for $x$ and $y$. Thus, to optimize SpMV,
 one should use compact data structures for $A$ and try to maximize temporal
 reuse of $x$ and $y$. One of the most commonly used data structures for
-storing a sparse matrix is compressed sparse row (CSR) storage,
-%~\cite{vuduc-thesis} 
+storing a sparse matrix is compressed sparse row (CSR) storage
+~\cite{vuduc-thesis},
 illustrated in Figure~\ref{fig:spmv}(a). Elements in each row of $A$ are
 packed together in a dense array, \texttt{Aval}, and a corresponding array of
 integers \texttt{Aind} stores the column indices. The \texttt{Aptr} array
 designates where each sparse row begins in \texttt{Aval} and
 \texttt{Aind}. An implementation of SpMV using CSR storage is
 shown in Figure~\ref{fig:spmv}(b).
-
-\begin{figure}[tb]
-\centering
-\vspace{-.2in}
-\begin{tabular}{cc}
-\begin{minipage}[b]{.5\textwidth}
-\centering
-\includegraphics[width=.8\textwidth]{figures/spmv.eps}  
-\end{minipage}
-&
-\begin{minipage}[b]{.5\textwidth}
-\scriptsize
-\begin{verbatim}
-for (i=0; i<num_rows; i++)
-  for (j=Aptr[i]; j<Aptr[i+1]; j++)
-    y[i] += Aval[j]*x[Aind[j]];
-
-
-\end{verbatim}
-\end{minipage}\\
-(a) & (b)\\
-\end{tabular}
-\vspace{-.2in}
-\caption{(a) Compressed sparse row (CSR) format (b) Basic implementation of CSR-based SpMV.}
-\label{fig:spmv}
-%\vspace{.2in}
-\end{figure}
 
 PETSc's implementation of SpMV used in this experiment exploits matrix
 structure by using \textit{inodes}, which represent rows with identical
@@ -173,20 +174,20 @@ better performance than using MPI coarse-grained parallelism.
 %its threads across processors.
 %So, each optimized
 %code for the many-thread cases comprises two distinct tuned codes to handle
-\begin{figure} [ht]
+
+\begin{figure*}%[ht]
 \begin{center} 
   \subfigure[SMP: $p=1$, $t/p=8$]{
-  \includegraphics[width=.3\textwidth]{figures/ex27_cookie/smp.eps}
+  \includegraphics[width=.315\textwidth]{figures/ex27_cookie/smp.eps}
   \label{fig:ex27-cookie-smp} } \subfigure[Dual: $p=4$, $t/p=2$]{
-  \includegraphics[width=.3\textwidth]{figures/ex27_cookie/dual.eps}
+  \includegraphics[width=.315\textwidth]{figures/ex27_cookie/dual.eps}
   \label{fig:ex27-cookie-dual} } \subfigure[VN: $p=8$, $t/p=1$]{
-  \includegraphics[width=.3\textwidth]{figures/ex27_cookie/vn.eps}
+  \includegraphics[width=.315\textwidth]{figures/ex27_cookie/vn.eps}
   \label{fig:ex27-cookie-vn} }
 \end{center}
-\vspace{-.2in} 
 \caption{Performance of inode SpMV on eight-core Intel machine; $p$ is the number of processes, and $t/p$ is the threads per process.} 
 \label{fig:ex27-cookie-results} 
-\end{figure} 
+\end{figure*} 
 
 The Blue Gene/P results in Figure~\ref{fig:ex27-bgp-results1} again show
 %Blue Gene/P was done for a varied number of nodes (i.e., 1, 8, and 32)
@@ -205,91 +206,89 @@ still performs better than the other two alternatives.
 %This validates the
 %effectiveness of Orio in empirically tuning sequential codes.
 
-\begin{figure} [htb]
+\begin{figure*} %[htb]
 \begin{center} 
   \subfigure[1 node, SMP mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/n1_smp.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/n1_smp.eps}  
   \label{fig:ex27-bgp-smp-n1} 
   } 
   \subfigure[1 node, Dual mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/n1_dual.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/n1_dual.eps}  
   \label{fig:ex27-bgp-dual-n1} 
   } 
   \subfigure[1 node, VN mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/n1_vn.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/n1_vn.eps}  
   \label{fig:ex27-bgp-vn-n1} 
   } 
   \subfigure[8 nodes, SMP mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/n8_smp.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/n8_smp.eps}  
   \label{fig:ex27-bgp-smp-n8} 
   } 
   \subfigure[8 nodes, Dual mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/n8_dual.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/n8_dual.eps}  
   \label{fig:ex27-bgp-dual-n8} 
   } 
   \subfigure[8 nodes, VN mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/n8_vn.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/n8_vn.eps}  
   \label{fig:ex27-bgp-vn-n8} 
   } 
 %  \subfigure[32 nodes, SMP mode]{ 
-%  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/n32_smp.eps}  
+%  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/n32_smp.eps}  
 %  \label{fig:ex27-bgp-smp-n32} 
 %  } 
 %  \subfigure[32 nodes, Dual mode]{ 
-%  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/n32_dual.eps}  
+%  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/n32_dual.eps}  
 %  \label{fig:ex27-bgp-dual-n32} 
 %  } 
 %  \subfigure[32 nodes, VN mode]{ 
-%  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/n32_vn.eps}  
+%  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/n32_vn.eps}  
 %  \label{fig:ex27-bgp-vn-n32} 
 %  } 
 \end{center}
-\vspace{-.2in} 
-\caption{Performance of inode SpMV on Blue Gene/P for 1, 8, and 32 nodes.} 
+\caption{Performance of inode SpMV on Blue Gene/P for 1 and 8 nodes.} 
 \label{fig:ex27-bgp-results1} 
-\end{figure} 
+\end{figure*} 
 
 \comment{
 \begin{figure} 
 \begin{center} 
   \subfigure[32x32, SMP mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/s32_smp.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/s32_smp.eps}  
   \label{fig:ex27-bgp-smp-32x32} 
   } 
   \subfigure[32x32, Dual mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/s32_dual.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/s32_dual.eps}  
   \label{fig:ex27-bgp-dual-32x32} 
   } 
   \subfigure[32x32, VN mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/s32_vn.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/s32_vn.eps}  
   \label{fig:ex27-bgp-vn-32x32} 
   } 
   \subfigure[64x64, SMP mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/s64_smp.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/s64_smp.eps}  
   \label{fig:ex27-bgp-smp-64x64} 
   } 
   \subfigure[64x64, Dual mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/s64_dual.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/s64_dual.eps}  
   \label{fig:ex27-bgp-dual-64x64} 
   } 
   \subfigure[64x64, VN mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/s64_vn.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/s64_vn.eps}  
   \label{fig:ex27-bgp-vn-64x64} 
   } 
   \subfigure[128x128, SMP mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/s128_smp.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/s128_smp.eps}  
   \label{fig:ex27-bgp-smp-128x128} 
   } 
   \subfigure[128x128, Dual mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/s128_dual.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/s128_dual.eps}  
   \label{fig:ex27-bgp-dual-128x128} 
   } 
   \subfigure[128x128, VN mode]{ 
-  \includegraphics[width=.3\textwidth]{figures/ex27_bgp/s128_vn.eps}  
+  \includegraphics[width=.315\textwidth]{figures/ex27_bgp/s128_vn.eps}  
   \label{fig:ex27-bgp-vn-128x128} 
   } 
 \end{center}
-\vspace{-.2in}
 \caption{Performance of inode SpMV on Blue Gene/P for problem sizes 32x32, 64x64, and 128x128.} 
 \label{fig:ex27-bgp-results2} 
 \end{figure} 
@@ -322,12 +321,17 @@ and L2 tilings and unroll/jamming as ``Pluto (L1+L2 tiling).'' The code
 tuned by Orio is referred to as ``Pluto+Orio.''
  
 \subsubsection{2-D Finite-Difference Time-Domain Method for Computational Electromagnetics}  
-We consider the two-dimensional Finite Difference Time Domain (FDTD) algorithm, a
-popular method for solving the time-dependent Maxwell's equations in the
-context of computational 
+We consider the two-dimensional Finite Difference Time Domain (FDTD)
+algorithm, a popular method for solving the time-dependent Maxwell's
+equations in the context of computational electrodynamic problems. As
+shown in Figure~\ref{fig:fdtd-2d-code}, the 2-D FDTD method is
+implemented as an outer iteration over time containing four
+imperfectly nested loops.  The arrays $ex$ and $ey$ denote the
+electric field components, and the array $hz$ denotes the magnetic
+field.
+
 %
-\begin{wrapfigure}{r}{3in}
-\vspace{-0.2in}
+\begin{figure}
 \begin{center}
 \begin{minipage}{3in} 
 \scriptsize
@@ -348,16 +352,10 @@ for(t=0; t<tmax; t++) {
 \end{verbatim} 
 \end{minipage} 
 \end{center}
-\vspace{-0.2in}
 \caption{2-D FDTD code.} 
 \label{fig:fdtd-2d-code} 
-\vspace{-.1in}
-\end{wrapfigure}
+\end{figure}
 %
-electrodynamic problems. As shown in Figure~\ref{fig:fdtd-2d-code}, the 2-D
-FDTD method is implemented as an outer iteration over time containing four imperfectly
-nested loops.  The arrays $ex$ and $ey$ denote the electric field components,
-and the array $hz$ denotes the magnetic field.
 
 The performance of the sequential 2-D FDTD code for $tmax=500$ and $nx=ny$ is
 shown in Figure~\ref{fig:fdtd-2d-cookie-seq}. The base code optimized by icc
@@ -389,20 +387,44 @@ tuning by Orio additionally improves the Pluto performance by up to
 quad-core Intel processors, the speedup of both the Pluto and Orio codes
 slightly decreases when the number of cores used is greater than four.
  
-\begin{figure}[htb] 
+\begin{figure*}%[htb] 
 \begin{center} 
   \subfigure[Sequential (T=500)]{ 
-  \includegraphics[width=.4\textwidth]{figures/fdtd-2d-cookie/seq.eps} 
+  \includegraphics[width=.45\textwidth]{figures/fdtd-2d-cookie/seq.eps} 
   \label{fig:fdtd-2d-cookie-seq} } \subfigure[Parallel (T=500, 
   N=2000)]{ 
-  \includegraphics[width=.4\textwidth]{figures/fdtd-2d-cookie/par.eps} 
+  \includegraphics[width=.45\textwidth]{figures/fdtd-2d-cookie/par.eps} 
   \label{fig:fdtd-2d-cookie-par} } 
 \end{center}
-\vspace{-.2in} 
 \caption{2-D FDTD performance on an eight-core Intel Xeon.} 
 \label{fig:fdtd-2d-cookie-results} 
-%\vspace{-.2in}
-\end{figure} 
+\end{figure*} 
+
+\begin{figure*}%[htb]
+\begin{center} 
+  \subfigure[Sequential (T=500)]{ 
+  \includegraphics[width=.45\textwidth]{figures/seidel-cookie/seq.eps} 
+  \label{fig:seidel-cookie-seq} } \subfigure[Parallel (T=500, 
+  N=4000)]{ 
+  \includegraphics[width=.45\textwidth]{figures/seidel-cookie/par.eps} 
+  \label{fig:seidel-cookie-par} } 
+\end{center}
+\caption{3-D Gauss-Seidel performance on eight-core Intel machine.} 
+\label{fig:seidel-cookie-results} 
+\end{figure*} 
+
+\begin{figure*}%[htb]
+\begin{center} 
+  \subfigure[Sequential]{ 
+  \includegraphics[width=.45\textwidth]{figures/lu-cookie/seq.eps} 
+  \label{fig:lu-cookie-seq} } \subfigure[Parallel (N=4000)]{ 
+  \includegraphics[width=.45\textwidth]{figures/lu-cookie/par.eps} 
+  \label{fig:lu-cookie-par} } 
+\end{center} 
+\caption{LU Decomposition performance on eight-core Intel machine.} 
+\label{fig:lu-cookie-results} 
+\end{figure*} 
+
 
 %%BN: commented out since this needs more explanation (no room in this version)
 %It is to be noted that collecting performance results of the Pluto 
@@ -414,11 +436,11 @@ slightly decreases when the number of cores used is greater than four.
 Figure~\ref{fig:seidel-code} shows the 3-D Gauss-Seidel computation, 
 which is sometimes is referred to as
 \emph{successive displacement method}, indicating the dependence of the 
-iterations on the ordering. If the ordering is
+iterations on the ordering. If the ordering is changed, the components
+of the new iterations will change as well.
 %
 %\begin{figure}[ht]
-\begin{wrapfigure}{r}{3in}
-\vspace{-0.3in}
+\begin{figure}%[ht]
 \begin{center}
 \begin{minipage}{3in} 
 \scriptsize
@@ -433,13 +455,11 @@ for (t=0; t<=T-1; t++)
 \end{verbatim} 
 \end{minipage} 
 \end{center}
-\vspace{-0.2in}
 \caption{3-D Gauss-Seidel code} 
 \label{fig:seidel-code} 
-\vspace{-.1in}
-\end{wrapfigure}
+\end{figure}
 %
-changed, the components of the new iterations will change as well. 
+
 
 Figure~\ref{fig:seidel-cookie-seq} contains the sequential performance
 results for $T=500$, which show that applying Pluto's polyhedral tiling on
@@ -450,21 +470,6 @@ This is also reflected in the best sequential code found by Orio, where
 one-level tiling (for L1 cache only) is always performed. The sequential
 speedup obtained from tuning the Pluto code with Orio is significant, ranging
 from 51\% to 133\%.
-
-\begin{figure} [htb]
-\begin{center} 
-  \subfigure[Sequential (T=500)]{ 
-  \includegraphics[width=.4\textwidth]{figures/seidel-cookie/seq.eps} 
-  \label{fig:seidel-cookie-seq} } \subfigure[Parallel (T=500, 
-  N=4000)]{ 
-  \includegraphics[width=.4\textwidth]{figures/seidel-cookie/par.eps} 
-  \label{fig:seidel-cookie-par} } 
-\end{center}
-\vspace{-.2in} 
-\caption{3-D Gauss-Seidel performance on eight-core Intel machine.} 
-\label{fig:seidel-cookie-results} 
-\vspace{-.1in}
-\end{figure} 
 
 The parallel performance results for $T=500$ and $N=4000$ are shown in
 Figure~\ref{fig:seidel-cookie-par}. Again we observe that icc failed to
@@ -486,12 +491,12 @@ tiling because the number of tiles can be smaller than the number of cores.
 
 \subsubsection{LU Factorization}  
  
-LU factorization or decomposition is a numerical method for the solution of linear
-systems 
+LU factorization or decomposition is a numerical method for the
+solution of linear systems of equations; a simple implementation is
+shown in Figure~\ref{fig:lu-code}.
 %
-\begin{wrapfigure}{r}{3in}
+\begin{figure}%[ht]
 \begin{center}
-\vspace{-.2in}
 \begin{minipage}{2.8in} 
 \scriptsize
 \begin{verbatim} 
@@ -505,12 +510,11 @@ for (k=0; k<=N-1; k++) {
 \end{verbatim} 
 \end{minipage} 
 \end{center}
-\vspace{-0.2in}
 \caption{LU Decomposition code.} 
 \label{fig:lu-code} 
-\end{wrapfigure}
+\end{figure}
 %
-of equations; a simple implementation is shown in Figure~\ref{fig:lu-code}. 
+
 
 The sequential performance results are shown in
 Figure~\ref{fig:lu-cookie-seq}. Similarly to the 2-D FDTD results, the icc-optimized code is more
@@ -536,15 +540,3 @@ performance, with slightly better scalability exhibited by the single-level tile
 code. Orio further improved the performance of the Pluto-generated versions
 by a factor of 51\% to 120\%.
  
-\begin{figure}[htb]
-\begin{center} 
-  \subfigure[Sequential]{ 
-  \includegraphics[width=.4\textwidth]{figures/lu-cookie/seq.eps} 
-  \label{fig:lu-cookie-seq} } \subfigure[Parallel (N=4000)]{ 
-  \includegraphics[width=.4\textwidth]{figures/lu-cookie/par.eps} 
-  \label{fig:lu-cookie-par} } 
-\end{center} 
-\vspace{-.2in}
-\caption{LU Decomposition performance on eight-core Intel machine.} 
-\label{fig:lu-cookie-results} 
-\end{figure} 
