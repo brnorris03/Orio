@@ -259,18 +259,20 @@ broader array of computations.
 
 To generate highly optimized code from a MATLAB prototype of the composed
 BLAS operation, we follow a three-step approach, illustrated in
-Figure~\ref{fig:process}.  
+Figure~\ref{fig:process}.  This process is repeated when the MATLAB code changes
+or the code must be tuned on a new architecture.
+To begin, we have developed a compiler that
 %
 \begin{wrapfigure}{r}{3in}
 \vspace{-.2in}
 \centering
-\includegraphics[width=3in]{figures/process.png}
+\includegraphics[width=3in]{figures/process.pdf}
+\vspace{-.15in}
 \caption{Code generation and tuning process.}
 \label{fig:process}
-\vspace{-.2in}
+\vspace{-.1in}
 \end{wrapfigure}
 %
-To begin, we have developed a compiler that
 converts a MATLAB script into simple C code~\cite{Siek}.  After generating
 the C code from the high-level MATLAB prototype, we (optionally) use 
 the source-to-source automatic parallelization tool Pluto~\cite{Pluto} %developed at Ohio State University
@@ -299,7 +301,7 @@ a parameter (e.g., a scalar, matrix, or vector variable) of the kernel or an ope
 \begin{wrapfigure}{r}{2in}
 %\vspace{-.2in}
 \centering
-\includegraphics[width=2in]{figures/compile.png}
+\includegraphics[width=2in]{figures/compile.pdf}
 \caption{MATLAB-to-C compiler.}
 \label{fig:compiler}
 \vspace{-.2in}
@@ -412,34 +414,39 @@ runs.
 
 Figure~\ref{fig:orio} illustrates the tuning process implemented in
 Orio. The input to Orio is C code containing semantic comments that
-describe both the computation and various performance-tuning
-directives. Orio first extracts all annotation code regions by parsing
-the marked-up input code. Each annotated region is then passed to code
-transformation module and code generator for potential optimizations. Next the
-transformed C code with various incorporated optimizations
-corresponding to the specified annotations is produced. The
-source-to-source transformation system of Orio generates an optimized
-code version for each distinct combination of performance parameter
-values. Each generated code variant is then executed and its
-performance cost evaluated. After iteratively testing all code
-variants, the best-performing code is selected as the final output of
-Orio. Because the search space of all possible optimized code variants
-can be exponentially large, the search engine implements a number of
-search heuristics (i.e., random, simplex, and simulated annealing) to
-effectively narrow the search for near-optimal performance. The tuning
-specifications, written by users in the form of annotations, contains
-information required for guiding the transformation and tuning
-process.
+describe both the computation (using a syntax that is more restricted
+than the original C) and various performance-tuning directives. Orio
+first extracts all annotation code regions by parsing the marked-up
+input code. Each annotated region is then passed to code
+transformation module and code generator for potential
+optimizations. Next the transformed C code with various incorporated
+optimizations corresponding to the specified annotations is
+produced. Orio generates an optimized code version for each distinct
+combination of performance parameter values. Each code
+variant is then executed and its performance measured. After
+iteratively testing all code variants, the best-performing code is
+selected as the final output of Orio. While each variant is
+computationally very cheap (a single code variant takes between a
+fraction of a second to a few seconds depending on the input sizes),
+the search space of all possible optimized code variants can be
+exponentially large. Therefore, the search engine implements a number
+of search heuristics (i.e., random, simplex, and simulated annealing)
+to effectively narrow the search for near-optimal performance and
+reduce the empirical search time. 
+%The tuning
+%specifications, written by users in the form of annotations, contains
+%information required for guiding the transformation and tuning
+%process.
 
 \begin{figure}[tb]
 %\vspace{-.3in}
 \begin{center}
-\includegraphics[width=.65\textwidth]{figures/orio.png}
+\includegraphics[width=.65\textwidth]{figures/orio.pdf}
 \end{center}
 \vspace{-.2in}
 \caption{Overview of the Orio empirical tuning process.}
 \label{fig:orio}
-\vspace{-.2in}
+\vspace{-.15in}
 \end{figure}
 
 % --------------------------------------------------------------------------
@@ -527,12 +534,14 @@ specifications used for building and running executable tests, including
 performance parameter values, execution environment details, input variable
 information, and the search algorithm. Orio also supports parallel search
 when parallel resources are available. In this example, the parallel Orio
-driver simultaneously executes 64 code variants in the same parallel job. The
-commands used by Orio to submit a parallel job and to query its status are
-also specified in the tuning specifications. At present, users must create
-the tuning specifications manually. When Orio is used in conjunction with
-compiler tools, such as the MATLAB compiler described in this paper, it
-should eventually be possible to automatically generate the tuning
+driver simultaneously executes 64 code variants in the same parallel job. 
+%The
+%commands used by Orio to submit a parallel job and to query its status are
+%also specified in the tuning specifications. 
+At present, users must create the tuning specifications manually for
+each architecture. When Orio is used in conjunction with compiler
+tools, such as the MATLAB compiler described in this paper, it should
+eventually be possible to automatically generate the tuning
 specifications.
 
 %\vspace{-0.1in}
@@ -606,21 +615,21 @@ BiCG Kernel & ${\bf A}$,$\overrightarrow{p}$,$\overrightarrow{r}$ & $\overrighta
 \begin{tabular}{cc}
 
 \begin{minipage}[b]{.5\textwidth}
-\includegraphics[width=\textwidth]{figures/vadd_bgp.png}
+\includegraphics[width=\textwidth]{figures/vadd_bgp_time2.pdf}
 \end{minipage}
 &
 \begin{minipage}[b]{.5\textwidth}
-\includegraphics[width=\textwidth]{figures/atax.png}
+\includegraphics[width=\textwidth]{figures/atax.pdf}
 \end{minipage}\\
 
 (a) VADD & (b) ATAX \\
 
 \begin{minipage}[b]{.5\textwidth}
-\includegraphics[width=\textwidth]{figures/gemver.png}
+\includegraphics[width=\textwidth]{figures/gemver.pdf}
 \end{minipage}
 &
 \begin{minipage}[b]{.5\textwidth}
-\includegraphics[width=\textwidth]{figures/bicgkernel.png}
+\includegraphics[width=\textwidth]{figures/bicgkernel.pdf}
 \end{minipage}\\
 
 (c) GEMVER & (d) BiCG Kernel \\
@@ -641,7 +650,7 @@ tested the performance of an implementation that calls
 Finally, we tuned the simple C loop version using Orio, with the performance
 annotations previously shown in Figure~\ref{fig:orio-example}. In this
 experiment, we measured the performance for both the sequential and parallel
-scenarios. Even for a very simple operation such as vector addition the
+scenarios (indicated by (S) and (P) in the legend, respectively). Even for a very simple operation such as vector addition the
 compiler alone is unable to obtain the same level of performance as the
 empirically tuned versions. Furthermore, as expected, the BLAS implementation
 does not exploit locality and thus performed worse than the single-loop
@@ -656,7 +665,7 @@ numbers for six code variants: the C code generated by the MATLAB
 compiler (``C from MATLAB''), three BLAS-based implementations that
 use Intel MKL, ATLAS, and the default BLAS library on Ubuntu 8.04, and
 the sequential and parallel code variants tuned by Orio (``Orio
-(Seq.)'' and ``Orio (Par.)'', respectively).
+(S)'' and ``Orio (P)'', respectively).
 
 The Xeon performance results (in seconds) of ATAX are shown in
 Figure~\ref{fig:results}(b). The Orio-tuned version that incorporates
