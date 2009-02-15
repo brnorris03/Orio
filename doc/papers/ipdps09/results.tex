@@ -498,10 +498,10 @@ sequential speedup obtained from tuning the Pluto code with Orio is
 significant, ranging from 51\% to 133\%.
 
 The parallel performance results for $T=500$ and $N=4000$ are shown in
-Figure~\ref{fig:seidel-cookie-par}. Again we observe that icc failed to
-parallelize the code, whereas Pluto was able to parallelize it and Orio
-improved the performance of the one-level tiled Pluto code further by up to
-128\% (and up to 548\% for the two-level tiled Pluto code). We observed that
+Figure~\ref{fig:seidel-cookie-par}. Again we observe that icc fails to
+parallelize the code, whereas Pluto is able to parallelize it and Orio
+improves the performance of the one-level tiled Pluto code further by up to
+128\% (and up to 548\% for the two-level tiled Pluto code). We observe that
 tiling over both L1 and L2 can result in worse performance than L1-only
 tiling because the number of tiles can be less than the number of cores.
 %Similar earlier trend also exists
@@ -543,6 +543,6 @@ obtained for $N=4000$. We observe that icc is not able to parallelize the
 code, whereas Pluto achieves higher performance by exploiting multicore
 parallelism. Furthermore, both Pluto-generated codes have comparable
 performance, with slightly better scalability exhibited by the single-level tiled
-code. Orio further improved the performance of the Pluto-generated versions
+code. Orio further improves the performance of the Pluto-generated versions
 by a factor of 51\% to 120\%.
  
