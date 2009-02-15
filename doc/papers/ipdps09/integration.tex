@@ -40,22 +40,22 @@ optimization parameters code. The loop code is embedded in the
 annotation body block, while the performance parameters code is
 written in the module body block. A simple parser implemented inside
 the new module parses the performance parameters code to extract their
-values. In addition to the loop code to be optimized, the module
-parses performance parameters, which include tile sizes, unroll
-factors, loop order (permutation), as well as several boolean values
-for triggering OpenMP parallelization, scalar replacement, and
-auto-vectorization. Using these parameter values, Pluto then performs
-polyhedral transformations (e.g., two-level tiling and OpenMP
-parallelization) on the input loop code. The resulting generated code
-is subsequently passed to the widely-available profiling tool
-gprof~\cite{gprof} for hotspot detection. The statistical information
-produced by gprof provides accurate locations (line numbers) of the
-loop nests where the Pluto-generated code spends most of its execution
-time. The identified hotspot loop nests are then decorated with Orio's
-performance annotations for complementary syntactic transformations
-(e.g., loop permutation, loop unroll/jamming, scalar replacement, and
-explicit auto-vectorization). Finally, Orio optimizes the annotated
-hotspots as described in Section~\ref{sec:implm}.
+values. The extracted values of the performance parameters include
+tile sizes, unroll factors, loop order (permutation), as well as
+several boolean values for triggering OpenMP parallelization, scalar
+replacement, and auto-vectorization. Using these parameter values,
+Pluto then performs polyhedral transformations (e.g., two-level tiling
+and OpenMP parallelization) on the input loop code. The resulting
+generated code is subsequently passed to the widely-available
+profiling tool gprof~\cite{gprof} for hotspot detection. The
+statistical information produced by gprof provides accurate locations
+(line numbers) of the loop nests where the Pluto-generated code spends
+most of its execution time. The identified hotspot loop nests are then
+decorated with Orio's performance annotations for complementary
+syntactic transformations (e.g., loop permutation, loop
+unroll/jamming, scalar replacement, and explicit
+auto-vectorization). Finally, Orio optimizes the annotated hotspots as
+described in Section~\ref{sec:implm}.
 
 Pluto also performs syntactic loop unroll/jamming as a post-processing
 pass. The target loops, however, are limited only to innermost loops with a

@@ -1,6 +1,6 @@
 \section{Experimental Results} 
 \label{sec:results} 
- 
+
 In this section, we discuss the performance results of several experiments on
 a multicore Intel Xeon workstation and a Blue Gene/P (both at Argonne). The
 workstation has dual quad-core E5462 Xeon processors (8 cores total) running
@@ -77,7 +77,7 @@ for (i=0; i<num_rows; i++)
   \label{fig:axpy4-bgp-par} 
   } 
 \end{center}
-\caption{Performance of AXPY-4 operations on the Blue Gene/P.} 
+\caption{Performance of AXPY-4 operations on Blue Gene/P.} 
 \label{fig:axpy4-bgp-results} 
 \end{figure*} 
 
@@ -92,6 +92,7 @@ is unable to yield performance comparable to the empirically tuned
 version. Moreover, implementations that rely on calls to multiple tuned
 library routines (e.g., Goto BLAS and ESSL) suffer from loss of both spatial
 and temporal localities, resulting in inferior memory performance.
+
 %The sequential BLAS-based implementation perform better than the
 %sequential single loop implementation. while for the parallel case, the 
 %simple loop implementation is more efficient than the BLAS codes.
@@ -113,7 +114,7 @@ matrix data elements.
 %optimization and runtime tuning is a big distinction from the dense
 %matrix-vector multiplication.
 
-The SpMV operation computes $\forall_{A_{i,j}} \neq 0:y_{i}
+The SpMV operation computes $\forall{A_{i,j}} \neq 0:y_{i}
 \leftarrow y_{i} + A_{i,j} \cdot x_{j}$, where $A$ is a sparse matrix,
 and $x$, $y$ are dense vectors. Each element of $A$ is used precisely once,
 and element reuse is possible only for $x$ and $y$. Thus, to optimize SpMV,
@@ -286,20 +287,17 @@ better performance than using MPI coarse-grained parallelism.
 %So, each optimized
 %code for the many-thread cases comprises two distinct tuned codes to handle
 
-The Blue Gene/P results in Figure~\ref{fig:ex27-bgp-results1} again show
-%Blue Gene/P was done for a varied number of nodes (i.e., 1, 8, and 32)
-%and the same three different parallel modes as before (i.e., SMP,
-%dual, and VN). 
-that empirical optimization using Orio produces the best performance for
-all cases. 
-%outperforming both the hand-tuned and the xlc-optimized codes. 
-On this architecture, the performance gap between the xlc-optimized and the
-hand-tuned codes is now larger than in the Intel experiment. Similarly, by
-exploiting thread-level parallelism, the Orio-optimized code performs better
-than the hand-tuned version when the number of threads per process increases
-and the number of nodes decreases. For the single-thread cases (VN mode),
-thread-level parallelism is not exploited; nevertheless, the Orio version
-still performs better than the other two choices.
+The Blue Gene/P results in Figure~\ref{fig:ex27-bgp-results1} again
+show that empirical optimization using Orio produces the best
+performance for all cases. On this architecture, the performance gap
+between the xlc-optimized and the hand-tuned codes is now larger than
+in the Intel experiment. Similarly, by exploiting thread-level
+parallelism, the Orio-optimized code performs better than the
+hand-tuned version when the number of threads per process increases
+and the number of nodes decreases. For the single-thread cases (VN
+mode), thread-level parallelism is not exploited; nevertheless, the
+Orio version still performs better than the other two implementations.
+
 %This validates the
 %effectiveness of Orio in empirically tuning sequential codes.
 
@@ -324,10 +322,10 @@ and other advanced optimizations, and
 to enable code parallelization.
  
 In the following sections, we refer to the icc-optimized base code as
-xs``ICC,'' the Pluto-generated code with L1 tiling and
+``ICC,'' the Pluto-generated code with L1 tiling and
 unroll/jamming as ``Pluto (L1 tiling),'' and the Pluto-generated code with L1
 and L2 tilings and unroll/jamming as ``Pluto (L1+L2 tiling).'' The code
-tuned by Orio is referred to as ``Pluto+Orio.''
+tuned by Orio is referred to as ``Pluto+Orio''.
 
 \begin{figure*}%[htb] 
 \begin{center} 
@@ -338,7 +336,7 @@ tuned by Orio is referred to as ``Pluto+Orio.''
   \includegraphics[width=.45\textwidth]{figures/fdtd-2d-cookie/par.eps} 
   \label{fig:fdtd-2d-cookie-par} } 
 \end{center}
-\caption{2-D FDTD performance on an eight-core Intel Xeon.} 
+\caption{2-D FDTD performance on eight-core Intel Xeon.} 
 \label{fig:fdtd-2d-cookie-results} 
 \end{figure*} 
 
@@ -489,14 +487,15 @@ iterations on the ordering. If the ordering is changed, the components
 of the new iterations will change as well.
 
 Figure~\ref{fig:seidel-cookie-seq} contains the sequential performance
-results for $T=500$, which show that applying Pluto's polyhedral tiling on
-the original code always delivers performance boosts, which range from 126\%
-to 142\%. When using Pluto, performing two-level tiling (for both L1 and L2
-caches) yields 13\% lower performance than performing only L1 tiling. 
-This is also reflected in the best sequential code found by Orio, where
-one-level tiling (for L1 cache only) is always performed. The sequential
-speedup obtained from tuning the Pluto code with Orio is significant, ranging
-from 51\% to 133\%.
+results for $T=500$, which show that applying Pluto's polyhedral
+tiling on the original code always delivers performance boosts, which
+range from 126\% to 142\%. When using Pluto, performing two-level
+tiling (for both L1 and L2 caches) yields 13\% lower performance than
+performing only L1 tiling. This is also reflected in the best
+sequential code found by Orio, where one-level tiling (for L1 cache
+only) is always found to be better than two-level tiling. The
+sequential speedup obtained from tuning the Pluto code with Orio is
+significant, ranging from 51\% to 133\%.
 
 The parallel performance results for $T=500$ and $N=4000$ are shown in
 Figure~\ref{fig:seidel-cookie-par}. Again we observe that icc failed to
@@ -504,7 +503,7 @@ parallelize the code, whereas Pluto was able to parallelize it and Orio
 improved the performance of the one-level tiled Pluto code further by up to
 128\% (and up to 548\% for the two-level tiled Pluto code). We observed that
 tiling over both L1 and L2 can result in worse performance than L1-only
-tiling because the number of tiles can be smaller than the number of cores.
+tiling because the number of tiles can be less than the number of cores.
 %Similar earlier trend also exists
 %in these performance results: Pluto parallelizes the code through its
 %polyhedral transformations (i.e., skewing and tiling), while the icc
