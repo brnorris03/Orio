@@ -355,7 +355,7 @@ intrinsics on Intel and Blue Gene/P architectures).
 As briefly discussed earlier, our empirical tuning approach systematically
 measures the performance costs of automatically-generated code variants in
 order to find the most optimal available version. In the context of empirical
-optimization, code variants are alternative, semantically equivalent,
+optimization, code variants are alternative, semantically equivalent
 implementations of the same computation. Each implementation variant is
 associated with a collection of different optimization parameters that
 correspond to source-to-source code transformations such as, for instance,
@@ -367,7 +367,7 @@ performance parameters, respectively.
 
 The conceptually straightforward approach to exploring the space of the
 parameter values is to use an exhaustive search procedure that is guaranteed
-to determine the optimal code version. Normally the size of the search space
+to find the optimal code version. Normally the size of the search space
 is too large, making full coverage impractical.  Thus, in addition to
 supporting exhaustive search, we have implemented several search heuristics.
 The simplest search heuristic is a random search, which picks a random
@@ -440,16 +440,18 @@ drastically trimmed down from 32,768 points (i.e., $32*32*32$) to only 65
 points. This example also demonstrates that a set of constraints can also be
 imposed on input parameters to decide what input problem sizes to consider.
 
-Orio also supports parallel search when parallel resources are available,
-e.g., when tuning on the Blue Gene/P. The parallel Orio driver concurrently
-executes multiple independent code variants in the same parallel job. After
-Orio submits a parallel job, each node in the target machine executes a
-distinct generated code variant to collect the code performance. The
-resulting performance results are collected and stored in a temporary file,
-which is later processed by Orio to determine the best performing variant.
-Figure~\ref{fig:orio-example} has an example of using parallel search by
-specifying the number of nodes to use (per job) with the \texttt{num\_procs}
-variable. The remaining fields used by the parallel search are the
-\texttt{batch\_command} and the \texttt{status\_command} fields, which specify how Orio
-should submit a parallel job and query its status, respectively.
+Orio also supports parallel search when parallel resources are
+available, e.g., when tuning on the Blue Gene/P. The parallel Orio
+driver concurrently executes multiple independent code variants in the
+same parallel job. After Orio submits a parallel job, each node in the
+target machine executes a distinct generated code variant to collect
+the code performance. The resulting performance results are collected
+and stored in a temporary file, which is later processed by Orio to
+determine the best performing variant.  Figure~\ref{fig:orio-example}
+has an example of using parallel search by specifying the number of
+nodes to use (per job) with the \texttt{num\_procs} variable. The
+remaining fields used by the parallel search are the
+\texttt{batch\_command} and the \texttt{status\_command} fields, which
+specify how Orio should submit a parallel job and query its status,
+respectively.
 
