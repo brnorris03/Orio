@@ -4,9 +4,9 @@ Bib entry:
 
 @INPROCEEDINGS{Hart0000:Orio,
 AUTHOR="Albert Hartono and Boyana Norris and Ponnuswamy Sadayappan",
-TITLE="{Annotation-Based Empirical Performance Tuning Using {Orio}",
-BOOKTITLE="23rd  IEEE International Parallel \& Distributed Processing Symposium",
-ADDRESS="Rome, Italy, Italy",
+TITLE="Annotation-Based Empirical Performance Tuning Using Orio",
+BOOKTITLE="23rd IEEE International Parallel \& Distributed Processing Symposium",
+ADDRESS="Rome, Italy",
 KEYWORDS="empirical performance tuning, code generation",
 ABSTRACT="In many scientific applications, significant time is spent in tuning codes
 for a particular high-performance architecture. Tuning approaches range
