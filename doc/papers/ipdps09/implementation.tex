@@ -49,7 +49,7 @@ other source transformation tools must be defined), and automation
 \emph{all} the steps of the performance tuning process, automating each step 
 as much as possible).
 %
-Finally, Orio is usable in real scientific applications without
+Finally, Orio is usable with real scientific applications without
 requiring reimplementation. This ensures that the significant investments in
 the development of complex scientific codes is leveraged to the greatest
 extent possible.
@@ -71,7 +71,7 @@ Orio can also be used as an automatic performance tuning tool.  The code
 transformation modules and code generator produce an optimized code version
 for each distinct combination of performance parameter values. Then each
 optimized code version is executed and its performance evaluated.  After
-iteratively evaluating all code variants, the best-performing code is picked
+iteratively evaluating all code variants, the best-performing code is selected
 as the final output of Orio. Because the search space of all possible
 optimized code versions can be huge, a brute force search strategy is not
 always feasible. Hence, Orio provides various search heuristics for reducing
@@ -88,12 +88,12 @@ the size of the search space and thus the empirical testing time.
 \label{sec:ann-lang}
 
 Orio annotations are embedded into the source code as structured C comments
-that always start with \texttt{/*@} and end with \texttt{@*/}. For example,
+that start with \texttt{/*@} and end with \texttt{@*/}. For example,
 the annotation \texttt{/*@ end @*/} is used to indicate the end of an
 annotated code region. A simple grammar illustrating the basic syntax of Orio
 annotations is depicted in Figure~\ref{fig:ann-lang}. An annotation region
 consists of three main parts: leader annotation, annotation body, and trailer
-annotation. The annotation body can be either empty or contain C code that
+annotation. The annotation body can either be empty or contain C code that
 possibly includes other nested annotation regions. A leader annotation
 contains the name of the code transformation module used to transform and
 generate the annotated application code. A high-level description of the
@@ -341,7 +341,7 @@ in a way that enables more effective transformations (through restrictions or
 high-level domain information).
 
 Current optimizations supported by Orio span different types of code
-transformations that are not provided by production compilers in some
+transformation that are not provided by production compilers in some
 cases. Available optimizations include simple loop unrolling, memory
 alignment optimization, loop unroll/jamming, loop tiling, loop permutation,
 scalar replacement, register tiling, loop-bound replacement, array copy

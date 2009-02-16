@@ -264,15 +264,14 @@ VOLUME         = 5,
 NUMBER         = 3,
 PAGES          = {308-323} }
 
-@BOOK{laug,
-AUTHOR         = {E. Anderson and Z. Bai and C. Bischof and J. Demmel and
-                 J. Dongarra and J. Du Croz and A. Greenbaum and S. Hammarling
-                 and A. McKenney and S. Ostrouchov and D. Sorensen},
-TITLE          = {{LAPACK} Users' Guide},
-EDITION        = {Second},
-PUBLISHER      = siam,
-YEAR           = {1995},
-ADDRESS        = {Philadelphia, PA} }
+@book{laug,
+ author ={Anderson,, E. and Bai,, Z. and Bischof,, C. and Demmel,, J. and Dongarra,, J. and Du Croz,, J. and Greenbaum,, A. and Hammarling,, S. and McKenney,, A. and Ostrouchov,, S. and Sorensen,, D.},
+ title ={LAPACK's user's guide},
+ year ={1992},
+ isbn ={0-89871-294-7},
+ publisher ={Society for Industrial and Applied Mathematics},
+ address ={Philadelphia, PA, USA},
+ }
 
 @TECHREPORT{lawn111,
 AUTHOR         = "J. Bilmes and K. Asanovic and J. Demmel and D. Lam and
@@ -408,7 +407,7 @@ YEAR   = "2000"
 @Misc{telescopingurl,
    author = {Ken Kennedy and others},
    title = {Telescoping Languages Project Description},
-   howpublished = {\url{telescoping.rice.edu}},
+   howpublished = {\url{http://telescoping.rice.edu/}},
 year = 2006
 }
 
@@ -417,7 +416,6 @@ year = 2006
   authorURLs = {\url{http://www.cs.rice.edu/\~ken}},
   title = {Telescoping Languages: A System for Automatic Generation of Domain Languages},
   year = {2005},
-  URL = {http://ieeexplore.ieee.org/xpl/abs\_free.jsp?arNumber=1386658 },
   abstract = { The software gap - the discrepancy between the need for new software and the aggregate capacity of the workforce to produce it - is a serious problem for scientific software. Although users appreciate the convenience (and, thus, improved productivity) of using relatively high-level scripting languages, the slow execution speeds of these languages remain a problem. Lower level languages, such as C and Fortran, provide better performance for production applications, but at the cost of tedious programming and optimization by experts. If applications written in scripting languages could be routinely compiled into highly optimized machine code, a huge productivity advantage would be possible. It is not enough, however, to simply develop excellent compiler technologies for scripting languages (as a number of projects have succeeded in doing for MATLAB). In practice, scientists typically extend these languages with their own domain-centric components, such as the MATLAB signal processing toolbox. Doing so effectively defines a new domain-specific language. If we are to address efficiency problems for such extended languages, we must develop a framework for automatically generating optimizing compilers for them. To accomplish this goal, we have been pursuing an innovative strategy that we call telescoping languages. Our approach calls for using a library-preprocessing phase to extensively analyze and optimize collections of libraries that define an extended language. Results of this analysis are collected into annotated libraries and used to generate a library-aware optimizer. The generated library-aware optimizer uses the knowledge gathered during preprocessing to carry out fast and effective optimization of high-level scripts. This enables script optimization to benefit from the intense analysis performed during preprocessing without repaying its price. Since library preprocessing is performed only at infrequent "language-generation" times, its cost is amortized over many compilations of individual scripts that use the library. We call this strategy "telescoping languages" because it merges knowledge of a hierarchy of extended languages into a single library-aware optimizer. We present our vision and plans for compiler frameworks based on telescoping languages and - report on the preliminary research that has established the effectiveness of this approach. },
   journal = {Proceedings of the IEEE},
   volume = {93},
@@ -960,7 +958,6 @@ on Object-Oriented Programming Systems, Languages and Applications},
   booktitle = 	 {SIGPLAN Conference on Programming Language Design and Implementation},
   pages = 	 {156--165},
   year = 	 {1993},
-  url = "citeseer.ist.psu.edu/weise93programmable.html"
 }
 
 @Article{messmer04,
@@ -1088,7 +1085,7 @@ year = "2006"
     booktitle = "International Conference on Supercomputing",
     pages = "340--347",
     year = "1997",
-    url = "citeseer.ist.psu.edu/article/bilmes97optimizing.html" }
+}
 
 @misc{ vuduc03memory,
   author = "R. Vuduc and A. Gyulassy and J. Demmel and K. Yelick",
@@ -1419,14 +1416,25 @@ pages  = "335-362"}
    mynote = {http://lacsi.rice.edu/software/looptool/},
 }
 
-@InProceedings{POET,
+@inproceedings{POET,
+author = {Q. Yi and K. Seymour and H. You and R. Vuduc and D. Quinlan},
+booktitle = {Workshop on Performance Optimization of High-Level Languages and Libraries (POHLL)},
+title = {{POET}: Parameterized Optimizations for Empirical Tuning},
+   publisher={IEEE Computer Society},
+   pages = {1--8},
+   location = {Long Beach, CA},
+month = {March},
+year = {2007}
+}
+
+
+@InProceedings{POET1,
    author = {Qing Yi and Keith Seymour and Haihang You and Richard Vuduc and Dan Quinlan},
    title = {{POET}: Parameterized Optimizations for Empirical Tuning},
    booktitle = {Proceedings of the Parallel and Distributed Processing Symposium, 2007},
    year = {2007},
-   publisher={IEEE},
+   publisher={IEEE Computer Society},
    pages = {1--8},
-   DOI={10.1109/IPDPS.2007.370637},
    location = {Long Beach, CA},
    month = {Mar}
 }
@@ -1775,15 +1783,25 @@ Pages =  {67--74},
     Author = {Michelle Mills Strout and John Mellor-Crummey and Paul Hovland},
 }  
 
-@inproceedings{Siek:1998ys,
-        Author = {Jeremy G. Siek and Andrew Lumsdaine},
-        Booktitle = {Parallel Object Oriented Scientific Computing},
-        Date-Added = {2006-09-26 11:13:25 -0600},
-        Date-Modified = {2007-05-18 13:42:22 -0600},
-        Organization = {ECOOP},
-        Title = {A Rational Approach to Portable High Performance: The {Basic Linear Algebra Instruction Set (BLAS)}
-and the {Fixed Algorithm Size Template (FAST)} Library},
-        Year = 1998}
+@InProceedings{Siek:1998ys,
+  title ="A Rational Approach to Portable High Performance: The
+Basic Linear Algebra Instruction Set ({BLAIS}) and the
+Fixed Algorithm Size Template ({FAST}) Library",
+  author ="Jeremy G. Siek and Andrew Lumsdaine",
+  bibdate ="2002-08-04",
+  bibsource ="DBLP, http://dblp.uni-trier.de/db/conf/ecoopw/ecoopw98.html#SiekL98a",
+  booktitle ="ECOOP Workshops",
+  booktitle ="Object-Oriented Technology, {ECOOP}'98 Workshop
+ Reader, {ECOOP}'98 Workshops, Demos, and Posters,
+ Brussels, Belgium, July 20-24, 1998, Proceedings",
+  publisher ="Springer",
+  year = "1998",
+  volume ="1543",
+  editor ="Serge Demeyer and Jan Bosch",
+  ISBN = "3-540-65460-7",
+  pages ="468--469",
+  series ="Lecture Notes in Computer Science",
+}
 
 @InCollection{Hall05,
   author =       {Yoon-Ju Lee and Mary Hall},
@@ -1838,7 +1856,6 @@ howpublished = "\url{http://repositories.cdlib.org/lbnl/LBNL-55291}"
   ISBN = 	"978-3-540-71350-0",
   pages =	"490--503",
   series =	"Lecture Notes in Computer Science",
-  URL =  	"http://dx.doi.org/10.1007/978-3-540-71351-7_38",
 }
 
 @proceedings{conf/vecpar/2006,
@@ -1888,14 +1905,13 @@ booktitle = "Proceedings of the Ninth IFIP/IEEE International Symposium on Integ
 note = "Article no. 3"
 }
 
-@phdthesis{vuduc-thesis,
- author = {Richard Wilson Vuduc},
- note = {Chair-James W. Demmel},
- title = {Automatic performance tuning of sparse matrix kernels},
- year = {2003},
- order_no = {AAI3121741},
- publisher = {University of California, Berkeley},
- }
+@PhDThesis{vuduc-thesis,
+author = {Richard W. Vuduc},
+title = {Automatic performance tuning of sparse matrix kernels},
+school = {University of California, Berkeley},
+month = {December},
+year = {2003}
+}
 
 @inproceedings{williams-sc07,
  author = {Samuel Williams and Leonid Oliker and Richard Vuduc and John Shalf and Katherine Yelick and James Demmel},
@@ -1962,19 +1978,17 @@ note = "Article no. 3"
     month = jun
 }
 
-@article{gprof,
- author = {Susan L. Graham and Peter B. Kessler and Marshall K. McKusick},
- title = {Gprof: {A} call graph execution profiler},
- journal = {SIGPLAN Not.},
- volume = {39},
- number = {4},
- year = {2004},
- issn = {0362-1340},
- pages = {49--57},
- doi = {http://doi.acm.org/10.1145/989393.989401},
- publisher = {ACM},
- address = {New York, NY, USA},
- }
+@Article{gprof,
+  author ="S. L. Graham and P. B. Kessler and M. K. McKusick",
+  title ="gprof: {A} Call Graph Execution Profiler",
+  journal ="SIGPLAN Notices",
+  volume ="17",
+  number ="6",
+  pages ="120",
+  month =jun,
+  year ="1982",
+  keywords ="UNIX utility performance",
+}
 
 
 %%%%% driven cavity %%%%%

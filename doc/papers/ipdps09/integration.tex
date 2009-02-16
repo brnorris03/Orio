@@ -38,7 +38,7 @@ optimization module in Orio. Initially, the transformation process
 takes two kinds of input: the loop code to be optimized and the
 optimization parameters code. The loop code is embedded in the
 annotation body block, while the performance parameters code is
-written in the module body block. A simple parser implemented inside
+written in the module body block. A parser implemented inside
 the new module parses the performance parameters code to extract their
 values. The extracted values of the performance parameters include
 tile sizes, unroll factors, loop order (permutation), as well as
@@ -57,16 +57,16 @@ unroll/jamming, scalar replacement, and explicit
 auto-vectorization). Finally, Orio optimizes the annotated hotspots as
 described in Section~\ref{sec:implm}.
 
-Pluto also performs syntactic loop unroll/jamming as a post-processing
+Pluto also performs syntactic loop unroll/jam in a post-processing
 pass. The target loops, however, are limited only to innermost loops with a
 maximum depth of two (i.e., 1-D unrolling and 2-D unroll/jamming). So we
-choose to use the loop unroll/jamming transformation already available in
+choose to use the loop unroll/jam transformation already available in
 Orio, which is more flexible because it can be applied to loop nests of
 depths larger than two.
 
 
 
-At present Orio does not employ any data dependency analysis when performing
+At present Orio does not employ any data dependence analysis when performing
 syntactic transformations. Therefore, there is no guarantee that the code
 generated after syntactic transformations is correct. Because of this, the
 tuning process using the integrated Pluto-Orio system is currently
