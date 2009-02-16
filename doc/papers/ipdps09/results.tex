@@ -13,7 +13,7 @@ cache (8 MB), and running a proprietary lightweight operating system. We used
 version 10.1 of the Intel and version 9.0 of the IBM XL C/C++ V9.0 compilers
 on the Xeon and Blue Gene/P, respectively. Because of space considerations,
 here we discuss a limited number of computational kernels; more performance
-results for different computations are available at the Orio project
+data for different computations is available at the Orio project
 website~\cite{OrioURL}.
 
 \subsection{Sequence of Linear Algebra Operations} 
@@ -116,7 +116,7 @@ matrix data elements.
 
 The SpMV operation computes $\forall{A_{i,j}} \neq 0:y_{i}
 \leftarrow y_{i} + A_{i,j} \cdot x_{j}$, where $A$ is a sparse matrix,
-and $x$, $y$ are dense vectors. Each element of $A$ is used precisely once,
+and $x$, $y$ are dense vectors. Each element of $A$ is used only once,
 and element reuse is possible only for $x$ and $y$. Thus, to optimize SpMV,
 one should use compact data structures for $A$ and try to maximize temporal
 reuse of $x$ and $y$. One of the most commonly used data structures for
@@ -278,7 +278,7 @@ code. Performance differences between the Orio version and the hand-tuned
 version become more significant as more threads per process are employed to
 facilitate OpenMP parallelization. The SMP and VN results show that
 optimizations using loop-level parallelism (through OpenMP) achieve much
-better performance than using MPI coarse-grained parallelism.
+better performance than using coarse-grained MPI parallelism.
 %Moreover, for the multithread cases, tuning using Orio determined that
 %the performance benefit of SIMDization is more significant than that of
 %thread-level parallelization only when the problem sizes are small. The
