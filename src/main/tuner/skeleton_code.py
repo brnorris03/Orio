@@ -152,11 +152,10 @@ int main(int argc, char *argv[])
   {
     MPI_Datatype type[3] = {MPI_INT, MPI_CHAR, MPI_DOUBLE};
     int blocklen[3] = {1,1024,1};
-    MPI_Aint disp[3];
-    int base;
-    MPI_Address( &mytimeinfo.testid, disp);
-    MPI_Address( &mytimeinfo.coord, disp+1);
-    MPI_Address( &mytimeinfo.tm, disp+2);
+    MPI_Aint disp[3], base;
+    MPI_Get_address( &mytimeinfo.testid, &disp[0]);
+    MPI_Get_address( &mytimeinfo.coord, &disp[1]);
+    MPI_Get_address( &mytimeinfo.tm, &disp[2);
     base = disp[0];
     for (_i=0; _i <3; _i++) disp[_i] -= base;
     MPI_Type_struct( 3, blocklen, disp, type, &TimingInfoMPIType);
