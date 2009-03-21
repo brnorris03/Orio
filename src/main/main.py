@@ -34,10 +34,19 @@ def start(argv, lang):
     # need to be verbose?
     verbose = cline_opts.verbose
 
-    if not cline_opts.disable_orio:
-        if verbose: print '\n====== START ORIO ======'
+    # Simply pass through command  (Orio won't do anything)
+    if cline_opts.disable_orio and cline_opts.external_command:
+        cmd = ' '.join(cline_opts.external_command)
+        if verbose: print cmd
+        retcode = os.system(cmd)
+        sys.exit(retcode)
 
-        for srcfile, out_filename in cline_opts.src_filenames.items():
+    if verbose and not cline_opts.disable_orio: print '\n====== START ORIO ======'
+
+    for srcfile, out_filename in cline_opts.src_filenames.items():
+        annotations_found = False
+
+        if not cline_opts.disable_orio:
             # read source code
             if verbose: print '\n----- begin reading the source file: %s -----' % srcfile
             try:
@@ -66,51 +75,56 @@ def start(argv, lang):
     
             # parse the source code and return a sequence of code fragments
             if verbose: print '\n----- begin parsing annotations -----'
-            cfrags = ann_parser.AnnParser(verbose).parse(src_code)
+            # for efficiency (e.g., do as little as possible when there are no annotations):
+            if ann_parser.AnnParser.leaderAnnRE().search(src_code): 
+                cfrags = ann_parser.AnnParser(verbose).parse(src_code)
+                annotations_found = True
+            elif verbose: print '----- did not find any Orio annotations -----'
             if verbose: print '----- finish parsing annotations -----'
     
             # perform optimizations based on information specified in the annotations
-            if verbose: print '\n----- begin optimizations -----'
-            odriver = opt_driver.OptDriver(specs_map, cline_opts, language=language)
-            optimized_code_seq = odriver.optimizeCodeFrags(cfrags, {}, True)
-            if verbose: print '----- finish optimizations -----'
+            if annotations_found:
+                if verbose: print '\n----- begin optimizations -----'
+                odriver = opt_driver.OptDriver(specs_map, cline_opts, language=language)
+                optimized_code_seq = odriver.optimizeCodeFrags(cfrags, {}, True)
+                if verbose: print '----- finish optimizations -----'
         
-            # remove all annotations from output
-            if cline_opts.erase_annot:
-                if verbose: print '\n----- begin removing annotations from output-----'
-                optimized_code_seq = [[ann_parser.AnnParser().removeAnns(c), i] \
-                                      for c, i in optimized_code_seq]
-                if verbose: print '----- finish removing annotations from output-----'
+                # remove all annotations from output
+                if cline_opts.erase_annot:
+                    if verbose: print '\n----- begin removing annotations from output-----'
+                    optimized_code_seq = [[ann_parser.AnnParser().removeAnns(c), i] \
+                                          for c, i in optimized_code_seq]
+                    if verbose: print '----- finish removing annotations from output-----'
     
-            # write output
-            if verbose: print '\n----- begin writing the output file(s) -----'
-            for optimized_code, input_params in optimized_code_seq:
-                if len(optimized_code_seq) > 1:
-                    path_name, ext = os.path.splitext(out_filename)
-                    suffix = ''
-                    for pname, pval in input_params:
-                        suffix += '_%s_%s' % (pname, pval)
-                    out_filename = ('%s%s' % (path_name, suffix)) + ext
-                if verbose: print '--> writing output to: %s' % out_filename
-                try:
-                    f = open(out_filename, 'w')
-                    f.write(optimized_code)
-                    f.close()
-                except:
-                    print 'error: cannot open file for writing: %s' % cline_opts.out_filename
-                    sys.exit(1)
-            if verbose: print '----- finish writing the output file(s) -----'
-
-        if verbose: print '\n====== END ORIO ======'
+                # write output
+                if verbose: print '\n----- begin writing the output file(s) -----'
+                for optimized_code, input_params in optimized_code_seq:
+                    if len(optimized_code_seq) > 1:
+                        path_name, ext = os.path.splitext(out_filename)
+                        suffix = ''
+                        for pname, pval in input_params:
+                            suffix += '_%s_%s' % (pname, pval)
+                        out_filename = ('%s%s' % (path_name, suffix)) + ext
+                    if verbose: print '--> writing output to: %s' % out_filename
+                    try:
+                        f = open(out_filename, 'w')
+                        f.write(optimized_code)
+                        f.close()
+                    except:
+                        print 'error: cannot open file for writing: %s' % cline_opts.out_filename
+                        sys.exit(1)
+                if verbose: print '----- finish writing the output file(s) -----'
 
         # ----- end of "if not cline_opts.disable_orio:" -----
 
-    # if orio was invoked as a compiler wrapper, perform the original command
-    if cline_opts.external_command:
-        cmd = ' '.join(cline_opts.external_command)
-        if verbose: print '----- invoking external (wrapped) command: -----' 
-        print cmd
-        os.system(cmd)
+        # if orio was invoked as a compiler wrapper, perform the original command
+        if cline_opts.external_command:
+            if not annotations_found: fname = srcfile
+            else: fname = out_filename
+            cmd = ' '.join(cline_opts.external_command + [fname])
+            if verbose: 
+                print '[orio]',cmd
+            os.system(cmd)
 
     if not cline_opts.disable_orio and cline_opts.rename_objects:
         for srcfile, genfile in cline_opts.src_filenames.items():
@@ -118,8 +132,12 @@ def start(argv, lang):
             genobjfile = '.'.join(genparts[:-1])  + '.o'    # the Orio-generated object
             srcparts = srcfile.split('.')
             objfile = '.'.join(srcparts[:-1]) + '.o'     # the object corresponding to the input filename
-            if verbose: print '----- Renaming', genobjfile, 'to', objfile, '-----'
-            if os.path.exists(genobjfile): os.system('mv %s %s' % (genobjfile,objfile))
+            if os.path.exists(genobjfile): 
+                if verbose: print '----- Renaming', genobjfile, 'to', objfile, '-----'
+                os.system('mv %s %s' % (genobjfile,objfile))
+
+
+    if verbose and not cline_opts.disable_orio: print '\n====== END ORIO ======'
 
 
 

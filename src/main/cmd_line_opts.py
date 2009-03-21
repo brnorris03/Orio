@@ -90,6 +90,30 @@ class CmdParser:
                 if wrapper: otherargv.append(arg)
             index += 1
 
+        # fix non-Orio command line options as much as possible since the shell eats quotes and such
+        externalargs=[]
+        index = 0
+        while index < len(otherargv):
+            arg = otherargv[index]
+            if arg.count('=') > 0:
+                key,val=arg.split('=')
+                index += 1
+                if val[0] == val[-1] == '"':
+                    val = "'" + val + "'"
+                else:
+                    val = "'\"" + val
+                    if index < len(otherargv): arg = otherargv[index]
+                    while index < len(otherargv) and not arg.startswith('-'): 
+                        val += ' ' + arg
+                        arg = otherargv[index]
+                        index += 1
+                    val += "\"'"
+                externalargs.append(key + '=' + val)
+            else:
+                externalargs.append(arg)
+                index += 1
+        #print >>sys.stderr,'new args:',externalargs
+
         # check the ORIO_FLAGS env. variable for more options
         if 'ORIO_FLAGS' in os.environ.keys():
             orioargv.extend(os.environ['ORIO_FLAGS'].split())
@@ -169,14 +193,9 @@ class CmdParser:
                 dirs, fname = os.path.split(src_filename)
                 srcfiles[src_filename] = os.path.join(dirs, out_prefix + fname)
 
-        if wrapper: 
-            # add the modified source names to the command being wrapped 
-            # (in the case when Orio wraps the compiler)
-            otherargv += srcfiles.values()
-
         # create an object for the command line options
         cline_opts = CmdLineOpts(srcfiles, spec_filename, verbose, erase_annot, keep_temps, 
-                                 rename_objects, otherargv, disable_orio)
+                                 rename_objects, externalargs, disable_orio)
 
         # return the command line option object
         return cline_opts
