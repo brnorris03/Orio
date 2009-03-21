@@ -122,8 +122,7 @@ def start(argv, lang):
             if not annotations_found: fname = srcfile
             else: fname = out_filename
             cmd = ' '.join(cline_opts.external_command + [fname])
-            if verbose: 
-                print '[orio]',cmd
+            if verbose: print '[orio]',cmd
             os.system(cmd)
 
     if not cline_opts.disable_orio and cline_opts.rename_objects:
