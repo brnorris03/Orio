@@ -27,6 +27,10 @@ options:
                                  the original source code
   -s <file>, --spec=<file>       read tuning specifications from <file>
   -v, --verbose                  verbosely show details of the results of the running program
+
+environment variables: 
+  ORIO_FLAGS                     the string value is used to augment the list of Orio command-lin
+                                 options
 ''' % os.path.basename(sys.argv[0])
 
 #----------------------------------------------
@@ -85,6 +89,10 @@ class CmdParser:
                 if not wrapper: wrapper = True
                 if wrapper: otherargv.append(arg)
             index += 1
+
+        # check the ORIO_FLAGS env. variable for more options
+        if 'ORIO_FLAGS' in os.environ.keys():
+            orioargv.extend(os.environ['ORIO_FLAGS'].split())
 
         # variables to represents the command line options
         out_prefix = '_'
