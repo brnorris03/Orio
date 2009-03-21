@@ -13,11 +13,11 @@ class AnnParser:
     # regular expressions
     __vname_re = r'[A-Za-z_]\w*'
     __any_re = r'(.|\n)'
-    __ann_re = r'/\*@' + __any_re + r'*?@\*/'
-    __leader_ann_re = (r'/\*@\s*begin\s+(' + __vname_re + r')\s*\(\s*(' + __any_re +
+    __ann_re = re.compile(r'/\*@' + __any_re + r'*?@\*/')
+    __leader_ann_re = re.compile(r'/\*@\s*begin\s+(' + __vname_re + r')\s*\(\s*(' + __any_re +
                        r'*?)\s*\)\s*@\*/')
-    __trailer_ann_re = r'/\*@\s*end\s*@\*/'
-    __non_indent_char_re = r'[^ \t]'
+    __trailer_ann_re = re.compile(r'/\*@\s*end\s*@\*/')
+    __non_indent_char_re = re.compile(r'[^ \t]')
     
     #----------------------------------------
 
@@ -28,6 +28,10 @@ class AnnParser:
     
     #----------------------------------------
 
+    def leaderAnnRE():
+        return AnnParser.__leader_ann_re
+    leaderAnnRE = staticmethod(leaderAnnRE)
+
     def __getIndentSizeFrom(self, code):
         '''
         Compute the indentation size based on the given code (i.e. count the number of spaces from
@@ -36,7 +40,7 @@ class AnnParser:
 
         indent_size = 0
         for i in range(len(code)-1, -1, -1):
-            if re.match(self.__non_indent_char_re, code[i]):
+            if self.__non_indent_char_re.match(code[i]):
                 break
             else:
                 indent_size += 1
@@ -58,7 +62,7 @@ class AnnParser:
             if is_ann:
 
                 # if a leader annotation
-                if re.match(self.__leader_ann_re, code):
+                if self.__leader_ann_re.match(code):
 
                     # find the index position of a matching trailer annotation
                     trailer_ipos = -1
@@ -66,7 +70,7 @@ class AnnParser:
                     for j in range(i+1, len(code_seq)):
                         t_code, t_code_line_no, t_indent_size, t_is_ann = code_seq[j]
                         if t_is_ann:
-                            if re.match(self.__leader_ann_re, t_code):
+                            if self.__leader_ann_re.match(t_code):
                                 leaders_seen += 1
                             else:
                                 leaders_seen -= 1
@@ -117,7 +121,7 @@ class AnnParser:
         while True:
 
             # find the next annotation in the code
-            match_obj = re.search(self.__ann_re, code)
+            match_obj = self.__ann_re.search(code)
 
             # if nothing matches
             if not match_obj:
@@ -151,7 +155,7 @@ class AnnParser:
 
             skip = False
             # an unrecognized form of annotation
-            if not re.match(self.__leader_ann_re, ann) and not re.match(self.__trailer_ann_re, ann):
+            if not self.__leader_ann_re.match(ann) and not self.__trailer_ann_re.match(ann):
                 if self.verbose: 
                     print 'Orio warning:%s: unrecognized form of annotation, skipping...' % ann_line_no
                 skip = True
@@ -176,7 +180,7 @@ class AnnParser:
         '''
         
         # parse the given code
-        match_obj = re.match(self.__leader_ann_re, code)
+        match_obj = self.__leader_ann_re.match(code)
 
         # if not a match
         if not match_obj:
@@ -244,7 +248,8 @@ class AnnParser:
 
     def removeAnns(self, code):
         '''Remove all annotations from the given code'''
-        return re.sub(self.__ann_re, '', code)
+        code = self.__leader_ann_re.sub('', code)
+        return self.__trailer_ann_re.sub('', code)
 
     #----------------------------------------
 
