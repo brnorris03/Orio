@@ -66,7 +66,7 @@ def start(argv, lang):
     
             # parse the source code and return a sequence of code fragments
             if verbose: print '\n----- begin parsing annotations -----'
-            cfrags = ann_parser.AnnParser().parse(src_code)
+            cfrags = ann_parser.AnnParser(verbose).parse(src_code)
             if verbose: print '----- finish parsing annotations -----'
     
             # perform optimizations based on information specified in the annotations
@@ -118,6 +118,7 @@ def start(argv, lang):
             genobjfile = '.'.join(genparts[:-1])  + '.o'    # the Orio-generated object
             srcparts = srcfile.split('.')
             objfile = '.'.join(srcparts[:-1]) + '.o'     # the object corresponding to the input filename
+            if verbose: print '----- Renaming', genobjfile, 'to', objfile, '-----'
             if os.path.exists(genobjfile): os.system('mv %s %s' % (genobjfile,objfile))
 
 
