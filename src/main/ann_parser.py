@@ -21,8 +21,9 @@ class AnnParser:
     
     #----------------------------------------
 
-    def __init__(self):
+    def __init__(self, verbose=False):
         '''To instantiate the annotation parser'''
+        self.verbose = verbose
         pass
     
     #----------------------------------------
@@ -148,14 +149,17 @@ class AnnParser:
             # insert the matching annotation into the code sequence
             code_seq.append((ann, ann_line_no, ann_indent_size, True))
 
+            skip = False
             # an unrecognized form of annotation
             if not re.match(self.__leader_ann_re, ann) and not re.match(self.__trailer_ann_re, ann):
-                print 'error:%s: unrecognized form of annotation' % ann_line_no
-                sys.exit(1)
+                if self.verbose: 
+                    print 'Orio warning:%s: unrecognized form of annotation, skipping...' % ann_line_no
+                skip = True
+                #sys.exit(1)
                     
             # update the code and line number
             line_no += code[:match_obj.end()].count('\n')
-            code = code[match_obj.end():]
+            if not skip: code = code[match_obj.end():]
 
         # mark all annotation code regions
         code_seq = self.__markAnnCodeRegions(code_seq)
