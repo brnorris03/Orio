@@ -90,12 +90,12 @@ class CmdParser:
                 if wrapper: otherargv.append(arg)
             index += 1
 
-        # fix non-Orio command line options as much as possible since the shell eats quotes and such
+        # fix non-Orio command line options as much as possible (esp. -D) since the shell eats quotes and such
         externalargs=[]
         index = 0
         while index < len(otherargv):
             arg = otherargv[index]
-            if arg.count('=') > 0:
+            if arg.count('=') > 0 and arg.startswith('-D'):
                 key,val=arg.split('=')
                 index += 1
                 if val[0] == val[-1] == '"':
