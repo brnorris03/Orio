@@ -15,6 +15,7 @@ FORTRAN = 2
 def start(argv, lang):
     '''The main starting procedure'''
 
+    retcode = 0 
     # check for Fortran source, which is not supported yet now
     if lang == FORTRAN:
         language = 'fortran'
@@ -123,7 +124,8 @@ def start(argv, lang):
             else: fname = out_filename
             cmd = ' '.join(cline_opts.external_command + [fname])
             if verbose: print '[orio]',cmd
-            os.system(cmd)
+            retcode = os.system(cmd)
+            if retcode != 0: print 'Orio error: external command returned with error %s: %s' %(retcode, cmd)
 
     if not cline_opts.disable_orio and cline_opts.rename_objects:
         for srcfile, genfile in cline_opts.src_filenames.items():
@@ -137,6 +139,7 @@ def start(argv, lang):
 
 
     if verbose and not cline_opts.disable_orio: print '\n====== END ORIO ======'
+    sys.exit(retcode)
 
 
 
