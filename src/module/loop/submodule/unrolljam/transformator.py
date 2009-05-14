@@ -105,98 +105,57 @@ class Transformator:
     
     #-----------------------------------------
 
-    def __jamStmtSeqs(self, stmt_seqs):
-        '''Permute and jam the given statement sequences'''
+    def __jamStmts(self, stmtss):
+        '''Jam/fuse statements whenever possible'''
 
-        # check the validity of input parameter
-        if len(stmt_seqs) == 0:
-            print 'internal error: input statement sequences must not be empty'
-            sys.exit(1)
-        lg = None
-        for seq in stmt_seqs:
-            if len(seq) == 0:
-                print 'internal error: a statement sequence must not be empty'
-                sys.exit(1)
-            if lg == None:
-                lg = len(seq)
-            elif len(seq) != lg:
-                print 'internal error: non-uniform length of statement sequences'
-                sys.exit(1)
+        if len(stmtss) == 0:
+            return module.loop.ast.CompStmt([])
+        if len(stmtss) == 1:
+            return module.loop.ast.CompStmt(stmtss[0])
 
-        # permute the statement sequences
-        permuted_stmt_seqs = zip(*stmt_seqs)
-        
-        # perform jamming
-        jammed_stmts = [self.__jamStmts(list(seq)) for seq in permuted_stmt_seqs]
-        
-        # merge statements
-        merged_stmts = []
-        for s in jammed_stmts:
-            while isinstance(s, module.loop.ast.CompStmt) and len(s.stmts) == 1:
-                s = s.stmts[0]
-            if isinstance(s, module.loop.ast.CompStmt):
-                merged_stmts.extend(s.stmts)
-            else:
-                merged_stmts.append(s)
+        num = len(stmtss[0])
+        for stmts in stmtss:
+            assert(num == len(stmts)), 'internal error: unequal length of statement list'
 
-        # generate the final statement
-        if len(merged_stmts) == 1:
-            return merged_stmts[0]
-        else:
-            return module.loop.ast.CompStmt(merged_stmts)
+        is_jam_valid = True
+        contain_loop = False
+        for i in range(num):
+            s1 = None
+            for stmts in stmtss:
+                if s1 == None:
+                    s1 = stmts[i]
+                    if isinstance(s1, module.loop.ast.ForStmt):
+                        contain_loop = True
+                elif isinstance(s1, module.loop.ast.ForStmt):
+                    s2 = stmts[i]
+                    assert(isinstance(s2, module.loop.ast.ForStmt)), 'internal error: not a loop statement'
+                    if not (str(s1.init) == str(s2.init) and str(s1.test) == str(s2.test) and str(s1.iter) == str(s2.iter)):
+                        is_jam_valid = False
+        if is_jam_valid:
+            if not contain_loop:
+                is_jam_valid = False
 
-    #-----------------------------------------
+        if not is_jam_valid:
+            n_stmts = []
+            for stmts in stmtss:
+                n_stmts.extend(stmts)
+            return module.loop.ast.CompStmt(n_stmts)
 
-    def __jamStmts(self, stmts):
-        '''Attempt to jam all the statements in the given list'''
-
-        # in case of both input is null
-        if len(stmts) == 0:
-            print 'internal error: input statements cannot be null'
-            sys.exit(1)
-
-        # in case of a single statement
-        if len(stmts) == 1:
-            return stmts[0]
-    
-        # jam all compound statements
-        if isinstance(stmts[0], module.loop.ast.CompStmt):
-            for s in stmts:
-                if not isinstance(s, module.loop.ast.CompStmt):
-                    print 'internal error: not all statements are compound'
-                    sys.exit(1)
-            return self.__jamStmtSeqs([s.stmts for s in stmts])
-            
-        # jam all identical for-loops
-        elif isinstance(stmts[0], module.loop.ast.ForStmt):
-            for s in stmts:
-                if not isinstance(s, module.loop.ast.ForStmt):
-                    print 'internal error: not all statements are for-loops'
-                    sys.exit(1)
-            init_exp = stmts[0].init
-            test_exp = stmts[0].test
-            iter_exp = stmts[0].iter
-            stmt_seqs = []
-            all_identical = True
-            for s in stmts:
-                if (str(init_exp) == str(s.init) and
-                    str(test_exp) == str(s.test) and
-                    str(iter_exp) == str(s.iter)):
-                    while isinstance(s.stmt, module.loop.ast.CompStmt) and len(s.stmt.stmts) == 1:
-                        s.stmt = s.stmt.stmts[0]
+        n_stmts = []
+        for stmts in zip(*stmtss):
+            if isinstance(stmts[0], module.loop.ast.ForStmt):
+                l_stmtss = []
+                for s in stmts:
                     if isinstance(s.stmt, module.loop.ast.CompStmt):
-                        stmt_seqs.append(s.stmt.stmts)
+                        l_stmtss.append(s.stmt.stmts)
                     else:
-                        stmt_seqs.append([s.stmt])
-                else:
-                    all_identical = False
-                    break
-            if all_identical:
-                jammed_loop_body = self.__jamStmtSeqs(stmt_seqs)
-                return module.loop.ast.ForStmt(init_exp, test_exp, iter_exp, jammed_loop_body)
-            
-        # return non-jammable statements
-        return module.loop.ast.CompStmt(stmts)
+                        l_stmtss.append([s.stmt])
+                loop = stmts[0].replicate()
+                loop.stmt = self.__jamStmts(l_stmtss)
+                n_stmts.append(loop)
+            else:
+                n_stmts.extend(stmts)
+        return module.loop.ast.CompStmt(n_stmts)
         
     #-----------------------------------------
 
@@ -204,8 +163,8 @@ class Transformator:
         '''To unroll-and-jam the enclosed for-loop'''
 
         # get rid of compound statement that contains only a single statement
-        while isinstance(self.stmt, module.loop.ast.CompStmt) and len(self.stmt.stmts) == 1:
-            self.stmt = self.stmt.stmts[0]
+        while isinstance(self.stmt.stmt, module.loop.ast.CompStmt) and len(self.stmt.stmt.stmts) == 1:
+            self.stmt.stmt = self.stmt.stmt.stmts[0]
         
         # extract for-loop structure
         for_loop_info = self.flib.extractForLoopInfo(self.stmt)
@@ -265,7 +224,7 @@ class Transformator:
 
         # compute the unrolled loop body by jamming/fusing the unrolled statements
         if self.do_jamming:
-            unrolled_loop_body = self.__jamStmtSeqs(unrolled_stmt_seqs)
+            unrolled_loop_body = self.__jamStmts(unrolled_stmt_seqs)
         else:
             unrolled_stmts = reduce(lambda x,y: x+y, unrolled_stmt_seqs, [])
             unrolled_loop_body = module.loop.ast.CompStmt(unrolled_stmts)
