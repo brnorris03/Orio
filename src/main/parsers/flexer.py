@@ -23,8 +23,6 @@
 #
 # This software is loosely based, but distinct from, OpenFortran: 
 #  OpenFortran Copyright (c) 2005, 2006 Los Alamos National Security, LLC.  
-
-
 #
 # For detailed license information refer to the LICENSE file in the top-level
 # Orio source directory.
