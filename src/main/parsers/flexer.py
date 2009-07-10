@@ -30,7 +30,6 @@
 import sys, re
 import tool.ply.lex as lex
 
-
 class FLexer:
     
     def __init__(self):
