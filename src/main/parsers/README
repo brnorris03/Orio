@@ -1,0 +1,16 @@
+Files
+=====
+Fortran lexer: flexer.py
+Fortran parser: fparser.py
+
+The parser is configured in fparse.py, in the setup method. To regenerate the parser tables, 
+simply parse a file and specify the --regen option at the end of the command line, e.g., in
+the testfortran subdirectory:
+
+    ../fparse.py t.f90 --regen
+
+This will create the parsetab.py file and related tables in the correct directory (parsers).
+
+To test the lexer, follow a similar approach, e.g., in testfortran: 
+   ../flexer.py t.f90
+
