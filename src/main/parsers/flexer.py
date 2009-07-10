@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 #
-# File: flexer.py
-# Package: orio
-# Revision: $Revision: 111 $
-# Modified: $Date: 2008-09-04 18:24:45 -0500 (Thu, 04 Sep 2008) $
-# Description: Fortran 2003 parser
+# File: $id$
+# @Package: orio
+# @version: $Revision$
+# @lastrevision: $Date$
+# @modifiedby: $LastChangedBy$
+# @lastmodified: $LastChangedDate$
+#
+# Description: Fortran 2003 lexer
 # 
 # Produced at Argonne National Laboratory
-# Written by Boyana Norris (norris@mcs.anl.gov)
+# Author: Boyana Norris (norris@mcs.anl.gov)
 # Copyright (c) 2009 UChicago Argonne, LLC, Operator of Argonne National Laboratory
 # ("Argonne").  Argonne, a U.S. Department of Energy Office
 # of Science laboratory, is operated under Contract No. DE-AC02-06CH11357. 
@@ -47,7 +50,7 @@ class FLexer:
         self.incomment = False
         self.eolre = re.compile(r'[\n\r]')
         
-    def reset(self):
+    def reset(self, fname=''):
         self.currentline = ''
         self.filename = ''
         self.lineno = 1
@@ -56,6 +59,9 @@ class FLexer:
         self.fixedform = False
         self.needs_preprocessing = False
         self.incomment = False
+        if fname:
+            self.setFileName(fname)
+            self.determineFileFormat(fname)
         
     #------------------------------------------------
     
