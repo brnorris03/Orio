@@ -7,7 +7,7 @@
 # @modifiedby: $LastChangedBy$
 # @lastmodified: $LastChangedDate$
 #
-# Description: Fortran 2003 parser
+# Description: Fortran 2003 parser (supports Fortran 77 and later)
 # 
 # Copyright (c) 2009 UChicago, LLC
 # Produced at Argonne National Laboratory
