@@ -7,7 +7,7 @@
 # @modifiedby: $LastChangedBy$
 # @lastmodified: $LastChangedDate$
 #
-# Description: Fortran 2003 lexer
+# Description: Fortran 2003 lexer (supports Fortran 77 and later)
 # 
 # Produced at Argonne National Laboratory
 # Author: Boyana Norris (norris@mcs.anl.gov)
