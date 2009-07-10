@@ -2,7 +2,7 @@
 #
 # File: $id$
 # @Package: orio
-# @version: $Revision$
+# @version: $keRevision$
 # @lastrevision: $Date$
 # @modifiedby: $LastChangedBy$
 # @lastmodified: $LastChangedDate$
@@ -19,14 +19,157 @@
 import sys, os
 import ast, tool.ply.yacc
 import main.parsers.flexer as lexer
+from main.parsers.fAST import *
 
 # Get the token map
 tokens = lexer.tokens
 baseTypes = {}
 
-# annotation
-def p_annotation(p):
-    'annotation : statement_list_opt'
+
+# R201
+def p_program(p):
+    'program : program_unit_list'
+    p[0] = p[1]
+
+def p_program_unit_list_1(p):
+    'program_unit_list : program_unit'
+    p[0] = [p[1]]
+    
+def p_program_unit_list_2(p):
+    'program_unit_list : program_unit_list program_unit'
+    p[1].append(p[2])
+    p[0] = p[1]
+
+# R202
+def p_program_unit(p):
+    '''program_unit : main_program
+                    | external_subprogram
+                    | module
+                    '''
+    p[0] = p[1]
+
+# R1101
+def p_main_program(p):
+    'main_program : program_stmt specification_part execution_part internal_subprogram_part_opt end_program_stmt'
+    if p[1]: lineno = p.linespan(1)[0]
+    elif p[2]: lineno = p.linespan(2)[0]
+    elif p[3]: lineno = p.linespan(3)[0]
+    elif p[4]: lineno = p.linespan(4)[0]
+    else: lineno = p.linespan(5)[0]
+    p[0] = ast.MainProgram(str(lineno), p[0], p[2], p[3])
+
+# R1102
+def p_program_stmt_1(p):
+    'program_stmt : PROGRAM ID' 
+    p[0] = p[2]
+
+def p_program_stmt_2(p):
+    'program_stmt : empty'
+    p[0] = ''
+    
+# R1103
+def p_end_program_stmt_1(p):
+    'end_program_stmt : END ID'
+    pass
+
+def p_end_program_stmt_2(p):
+    'end_program_stmt : END PROGRAM ID'
+    
+
+###--- Specification part -------------------------------    
+# R204   
+def p_specification_part_1(p):
+    'specification_part : use_stmt_list import_stmt_list implicit_part declaration_construct_list'
+    p[0] = p[1] 
+
+def p_specification_part_2(p):
+    'specification_part : empty'
+    p[0] = []
+    
+    
+def p_use_stmt_list_1(p):
+    'use_stmt_list : use_stmt'
+    pass
+
+def p_use_stmt_list_2(p):
+    'use_stmt_list : use_stmt_list use_stmt'
+    pass
+
+def p_use_stmt_list_3(p):
+    'use_stmt_list : empty'
+    pass
+
+# R1109
+def p_use_stmt_1(p):
+    'use_stmt : USE module_nature_list_with_dcolon module_name comma_rename_list'
+    pass
+
+def p_use_stmt_2(p):
+    'use_stmt : USE module_nature_list_with_dcolon module_name COMMA ONLY COLON only_list'
+    pass
+
+# R1110
+def p_modle_nature(p):
+    '''module_nature : INTRINSIC
+                    | NON_INTRINSIC
+                    '''
+    p[0] = p[1]
+
+def p_rename_1(p):
+    'rename : ID EQ_GT ID'
+    pass
+
+def p_rename_2(p):
+    'rename : OPERATOR LPAREN local-defined-operator RPAREN EQ_GT LPAREN use-defined-operator RPAREN'
+    pass
+
+# R1112
+def p_only(p):
+    '''only : generic_spec 
+            | only_use_name
+            | rename
+            '''
+    pass
+
+# R1113
+def p_only_use_name(p):
+    'only_use_name : use_name'
+    p[0] = p[1]
+
+
+###--- Execution part -----------------------------------
+
+# R208
+def p_execution_part_1(p):
+    'execution_part : executable_construct'
+    pass
+
+def p_execution_part_3(p):
+    'execution_part : execution_part_construct_list'
+    pass
+
+def p_execution_part_construct_list_1(p):
+    'execution_part_construct_list : execution_part_construct_list execution_part_construct'
+    pass
+
+def p_execution_part_construct_list_2(p):
+    'execution_part_construct_list : empty'
+    pass
+
+# R209
+def p_execution_part_construct_1(p):
+    '''execution_part_construct :  executable_construct
+                        | formal_stmt
+                        | entry_stmt
+                        | data_stmt
+                        '''
+    pass
+
+
+    
+def use_stmt_list_1(p):
+    'use_stmt_list : use_stmt_list use_stmt'
+    p[1].append(p[2])
     p[0] = p[1]
     
 # statement-list
@@ -520,6 +663,10 @@ def p_py_atom_1(p):
 def p_py_atom_2(p):
     'py_atom : LPAREN py_expression_list_opt RPAREN'
     p[0] = p[1] + p[2] + p[3]
+
+def p_empty(p):
+    'empty :'
+    pass
 
 #------------------------------------------------
 
