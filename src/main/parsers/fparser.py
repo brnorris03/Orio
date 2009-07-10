@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 #
-# File: fparser.py
-# Package: orio
-# Revision: $Revision: 111 $
-# Modified: $Date: 2008-09-04 18:24:45 -0500 (Thu, 04 Sep 2008) $
+# File: $id$
+# @Package: orio
+# @version: $Revision$
+# @lastrevision: $Date$
+# @modifiedby: $LastChangedBy$
+# @lastmodified: $LastChangedDate$
+#
 # Description: Fortran 2003 parser
 # 
 # Copyright (c) 2009 UChicago, LLC
 # Produced at Argonne National Laboratory
-# Written by Boyana Norris (norris@mcs.anl.gov)
+# Author: Boyana Norris (norris@mcs.anl.gov)
 #
 # For detailed license information refer to the LICENSE file in the top-level
 # source directory.
@@ -17,327 +20,13 @@
 # Contain syntax and grammar specifications of the annotations language
 #
 
-import sys
-import ast, tool.ply.lex, tool.ply.yacc
+import sys, os
+import ast, tool.ply.yacc
+import main.parsers.flexer as lexer
 
-#------------------------------------------------
-
-__start_line_no = 1
-
-#------------------------------------------------
-
-# reserved words
-keywords = ['INTEGER', 'REAL', 'COMPLEX', 'CHARACTER', 'LOGICAL',  
-            
-            'ABSTRACT', 'ALLOCATABLE', 'ALLOCATE', 'ASSIGNMENT', 
-            'ASSOCIATE', 'ASYNCHRONOUS', 'BACKSPACE', 'BLOCK',
-            'BLOCKDATA', 'CALL', 'CASE', 'CLASS', 'CLOSE', 'COMMON',
-            'CONTAINS', 'CONTINUE', 'CYCLE', 'DATA', 'DEFAULT',
-            'DEALLOCATE', 'DEFERRED', 'DO', 'DOUBLE', 'DOUBLEPRECISION',
-            'DOUBLECOMPLEX', 'ELEMENTAL', 'ELSE', 'ELSEIF', 'ELSEWHERE', 
-            'ENTRY', 'ENUM', 'ENUMERATOR', 'EQUIVALENCE', 'EXIT', 
-            'EXTENDS', 'EXTERNAL', 'FILE', 'FINAL', 'FLUSH', 'FORALL', 
-            'FORMAT', 'FORMATTED', 'FUNCTION', 'GENERIC', 'GO', 
-            'GOTO', 'IF', 'IMPLICIT', 'IMPORT', 'IN', 'INOUT', 
-            'INTENT', 'INTERFACE', 'INTRINSIC', 'INQUIRE', 'MODULE',
-            'NAMELIST', 'NONE', 'NON_INTRINSIC', 'NON_OVERRIDABLE', 
-            'NOPASS', 'NULLIFY', 'ONLY', 'OPEN', 'OPERATOR', 
-            'OPTIONAL', 'OUT', 'PARAMETER', 'PASS', 'PAUSE',
-            'POINTER', 'PRECISION', 'PRIVATE', 'PROCEDURE',
-            'PROTECTED', 'PUBLIC', 'PURE', 'READ', 'RECURSIVE',
-            'RESULT', 'RETURN', 'REWIND', 'SAVE', 'SELECT',
-            'SELECTCASE', 'SELECTTYPE', 'SEQUENCE', 'STOP',
-            'SUBROUTINE', 'TARGET', 'THEN', 'TO', 'TYPE', 
-            'UNFORMATTED', 'USE', 'VALUE', 'VOLATILE', 'WAIT', 
-            'WHERE', 'WHILE', 'WRITE', 
-            
-            'ENDASSOCIATE', 'ENDBLOCK', 'ENDBLOCKDATA', 'ENDDO',
-            'ENDENUM', 'ENDFORALL', 'ENDFILE', 'ENDFUNCTION',
-            'ENDIF', 'ENDINTERFACE', 'ENDMODULE', 'ENDPROGRAM', 
-            'ENDSELECT', 'ENDSUBROUTINE', 'ENDTYPE', 'ENDWHERE',
-            'END',
-            
-            'DIMENSION', 'KIND', 'LEN', 'BIND']
-
-tokens = keywords + [ \
-    # literals (identifier, integer constant, float constant, string constant)
-    'ID', 'ICONST', 'FCONST', 'SCONST_D', 'SCONST_S',
-
-    # operators (+,-,*,/,%,||,&&,!,<,<=,>,>=,==,!=)
-    'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
-    'LOR', 'LAND', 'LNOT',
-    'LT', 'LE', 'GT', 'GE', 'EQ', 'NE',
-
-    # assignment (=, *=, /=, %=, +=, -=)
-    'EQUALS', 
-
-    # delimeters ( ) [ ] { } , ; :
-    'LPAREN', 'RPAREN',
-    'LBRACKET', 'RBRACKET',
-    'LBRACE', 'RBRACE',
-    'COMMA', 'SEMI', 'COLON', 'PERIOD'
-    ]
-
-# operators
-t_PLUS             = r'\+'
-t_MINUS            = r'-'
-t_TIMES            = r'\*'
-t_DIVIDE           = r'/'
-t_MOD              = r'%'
-t_SLASH_SLASH      = r'//'     # concatenation of char values
-
-
-# relational operators
-t_LESSTHAN         = r'<'
-t_LESSTHAN_EQ      = r'<='
-t_GREATERTHAN      = r'>'
-t_GREATERTHAN_EQ   = r'>='
-t_EQ_GT            = r'=>'
-t_EQ_EQ            = r'=='
-t_SLASH_EQ         = r'/='
-
-t_EQ               = r'\.EQ\.'
-t_NE               = r'\.NE\.'
-t_LT               = r'\.LT\.'
-t_LE               = r'\.LE\.'
-t_GT               = r'\.GT\.'
-t_GE               = r'\.GE\.'
-
-t_TRUE             = r'\.TRUE\.'
-t_FALSE            = r'\.FALSE\.'
-
-t_OR              = r'\.OR\.'
-t_AND             = r'\.AND\.'
-t_NOT             = r'\.NOT\.'
-t_EQV             = r'\.EQV\.'
-t_NEQV            = r'\.NEQV\.'
-
-
-# assignment operators
-t_EQUALS           = r'='
-
-
-# delimeters
-t_LPAREN           = r'\('
-t_RPAREN           = r'\)'
-t_LBRACKET         = r'\['
-t_RBRACKET         = r'\]'
-t_LBRACE           = r'\{'
-t_RBRACE           = r'\}'
-t_COMMA            = r','
-t_COLON            = r':'
-t_COLON_COLON      = r'::'
-t_PERIOD           = r'\.'
-t_UNDERSCORE       = r'_'
-
-# types
-t_INTEGER          = 'INTEGER'
-t_REAL             = 'REAL'
-t_COMPLEX          = 'COMPLEX'
-t_CHARACTER        = 'CHARACTER'
-t_LOGICAL          = 'LOGICAL'
-
-t_ABSTRACT         = 'ABSTRACT'
-t_ALLOCATABLE      = 'ALLOCATABLE'
-t_ALLOCATE         = 'ALLOCATE'      ;
-t_ASSIGNMENT       = 'ASSIGNMENT'    
-# ASSIGN statements are a deleted feature.
-t_ASSIGN           = 'ASSIGN'        
-t_ASSOCIATE        = 'ASSOCIATE'     
-t_ASYNCHRONOUS     = 'ASYNCHRONOUS'  
-t_BACKSPACE        = 'BACKSPACE'     
-t_BLOCK            = 'BLOCK'         
-t_BLOCKDATA        = 'BLOCKDATA'     
-t_CALL             = 'CALL'          
-t_CASE             = 'CASE'          
-t_CLASS            = 'CLASS'         
-t_CLOSE            = 'CLOSE'         
-t_COMMON           = 'COMMON'        
-t_CONTAINS         = 'CONTAINS'      
-t_CONTINUE         = 'CONTINUE'      
-t_CYCLE            = 'CYCLE'         
-t_DATA             = 'DATA'          
-t_DEFAULT          = 'DEFAULT'       
-t_DEALLOCATE       = 'DEALLOCATE'    
-t_DEFERRED         = 'DEFERRED'      
-t_DO               = 'DO'            
-t_DOUBLE           = 'DOUBLE'        
-t_DOUBLEPRECISION  = 'DOUBLEPRECISION' 
-t_DOUBLECOMPLEX    = 'DOUBLECOMPLEX' 
-t_ELEMENTAL        = 'ELEMENTAL'     
-t_ELSE             = 'ELSE'          
-t_ELSEIF           = 'ELSEIF'        
-t_ELSEWHERE        = 'ELSEWHERE'     
-t_ENTRY            = 'ENTRY'         
-t_ENUM             = 'ENUM'          
-t_ENUMERATOR       = 'ENUMERATOR'    
-t_EQUIVALENCE      = 'EQUIVALENCE'   
-t_EXIT             = 'EXIT'          
-t_EXTENDS          = 'EXTENDS'       
-t_EXTERNAL         = 'EXTERNAL'      
-t_FILE             = 'FILE'          
-t_FINAL            = 'FINAL'         
-t_FLUSH            = 'FLUSH'         
-t_FORALL           = 'FORALL'        
-t_FORMAT           = 'FORMAT'       # { inFormat = true; }
-t_FORMATTED        = 'FORMATTED'     
-t_FUNCTION         = 'FUNCTION'      
-t_GENERIC          = 'GENERIC'       
-t_GO               = 'GO'            
-t_GOTO             = 'GOTO'          
-t_IF               = 'IF'            
-t_IMPLICIT         = 'IMPLICIT'      
-t_IMPORT           = 'IMPORT'        
-t_IN               = 'IN'            
-t_INOUT            = 'INOUT'         
-t_INTENT           = 'INTENT'        
-t_INTERFACE        = 'INTERFACE'     
-t_INTRINSIC        = 'INTRINSIC'     
-t_INQUIRE          = 'INQUIRE'       
-t_MODULE           = 'MODULE'        
-t_NAMELIST         = 'NAMELIST'      
-t_NONE             = 'NONE'          
-t_NON_INTRINSIC    = 'NON_INTRINSIC' 
-t_NON_OVERRIDABLE  = 'NON_OVERRIDABLE'
-t_NOPASS           = 'NOPASS'        
-t_NULLIFY          = 'NULLIFY'       
-t_ONLY             = 'ONLY'          
-t_OPEN             = 'OPEN'          
-t_OPERATOR         = 'OPERATOR'      
-t_OPTIONAL         = 'OPTIONAL'      
-t_OUT              = 'OUT'           
-t_PARAMETER        = 'PARAMETER'     
-t_PASS             = 'PASS'          
-t_PAUSE            = 'PAUSE'         
-t_POINTER          = 'POINTER'       
-t_PRINT            = 'PRINT'         
-t_PRECISION        = 'PRECISION'     
-t_PRIVATE          = 'PRIVATE'       
-t_PROCEDURE        = 'PROCEDURE'     
-t_PROGRAM          = 'PROGRAM'       
-t_PROTECTED        = 'PROTECTED'     
-t_PUBLIC           = 'PUBLIC'        
-t_PURE             = 'PURE'          
-t_READ             = 'READ'          
-t_RECURSIVE        = 'RECURSIVE'     
-t_RESULT           = 'RESULT'        
-t_RETURN           = 'RETURN'        
-t_REWIND           = 'REWIND'        
-t_SAVE             = 'SAVE'          
-t_SELECT           = 'SELECT'        
-t_SELECTCASE       = 'SELECTCASE'    
-t_SELECTTYPE       = 'SELECTTYPE'    
-t_SEQUENCE         = 'SEQUENCE'      
-t_STOP             = 'STOP'          
-t_SUBROUTINE       = 'SUBROUTINE'    
-t_TARGET           = 'TARGET'        
-t_THEN             = 'THEN'          
-t_TO               = 'TO'            
-t_TYPE             = 'TYPE'          
-t_UNFORMATTED      = 'UNFORMATTED'   
-t_USE              = 'USE'           
-t_VALUE            = 'VALUE'         
-t_VOLATILE         = 'VOLATILE'      
-t_WAIT             = 'WAIT'          
-t_WHERE            = 'WHERE'         
-t_WHILE            = 'WHILE'         
-t_WRITE            = 'WRITE'         
-
-t_ENDASSOCIATE     = 'ENDASSOCIATE'  
-t_ENDBLOCK         = 'ENDBLOCK'      
-t_ENDBLOCKDATA     = 'ENDBLOCKDATA'  
-t_ENDDO            = 'ENDDO'         
-t_ENDENUM          = 'ENDENUM'       
-t_ENDFORALL        = 'ENDFORALL'     
-t_ENDFILE          = 'ENDFILE'       
-t_ENDFUNCTION      = 'ENDFUNCTION'   
-t_ENDIF            = 'ENDIF'         
-t_ENDINTERFACE     = 'ENDINTERFACE'  
-t_ENDMODULE        = 'ENDMODULE'     
-t_ENDPROGRAM       = 'ENDPROGRAM'    
-t_ENDSELECT        = 'ENDSELECT'     
-t_ENDSUBROUTINE    = 'ENDSUBROUTINE' 
-t_ENDTYPE          = 'ENDTYPE'       
-t_ENDWHERE         = 'ENDWHERE'      
-
-t_END              = 'END'
-        
-
-t_DIMENSION        = 'DIMENSION'     
-
-t_KIND             = 'KIND' 
-t_LEN              = 'LEN' 
-
-t_BIND             = 'BIND' 
-
-
-
-
-# ignored characters
-#   = ignore = ' \t'
-
-# reserved words
-reserved_map = {}
-for r in reserved:
-    reserved_map[r.lower()] = r
-
-# identifiers
-def t_ID(t):
-    r'[A-Za-z_]\w*'
-    t.type = reserved_map.get(t.value,'ID')
-    return t
-
-def t_FORMAT(t):
-    r'FORMAT'
-    inFormat = True
-    return t
-
-# binary literal; R408
-t_BCONST     = r'([bB]\'\d+\') | ([bB]"\d+")'
-
-# integer literal; R405
-t_ICONST     = r'[+-]\d+(_[A-Za-z]\w*)?'
-
-# floating literal; R417
-t_FCONST     = r'(\d*\.\d+([EedD][+-]?(\d*_[A-Za-z]\w*|\d+))?)'
-
-# string literal (with double quotes); R427
-t_SCONST_D   = r'(([A-Za-z]\w*)_)?\"([^\\\n]|(\\.))*\"'
-
-# string literal (with single quotes); R427
-t_SCONST_S   = r'\'([^\\\n]|(\\.))*?\''
-
-# octal constant (with double quotes); R413
-t_OCONST_D   = r'[oO]"[0-7]+"'
-
-# octal constant (with single quotes); R413
-t_OCONST_S   = r'[oO]\'[0-7]+\''
-
-# hex constant (with double quotes); R414
-t_HCONST_D   = r'[zZ]"[\dA-Fa-f]+"'
-
-# hex constant (with double quotes); R414
-t_HCONST_D   = r'[zZ]\'[\dA-Fa-f]+\''
-
-# Any whitespace character: equiv. to set [ \t\n\r\f\v]
-t_WS         = r'[ \t\r\f]'
-
-# newlines
-def t_NEWLINE(t):
-    r'\n+'
-    t.lineno += t.value.count('\n')
-    
-# syntactical error
-def t_error(t):
-    print 'error:%s: syntactical error: "%s"' % ((t.lineno + __start_line_no - 1), t.value[0])
-    sys.exit(1)
-    
-    
-# --------------- end of lexer -------------------
-
-# ================================================
-
-# ----------------- Parser -----------------------
+# Get the token map
+tokens = lexer.tokens
+baseTypes = {}
 
 # annotation
 def p_annotation(p):
@@ -851,4 +540,72 @@ def getParser(start_line_no):
 
     # return the parser
     return parser
+
+# Compute column. 
+#     input is the input text string
+#     token is a token instance
+def find_column(input,token):
+    i = token.lexpos
+    startline = input[:i].rfind('\n')
+    endline = startline + input[startline+1:].find('\n') 
+    line = input[startline+1:endline+1]
+    while i > 0:
+        if input[i] == '\n': break
+        i -= 1
+    column = (token.lexpos - i)
+    return line, column
+
+# Driver (regenerates parse table)
+def setup_regen(debug = 1, outputdir='.'):
+    global parser
     
+    # Remove the old parse table
+    parsetabfile = os.path.join(os.path.abspath(outputdir),'parsetab.py')
+    try: os.remove(parsetabfile)
+    except: pass
+
+    parser = parse.ply.yacc.yacc(debug=debug, optimize=1, tabmodule='parsetab', write_tables=1, outputdir=os.path.abspath(outputdir))
+
+    return parser
+
+
+if __name__ == '__main__':
+    '''To regenerate the parse tables, invoke iparse.py with --regen as the last command-line
+        option, for example:
+            iparse.py somefile.sidl --regen
+    '''
+    #import visitor.printer
+    
+    DEBUGSTREAM = Devnull()
+
+    if True or sys.argv[-1] == '--regen':
+        del sys.argv[-1]
+        DEBUGSTREAM = sys.stderr
+        setup_regen(debug=0, outputdir=os.path.dirname(sys.argv[0]))
+    else:
+        setup()
+
+    lex = lexer.FLexer()
+    lex.build(optimize=1)                     # Build the lexer
+
+    for i in range(1, len(sys.argv)):
+        fname = sys.argv[i]
+        print >>DEBUGSTREAM, "[fparser] About to parse %s" % fname
+        f = open(fname,"r")
+        s = f.read()
+        f.close()
+        # print "Contents of %s: %s" % (fname, s)
+        if s == '' or s.isspace(): sys.exit(0)
+        if not s.endswith('\n'): 
+            print 'Orio WARNING: file does not end with newline.'
+            s += '\n'
+        
+        lex.reset(fname)
+        ast = parser.parse(s, lexer=lex.lexer, debug=0)
+        print >>DEBUGSTREAM, '[iparse] Successfully parsed %s' % fname
+
+        
+        #printer = visitor.printer.Printer()
+        #ast.accept(printer)
+
+
