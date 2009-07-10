@@ -27,10 +27,6 @@
 # For detailed license information refer to the LICENSE file in the top-level
 # Orio source directory.
 
-#
-# Contain syntax and grammar specifications of the annotations language
-#
-
 import sys, re
 import tool.ply.lex as lex
 
