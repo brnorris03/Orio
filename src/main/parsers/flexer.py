@@ -99,8 +99,8 @@ class FLexer:
     
     tokens = keywords + ( \
         # literals (identifier, integer constant, float constant, string constant)
-        'ID', 'ICONST', 'FCONST', 'SCONST_D', 'SCONST_S', 
-        'PSCONST_D', 'PSCONST_S',       # partial strings
+        'ID', 'DIGIT_STRING', 'FCONST', 'SCONST_D', 'SCONST_S', 
+        'ICONST', 'PSCONST_D', 'PSCONST_S',       # partial strings
         'BCONST', 'HCONST_S', 'HCONST_D', 'OCONST_S', 'OCONST_D',
 
     
@@ -109,6 +109,7 @@ class FLexer:
         'OR', 'AND', 'NOT', 'TRUE', 'FALSE', 'EQV', 'NEQV',
         'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'EQ_EQ', 'GREATERTHAN_EQ',
         'LESSTHAN_EQ', 'SLASH_EQ', 'EQ_GT', 'LESSTHAN', 'GREATERTHAN',
+        'DEFINED_UNARY_OP',
     
         # assignment (=, *=, /=, %=, +=, -=)
         'EQUALS', 'ASSIGN',
@@ -150,8 +151,9 @@ class FLexer:
     t_GT               = r'\.GT\.'
     t_GE               = r'\.GE\.'
     
-    t_TRUE             = r'\.TRUE\.'
-    t_FALSE            = r'\.FALSE\.'
+    # R428 .TRUE.[_kind-param] or .FALSE.[_kind-param]
+    t_TRUE             = r'\.TRUE\.(_([A-Za-z]\w*))?'
+    t_FALSE            = r'\.FALSE\.(_([A-Za-z]\w*))?'
     
     t_OR              = r'\.OR\.'
     t_AND             = r'\.AND\.'
@@ -163,6 +165,8 @@ class FLexer:
     # assignment operators
     t_EQUALS           = r'='
     
+    # defined unary operator; R703
+    t_DEFINED_UNARY_OP = r'\.[A-Za-z]+\.'
     
     # delimeters
     t_LPAREN           = r'\('
@@ -343,6 +347,9 @@ class FLexer:
         self.inFormat = True
         t.lexer.begin('format')
         return t
+    
+    # integer constant, label, and part of kind; R409
+    t_DIGIT_STRING = r'\d+'
     
     # binary literal; R408
     t_BCONST     = r'([bB]\'\d+\') | ([bB]"\d+")'

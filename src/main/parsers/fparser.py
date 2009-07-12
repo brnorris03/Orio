@@ -36,7 +36,7 @@ def p_program_unit_list_1(p):
     p[0] = [p[1]]
     
 def p_program_unit_list_2(p):
-    'program_unit_list : program_unit_list program_unit'
+    'program_unit_list : program_unit program_unit_list'
     p[1].append(p[2])
     p[0] = p[1]
 
@@ -69,13 +69,14 @@ def p_program_stmt_2(p):
     
 # R1103
 def p_end_program_stmt_1(p):
-    'end_program_stmt : END ID'
+    'end_program_stmt : END'
     pass
 
 def p_end_program_stmt_2(p):
-    'end_program_stmt : END PROGRAM ID'
-    
+    'end_program_stmt : END PROGRAM opt_id'
+    p[0] = p[3]
 
+    
 ###--- Specification part -------------------------------    
 # R204   
 def p_specification_part_1(p):
@@ -92,7 +93,7 @@ def p_use_stmt_list_1(p):
     pass
 
 def p_use_stmt_list_2(p):
-    'use_stmt_list : use_stmt_list use_stmt'
+    'use_stmt_list : use_stmt opt_semi use_stmt_list'
     pass
 
 def p_use_stmt_list_3(p):
@@ -101,18 +102,30 @@ def p_use_stmt_list_3(p):
 
 # R1109
 def p_use_stmt_1(p):
-    'use_stmt : USE module_nature_list_with_dcolon module_name comma_rename_list'
+    'use_stmt : USE comma_module_nature_dcolon module_name comma_rename_list'
     pass
 
 def p_use_stmt_2(p):
-    'use_stmt : USE module_nature_list_with_dcolon module_name COMMA ONLY COLON only_list'
+    'use_stmt : USE comma_module_nature_dcolon module_name COMMA ONLY COLON only_list'
+    pass
+
+def p_comma_module_nature_dcolon_1(p):
+    'comma_module_nature_dcolon : COMMA module_nature COLON_COLON'
+    pass
+
+def p_comma_module_nature_dcolon_2(p):
+    'comma_module_nature_dcolon : empty'
     pass
 
 # R1110
-def p_modle_nature(p):
+def p_module_nature(p):
     '''module_nature : INTRINSIC
                     | NON_INTRINSIC
                     '''
+    p[0] = p[1]
+    
+def p_module_name(p):
+    'module_name : ID'
     p[0] = p[1]
 
 def p_rename_1(p):
@@ -120,8 +133,17 @@ def p_rename_1(p):
     pass
 
 def p_rename_2(p):
-    'rename : OPERATOR LPAREN local-defined-operator RPAREN EQ_GT LPAREN use-defined-operator RPAREN'
+    'rename : OPERATOR LPAREN defined-operator RPAREN EQ_GT LPAREN defined-operator RPAREN'
     pass
+
+def p_only_list_1(p):
+    'only_list : only'
+    p[0] = p[1]
+    
+def p_only_list_2(p):
+    'only_list : only COMMA only_list'
+    p[1].append(p[2])
+    p[0] = p[1]
 
 # R1112
 def p_only(p):
@@ -137,6 +159,64 @@ def p_only_use_name(p):
     p[0] = p[1]
 
 
+# R1114 and R1115
+def p_defined_operator(p):
+    '''defined_operator : defined_unary_op
+                    | defined_binary_op
+                    '''
+
+# R1116
+def p_block_data(p):
+    'block_data : block_data_stmt specification_part end_block_data_stmt'
+    pass
+
+# R1117
+def p_block_data_stmt(p):
+    'block_data_stmt : BLOCK DATA opt_id'
+    p[0] = p[1]
+
+# R1118
+def p_end_block_data_stmt_1(p):
+    'end_block_data_stmt : END BLOCK DATA opt_id'
+    p[0] = p[4]
+
+def p_end_block_data_stmt_2(p):
+    'end_block_data_stmt : END'
+    p[0] = ''
+
+# R205
+def p_implicit_part_1(p):
+    'implicit_part : implicit_stmt'
+    pass
+
+def p_implicit_part_2(p):
+    'implicit_part : implicit_part_stmt implicit_stmt'
+    pass
+ 
+# R206
+def p_implicit_part_stmt(p):
+    '''implicit_part_stmt : implicit_stmt
+                        | parameter_stmt
+                        | format_stmt
+                        | entry_stmt
+                        '''
+    pass
+
+# R207
+def p_declaration_construct(p):
+    '''declaration_construct : derived_type_def
+                            | entry_stmt
+                            | enum_def
+                            | format_stmt
+                            | interface_block
+                            | parameter_stmt
+                            | procedure_declaration_stmt
+                            | specification_stmt
+                            | type_declaration_stmt
+                            | stmt_function_stmt
+                            '''
+                            
+        
 ###--- Execution part -----------------------------------
 
 # R208
@@ -149,7 +229,7 @@ def p_execution_part_3(p):
     pass
 
 def p_execution_part_construct_list_1(p):
-    'execution_part_construct_list : execution_part_construct_list execution_part_construct'
+    'execution_part_construct_list : execution_part_construct execution_part_construct_list'
     pass
 
 def p_execution_part_construct_list_2(p):
@@ -157,21 +237,1113 @@ def p_execution_part_construct_list_2(p):
     pass
 
 # R209
-def p_execution_part_construct_1(p):
+def p_execution_part_construct(p):
     '''execution_part_construct :  executable_construct
-                        | formal_stmt
-                        | entry_stmt
-                        | data_stmt
+                            | formal_stmt
+                            | entry_stmt
+                            | data_stmt
+                            '''
+    pass
+
+# R210
+def p_internal_subprogram_part(p):
+    'internal_subprogram_part : contains_stmt internal_subprogram_list'
+    pass
+
+def p_internal_subprogram_list_1(p):
+    'internal_subprogram_list : internal_subprogram'
+    pass
+
+def p_internal_subprogram_list_2(p):
+    'internal_subprogram_list : internal_subprogram internal_subprogram_list'
+
+# R211
+def p_internal_subprogram(p):
+    '''internal_subprogram : function_subprogram
+                        | subroutine_subprogram
                         '''
     pass
 
+# R212
+def p_specification_stmt(p):
+    '''specification_stmt : access_stmt
+                        | allocatable_stmt
+                        | asynchronous_stmt
+                        | bind_stmt
+                        | common_stmt
+                        | data_stmt
+                        | dimension_stmt
+                        | equivalence_stmt
+                        | external_stmt
+                        | intent_stmt
+                        | intrinsic_stmt
+                        | namelist_stmt
+                        | optional_stmt
+                        | pointer_stmt
+                        | protected_stmt
+                        | save_stmt
+                        | target_stmt
+                        | volatile_stmt
+                        | value_stmt
+                        '''
+    pass
 
-    
-def use_stmt_list_1(p):
-    'use_stmt_list : use_stmt_list use_stmt'
-    p[1].append(p[2])
+# R213
+def p_executable_construct(p):
+    '''executable_construct : action_stmt
+                        | associate_construct
+                        | case_construct
+                        | do_construct
+                        | forall_construct
+                        | if_construct
+                        | select_type_construct
+                        | where_construct
+                        '''
+    pass
+
+# R214
+def p_action_stmt(p):
+    '''action_stmt : allocate_stmt
+                        | assignment_stmt
+                        | backspace_stmt
+                        | call_stmt
+                        | close_stmt
+                        | continue_stmt
+                        | cycle_stmt
+                        | deallocate_stmt
+                        | endfile_stmt
+                        | end_function_stmt
+                        | end_program_stmt
+                        | end_subroutine_stmt
+                        | exit_stmt
+                        | flush_stmt
+                        | forall_stmt
+                        | goto_stmt
+                        | if_stmt
+                        | inquire_stmt
+                        | nullify_stmt
+                        | open_stmt
+                        | pointer_assignment_stmt
+                        | print_stmt
+                        | read_stmt
+                        | return_stmt
+                        | rewind_stmt
+                        | stop_stmt
+                        | wait_stmt
+                        | where_stmt
+                        | write_stmt
+                        | arithmetic_if_stmt
+                        | computed_goto_stmt
+                        '''
+    p[0] = p[1]
+
+# R215
+def p_keyword(p):
+    'keyword : ID'
+    p[0] = p[1]
+
+###--- Constants --------------------------------
+
+# R305
+def p_constant(p):
+    '''constant : literal_constant 
+                | named_constant
+                '''
     p[0] = p[1]
     
+# R306
+def p_literal_constant(p):
+    '''literal_constant : int_literal_constant
+                        | real_literal_constant
+                        | complex_literal_constant
+                        | logical_literal_constant
+                        | char_literal_constant
+                        | boz_literal_constant
+                        '''
+    p[0] = p[1]
+    
+ 
+# R307
+def p_named_constant(p):
+    'named_constant : ID'
+    p[0] = p[1] 
+    
+# R308
+def p_int_constant(p):
+    'int_constant : constant'
+    pass
+
+# R309
+def p_char_constant(p):
+    'char_constant : constant'
+    pass
+
+# R310
+def p_intrinsic_operator(p):
+    '''intrinsic_operator : power_op
+                        | mult_op
+                        | add_op
+                        | concat_op
+                        | rel_op
+                        | not_op
+                        | and_op
+                        | or_op
+                        | equiv_op
+                        '''
+    p[0] = p[1]
+    
+# R311
+def p_defined_operator(p):
+    '''defined_operator : defined_unary_op
+                        | defined_binary_op
+                        | extended_intrinsic_op
+                        '''
+    p[0] = p[1]
+    
+# R312
+def p_extended_intrinsic_op(p):
+    'extended_intrinsic_op : intrinsic_operator'
+    p[0] = p[1]
+    
+# R313
+def p_label_1(p):
+    'label : DIGIT_STRING'
+  
+###--- Types -------------------------------
+
+# R401
+def p_type_spec(p):
+    '''type_spec : intrinsic_type_spec
+                | derived_type_spec
+                '''
+    p[0] = p[1]
+                
+# R402
+def p_type_param_value(p):
+    '''type_param_value : scalar_int_expr
+                        | TIMES
+                        | COLON
+                        '''
+    p[0] = p[1]
+
+
+# R403
+def p_intrinsic_type_spec(p):
+    '''intrinsic_type_spec : INTEGER kind_selector
+                            | REAL kind_selector
+                            | DOUBLE PRECISION
+                            | COMPLEX kind_selector
+                            | CHARACTER kind_selector
+                            | LOGICAL kind_selector
+                            '''
+    pass
+
+# R404
+def p_kind_selector_1(p):
+    'kind_selector : scalar_int_initialization_expr'
+    p[0] = p[1]
+
+def p_kind_selector_2(p):
+    'kind_selector : KIND EQUALS scalar_int_initialization_expr'
+    p[0] = p[3]
+
+def p_opt_kind_selector(p):
+    '''opt_kind_selector : kind_selector
+                        | empty
+                        '''
+    p[0] = p[1]
+                        
+# R405
+def p_signed_int_literal_constant_1(p):
+    'signed_int_literal_constant : signed_digit_string'
+    p[0] = p[1]
+
+# R406-407 are in lexer
+
+# R408
+def p_signed_digit_string_1(p):
+    'signed_digit_string : DIGIT_STRING'
+    p[0] = p[1]
+        
+def p_signed_digit_string_2(p):
+    'signed_digit_string : sign DIGIT_STRING'
+    p[0] = p[1]
+    
+# R409 is in lexer
+
+# R410
+def p_sign(p):
+    '''sign : PLUS
+            | MINUS
+            '''
+    p[0] = p[1]
+    
+# R411
+def p_boz_literal_constant(p):
+    '''boz_literal_constant : binary_constant
+                        | octal_constant
+                        | hex_constant
+                        '''
+    p[0] = p[1]
+    
+# R412
+def p_binary_constant(p):
+    'binary_constant : BCONST'
+    p[0] = p[1]
+
+# R413
+def p_octal_constant(p):
+    '''octal_constant : OCONST_S
+                    | OCONST_D
+                    '''
+    p[0] = p[1]
+
+# R414
+def p_hex_constant(p):
+    '''hex_constant : HCONST_S
+                    | HCONST_D
+                    '''
+    p[0] = p[1]
+    
+# R415 is in lexer
+
+# R416
+def p_signed_real_literal_constant_1(p):
+    'signed_real_literal_constant : real_literal_constant'
+    p[0] = p[1]
+
+def p_signed_real_literal_constant_2(p):
+    'signed_real_literal_constant : sign real_literal_constant'
+    #p[2].setSign(p[1])
+    p[0] = p[2]
+    
+# R417
+def p_real_literal_constant(p):
+    'real_literal_constant : FCONST'
+    p[0] = p[1]
+    
+# R418 - R420 are in lexer
+
+# R421
+def p_complex_literal_constant(p):
+    'complex_literal_constant : LPAREN real_part COMMA imag_part RPAREN'
+    pass
+
+# R422
+def p_real_part(p):
+    '''real_part : signed_int_literal_constant 
+                | signed_real_literal_constant
+                '''
+    p[0] = p[1]
+
+# R423    
+def p_imag_part(p):
+    '''imag_part : signed_int_literal_constant 
+                | signed_real_literal_constant
+                | named_constant
+                '''
+    p[0] = p[1]
+    
+# R424
+def p_char_selector_1(p):
+    'char_selector : length_selector'
+    p[0] = p[1]
+    
+def p_char_selector_2(p):
+    'char_selector : LPAREN LEN EQUALS type_param_value COMMA KIND EQUALS scalar_int_initialization_expr RPAREN'
+    pass
+
+def p_char_selector_3(p):
+    'char_selector : LPAREN type_param_value COMMA KIND EQUALS scalar_int_initialization_expr RPAREN'
+    pass
+
+def p_char_selector_4(p):
+    'char_selector : LPAREN type_param_value COMMA scalar_int_initialization_expr RPAREN'
+    pass
+
+def p_char_selector_5(p):
+    'char_selector : LPAREN KIND EQUALS scalar_int_initialization_expr RPAREN'
+    pass
+
+def p_char_selector_6(p):
+    'char_selector : LPAREN KIND EQUALS scalar_int_initialization_expr COMMA LEN EQUALS type_param_value RPAREN'
+    pass
+
+# R425
+def p_length_selector_1(p):
+    'length_selector : type_parameter_value'
+    p[0] = p[1]
+    
+def p_length_selector_2(p):
+    'length_selector : LEN EQUALS type_parameter_value'
+    p[0] = p[3]
+    
+def p_length_selector_3(p):
+    'length_selector : TIMES char_length opt_comma'
+    p[0] = p[2]
+    
+# R426
+def p_char_length_1(p):
+    'char_length : LPAREN type_param_value RPAREN'
+    p[0] = p[2]   
+
+def p_char_length_2(p):
+    'char_length : scalar_int_literal_constant'
+    p[0] = p[1]
+
+# R427
+def p_char_literal_constant(p):
+    '''char_literal_constant : SCONST_S
+                            | SCONST_D
+                            | partial_string_list
+                            '''
+    p[0] = p[1]
+    
+def p_partial_string(p):
+    '''partial_string : PSCONST_S
+                    | PSCONST_D
+                    '''
+    p[0] = p[1]
+    
+def p_partial_string_list_1(p):
+    'partial_string_list : partial_string'
+    p[0] = p[1]
+    
+def p_partial_string_list_2(p):
+    'partial_string_list : partial_string partial_string_list'
+    p[0] = p[1] + p[2]
+    
+# R428
+def p_logical_literal_constant(p):
+    '''logical_literal_constant : TRUE 
+                                | FALSE 
+                                '''
+    pass
+
+# R429
+def p_derived_type_def(p):
+    '''derived_type_def : derived_type_stmt 
+                        type_param_def_stmt_list 
+                        private_or_sequence_list 
+                        component_part 
+                        type_bound_procedure_part
+                        end_type_stmt
+                        '''
+
+# R430
+def p_derived_type_stmt_1(p):
+    'derived_type_stmt : TYPE type_name'
+    # TODO
+    pass
+
+
+def p_derived_type_stmt_2(p):
+    'derived_type_stmt : TYPE comma_type_attr_spec_list opt_colon_colon type_name'
+    # TODO
+    pass
+
+def p_derived_type_stmt_3(p):
+    'derived_type_stmt : TYPE comma_type_attr_spec_list opt_colon_colon type_name LPAREN type_param_name_list RPAREN'
+    # TODO
+    pass
+
+def p_comma_type_attr_spec_list_1(p):
+    'comma_type_attr_spec_list : COMMA type_attr_spec_list'
+    # TODO
+    pass
+
+def p_comma_type_attr_spec_list_2(p):
+    'comma_type_attr_spec_list : empty'
+    # TODO
+    pass
+
+# R431
+def p_type_attr_spec_1(p):
+    '''type_attr_spec : access_spec 
+                    | ABSTRACT
+                    '''
+    # TODO
+    pass
+
+def p_type_attr_spec_2(p):
+    '''type_attr_spec : EXTENDS LPAREN parent_type_name RPAREN
+                    | BIND LPAREN ID RPAREN
+                    '''
+    # ID should only be the character C
+    #TODO
+    pass
+
+def p_type_attr_spec_list_1(p):
+    'type_attr_spec_list : type_attr_spec'
+    p[0] = [p[1]]
+
+def p_type_attr_spec_list_2(p):
+    'type_attr_spec_list : type_attr_spec COMMA type_attr_spec_list'
+    p[3].append(p[1])
+    p[0] = p[3]
+
+# R432
+def p_private_or_sequence(p):
+    '''private_or_sequence : private_components_stmt
+                            | sequence_stmt
+                            '''
+    p[0] = p[1]
+    
+def p_private_or_sequence_part_1(p):
+    'private_or_sequence_part : private_or_sequence private_or_sequence_part'
+    p[2].append(p[1])
+    p[0] = p[2]
+    
+def p_private_or_sequence_part_2(p):
+    'private_or_sequence_part : empty'
+    p[0] = []   
+
+# R433
+def p_end_type_stmt(p):
+    'end_type : END TYPE opt_id'
+    pass
+
+# R434
+def p_sequence_stmt(p):
+    'sequence_stmt : SEQUENCE'
+    pass
+
+# R435
+def p_type_param_def_stmt(p):
+    'type_param_def_stmt : INTEGER opt_kind_selector COMMA type_param_attr_spec COLON_COLON type_param_decl_part'
+    # TODO
+    pass
+
+def p_type_param_def_stmt_part_1(p):
+    'type_param_def_stmt_part : type_param_def_stmt type_param_def_stmt_part'
+    p[2].append(p[1])
+    p[0] = p[2]
+    
+def p_type_param_def_stmt_part_1(p):
+    'type_param_def_stmt_part : empty'
+    p[0] = []   
+
+# R436
+def p_type_param_decl_1(p):
+    'type_param_decl : type_param_name'
+    # TODO
+    pass
+
+def p_type_param_decl_2(p):
+    'type_param_decl : type_param_name EQUALS scalar_int_initialization_expr'
+    # TODO
+    pass
+
+def p_type_param_name(p):
+    'type_param_name : id'
+    p[0] = p[1]
+    
+def p_type_param_name_list_1(p):
+    'type_param_name_list : type_param_name'
+    p[0] = [p[1]]
+    
+def p_type_param_name_list_2(p):
+    'type_param_name_list : type_param_name COMMA type_param_name_list'
+    p[3].append(p[1])
+    p[0] = p[3]
+    
+    
+# R437
+def p_type_param_attr_spec(p):
+    '''type_param_attr_spec : KIND
+                            | LEN
+                            '''
+    pass
+
+# R438
+def p_component_part_1(p):
+    'component_part : component_def_stmt component_part'
+    p[2].append(p[1])
+    p[0] = p[2]
+
+def p_component_part_2(p):
+    'component_part : empty'
+    p[0] = []
+    
+# R439
+def p_component_def_stmt(p):
+    '''component_def_stmt : data_component_def_stmt
+                        | proc_component_def_stmt
+                        '''
+    p[0] = p[1]
+
+# R440
+def p_data_component_def_stmt_1(p):
+    'data_component_def_stmt : declaration_type_spec opt_colon_colon component_decl_list'
+    # TODO 
+    pass
+
+def p_data_component_def_stmt_2(p):
+    'data_component_def_stmt : declaration_type_spec COMMA component_attr_spec_list COLON_COLON component_decl_list'
+    # TODO 
+    pass
+
+###--- Expressions --------------------------------
+
+# R701
+def p_primary_1(p):
+    '''primary : constant
+                | designator
+                | array_constructor
+                | structure_constructor
+                | function_reference
+                | type_param_inquiry
+                | type_param_name
+                '''
+                
+    p[0] = p[1]
+
+def p_primary_2(p):
+    'primary : LPAREN expr RPAREN'
+    p[0] = p[2]
+    
+# R702
+def level_one_expr_1(p):
+    'level_one_expr : primary'
+    p[0] = p[1]
+    
+def level_one_expr_2(p):
+    'level_one_expr : defined_unary_op primary'
+    #p[2].setop(p[1])
+    p[0] = p[2]
+
+# R703
+def p_defined_unary_operator(p):
+    'defined_unary_operator : DEFINED_UNARY_OP'
+    p[0] = p[1]
+    
+# R704
+def p_mult_operand_1(p):
+    'mult_operand : level_one_expr'
+    p[0] = p[1]
+    
+def p_mult_operand_2(p):
+    'mult_operand : level_one_expr power_op mult_operand'
+    # TODO: create new binary op node and add operands
+    pass
+
+# R705
+def p_add_operand_1(p):
+    'add_operand : mult_operand'
+    p[0] = p[1]
+    
+def p_add_operand_2(p):
+    'add_operand : add_operand mult_op mult_operand'
+    # TODO: create new binary op node and add operands
+    pass
+
+# R706
+def p_level_two_expr_1(p):
+    'level_two_expr : add_operand'
+    p[0] = p[1]
+    
+def p_level_two_expr_2(p):
+    'level_two_expr : add_op add_operand'
+    p[0] = p[1]
+    
+def p_level_two_expr_3(p):
+    'level_two_expr : level_two_expr add_op add_operand'
+    # TODO: create new binary op node and add operands
+    pass
+
+# R707
+def p_power_op(p):
+    'power_op : TIMES TIMES'
+    pass
+
+# R708
+def p_mult_op(p):
+    '''mult_op : TIMES
+                | DIVIDE
+                '''
+    pass
+
+# R709
+def p_add_op(p):
+    '''add_op : PLUS
+            | MINUS
+            '''
+    pass
+
+# R710
+def p_level_three_expr_1(p):
+    'level_three_expr : level_two_expr'
+    p[0] = p[1]
+    
+def p_level_three_expr_2(p):
+    'level_three_expr : level_three_expr concat_op level_three_expr'
+    # TODO
+    pass
+
+# R711
+def p_concat_op(p):
+    'concat_op : DIVIDE DIVIDE'
+    pass
+
+# R712
+def p_level_four_expr_1(p):
+    'level_four_expr : level_three_expr'
+    p[0] = p[1]
+    
+def p_level_four_expr_2(p):
+    'level_four_expr : level_three_expr rel_op level_three_expr'
+    # TODO 
+    pass
+
+# R713
+def p_rel_op_1(p):
+    '''rel_op : EQ 
+            | NE
+            | LT
+            | LE
+            | GT
+            | GE
+            | LESSTHAN
+            | LESSTHAN_EQ
+            | GREATERTHAN
+            | GREATERTHAN_EQ
+            | EQ_GT
+            | EQ_EQ
+            | SLASH_EQ
+            '''
+    pass
+
+# R714
+def p_and_operand_1(p):
+    'and_operand : level_four_expr'
+    pass
+
+def p_and_operand_2(p):
+    'and_operand : NOT level_four_expr'
+    pass
+
+# R715
+def p_or_operand_1(p):
+    'or_operand : and_operand'
+    pass
+
+def p_or_operand_2(p):
+    'or_operand : or_operand AND and_operand'
+    # TODO
+    pass
+
+# R716
+def p_equiv_operand_1(p):
+    'equiv_operand : or_operand'
+    # TODO
+    pass
+
+def p_equiv_operand_2(p):
+    'equiv_operand : equiv_operand OR or_operand'
+    # TODO
+    pass
+
+# R717
+def p_level_five_expr_1(p):
+    'level_five_expr : equiv_operand'
+    pass
+
+def p_level_five_expr_2(p):
+    'level_five_expr : level_five_expr equiv_op equiv_operand'
+    # TODO
+    pass
+
+# R718 - R720 are in lexer
+
+# R721
+def p_equiv_op(p):
+    '''equiv_op : EQV
+                | NEQV
+                '''
+    p[0] = p[1]
+
+# R722
+def p_expr_1(p):
+    'expr : level_five_expr'
+    p[0] = p[1]
+    
+def p_expr_2(p):
+    'expr : expr DEFINED_BINARY_OP level_five_expr'
+    # TODO
+    pass
+
+# R723 is in lexer
+
+# R724
+def p_logical_expr(p):
+    'logical_expr : expr'
+    p[0] = p[1]
+    
+# R725
+def p_char_expr(p):
+    'char_expr : expr'
+    p[0] = p[1]
+
+# R726
+def p_default_char_expr(p):
+    'default_char_expr : expr'
+    p[0] = p[1]
+    
+# R727
+def p_int_expr(p):
+    'int_expr : expr'
+    p[0] = p[1]
+
+# R728
+def p_numeric_expr(p):
+    'numeric_expr : expr'
+    p[0] = p[1]
+
+# R729
+def p_specification_expr(p):
+    'specification_expr : scalar_int_expr'
+    p[0] = p[1]
+
+# R730
+def p_initialization_expr(p):
+    'initialization_expr : expr'
+    p[0] = p[1]
+
+# R731
+def p_char_initialization_expr(p):
+    'char_initialization_expr : char_expr'
+    p[0] = p[1]
+
+# R732
+def p_int_initialization_expr(p):
+    'int_initialization_expr : int_expr'
+    p[0] = p[1]
+
+# R733
+def p_logical_initialization_expr(p):
+    'logical_initialization_expr : logical_expr'
+    p[0] = p[1]
+
+# R734
+def p_assignment_stmt(p):
+    'assignment_stmt : variable EQUALS expr'
+    # TODO
+    pass
+
+# R735
+def p_pointer_assignment_stmt_1(p):
+    '''pointer_assignment_stmt : data_pointer_object EQ_GT data_target
+                                | proc_pointer_object EQ_GT proc_target
+                                '''
+    # TODO
+    pass
+
+def p_pointer_assignment_stmt_2(p):
+    '''pointer_assignment_stmt : data_pointer_object LPAREN bounds_spec_part RPAREN EQ_GT data_target
+                    | data_pointer_object LPAREN bounds_remapping_part RPAREN EQ_GT data_target
+                    '''
+    # TODO
+    pass
+
+# R736
+def p_data_pointer_object_1(p):
+    'data_pointer_object : variable_name'
+    p[0] = p[1]
+
+def p_data_pointer_object_2(p):
+    'data_pointer_object : variable MOD data_pointer_component_name'
+    p[0] = p[1]
+
+# R737
+def p_bounds_spec(p):
+    'bounds_spec : lower_bound_expr COLON'
+    # TODO
+    pass
+
+# R738
+def p_bounds_remapping(p):
+    'bounds_remapping : lower_bound_expr COLON upper_bound_expr'
+    # TODO
+    pass
+
+# R739
+def p_data_target(p):
+    '''data_target : variable
+                    | expr
+                    '''
+    p[0] = p[1]
+    
+# R740
+def p_proc_pointer_object(p):
+    '''proc_pointer_object : proc_pointer_name
+                            | proc_component_ref
+                            '''
+    p[0] = p[1]
+    
+# R741
+def p_proc_component_ref(p):
+    'proc_component_ref : variable MOD procedure_component_name'
+    # TODO
+    pass
+
+# R742
+def p_proc_target(p):
+    '''proc_target : expr
+                    | procedure_name
+                    | proc_component_ref
+                    '''
+    p[0] = p[1]
+    
+###--- Statements ------------------------
+
+
+# R743
+def p_where_stmt(p):
+    'where_stmt : WHERE LPAREN mask_expr RPAREN where_assignment_stmt'
+    # TODO
+    pass
+
+# R744
+def p_where_construct_1(p):
+    'where_construct : where_construct_stmt end_where_stmt'
+    # TODO 
+    pass
+
+def p_where_stmt_2(p):
+    'where_construct : where_construct_stmt where_body_construct_part masked_elsewhere_stmt_part elsewhere_stmt_part end_where_stmt'
+    # TODO 
+    pass
+
+def p_where_body_construct_part_1(p):
+    'where_body_construct_part : where_body_construct'
+    p[0] = [p[1]]
+    
+def p_where_body_construct_part_2(p):
+    'where_body_construct_part : where_body_construct where_body_construct_part'
+    p[2].append(p[1])
+    p[0] = p[2]
+    
+def p_where_body_construct_part_2(p):
+    'where_body_construct_part : empty'
+    p[0] = []
+
+def p_masked_elsewhere_stmt_part(p):
+    'masked_elsewhere_stmt_part : masked_elsewhere_stmt where_body_construct_part'
+    # TODO
+    pass
+
+def p_elsewhere_stmt_part(p):
+    'elsewhere_stmt_part : elsewhere_stmt where_body_construct_part'
+    # TODO 
+    pass
+
+# R745
+def p_where_construct_stmt_1(p):
+    'where_construct_stmt : WHERE LPAREN mask_expr RPAREN'
+    # TODO
+    pass
+
+def p_where_construct_stmt_2(p):
+    'where_construct_stmt : where_construct_name COLON WHERE LPAREN mask_expr RPAREN'
+    # TODO
+    pass
+
+# R746
+def p_where_body_construct(p):
+    '''where_body_construct : where_assignment_stmt
+                            | where_stmt
+                            | where_construct
+                            '''
+    p[0] = p[1]
+    
+# R747 
+def p_where_assignment_stmt(p):
+    'where_assignment_stmt : assignment_stmt'
+    p[0] = p[1]
+    
+# R748
+def p_mask_expr(p):
+    'mask_expr : logical_expr'
+    p[0] = p[1]
+    
+# R749
+def p_masked_elsewhere_stmt_1(p):
+    'masked_elsewhere_stmt : ELSEWHERE LPAREN masked_expr RPAREN'
+    # TODO
+    pass
+
+def p_masked_elsewhere_stmt_2(p):
+    'masked_elsewhere_stmt : ELSEWHERE LPAREN masked_expr RPAREN where_construct_name'
+    # TODO
+    pass
+
+# R750
+def p_elsewhere_stmt_1(p):
+    'elsewhere_stmt : ELSEWHERE'
+    pass
+
+def p_elsewhere_stmt_2(p):
+    'elsewhere_stmt : ELSEWHERE where_construct_name'
+    pass
+
+# R751
+def p_end_where_stmt_1(p):
+    'end_where_stmt : END WHERE'
+    pass
+
+def p_end_where_stmt_2(p):
+    'end_where_stmt : END WHERE where_construct_name'
+    pass
+
+# R752
+def p_forall_construct(p):
+    'forall_construct : forall_construct_stmt forall_body_construct_part end_forall_stmt'
+    # TODO
+    pass
+
+def p_forall_body_construct_part_1(p):
+    'forall_body_construct_part : forall_body_construct forall_body_construct_part'
+    p[2].append(p[1])
+    p[0] = p[2]
+
+def p_forall_body_construct_part_2(p):
+    'forall_body_construct_part : empty'
+    p[0] = []
+
+# R753
+def p_forall_construct_stmt_1(p):
+    'forall_construct_stmt : FORALL forall_header'
+    # TODO 
+    pass
+
+def p_forall_construct_stmt_2(p):
+    'forall_construct_stmt : forall_construct_name COLON FORALL forall_header'
+    # TODO 
+    pass
+
+# R754
+def p_forall_header_1(p):
+    'forall_header : LPAREN forall_triplet_spec_list RPAREN'
+    # TODO
+    pass
+
+def p_forall_header_2(p):
+    'forall_header : LPAREN forall_triplet_spec_list COMMA scalar_mask_expr RPAREN'
+    # TODO
+    pass
+
+# R755
+def p_forall_triplet_spec_1(p):
+    'forall_triplet_spec : index_name EQUALS subscript COLON subscript'
+    # TODO
+    pass
+
+def p_forall_triplet_spec_2(p):
+    'forall_triplet_spec : index_name EQUALS subscript COLON subscript COLON stride'
+    # TODO
+    pass
+
+def p_forall_triplet_spec_list_1(p):
+    'forall_triplet_spec_list : forall_triplet_spec COMMA forall_triplet_spec_list'
+    p[3].append(p[1])
+    p[0] = p[3]
+
+def p_forall_triplet_spec_list_2(p):
+    'forall_triplet_spec_list : forall_triplet_spec'
+    p[0] = [p[1]]
+
+# R756
+def p_forall_body_construct(p):
+    '''forall_body_construct : forall_assignment_stmt
+                            | where_stmt
+                            | where_construct
+                            | forall_construct
+                            | forall_stmt
+                            '''
+    p[0] = p[1]
+    
+# R757
+def p_forall_assignment_stmt(p):
+    '''forall_assignment_stmt : assignment_stmt
+                            | pointer_assignment_stmt
+                            '''
+    p[0] = p[1]
+
+# R758
+def p_end_forall_stmt_1(p):
+    'end_forall_stmt : END FORALL'
+    pass
+
+def p_end_forall_stmt_2(p):
+    'end_forall_stmt : END FORALL forall_construct_name'
+    pass
+
+# R759
+def p_forall_stmt(p):
+    'forall_stmt : FORALL forall_header forall_assignment_stmt'
+    # TODO
+    pass
+
+
+
+
+
+###--- Miscellaneous --------------------------------------------
+    
+def p_opt_semi(p):
+    '''opt_semi : SEMI
+                | empty
+                '''
+    pass
+
+def p_opt_comma(p):
+    '''opt_comma : COMMA
+                | empty
+                '''
+    pass
+
+def p_opt_colon_colon(p):
+    '''opt_colon_colon : COLON_COLON 
+                        | empty
+                        '''
+    pass
+
+def p_opt_id_1(p):
+    'opt_id : ID'
+    p[0] = p[1]
+    
+def p_opt_id_2(p):
+    'opt_id : empty'
+    p[0] = ''
+
+
+###--- End Fortran parser rules
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # statement-list
 def p_statement_list_opt_1(p):
     'statement_list_opt :'
