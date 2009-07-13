@@ -80,7 +80,7 @@ def p_end_program_stmt_2(p):
 ###--- Specification part -------------------------------    
 # R204   
 def p_specification_part_1(p):
-    'specification_part : use_stmt_list import_stmt_list implicit_part declaration_construct_list'
+    'specification_part : use_stmt_part import_stmt_list implicit_part declaration_construct_list'
     p[0] = p[1] 
 
 def p_specification_part_2(p):
@@ -88,16 +88,16 @@ def p_specification_part_2(p):
     p[0] = []
     
     
-def p_use_stmt_list_1(p):
-    'use_stmt_list : use_stmt'
+def p_use_stmt_part_1(p):
+    'use_stmt_part : use_stmt'
     pass
 
-def p_use_stmt_list_2(p):
-    'use_stmt_list : use_stmt opt_semi use_stmt_list'
+def p_use_stmt_part_2(p):
+    'use_stmt_part : use_stmt opt_semi use_stmt_part'
     pass
 
-def p_use_stmt_list_3(p):
-    'use_stmt_list : empty'
+def p_use_stmt_part_3(p):
+    'use_stmt_part : empty'
     pass
 
 # R1109
@@ -225,15 +225,15 @@ def p_execution_part_1(p):
     pass
 
 def p_execution_part_3(p):
-    'execution_part : execution_part_construct_list'
+    'execution_part : execution_part_construct_part'
     pass
 
-def p_execution_part_construct_list_1(p):
-    'execution_part_construct_list : execution_part_construct execution_part_construct_list'
+def p_execution_part_construct_partt_1(p):
+    'execution_part_construct_part : execution_part_construct execution_part_construct_part'
     pass
 
-def p_execution_part_construct_list_2(p):
-    'execution_part_construct_list : empty'
+def p_execution_part_construct_part_2(p):
+    'execution_part_construct_part : empty'
     pass
 
 # R209
@@ -247,15 +247,15 @@ def p_execution_part_construct(p):
 
 # R210
 def p_internal_subprogram_part(p):
-    'internal_subprogram_part : contains_stmt internal_subprogram_list'
+    'internal_subprogram_part : contains_stmt internal_subprogram_part'
     pass
 
-def p_internal_subprogram_list_1(p):
-    'internal_subprogram_list : internal_subprogram'
+def p_internal_subprogram_part_1(p):
+    'internal_subprogram_part : internal_subprogram'
     pass
 
 def p_internal_subprogram_list_2(p):
-    'internal_subprogram_list : internal_subprogram internal_subprogram_list'
+    'internal_subprogram_part : internal_subprogram internal_subprogram_part'
 
 # R211
 def p_internal_subprogram(p):
@@ -647,14 +647,12 @@ def p_derived_type_stmt_3(p):
     # TODO
     pass
 
-def p_comma_type_attr_spec_list_1(p):
-    'comma_type_attr_spec_list : COMMA type_attr_spec_list'
-    # TODO
-    pass
-
-def p_comma_type_attr_spec_list_2(p):
-    'comma_type_attr_spec_list : empty'
-    # TODO
+def p_comma_type_attr_spec_list(p):
+    '''comma_type_attr_spec_list : COMMA type_attr_spec_list
+                                | empty
+                                '''
+    if len(p) < 3: p[0] = []
+    else: p[0] = p[2]
     pass
 
 # R431
@@ -782,6 +780,671 @@ def p_data_component_def_stmt_2(p):
     'data_component_def_stmt : declaration_type_spec COMMA component_attr_spec_list COLON_COLON component_decl_list'
     # TODO 
     pass
+
+# R441
+def p_component_attr_spec_1(p):
+    'component_attr_spec : DIMENSION LPAREN component_array_spec RPAREN'
+    # TODO
+    pass
+
+def p_component_attr_spec_2(p):
+    '''component_attr_spec : POINTER
+                            | ALLOCATABLE
+                            | access_spec
+                            '''
+    p[0] = p[1]
+    
+# R442
+def p_component_decl(p):
+    'component_decl : component_name opt_component_array_spec opt_char_length opt_component_initialization'
+    # TODO 
+    pass
+
+def p_opt_component_array_spec(p):
+    '''opt_component_array_spec : LPAREN component_array_spec RPAREN
+                                | empty
+                                '''
+    if len(p) < 4: p[0] = None
+    else: p[0] = p[2]
+
+def p_opt_char_length(p):
+    '''opt_char_length : TIMES char_length
+                        | empty
+                        '''
+    if len(p) < 3: p[0] = None
+    else: p[0] = p[2]
+
+def p_opt_component_initialization(p):
+    '''opt_component_initialization : component_initialization
+                                    | empty
+                                    '''
+    if len(p) < 2: p[0] = None
+    else: p[0] = p[1]
+    
+# R443
+def p_component_array_spec(p):
+    '''component_array_spec : explicit_shape_spec_list
+                            | deferred_shape_spec_list
+                            '''
+    p[0] = p[1]
+
+        
+# R444
+def p_component_initialization(p):
+    '''component_initialization : EQUALS initialization_expr
+                                | EQ_GT null_init
+                                '''
+    p[0] = p[1]
+
+# R445
+def p_proc_component_def_stmt(p):
+    '''proc_component_def_stmt : PROCEDURE LPAREN opt_proc_interface RPAREN COMMA
+                                proc_component_attr_spec_list COLON_COLON proc_decl_list
+                                '''
+    # TODO
+    pass
+
+def p_opt_proc_interface(p):
+    '''opt_proc_interface : proc_interface
+                        | empty
+    '''
+    p[0] = p[1]
+
+# R446
+def p_proc_component_attr_spec_1(p):
+    '''proc_component_attr_spec : POINTER
+                                | NOPASS
+                                | PASS
+                                | access_spec
+                                '''
+    # TODO 
+    pass
+
+def p_proc_component_attr_spec_2(p):
+    'proc_component_attr_spec : PASS LPAREN arg_name RPAREN'
+    # TODO
+    pass
+
+def p_proc_component_attr_spec_list(p):
+    '''proc_component_attr_spec_list : proc_component_attr_spec COMMA proc_component_attr_spec_list
+                                    | empty
+                                    '''
+    if len(p) < 4: p[0] = []
+    else: 
+        p[3].append(p[1])
+        p[0] = p[3] 
+
+# R447
+def p_private_components_stmt(p):
+    'private_components_stmt : PRIVATE'
+    pass
+
+# R448
+def p_proc_binding_stmt(p):
+    '''proc_binding_stmt : specific_binding
+                        | generic_binding
+                        | final_binding
+                        '''
+    p[0] = p[1]
+    
+# R449
+def p_specific_binding_1(p):
+    'specific_binding : PROCEDURE opt_colon_colon binding_name'
+    # TODO
+    pass
+
+def p_specific_binding_2(p):
+    'specific_binding : PROCEDURE opt_interface_name opt_binding_attr_list binding_name opt_procedure_name'
+    # TODO
+    pass
+
+def p_opt_interface_name(p):
+    '''opt_interface_name : LPAREN interface_name RPAREN
+                        | empty
+                        '''
+    if len(p) < 4: p[0] = None
+    else: p[0] = p[2]
+
+def p_opt_binding_attr_list(p):
+    '''opt_binding_attr_list : COMMA binding_attr_list COLON_COLON
+                        | empty
+                        '''
+    if len(p) < 4: p[0] = []
+    else: p[0] = p[2]
+    
+def p_opt_procedure_name(p):
+    '''opt_interface_name : EQ_GT ID
+                        | empty
+                        '''
+    if len(p) < 3: p[0] = None
+    else: p[0] = p[2]
+    
+# R452
+def p_generic_binding(p):
+    'generic_binding : GENERIC opt_access_spec COLON_COLON generic_spec EQ_GT binding_name_list'
+    # TODO
+    pass
+
+def p_opt_access_spec(p):
+    '''opt_access_spec : COMMA access_spec
+                        | empty
+                        '''
+    if len(p) < 3: p[0] = None
+    else: p[0] = p[2]
+    
+# R453
+def p_binding_attr_1(p):
+    '''bidning_attr : PASS
+                    | NOPASS
+                    | NON_OVERRIDABLE
+                    | DEFERRED
+                    | access_spec
+                    '''
+    #TODO
+    pass
+
+def p_binding_attr_2(p):
+    'binding_attr : PASS LPAREN arg_name RPAREN'
+    # TODO
+    pass
+
+# R454
+def p_final_binding(p):
+    'findal_binding : FINAL opt_colon_colon final_subroutine_name_list'
+    # TODO
+    pass
+
+# R455
+def p_derived_type_spec_1(p):
+    'type_name : ID'
+    # TODO
+    pass
+
+def p_derived_type_spec_2(p):
+    'type_name : ID LPAREN type_param_spec_list RPAREN'
+    # TODO
+    pass
+
+# R456
+def p_type_param_spec_1(p):
+    'type_param_spec : type_param_value'
+    # TODO
+    pass
+
+def p_type_param_spec_2(p):
+    'type_param_spec : keyword EQUALS type_param_value'
+    # TODO
+    pass
+
+def p_type_param_spec_list(p):
+    '''type_param_spec : type_param_spec COMMA type_param_spec_list
+                        | empty
+                        '''
+    if len(p) < 4: p[0] = []
+    else: 
+        p[3].append(p[1])
+        p[0] = p[3]
+        
+# R457
+def p_structure_constructor_1(p):
+    'structure_constructor : derived_type_spec'
+    # TODO
+    pass
+
+def p_structure_constructor_2(p):
+    'structure_constructor : derived_type_spec LPAREN component_spec_list RPAREN'
+    #TODO
+    pass
+
+
+# R458
+def p_component_spec_1(p):
+    'component_spec : component_data_source'
+    # TODO
+    pass
+
+def p_component_spec_2(p):
+    'component_spec : keyword EQUALS component_data_source'
+    # TODO
+    pass
+
+def p_component_spec_list(p):
+    '''component_spec_list : component_spec COMMA component_spec_list
+                            | component_spec
+                            '''
+    if len(p) < 4: p[0] = [p[1]]
+    else: 
+        p[3].append(p[1])
+        p[0] = p[3]
+          
+# R459
+def p_component_data_source(p):
+    '''component_data_source : expr
+                            | data_target
+                            | proc_target
+                            '''
+    p[0] = p[1]
+
+# RR460
+def p_enum_def(p):
+    'enum_def : enum_def_stmt_part end_enum_def_stmt'
+    # TODO
+    pass
+
+def p_enum_def_stmt_part_1(p):
+    'enum_def_stmt_part : enum_def_stmt'
+    p[0] = [p[1]]
+
+def p_enum_def_stmt_part_2(p):
+    'enum_def_stmt_part : enum_def_stmt enum_def_stmt_part'
+    p[2].append(p[1]) 
+    p[0] = p[2] 
+    
+# R461
+def p_enum_def_stmt(p):
+    'enum_def_stmt : ENUM COMMA BIND LPAREN ID RPAREN'
+    # ID must be the character C
+    # TODO
+    pass
+
+# R462
+def p_enumerator_def_stmt(p):
+    'enumerator_def-stmt : ENUMERATOR opt_colon_colon enumerator_list'
+    # TODO
+    pass
+
+# R463
+def p_enumerator_1(p):
+    'enumerator : named_constant'
+    # TODO
+    pass
+
+def p_enumerator_2(p):
+    'enumerator : named_constant EQUALS scalar_int_initialization_expr'
+    # TODO
+    pass
+
+# R464
+def p_end_enum_stmt(p):
+    'end_enum_stmt : END ENUM'
+    pass
+
+# R465
+def p_array_constructor_1(p):
+    'array_constructor : LPAREN DIVIDE ac_spec DIVIDE RPAREN'
+    # TODO
+    pass
+
+def p_array_constructor_2(p):
+    'array_constructor : LBRACKET ac_spec RBRACKET'
+    # TODO
+    pass
+
+# R466
+def p_ac_spec_1(p):
+    'ac_spec : type_spec COLON_COLON'
+    # TODO 
+    pass
+
+def p_ac_spec_2(p):
+    'ac_spec : type_spec COLON_COLON ac_value_list'
+    # TODO 
+    pass
+
+def p_ac_spec_3(p):
+    'ac_spec : ac_value_list'
+    # TODO 
+    pass
+
+# R467 and R468 are in lexer
+
+# R469
+def p_ac_value(p):
+    '''ac_value : expr
+                | ac_implied_do
+                '''
+    # TODO
+    pass
+
+def p_ac_value_list(p):
+    '''ac_value_list : ac_value COMMA ac_value_list
+                    | ac_value
+                    '''
+    if len(p) < 4: p[0] = [p[1]]
+    else: 
+        p[3].append(p[1])
+        p[0] = p[3]
+        
+# R470
+def p_ac_implied_do(p):
+    'ac_implied_do : LPAREN ac_value_list COMMA ac_implied_do_control RPAREN'
+    # TODO
+    pass
+
+# R471
+def p_impled_do_control(p):
+    'implied_do_control : ac_do_variable EQUALS scalar_int_expr COMMA scalar_int_expr_list'
+    # TODO
+    pass
+
+# R472
+def p_ac_do_variable(p):
+    'ac_do_variable : scalar_int_variable'
+    p[0] = p[1]
+    
+
+###--- Sec 5 types --------------------------------
+
+# R501
+def p_type_declaration_stmt_1(p):
+    'type_declaration_stmt : declaration_type_spec opt_colon_colon entity_decl_list'
+    # TODO 
+    pass
+
+
+def p_type_declaration_stmt_2(p):
+    'type_declaration_stmt : declaration_type_spec opt_attr_spec_part entity_decl_list'
+    # TODO 
+    pass
+
+def p_opt_attr_spec_part(p):
+    '''opt_attr_spec_part : COMMA attr_spec_part COLON_COLON
+                        | empty
+                        '''
+    if len(p) < 4: p[0] = None
+    else: p[0] = p[2]
+    
+def p_attr_spec_part(p):
+    '''attr_spec_part : attr_spec attr_spec_part 
+                    | empty
+                    '''
+    if len(p) < 3: p[0] = []
+    else: 
+        p[2].append(p[1])
+        p[0] = p[2]
+        
+# R502
+def p_declaration_type_spec_1(p):
+    'declaration_type_spec : intrinsic_type_spec'
+    p[0] = p[1]
+    
+def p_declaration_type_spec_2(p):
+    '''declaration_type_spec : TYPE LPAREN derived_type_spec RPAREN
+                            | CLASS LPAREN derived_type_spec RPAREN
+                            | CLASS LPAREN TIMES RPAREN
+                            '''
+    # TODO
+    pass
+
+# R503
+def p_attr_spec_1(p):
+    '''attr_spec : access_spec 
+                | ALLOCATABLE
+                | ASYNCHRONOUS
+                | EXTERNAL
+                | INTRINSIC
+                | language_binding_spec
+                | OPTIONAL
+                | PARAMETER
+                | POINTER
+                | PROTECTED
+                | SAVE
+                | TARGET
+                | VALUE
+                | VOLATILE
+                '''
+    # TODO
+    pass
+
+def p_attr_spec_2(p):
+    'attr_spec : DIMENSION LPAREN array_spec RPAREN'
+    # TODO
+    pass
+
+# R504
+def p_entity_decl_1(p):
+    'entity_decl : object_name opt_array_spec opt_char_length opt_initialization'
+    # TODO (ID is object name)
+    pass
+
+def p_entity_decl_2(p):
+    'entity_decl : function_name opt_char_length'
+    # TODO
+    pass
+
+def p_opt_array_spec(p):
+    '''opt_array_spec : LPAREN array_spec RPAREN
+                    | empty
+                    '''
+    if len(p) < 4: p[0] = None
+    else: p[0] = p[2]
+    
+def p_opt_char_length(p):
+    '''opt_char_legth : TIMES char_length
+                    | empty
+                    '''
+    if len(p) < 3: p[0] = None
+    else: p[0] = p[2]
+    
+def p_opt_initialization(p):
+    '''opt_initialization : initialization
+                        | empty
+                        '''
+    if len(p) < 2: p[0] = None
+    else: p[0] = p[1]
+    
+# R505 
+def p_object_name(p):
+    'object_name : ID'
+    p[0] = p[1]
+    
+# R506 
+def p_initialization(p):
+    '''initialization : EQUALS initialization_expr
+                    | EQ_GT null_init
+                    '''
+    p[0] = p[2]
+
+# R507
+def p_null_init(p):
+    'null_init : function_reference'
+    #  C506 The function_reference shall be a reference to the NULL intrinsic function
+    # with no arguments
+    p[0] = p[1]
+
+# R508
+def p_access_spec(p):
+    '''access_spec : PUBLIC
+                    | PRIVATE
+                    '''
+    p[0] = p[1]
+    
+# R509
+def p_language_binding_spec_1(p):
+    'language_binding_spec : BIND LPAREN ID RPAREN'
+    # ID must be C
+    #TODO
+    pass
+
+def p_language_binding_spec_2():
+    'language_binding_spec : BIND LPAREN ID COMMA NAME EQUALS scalar_char_initialization_expr RPAREN'
+    # ID must be C
+    # TODO
+    pass
+
+# R510
+def p_array_spec(p):
+    '''array_spec : explicit_shape_spec_list
+                | assumed_shape_spec_list
+                | deferred_shape_spec_list
+                | assumed_size_spec
+                '''
+    p[0] = p[1]
+    
+# R511
+def p_explicit_shape_spec_1(p):
+    'explicit_shape_spec : upper_bound'
+    # TODO
+    pass
+
+def p_explicit_shape_spec_2(p):
+    'explicit_shape_spec : lower_bound COLON upper_bound'
+    # TODO
+    pass
+
+def p_explicit_shape_spec_list(p):
+    '''explicit_shape_spec_list : explicit_shape COMMA explicit_shape_spec_list
+                                | explicit_shape
+                                '''
+    if len(p) < 4: p[0] = [p[1]]
+    else: 
+        p[3].append(p[1])
+        p[0] = p[3]
+
+def p_lower_bound(p):
+    'lower_bound : specification_expr'
+    p[0] = p[1]
+
+def p_upper_bound(p):
+    'upper_bound : specification_expr'
+    p[0] = p[1]
+
+        
+# R514 
+def p_assumed_shape_spec_1(p):
+    'assumed_shape_spec : COLON'
+    pass
+
+def p_assumed_shape_spec_2(p):
+    'assumed_shape_spec : lower_bound COLON'
+    pass
+    
+def p_assumed_shape_spec_list(p):
+    '''assumed_shape_spec_list : explicit_shape COMMA assumed_shape_spec_list
+                                | explicit_shape
+                                '''
+    if len(p) < 4: p[0] = [p[1]]
+    else: 
+        p[3].append(p[1])
+        p[0] = p[3]
+
+
+# R515
+def p_deferred_shape_spec(p):
+    'deferred_shape_spec : COLON'
+    pass
+
+def p_deferred_shape_spec_list(p):
+    '''deferred_shape_spec_list : deferred_shape COMMA deferred_shape_spec_list
+                                | deferred_shape
+                                '''
+    if len(p) < 4: p[0] = [p[1]]
+    else: 
+        p[3].append(p[1])
+        p[0] = p[3]
+        
+
+# R516
+def p_assumed_size_spec(p):
+    'assumed_size_spec : opt_explicit_shape_spec_list opt_lower_bound TIMES'
+    # TODO
+    pass
+
+def p_opt_explicit_shape_spec_list(p):
+    '''opt_explicit_shape_spec_list : explicit_shape_spec_list COMMA
+                                    | empty
+                                    '''
+    if len(p) < 3: p[0] = None
+    else: p[0] = p[1]
+    
+def p_opt_lower_bound(p):
+    '''opt_lower_bound : lower_bound COLON
+                        | empty
+                        '''
+    if len(p) < 3: p[0] = None
+    else: p[0] = p[1]
+    
+    
+# R517
+def p_intent_spec(p):
+    '''intent_spec : IN
+                    | OUT
+                    | INOUT
+                    '''
+    p[0] = p[1]
+    pass
+
+# R518
+def p_access_stmt_1(p):
+    'access_stmt : access_spec'
+    # TODO
+    pass
+
+def p_access_stmt_2(p):
+    'access_stmt : access_spec opt_colon_colon access_id_list'
+    # TODO
+    pass
+
+# R519
+def p_access_id(p):
+    '''access_id : use_name
+                | generic_spec
+                '''
+    p[0] = p[1]
+    
+# R520
+def p_allocatable_stmt(p):
+    'allocatable_stmt : ALLOCATABLE opt_colon_colon object_name_with_opt_deferred_shape_list'
+    # TODO            
+    pass
+
+def p_opt_deferred_shape_spec_list_in_paren(p):
+    '''opt_deferred_shape_spec_list_in_paren : LPAREN deferred_shape_spec_list RPAREN
+                                            | empty
+                                            '''
+    if len(p) < 4: p[0] = None
+    else: p[0] = p[2]
+    
+def p_object_name_with_opt_deferred_shape_list_1(p):
+    'object_name_with_opt_deferred_shape_list : object_name opt_deferred_shape_spec_list_in_paren'
+    # TODO
+    pass
+
+def p_object_name_with_opt_deferred_shape_list_2(p):
+    'object_name_with_opt_deferred_shape_list : object_name opt_deferred_shape_spec_list_in_paren COMMA object_name_with_opt_deferred_shape_list'
+    # TODO
+    pass
+    
+# R521
+def p_asyncrhonous_stmt(p):
+    'asynchronous_stmt : ASYNCHRONOUS opt_colon_colon object_name_list'
+    # TODO
+    pass
+
+def p_object_name_list_1(p):
+    'object_name_list : object_name'
+    p[0] = [p[1]]
+
+def p_object_name_list_2(p):
+    'object_name_list : object_name COMMA object_name_list'
+    p[3].append(p[1])
+    p[0] = p[3]
+
+# R522
+def p_bind_stmt(p):
+    'bind_stmt : language_binding_spec opt_colon_colon bind_entity_list'
+    # TODO
+    pass
+
+# R523
+def p_bind_entity_1(p):
+    'bind_entity : entity_name'
+    pass
+
+def p_bind_entity_2(p):
+    'bind_entity : DIVIDE common_block_name DIVIDE'
+    pass
+
 
 ###--- Expressions --------------------------------
 
@@ -1094,6 +1757,20 @@ def p_proc_target(p):
                     '''
     p[0] = p[1]
     
+def p_scalar_int_expression(p):
+    'scalar_int_expression : expr'
+    # Restricted expression, see p. 125 in standard (sec. 7.1.6)
+    p[0] = p[1]
+    
+def p_scalar_int_expression_list(p):
+    '''scalar_int_expression_list : scalar_int_expression COMMA scalar_int_expression_list
+                                | scalar_int_expression
+                                '''
+    if len(p) < 4: p[0] = [p[1]]
+    else:
+        p[3].append(p[1])
+        p[0] = p[3]
+    
 ###--- Statements ------------------------
 
 
@@ -1317,7 +1994,32 @@ def p_opt_id_2(p):
     p[0] = ''
 
 
-###--- End Fortran parser rules
+def p_empty(p):
+    'empty :'
+    p[0] = None
+
+
+###--- Procedure ------------------------------------------------
+
+# R1214
+def p_proc_decl_1(p):
+    'proc_decl : procedure_entity_name'
+    p[0] = p[1]
+    
+def p_proc_decl_2(p):
+    'proc_decl : procedure_entity_name EQ_GT null_init'
+    p[0] = p[1]
+    
+def p_proc_decl_list(p):
+    '''proc_decl_list : proc_decl COMMA proc_decl_list
+                    | empty
+                    '''
+    if len(p) < 4: p[0] = []
+    else: 
+        p[3].append(p[1])
+        p[0] = p[3]
+        
+###--- End Fortran parser rules ---------------------------------
 
 
 
@@ -1836,9 +2538,6 @@ def p_py_atom_2(p):
     'py_atom : LPAREN py_expression_list_opt RPAREN'
     p[0] = p[1] + p[2] + p[3]
 
-def p_empty(p):
-    'empty :'
-    pass
 
 #------------------------------------------------
 
