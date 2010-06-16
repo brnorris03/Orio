@@ -2,12 +2,18 @@
 
 import os, sys, re
 
+blas_includes={'atlas': '-I/disks/large/soft/atlas/include'}
+blas_linkopts={'atlas':'-Wl,-rpath,/disks/large/soft/atlas/lib -L/disks/large/soft/atlas/lib -lf77blas -latlas -Wl,-rpath,/soft/com/packages/intel/fce/9.1.043/lib -L/soft/com/packages/intel/fce/9.1.043/lib -lifcore'}
+
 def printFloats(ls):
     s=''
     s+='['
     for i,f in enumerate(ls):
         if i: s+=', '
-        s+='%2.3f' % f
+        if f < 0.001: 
+            s+='%2.5f' % f
+        else:
+            s+='%2.3f' % f
     s+=']'
     print s
 
@@ -99,12 +105,18 @@ def checkCorrectness(optflag, arrtype):
     
     fnames = [
         'gesummv.matlab.c', 
+        'gesummv.blas.c',
         'gesummv.orio.seq.c', 
         'gesummv.orio.par.c', 
         ]
     for fname in fnames:
-        compile_cmd = (('icc %s %s -openmp -DREPS=1 -DN=%s -DTEST %s -lm') % 
-                       (arrtype, optflag, N, fname))
+        incopts = ''
+        linkopts = ''
+        if fname == 'gesummv.blas.c':
+           incopts = blas_includes['atlas']
+           linkopts = blas_linkopts['atlas']
+        compile_cmd = (('icc %s %s -openmp -DREPS=1 -DN=%s -DTEST %s %s %s -lm') % 
+                       (arrtype, optflag, N, incopts, fname, linkopts))
         run_cmd = 'export OMP_NUM_THREADS=1; ./a.out'
         print '***********************'
         print compile_cmd
@@ -135,50 +147,68 @@ def checkCorrectness(optflag, arrtype):
 
 # correctness checking
 OPTFLAG = '-O3'
-if 1:
-    checkCorrectness('-O0', '-DDYNAMIC')
+if 0:
+    checkCorrectness('-O3 -parallel', '-DDYNAMIC')
     checkCorrectness(OPTFLAG, '-DDYNAMIC')
     checkCorrectness('-O0', '')
     checkCorrectness(OPTFLAG, '')
 
 # parallel case
 if 1:
-    reps = 1
+    reps = 100
     N = 10000
     #N = 20000
     flags = '-DREPS=%s -DN=%s' % (reps, N)
 
     rtimes_matlab_static =[]
     rtimes_matlab_dynamic =[]
+    rtimes_blas_dynamic =[]
     rtimes_orio_static =[]
     rtimes_orio_dynamic =[]
 
     mflopss_matlab_static = []
     mflopss_matlab_dynamic = []
+    mflopss_blas_dynamic = []
     mflopss_orio_static = []
     mflopss_orio_dynamic = []
 
-    if N <= 10000:
+    if 0 and N <= 10000:
         rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -parallel' % OPTFLAG, 
                         'gesummv.matlab.c', flags, '-lm')
         rtimes_matlab_static = rtimes
         mflopss_matlab_static = countFlops(N,rtimes)
         
-    rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -parallel' % OPTFLAG, 
+    for N in range(2000,22000,2000):
+	break
+        #rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -parallel' % OPTFLAG, 
+        flags = '-DREPS=%s -DN=%s' % (reps, N)
+        rtimes = runExp([8], 'icc %s -DDYNAMIC -parallel' % OPTFLAG, 
                     'gesummv.matlab.c', flags, '-lm')
-    rtimes_matlab_dynamic = rtimes
-    mflopss_matlab_dynamic = countFlops(N,rtimes)
+        rtimes_matlab_dynamic.extend(rtimes)
+        mflopss_matlab_dynamic.extend(countFlops(N,rtimes))
 
-    if N <= 10000:
+    for N in range(2000,22000,2000):
+        #rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -parallel' % OPTFLAG, 
+        flags = '-DREPS=%s -DN=%s %s' % (reps, N, blas_includes['atlas'])
+        rtimes = runExp([8], 'icc %s -DDYNAMIC -parallel' % OPTFLAG, 
+                    'gesummv.blas.c', flags, ' %s -lm' % blas_linkopts['atlas'])
+        rtimes_blas_dynamic.extend(rtimes)
+        mflopss_blas_dynamic.extend(countFlops(N,rtimes))
+
+    if N <= 1000:
         rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -openmp' % OPTFLAG, 
                         'gesummv.orio.par.c', flags, '-lm')
         rtimes_orio_static = rtimes
         mflopss_orio_static = countFlops(N,rtimes)
         
-    rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -openmp' % OPTFLAG, 
+    for N in range(2000,22000,2000):
+        break
+        #rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -openmp' % OPTFLAG, 
+        flags = '-DREPS=%s -DN=%s' % (reps, N)
+        rtimes = runExp([8], 'icc %s -DDYNAMIC -openmp' % OPTFLAG, 
                     'gesummv.orio.par.c', flags, '-lm')
-    rtimes_orio_dynamic = rtimes
-    mflopss_orio_dynamic = countFlops(N,rtimes)
+        rtimes_orio_dynamic.extend(rtimes)
+        mflopss_orio_dynamic.extend(countFlops(N,rtimes))
 
     print '--- Parallel: seconds (static arrays) ---'
     print 'matlab=',
@@ -195,18 +225,22 @@ if 1:
     print '--- Parallel: seconds (dynamic arrays) ---'
     print 'matlab=',
     printFloats(rtimes_matlab_dynamic)
+    print 'blas=',
+    printFloats(rtimes_blas_dynamic)
     print 'orio=',
     printFloats(rtimes_orio_dynamic)
 
     print '--- Parallel: Mflops/sec (dynamic arrays) ---'
     print 'matlab=',
     printFloats(mflopss_matlab_dynamic)
+    print 'blas=',
+    printFloats(mflopss_blas_dynamic)
     print 'orio=',
     printFloats(mflopss_orio_dynamic)
 
     
 # sequential case
-if 1:
+if 0:
 
     rtimes_matlab_static =[]
     rtimes_matlab_dynamic =[]

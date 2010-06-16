@@ -15,6 +15,8 @@ usage: %s [options] <ifile>
   <ifile>   input file containing the annotated code
 
 options:
+  -c, --pre-command=<string>     Command string with which to prefix the execution of the 
+                                 Orio-built code, e.g., tauex
   -e, --erase-annot              remove annotations from the output
   -h, --help                     display this message
   -k, --keep-temps               do not remove intermediate generated files
@@ -39,7 +41,7 @@ class CmdLineOpts:
     '''The command line options'''
 
     def __init__(self, src_filenames, spec_filename, verbose, erase_annot, 
-                keep_temps, rename_objects, ext_cline, disable_orio):
+                keep_temps, rename_objects, ext_cline, disable_orio, pre_cmd=''):
         '''To instantiate an object that represents the command line options'''
 
         self.src_filenames = src_filenames     # dictionary; keys: input source files; vals: names of output files
@@ -50,6 +52,7 @@ class CmdLineOpts:
         self.rename_objects = rename_objects   # rename compiler files to match original source name
         self.external_command = ext_cline      # command line being wrapped (not processed, just passed along)
         self.disable_orio = disable_orio       # True when orio is wrapping something other than compilation, e.g., linking
+        self.pre_cmd = pre_cmd                 # Command string with which to prefix the execution of the Orio-built code
         pass
 
 #----------------------------------------------
@@ -127,12 +130,13 @@ class CmdParser:
         erase_annot = False      
         keep_temps = False
         disable_orio = False
+        pre_cmd = ''
 
         # get all options
         try:
             opts, args = getopt.getopt(orioargv,
-                                       'ehko:p:rs:v',
-                                       ['erase-annot', 'help', 'keep-temps',' output=', 
+                                       'c:ehko:p:rs:v',
+                                       ['pre-command=', 'erase-annot', 'help', 'keep-temps',' output=', 
                                        'output-prefix=', 'rename-objects', 'spec=', 'verbose'])
         except Exception, e:
             print 'Orio error: %s' % e
@@ -141,7 +145,9 @@ class CmdParser:
 
         # evaluate all options
         for opt, arg in opts:
-            if opt in ('-e', '--erase-annot'):
+            if opt in ('-c', '--pre-command'):
+                pre_cmd = arg
+            elif opt in ('-e', '--erase-annot'):
                 erase_annot = True
             elif opt in ('-h', '--help'):
                 print USAGE_MSG
@@ -195,7 +201,7 @@ class CmdParser:
 
         # create an object for the command line options
         cline_opts = CmdLineOpts(srcfiles, spec_filename, verbose, erase_annot, keep_temps, 
-                                 rename_objects, externalargs, disable_orio)
+                                 rename_objects, externalargs, disable_orio, pre_cmd)
 
         # return the command line option object
         return cline_opts
