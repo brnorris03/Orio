@@ -48,6 +48,8 @@ int main()
   orio_avg_cycles = orio_total_cycles / REPS;
   printf("%ld\n", orio_avg_cycles);
 
+  printf("{'/*@ coordinate @*/' : %ld}", orio_avg_cycles);
+
   /*@ epilogue @*/  
 
   return y[0]; // to avoid the dead code elimination

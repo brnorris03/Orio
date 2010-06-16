@@ -143,7 +143,7 @@ if 0:
 
 # parallel case
 if 1:
-    reps = 1
+    reps = 10
     N = 10000
     N = 20000
     flags = '-DREPS=%s -DN=%s' % (reps, N)
@@ -158,27 +158,35 @@ if 1:
     mflopss_orio_static = []
     mflopss_orio_dynamic = []
 
-    if N <= 10000:
+    if 0 and N <= 10000:
         rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -parallel' % OPTFLAG, 
                         'atax.matlab.c', flags, '-lm')
         rtimes_matlab_static = rtimes
         mflopss_matlab_static = countFlops(N,rtimes)
         
-    rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -parallel' % OPTFLAG, 
+    for N in range(2000,22000,2000):
+        #rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -parallel' % OPTFLAG, 
+        flags = '-DREPS=%s -DN=%s' % (reps, N)
+        rtimes = runExp([8], 'icc %s -DDYNAMIC -parallel' % OPTFLAG, 
                     'atax.matlab.c', flags, '-lm')
-    rtimes_matlab_dynamic = rtimes
-    mflopss_matlab_dynamic = countFlops(N,rtimes)
+        rtimes_matlab_dynamic.extend(rtimes)
+        mflopss_matlab_dynamic.extend(countFlops(N,rtimes))
 
-    if N <= 10000:
+    if 0 and N <= 10000:
         rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -openmp' % OPTFLAG, 
                         'atax.orio.par.c', flags, '-lm')
         rtimes_orio_static = rtimes
         mflopss_orio_static = countFlops(N,rtimes)
         
-    rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -openmp' % OPTFLAG, 
+    for N in range(2000,22000,2000):
+        #rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -openmp' % OPTFLAG,
+        flags = '-DREPS=%s -DN=%s' % (reps, N)
+        rtimes = runExp([8], 'icc %s -DDYNAMIC -openmp' % OPTFLAG,
                     'atax.orio.par.c', flags, '-lm')
-    rtimes_orio_dynamic = rtimes
-    mflopss_orio_dynamic = countFlops(N,rtimes)
+        rtimes_orio_dynamic.extend(rtimes)
+        mflopss_orio_dynamic.extend(countFlops(N,rtimes))
+
+
 
     print '--- Parallel: seconds (static arrays) ---'
     print 'matlab=',

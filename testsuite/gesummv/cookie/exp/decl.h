@@ -31,7 +31,7 @@ void init_input_vars() {
   n = N;
   for (i=0; i<=N-1; i++) {
     x[i]=(i+1)/N/3.0;
-    y[i]=(i+1)/N/4.0;
+    y[i]=0.0;
     for (j=0; j<=N-1; j++) {
 #ifdef DYNAMIC
       A[i*N+j]=(i*j)/N/2.0;

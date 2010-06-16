@@ -27,7 +27,7 @@ class PerfTestDriver:
     #-----------------------------------------------------
     
     def __init__(self, build_cmd, batch_cmd, status_cmd, num_procs, pcount_method, pcount_reps,
-                 use_parallel_search, verbose):
+                 use_parallel_search, verbose, pre_cmd='', keep_temps=False):
         '''To instantiate the performance-testing driver'''
 
         self.build_cmd = build_cmd
@@ -38,6 +38,8 @@ class PerfTestDriver:
         self.pcount_reps = pcount_reps
         self.use_parallel_search = use_parallel_search
         self.verbose = verbose
+        self.pre_cmd = pre_cmd
+        self.keep_temps = keep_temps
 
         global counter
         counter += 1
@@ -129,17 +131,26 @@ class PerfTestDriver:
                 
         # execute the search sequentially
         else:
-            cmd = './%s' % self.exe_name
+            cmd = '%s ./%s' % (self.pre_cmd,self.exe_name)
             if self.verbose: print ' running:\n\t' + cmd
             try:
                 f = os.popen(cmd)
-                output = f.read()
+                out = f.readlines()
                 f.close()
-                if output: perf_costs = eval(output)
             except Exception, e:
                 print 'error: failed to execute the testing code: "%s"' % cmd
                 print ' --> %s: %s' % (e.__class__.__name__, e)
                 sys.exit(1)
+            try:
+                if out: 
+                    for line in out: 
+                        if line.strip().startswith('{'): 
+                            output = line.strip()
+                            break
+                if output: perf_costs = eval(str(output))
+            except Exception, e:
+                print 'error: failed to process test result, command was "%s", output: "%s"' % (cmd,perf_costs)
+                print ' --> %s: %s' % (e.__class__.__name__, e)
 
         # check if the performance cost is already acquired
         if not perf_costs:
@@ -154,6 +165,7 @@ class PerfTestDriver:
     def __cleanup(self):
         '''Delete all the generated files'''
 
+        if self.keep_temps: return
         for fname in [self.exe_name, self.src_name]:
             try:
                 if os.path.exists(fname):
