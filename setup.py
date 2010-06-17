@@ -19,6 +19,8 @@ for root, dirs, files in os.walk(src_dir, topdown=True):
         dir_names = rel_dir.split(os.sep)
         py_packages.append('.'.join(['orio'] + dir_names[1:]))
 
+print py_packages
+
 #-----------------------------------------------------------
 
 # to remove certain packages not included in the source distribution
@@ -41,7 +43,7 @@ if False:
 
 # make a call to the setup function
 setup(name = 'orio',
-      version = '0.2.0',
+      version = '0.2.2',
       description = 'ORIO -- An Annotation-Based Performance Tuning Tool',
       author = 'Albert Hartono',
       author_email = 'hartonoa@cse.ohio-state.edu',
@@ -50,7 +52,7 @@ setup(name = 'orio',
       url = 'https://trac.mcs.anl.gov/projects/performance/wiki/Orio',
       packages = py_packages,
       package_dir = {'orio' : 'src'},
-      package_data = {'orio' : ['tool/zestyparser/*']},
+      #package_data = {'orio' : ['tool/zestyparser/*']},
       scripts = ['orcc', 'orf'])
 
 

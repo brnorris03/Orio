@@ -24,7 +24,7 @@ PARAM       = Token('param')
 SPEC        = Token('spec')
 
 # tokens
-ID          = Token('[A-Za-z_][A-Za-z0-9_]*', group=0) >> f_token
+ID          = Token('[A-Za-z_]([A-Za-z0-9_\.]*[A-Za-z0-9_]+)*', group=0) >> f_token
 EQUALS      = Token('=')
 LBRACKET    = Token('\[')
 RBRACKET    = Token('\]')

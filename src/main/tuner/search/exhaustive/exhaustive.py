@@ -10,14 +10,13 @@ import main.tuner.search.search
 class Exhaustive(main.tuner.search.search.Search):
     '''The search engine that uses an exhaustive search approach'''
 
-    def __init__(self, cfrags, axis_names, axis_val_ranges, constraint, time_limit, total_runs,
-                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver, use_parallel_search):
-        '''To instantiate an exhaustive search engine'''
+    def __init__(self, params):
+        '''
+        Instantiate an exhaustive search engine given a dictionary of options.
+        @param params: dictionary of options needed to configure the search algorithm.
+        '''
 
-        main.tuner.search.search.Search.__init__(self, cfrags, axis_names, axis_val_ranges,
-                                                 constraint, time_limit, total_runs, search_opts,
-                                                 cmd_line_opts, ptcodegen, ptdriver, odriver,
-                                                 use_parallel_search)
+        main.tuner.search.search.Search.__init__(self, params)
 
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
@@ -29,38 +28,9 @@ class Exhaustive(main.tuner.search.search.Search):
                    self.__class__.__name__)
             sys.exit(1)
             
-    #--------------------------------------------------
-        
-    def __readAlgoArgs(self):
-        '''To read all algorithm-specific arguments'''
-                
-        for vname, rhs in self.search_opts.iteritems():
-            print ('error: unrecognized %s algorithm-specific argument: "%s"' %
-                   (self.__class__.__name__, vname))
-            sys.exit(1)
 
-    #--------------------------------------------------
-
-    def __getNextCoord(self, coord):
-        '''
-        Return the next neighboring coordinate to be considered in the search space.
-        Return None if all coordinates in the search space have been visited.
-        '''
-        next_coord = coord[:]
-        for i in range(0, self.total_dims):
-            ipoint = next_coord[i]
-            iuplimit = self.dim_uplimits[i]
-            if ipoint < iuplimit-1:
-                next_coord[i] += 1
-                break
-            else:
-                next_coord[i] = 0
-                if i == self.total_dims - 1:
-                    return None
-        return next_coord
-
-    #--------------------------------------------------
-
+    #-----------------------------------------------------
+    # Method required by the search interface
     def searchBestCoord(self):
         '''
         To explore the search space and retun the coordinate that yields the best performance
@@ -138,5 +108,35 @@ class Exhaustive(main.tuner.search.search.Search):
         
         # return the best coordinate
         return best_coord
-            
+    
+    # Private methods       
+    #--------------------------------------------------
+        
+    def __readAlgoArgs(self):
+        '''To read all algorithm-specific arguments'''
+                
+        for vname, rhs in self.search_opts.iteritems():
+            print ('error: unrecognized %s algorithm-specific argument: "%s"' %
+                   (self.__class__.__name__, vname))
+            sys.exit(1)
+
+    #--------------------------------------------------
+
+    def __getNextCoord(self, coord):
+        '''
+        Return the next neighboring coordinate to be considered in the search space.
+        Return None if all coordinates in the search space have been visited.
+        '''
+        next_coord = coord[:]
+        for i in range(0, self.total_dims):
+            ipoint = next_coord[i]
+            iuplimit = self.dim_uplimits[i]
+            if ipoint < iuplimit-1:
+                next_coord[i] += 1
+                break
+            else:
+                next_coord[i] = 0
+                if i == self.total_dims - 1:
+                    return None
+        return next_coord
 

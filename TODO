@@ -1,3 +1,4 @@
+- clean up testsuite; add more examples of generated code
 - add an option to enable "best" time to return a list instead of a single value, e.g., 
   the list ot best times within epsilon of each other, or the top 5%, etc.
 - in batch systems, submit all jobs and then process results (currently it's one 

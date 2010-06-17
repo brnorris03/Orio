@@ -30,6 +30,135 @@ class PerfTuner:
         self.cmd_line_opts = odriver.cmd_line_opts
         self.verbose = self.cmd_line_opts.verbose
         
+    
+    #-------------------------------------------------
+
+    def tune(self, module_body_code, line_no, cfrags):
+        '''
+        Perform empirical performance tuning on the given annotated code. And return the best
+        optimized code variant.
+        '''
+
+        # extract the tuning information specified from the given annotation
+        tinfo = self.__extractTuningInfo(module_body_code, line_no)
+        
+        # determine if parallel search is required
+        use_parallel_search = tinfo.batch_cmd != None
+
+        # create a performance-testing code generator for each distinct problem size
+        ptcodegens = []
+        for prob_size in self.__getProblemSizes(tinfo.iparam_params, tinfo.iparam_constraints):
+            c = ptest_codegen.PerfTestCodeGen(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
+                                              tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
+                                              use_parallel_search)
+            ptcodegens.append(c)
+
+        # create the performance-testing driver
+        ptdriver = ptest_driver.PerfTestDriver(tinfo.build_cmd, tinfo.batch_cmd, tinfo.status_cmd,
+                                               tinfo.num_procs, tinfo.pcount_method,
+                                               tinfo.pcount_reps, use_parallel_search, self.verbose,
+                                               self.cmd_line_opts.pre_cmd, self.cmd_line_opts.keep_temps)
+
+        # get the axis names and axis value ranges to represent the search space
+        axis_names, axis_val_ranges = self.__buildCoordSystem(tinfo.pparam_params)
+
+        # combine the performance parameter constraints
+        pparam_constraint = 'True'
+        for vname, rhs in tinfo.pparam_constraints:
+            pparam_constraint += ' and (%s)' % rhs
+
+        # dynamically load the search engine class
+        class_name = tinfo.search_algo
+        mod_name = '.'.join([SEARCH_MOD_NAME, class_name.lower(), class_name.lower()])
+        search_class = self.dloader.loadClass(mod_name, class_name)
+
+        # convert the search time limit (from minutes to seconds) and get the total number of
+        # search runs
+        search_time_limit = 60 * tinfo.search_time_limit
+        search_total_runs = tinfo.search_total_runs
+
+        # get the search-algorithm-specific arguments
+        search_opts = dict(tinfo.search_opts)
+
+        # perform the performance tuning for each distinct problem size
+        optimized_code_seq = []
+        for ptcodegen in ptcodegens:
+
+            if self.verbose:
+                print '\n----- begin empirical tuning for problem size -----'
+                iparams = ptcodegen.input_params[:]
+                iparams.sort(lambda x,y: cmp(x[0],y[0]))
+                for pname, pvalue in iparams:
+                    print ' %s = %s' % (pname, pvalue)
+
+            # create the search engine
+            search_eng = search_class({'cfrags':cfrags, 
+                                       'axis_names':axis_names, 
+                                       'axis_val_ranges':axis_val_ranges, 
+                                       'pparam_constraint':pparam_constraint,
+                                       'search_time_limit':search_time_limit, 
+                                       'search_total_runs':search_total_runs, 
+                                       'search_opts':search_opts,
+                                       'self.cmd_line_opts':self.cmd_line_opts, 
+                                       'ptcodegen':ptcodegen, 
+                                       'ptdriver':ptdriver, 'odriver':self.odriver,
+                                       'use_parallel_search':use_parallel_search})
+
+            # search for the best performance parameters
+            best_perf_params, best_perf_cost = search_eng.search()
+
+            # print the best performance parameters
+            if self.verbose:
+                print '----- the obtained best performance parameters -----'
+                pparams = best_perf_params.items()
+                pparams.sort(lambda x,y: cmp(x[0],y[0]))
+                for pname, pvalue in pparams:
+                    print ' %s = %s' % (pname, pvalue)
+        
+            # generate the optimized code using the obtained best performance parameters
+            cur_optimized_code_seq = self.odriver.optimizeCodeFrags(cfrags, best_perf_params)
+
+            # check the optimized code sequence
+            if len(cur_optimized_code_seq) != 1:
+                print 'internal error: the empirically optimized code cannot be multiple versions'
+                sys.exit(1)
+            
+            # get the optimized code
+            optimized_code, _ = cur_optimized_code_seq[0]
+
+            # insert comments into the optimized code to include information about 
+            # the best performance parameters and the input problem sizes
+            iproblem_code = ''
+            iparams = ptcodegen.input_params[:]
+            iparams.sort(lambda x,y: cmp(x[0],y[0]))
+            for pname, pvalue in iparams:
+                if pname == '__builtins__':
+                    continue
+                iproblem_code += '  %s = %s \n' % (pname, pvalue)
+            pparam_code = ''
+            pparams = best_perf_params.items()
+            pparams.sort(lambda x,y: cmp(x[0],y[0]))
+            for pname, pvalue in pparams:
+                if pname == '__builtins__':
+                    continue
+                pparam_code += '  %s = %s \n' % (pname, pvalue)
+            info_code = '\n\n/**-- (Generated by Orio) \n'
+            info_code += 'Best performance cost: \n'
+            info_code += '  %f \n' % best_perf_cost
+            info_code += 'Tuned for specific problem sizes: \n'
+            info_code += iproblem_code
+            info_code += 'Best performance parameters: \n'
+            info_code += pparam_code
+            info_code += '--**/\n\n'
+            optimized_code = info_code + optimized_code
+
+            # store the optimized for this problem size
+            optimized_code_seq.append((optimized_code, ptcodegen.input_params[:]))
+
+        # return the optimized code
+        return optimized_code_seq
+
+    # Private methods
     #-------------------------------------------------
 
     def __extractTuningInfo(self, code, line_no):
@@ -150,124 +279,4 @@ class PerfTuner:
         # return the axis names and the axis value ranges
         return (axis_names, axis_val_ranges)
         
-    #-------------------------------------------------
-
-    def tune(self, module_body_code, line_no, cfrags):
-        '''
-        Perform empirical performance tuning on the given annotated code. And return the best
-        optimized code variant.
-        '''
-
-        # extract the tuning information specified from the given annotation
-        tinfo = self.__extractTuningInfo(module_body_code, line_no)
-        
-        # determine if parallel search is required
-        use_parallel_search = tinfo.batch_cmd != None
-
-        # create a performance-testing code generator for each distinct problem size
-        ptcodegens = []
-        for prob_size in self.__getProblemSizes(tinfo.iparam_params, tinfo.iparam_constraints):
-            c = ptest_codegen.PerfTestCodeGen(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
-                                              tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
-                                              use_parallel_search)
-            ptcodegens.append(c)
-
-        # create the performance-testing driver
-        ptdriver = ptest_driver.PerfTestDriver(tinfo.build_cmd, tinfo.batch_cmd, tinfo.status_cmd,
-                                               tinfo.num_procs, tinfo.pcount_method,
-                                               tinfo.pcount_reps, use_parallel_search, self.verbose,
-                                               self.cmd_line_opts.pre_cmd, self.cmd_line_opts.keep_temps)
-
-        # get the axis names and axis value ranges to represent the search space
-        axis_names, axis_val_ranges = self.__buildCoordSystem(tinfo.pparam_params)
-
-        # combine the performance parameter constraints
-        pparam_constraint = 'True'
-        for vname, rhs in tinfo.pparam_constraints:
-            pparam_constraint += ' and (%s)' % rhs
-
-        # dynamically load the search engine class
-        class_name = tinfo.search_algo
-        mod_name = '.'.join([SEARCH_MOD_NAME, class_name.lower(), class_name.lower()])
-        search_class = self.dloader.loadClass(mod_name, class_name)
-
-        # convert the search time limit (from minutes to seconds) and get the total number of
-        # search runs
-        search_time_limit = 60 * tinfo.search_time_limit
-        search_total_runs = tinfo.search_total_runs
-
-        # get the search-algorithm-specific arguments
-        search_opts = dict(tinfo.search_opts)
-
-        # perform the performance tuning for each distinct problem size
-        optimized_code_seq = []
-        for ptcodegen in ptcodegens:
-
-            if self.verbose:
-                print '\n----- begin empirical tuning for problem size -----'
-                iparams = ptcodegen.input_params[:]
-                iparams.sort(lambda x,y: cmp(x[0],y[0]))
-                for pname, pvalue in iparams:
-                    print ' %s = %s' % (pname, pvalue)
-
-            # create the search engine
-            search_eng = search_class(cfrags, axis_names, axis_val_ranges, pparam_constraint,
-                                      search_time_limit, search_total_runs, search_opts,
-                                      self.cmd_line_opts, ptcodegen, ptdriver, self.odriver,
-                                      use_parallel_search)
-
-            # search for the best performance parameters
-            best_perf_params, best_perf_cost = search_eng.search()
-
-            # print the best performance parameters
-            if self.verbose:
-                print '----- the obtained best performance parameters -----'
-                pparams = best_perf_params.items()
-                pparams.sort(lambda x,y: cmp(x[0],y[0]))
-                for pname, pvalue in pparams:
-                    print ' %s = %s' % (pname, pvalue)
-        
-            # generate the optimized code using the obtained best performance parameters
-            cur_optimized_code_seq = self.odriver.optimizeCodeFrags(cfrags, best_perf_params)
-
-            # check the optimized code sequence
-            if len(cur_optimized_code_seq) != 1:
-                print 'internal error: the empirically optimized code cannot be multiple versions'
-                sys.exit(1)
-            
-            # get the optimized code
-            optimized_code, _ = cur_optimized_code_seq[0]
-
-            # insert comments into the optimized code to include information about 
-            # the best performance parameters and the input problem sizes
-            iproblem_code = ''
-            iparams = ptcodegen.input_params[:]
-            iparams.sort(lambda x,y: cmp(x[0],y[0]))
-            for pname, pvalue in iparams:
-                if pname == '__builtins__':
-                    continue
-                iproblem_code += '  %s = %s \n' % (pname, pvalue)
-            pparam_code = ''
-            pparams = best_perf_params.items()
-            pparams.sort(lambda x,y: cmp(x[0],y[0]))
-            for pname, pvalue in pparams:
-                if pname == '__builtins__':
-                    continue
-                pparam_code += '  %s = %s \n' % (pname, pvalue)
-            info_code = '\n\n/**-- (Generated by Orio) \n'
-            info_code += 'Best performance cost: \n'
-            info_code += '  %f \n' % best_perf_cost
-            info_code += 'Tuned for specific problem sizes: \n'
-            info_code += iproblem_code
-            info_code += 'Best performance parameters: \n'
-            info_code += pparam_code
-            info_code += '--**/\n\n'
-            optimized_code = info_code + optimized_code
-
-            # store the optimized for this problem size
-            optimized_code_seq.append((optimized_code, ptcodegen.input_params[:]))
-
-        # return the optimized code
-        return optimized_code_seq
-
 

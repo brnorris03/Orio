@@ -7,7 +7,10 @@ import StringIO, sys, os, tokenize
 #--------------------------------------------------------------
 
 class TuningInfo:
-    '''Tuning information'''
+    '''
+    Tuning information data structure created based on the information in the tuning
+    specification.
+    '''
 
     def __init__(self, build_info, pcount_info, search_info, pparam_info, iparam_info, 
                  ivar_info, ptest_code_info):
@@ -61,7 +64,7 @@ class TuningInfo:
         return repr(self)
 
     def __repr__(self):
-        '''Return a string representation for this instance'''
+        '''Return a string representation for this instance (for debugging).'''
         s = ''
         s += '------------------\n'
         s += ' tuning info      \n'
@@ -92,8 +95,10 @@ class TuningInfo:
             s += '    %s: %s \n' % (id_name, rhs)
         s += ' input-variable declarations: \n'
         for is_static, dtype, id_name, ddims, rhs in self.ivar_decls:
+            modifier = 'dynamic'
+            if is_static: modifier = 'static'
             s += ('   %s %s %s %s = %s \n' %
-                  ('static' if is_static else 'dynamic', dtype, id_name, ddims, rhs))
+                      (modifier, dtype, id_name, ddims, rhs))
         s += ' input-variable declaration file: %s \n' % self.ivar_decl_file
         s += ' input-variable initialization file: %s \n' % self.ivar_init_file
         s += ' performance-test skeleton code file: %s \n' % self.ptest_skeleton_code_file
@@ -469,6 +474,8 @@ class TuningInfoGen:
                 is_array = len(dim_exp_seq) > 0
                 is_static = 'static' in type_seq
                 is_dynamic = 'dynamic' in type_seq
+                # TODO handle structs
+
                 if is_static and is_dynamic:
                     print 'error:%s: a declared variable cannot be both static and dynamic' % line_no
                     sys.exit(1)

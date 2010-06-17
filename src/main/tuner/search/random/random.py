@@ -22,14 +22,10 @@ class Random(main.tuner.search.search.Search):
     
     #--------------------------------------------------
     
-    def __init__(self, cfrags, axis_names, axis_val_ranges, constraint, time_limit, total_runs, 
-                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver, use_parallel_search):
+    def __init__(self, params):
         '''To instantiate a random search engine'''
 
-        main.tuner.search.search.Search.__init__(self, cfrags, axis_names, axis_val_ranges,
-                                                 constraint, time_limit, total_runs, search_opts,
-                                                 cmd_line_opts, ptcodegen, ptdriver, odriver,
-                                                 use_parallel_search)
+        main.tuner.search.search.Search.__init__(self, params)
 
         # set all algorithm-specific arguments to their default values
         self.local_distance = 0
@@ -43,53 +39,8 @@ class Random(main.tuner.search.search.Search):
                     'total number of search runs to be defined') % self.__class__.__name__)
             sys.exit(1)
 
-    #--------------------------------------------------
-    
-    def __readAlgoArgs(self):
-        '''To read all algorithm-specific arguments'''
-
-        # check for algorithm-specific arguments
-        for vname, rhs in self.search_opts.iteritems():
-
-            # local search distance
-            if vname == self.__LOCAL_DIST:
-                if not isinstance(rhs, int) or rhs < 0:
-                    print ('error: %s argument "%s" must be a positive integer or zero'
-                           % (self.__class__.__name__, vname))
-                    sys.exit(1)
-                self.local_distance = rhs
-
-            # unrecognized algorithm-specific argument
-            else:
-                print ('error: unrecognized %s algorithm-specific argument: "%s"' %
-                       (self.__class__.__name__, vname))
-                sys.exit(1)
-
-    #--------------------------------------------------
-
-    def __getNextCoord(self, coord_records, neigh_coords):
-        '''Get the next coordinate to be empirically tested'''
-
-        # check if all coordinates have been explored
-        if len(coord_records) >= self.space_size:
-            return None
-
-        # pick the next neighbor coordinate in the list (if exists)
-        while len(neigh_coords) > 0:
-            coord = neigh_coords.pop(0)
-            if str(coord) not in coord_records:
-                coord_records[str(coord)] = None
-                return coord
-
-        # randomly pick a coordinate that has never been explored before
-        while True:
-            coord = self.getRandomCoord()
-            if str(coord) not in coord_records:
-                coord_records[str(coord)] = None
-                return coord
-    
-    #--------------------------------------------------
-    
+     
+    # Method required by the search interface
     def searchBestCoord(self):
         '''
         To explore the search space and retun the coordinate that yields the best performance
@@ -180,4 +131,52 @@ class Random(main.tuner.search.search.Search):
         
         # return the best coordinate
         return best_coord
+   
+   # Private methods
+   #--------------------------------------------------
+    
+    def __readAlgoArgs(self):
+        '''To read all algorithm-specific arguments'''
+
+        # check for algorithm-specific arguments
+        for vname, rhs in self.search_opts.iteritems():
+
+            # local search distance
+            if vname == self.__LOCAL_DIST:
+                if not isinstance(rhs, int) or rhs < 0:
+                    print ('error: %s argument "%s" must be a positive integer or zero'
+                           % (self.__class__.__name__, vname))
+                    sys.exit(1)
+                self.local_distance = rhs
+
+            # unrecognized algorithm-specific argument
+            else:
+                print ('error: unrecognized %s algorithm-specific argument: "%s"' %
+                       (self.__class__.__name__, vname))
+                sys.exit(1)
+
+    #--------------------------------------------------
+
+    def __getNextCoord(self, coord_records, neigh_coords):
+        '''Get the next coordinate to be empirically tested'''
+
+        # check if all coordinates have been explored
+        if len(coord_records) >= self.space_size:
+            return None
+
+        # pick the next neighbor coordinate in the list (if exists)
+        while len(neigh_coords) > 0:
+            coord = neigh_coords.pop(0)
+            if str(coord) not in coord_records:
+                coord_records[str(coord)] = None
+                return coord
+
+        # randomly pick a coordinate that has never been explored before
+        while True:
+            coord = self.getRandomCoord()
+            if str(coord) not in coord_records:
+                coord_records[str(coord)] = None
+                return coord
+    
+    #--------------------------------------------------
             
