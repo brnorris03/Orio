@@ -1,5 +1,5 @@
 
-void axpy_4(int N, double *y, 
+void axpy_5(int N, double *y, 
 	    double a1, double *x1, double a2, double *x2, 
 	    double a3, double *x3, double a4, double *x4,
 	    double a5, double *x5) {
