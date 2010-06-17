@@ -58,12 +58,20 @@ user uses Bash shell, of course).
 export PYTHONPATH=$PYTHONPATH:/home/username/lib/python/site-packages
 export PATH=$PATH:/home/username/bin
 
+After making sure that the orcc executable is in your path, you can 
+try some of the examples included in the testsuite subdirectory, e.g.:
+
+ > cd testsuite/axpy/simple
+ > orcc -v axpy5.c
+
+If Orio reports problems building the code, adjust the compiler settings in 
+the tuning spec included in the axpy5.c.
+
 ==================================================================================   
 
 CONTACT INFO
 
   Please send all questions, bugs reports, and comments to:
-    Albert Hartono    <hartonoa@cse.ohio-state.edu>, <hartono@mcs.anl.gov>
     Boyana Norris     <norris@mcs.anl.gov>
 
 
