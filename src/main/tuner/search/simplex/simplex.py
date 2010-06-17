@@ -34,14 +34,10 @@ class Simplex(main.tuner.search.search.Search):
 
     #-----------------------------------------------------
 
-    def __init__(self, cfrags, axis_names, axis_val_ranges, constraint, time_limit, total_runs,
-                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver, use_parallel_search):
+    def __init__(self, params):
         '''To instantiate a Nelder-Mead simplex search engine'''
         
-        main.tuner.search.search.Search.__init__(self, cfrags, axis_names, axis_val_ranges,
-                                                 constraint, time_limit, total_runs, search_opts,
-                                                 cmd_line_opts, ptcodegen, ptdriver, odriver,
-                                                 use_parallel_search)
+        main.tuner.search.search.Search.__init__(self, params)
 
         # other private class variables
         self.__simplex_size = self.total_dims + 1
@@ -63,162 +59,7 @@ class Simplex(main.tuner.search.search.Search):
             sys.exit(1)
 
     #-----------------------------------------------------
-
-    def __readAlgoArgs(self):
-        '''To read all algorithm-specific arguments'''
-
-        # check for algorithm-specific arguments
-        for vname, rhs in self.search_opts.iteritems():
-            
-            # local search distance
-            if vname == self.__LOCAL_DIST:
-                if not isinstance(rhs, int) or rhs < 0:
-                    print ('error: %s argument "%s" must be a positive integer or zero'
-                           % (self.__class__.__name__, vname))
-                    sys.exit(1)
-                self.local_distance = rhs
-
-            # reflection coefficient
-            elif vname == self.__REFL_COEF:
-                if isinstance(rhs, int) or isinstance(rhs, float):
-                    rhs = [rhs]
-                if isinstance(rhs, list):
-                    for n in rhs:
-                        if (not isinstance(n, int) and not isinstance(n, float)) or n <= 0:
-                            print ('error: %s argument "%s" must be number(s) greater than zero'
-                                   % (self.__class__.__name__, vname))
-                            sys.exit(1)
-                    self.refl_coefs = rhs
-                else:
-                    print ('error: %s argument "%s" must be number(s) greater than zero'
-                           % (self.__class__.__name__, vname))
-                    sys.exit(1)
-                        
-            # expansion coefficient
-            elif vname == self.__EXP_COEF:
-                if isinstance(rhs, int) or isinstance(rhs, float):
-                    rhs = [rhs]
-                if isinstance(rhs, list):
-                    for n in rhs:
-                        if (not isinstance(n, int) and not isinstance(n, float)) or n <= 1:
-                            print ('error: %s argument "%s" must be number(s) greater than one'
-                                   % (self.__class__.__name__, vname))
-                            sys.exit(1)
-                    self.exp_coefs = rhs
-                else:
-                    print ('error: %s argument "%s" must be number(s) greater than one'
-                           % (self.__class__.__name__, vname))
-                    sys.exit(1)
-            
-            # contraction coefficient
-            elif vname == self.__CONT_COEF:
-                if isinstance(rhs, int) or isinstance(rhs, float):
-                    rhs = [rhs]
-                if isinstance(rhs, list):
-                    for n in rhs:
-                        if (not isinstance(n, int) and not isinstance(n, float)) or n <= 0 or n >= 1:
-                            print ('error: %s argument "%s" must be number(s) between zero and one'
-                                   % (self.__class__.__name__, vname))
-                            sys.exit(1)
-                    self.cont_coefs = rhs
-                else:
-                    print ('error: %s argument "%s" must be number(s) between zero and one'
-                           % (self.__class__.__name__, vname))
-                    sys.exit(1)
-            
-            # shrinkage coefficient
-            elif vname == self.__SHRI_COEF:
-                if (not isinstance(rhs, int) and not isinstance(rhs, float)) or rhs <= 0 or rhs >= 1:
-                    print ('error: %s argument "%s" must be a single number between zero and one'
-                           % (self.__class__.__name__, vname))
-                    sys.exit(1)
-                self.shri_coef = rhs
-                
-            # unrecognized algorithm-specific argument
-            else:
-                print ('error: unrecognized %s algorithm-specific argument: "%s"' %
-                       (self.__class__.__name__, vname))
-                sys.exit(1)
-        
-    #-----------------------------------------------------
-
-    def __checkSearchSpace(self):
-        '''Check the size of the search space if it is valid for this search method'''
-
-        # is the search space size too small?
-        # Nelder-Mead requires to initialize a simplex that has N+1 vertices, where N is the
-        # number of dimensions
-        if self.space_size < self.__simplex_size:
-            print (('error: the search space is too small for %s algorithm. ' +
-                    'please use the exhaustive search.') % self.__class__.__name__)
-            sys.exit(1)
-
-    #-----------------------------------------------------
-
-    def __initRandomSimplex(self, simplex_records):
-        '''Randomly initialize a simplex in the search space'''
-
-        # remove some simplex records, if necessary
-        max_num_records = 100000
-        if len(simplex_records) > max_num_records:
-            for i in range(i, int(max_num_records*0.05)):
-                simplex_records.popitem()
-
-        # randomly create a new simplex that has never been used before
-        while True:
-
-            # randomly pick (N+1) vertices to form a simplex, where N is the number of dimensions
-            simplex = []
-            while True:
-                coord = self.getRandomCoord()
-                if coord not in simplex:
-                    simplex.append(coord)
-                    if len(simplex) == self.__simplex_size:
-                        break
-
-            # check if the new simplex has never been used before
-            simplex.sort()
-            if str(simplex) not in simplex_records:
-                simplex_records[str(simplex)] = None
-                return simplex
-            
-    #-----------------------------------------------------
-
-    def __getCentroid(self, coords):
-        '''Return a centroid coordinate'''
-        total_coords = len(coords)
-        centroid = coords[0]
-        for c in coords[1:]:
-            centroid = self.addCoords(centroid, c)
-        centroid = self.mulCoords((1.0/total_coords), centroid)
-        return centroid
-
-    def __getReflection(self, coord, centroid):
-        '''Return a reflection coordinate'''
-        sub_coord = self.subCoords(centroid, coord)
-        return map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
-                   self.refl_coefs)
-    
-    def __getExpansion(self, coord, centroid):
-        '''Return an expansion coordinate'''
-        sub_coord = self.subCoords(coord, centroid)
-        return map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
-                   self.exp_coefs)
-    
-    def __getContraction(self, coord, centroid):
-        '''Return a contraction coordinate'''
-        sub_coord = self.subCoords(coord, centroid)
-        return map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
-                   self.cont_coefs)
-
-    def __getShrinkage(self, coord, rest_coords):
-        '''Return a shrinkage simplex'''
-        return map(lambda x: self.addCoords(coord, self.mulCoords(self.shri_coef,
-                                                                  self.subCoords(x, coord))),
-                   rest_coords)
-    
-    #-----------------------------------------------------
-
+    # Method required by the search interface
     def searchBestCoord(self):
         '''To search the coordinate that yields the best performance parameters'''
 
@@ -438,3 +279,159 @@ class Simplex(main.tuner.search.search.Search):
         # return the best coordinate
         return best_global_coord
 
+    # Private methods
+    #-----------------------------------------------------
+
+    def __readAlgoArgs(self):
+        '''To read all algorithm-specific arguments'''
+
+        # check for algorithm-specific arguments
+        for vname, rhs in self.search_opts.iteritems():
+            
+            # local search distance
+            if vname == self.__LOCAL_DIST:
+                if not isinstance(rhs, int) or rhs < 0:
+                    print ('error: %s argument "%s" must be a positive integer or zero'
+                           % (self.__class__.__name__, vname))
+                    sys.exit(1)
+                self.local_distance = rhs
+
+            # reflection coefficient
+            elif vname == self.__REFL_COEF:
+                if isinstance(rhs, int) or isinstance(rhs, float):
+                    rhs = [rhs]
+                if isinstance(rhs, list):
+                    for n in rhs:
+                        if (not isinstance(n, int) and not isinstance(n, float)) or n <= 0:
+                            print ('error: %s argument "%s" must be number(s) greater than zero'
+                                   % (self.__class__.__name__, vname))
+                            sys.exit(1)
+                    self.refl_coefs = rhs
+                else:
+                    print ('error: %s argument "%s" must be number(s) greater than zero'
+                           % (self.__class__.__name__, vname))
+                    sys.exit(1)
+                        
+            # expansion coefficient
+            elif vname == self.__EXP_COEF:
+                if isinstance(rhs, int) or isinstance(rhs, float):
+                    rhs = [rhs]
+                if isinstance(rhs, list):
+                    for n in rhs:
+                        if (not isinstance(n, int) and not isinstance(n, float)) or n <= 1:
+                            print ('error: %s argument "%s" must be number(s) greater than one'
+                                   % (self.__class__.__name__, vname))
+                            sys.exit(1)
+                    self.exp_coefs = rhs
+                else:
+                    print ('error: %s argument "%s" must be number(s) greater than one'
+                           % (self.__class__.__name__, vname))
+                    sys.exit(1)
+            
+            # contraction coefficient
+            elif vname == self.__CONT_COEF:
+                if isinstance(rhs, int) or isinstance(rhs, float):
+                    rhs = [rhs]
+                if isinstance(rhs, list):
+                    for n in rhs:
+                        if (not isinstance(n, int) and not isinstance(n, float)) or n <= 0 or n >= 1:
+                            print ('error: %s argument "%s" must be number(s) between zero and one'
+                                   % (self.__class__.__name__, vname))
+                            sys.exit(1)
+                    self.cont_coefs = rhs
+                else:
+                    print ('error: %s argument "%s" must be number(s) between zero and one'
+                           % (self.__class__.__name__, vname))
+                    sys.exit(1)
+            
+            # shrinkage coefficient
+            elif vname == self.__SHRI_COEF:
+                if (not isinstance(rhs, int) and not isinstance(rhs, float)) or rhs <= 0 or rhs >= 1:
+                    print ('error: %s argument "%s" must be a single number between zero and one'
+                           % (self.__class__.__name__, vname))
+                    sys.exit(1)
+                self.shri_coef = rhs
+                
+            # unrecognized algorithm-specific argument
+            else:
+                print ('error: unrecognized %s algorithm-specific argument: "%s"' %
+                       (self.__class__.__name__, vname))
+                sys.exit(1)
+        
+    #-----------------------------------------------------
+
+    def __checkSearchSpace(self):
+        '''Check the size of the search space if it is valid for this search method'''
+
+        # is the search space size too small?
+        # Nelder-Mead requires to initialize a simplex that has N+1 vertices, where N is the
+        # number of dimensions
+        if self.space_size < self.__simplex_size:
+            print (('error: the search space is too small for %s algorithm. ' +
+                    'please use the exhaustive search.') % self.__class__.__name__)
+            sys.exit(1)
+
+    #-----------------------------------------------------
+
+    def __initRandomSimplex(self, simplex_records):
+        '''Randomly initialize a simplex in the search space'''
+
+        # remove some simplex records, if necessary
+        max_num_records = 100000
+        if len(simplex_records) > max_num_records:
+            for i in range(i, int(max_num_records*0.05)):
+                simplex_records.popitem()
+
+        # randomly create a new simplex that has never been used before
+        while True:
+
+            # randomly pick (N+1) vertices to form a simplex, where N is the number of dimensions
+            simplex = []
+            while True:
+                coord = self.getRandomCoord()
+                if coord not in simplex:
+                    simplex.append(coord)
+                    if len(simplex) == self.__simplex_size:
+                        break
+
+            # check if the new simplex has never been used before
+            simplex.sort()
+            if str(simplex) not in simplex_records:
+                simplex_records[str(simplex)] = None
+                return simplex
+            
+    #-----------------------------------------------------
+
+    def __getCentroid(self, coords):
+        '''Return a centroid coordinate'''
+        total_coords = len(coords)
+        centroid = coords[0]
+        for c in coords[1:]:
+            centroid = self.addCoords(centroid, c)
+        centroid = self.mulCoords((1.0/total_coords), centroid)
+        return centroid
+
+    def __getReflection(self, coord, centroid):
+        '''Return a reflection coordinate'''
+        sub_coord = self.subCoords(centroid, coord)
+        return map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
+                   self.refl_coefs)
+    
+    def __getExpansion(self, coord, centroid):
+        '''Return an expansion coordinate'''
+        sub_coord = self.subCoords(coord, centroid)
+        return map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
+                   self.exp_coefs)
+    
+    def __getContraction(self, coord, centroid):
+        '''Return a contraction coordinate'''
+        sub_coord = self.subCoords(coord, centroid)
+        return map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
+                   self.cont_coefs)
+
+    def __getShrinkage(self, coord, rest_coords):
+        '''Return a shrinkage simplex'''
+        return map(lambda x: self.addCoords(coord, self.mulCoords(self.shri_coef,
+                                                                  self.subCoords(x, coord))),
+                   rest_coords)
+    

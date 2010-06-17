@@ -30,14 +30,10 @@ class Annealing(main.tuner.search.search.Search):
     
     #--------------------------------------------------
     
-    def __init__(self, cfrags, axis_names, axis_val_ranges, constraint, time_limit, total_runs,
-                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver, use_parallel_search):
+    def __init__(self, params):
         '''To instantiate a simulated-annealing search engine'''
 
-        main.tuner.search.search.Search.__init__(self, cfrags, axis_names, axis_val_ranges,
-                                                 constraint, time_limit, total_runs, search_opts,
-                                                 cmd_line_opts, ptcodegen, ptdriver, odriver,
-                                                 use_parallel_search)
+        main.tuner.search.search.Search.__init__(self, params)
 
         # set all algorithm-specific arguments to their default values
         self.local_distance = 0
@@ -49,157 +45,10 @@ class Annealing(main.tuner.search.search.Search):
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
         
-    #--------------------------------------------------
-    
-    def __readAlgoArgs(self):
-        '''To read all algorithm-specific arguments'''
 
-        # check for algorithm-specific arguments
-        for vname, rhs in self.search_opts.iteritems():
-
-            # local search distance
-            if vname == self.__LOCAL_DIST:
-                if not isinstance(rhs, int) or rhs < 0:
-                    print ('error: %s argument "%s" must be a positive integer or zero'
-                           % (self.__class__.__name__, vname))
-                    sys.exit(1)
-                self.local_distance = rhs
-
-            # the temperature reduction factor
-            elif vname == self.__COOL_FACT:
-                if not isinstance(rhs, float) or rhs <= 0 or rhs >= 1:
-                    print ('error: %s argument "%s" must be a real number between zero and one'
-                           % (self.__class__.__name__, vname))
-                    sys.exit(1)
-                self.cooling_factor = rhs
-
-            # the final temperature ratio
-            elif vname == self.__FTEMP_RATIO:
-                if not isinstance(rhs, float) or rhs <= 0 or rhs >= 1:
-                    print ('error: %s argument "%s" must be a real number between zero and one'
-                           % (self.__class__.__name__, vname))
-                    sys.exit(1)
-                self.final_temp_ratio = rhs
-
-            # the maximum limit of numbers of trials at each temperature 
-            elif vname == self.__TR_LIMIT:
-                if not isinstance(rhs, int) or rhs <= 0:
-                    print ('error: %s argument "%s" must be a positive integer'
-                           % (self.__class__.__name__, vname))
-                    sys.exit(1)
-                self.trials_limit = rhs
-
-            # the maximum limit of numbers of successful moves at each temperature
-            elif vname == self.__MV_LIMIT:
-                if not isinstance(rhs, int) or rhs <= 0:
-                    print ('error: %s argument "%s" must be a positive integer'
-                           % (self.__class__.__name__, vname))
-                    sys.exit(1)
-                self.moves_limit = rhs
-
-            # unrecognized algorithm-specific argument
-            else:
-                print ('error: unrecognized %s algorithm-specific argument: "%s"' %
-                       (self.__class__.__name__, vname))
-                sys.exit(1)
-
-    #--------------------------------------------------
-
-    def __initTemperature(self):
-        '''
-        Provide an estimation of the initial temperature by taking the average of
-        the performance-cost differences among randomly chosen coordinates
-        '''
-
-        # set some useful variables
-        cur_coord_records = {}
-        max_distinct_coords = min(self.space_size, 5000)
-        max_random_coords = min(self.space_size, 10)
-
-        # randomly pick several random coordinates with their performance costs
-        random_coords = []
-        perf_costs = []
-        while True:
-            if len(cur_coord_records) >= max_distinct_coords:
-                break
-            coord = self.getRandomCoord()
-            if str(coord) not in cur_coord_records:
-                cur_coord_records[str(coord)] = None
-                perf_cost = self.getPerfCost(coord)
-                if perf_cost != self.MAXFLOAT:
-                    random_coords.append(coord)
-                    perf_costs.append(perf_cost)
-                    if len(random_coords) >= max_random_coords:
-                        break
-
-        # check if not enough random coordinates are found
-        if len(random_coords) == 0:
-            print ('error: initialization of Simulated Annealing failed: no valid values of ' +
-                   'performance parameters can be found. the performance parameter constraints ' +
-                   'might prune out the entire search space.')
-            sys.exit(1)
-        
-        # sort the random coordinates in an increasing order of performance costs
-        sorted_coords = zip(random_coords, perf_costs)
-        sorted_coords.sort(lambda x,y: cmp(x[1],y[1]))
-        random_coords, perf_costs = zip(*sorted_coords)
-
-        # take the best coordinate
-        best_coord = random_coords[0]
-        best_perf_cost = perf_costs[0]
-
-        # compute the average performance-cost difference
-        total_cost_diff = reduce(lambda x,y: x+y, map(lambda x: x-best_perf_cost, perf_costs), 0)
-        avg_cost_diff = 0
-        if total_cost_diff > 0:
-            avg_cost_diff = total_cost_diff / (len(random_coords)-1)
-
-        # select an initial temperature value that results in a 80% acceptance probability
-        # the acceptance probability formula: p = e^(-delta/temperature)
-        # hence, temperature = -delta/ln(p)
-        # where the delta is the average performance-cost difference relative to the minimum cost
-        init_temperature = -avg_cost_diff / math.log(0.8, math.e)
-
-        # return the initial temperature
-        return init_temperature
-
-    #--------------------------------------------------
-
-    def __initRandomCoord(self, coord_records):
-        '''Randomly initialize a coordinate in the search space'''
-
-        # check if all coordinates have been explored
-        if len(coord_records) >= self.space_size:
-            return None
-        
-        # randomly pick a coordinate that has never been explored before
-        while True:
-            coord = self.getRandomCoord()
-            if str(coord) not in coord_records:
-                coord_records[str(coord)] = None
-                return coord
             
     #--------------------------------------------------
-
-    def __getRandomNeighbor(self, coord):
-        '''
-        Return a random neighboring coordinate, that is different from the given coordinate.
-        If no neighboring coordinate is found (after many attempts), return the given coordinate.
-        '''
-
-        neigh_coord = None
-        total_trials = 1000
-        for trial in range(0, total_trials):
-            n_coord = coord[:]
-            for i in range(0, self.total_dims):
-                ipoint = coord[i] + self.getRandomInt(-1,1)
-                if 0 <= ipoint < self.dim_uplimits[i]:
-                    n_coord[i] = ipoint
-            if n_coord != coord:
-                return n_coord
-        return neigh_coord
-            
-    #--------------------------------------------------
+    # Method required by the search interface
 
     def searchBestCoord(self):
         '''
@@ -378,4 +227,155 @@ class Annealing(main.tuner.search.search.Search):
         
         # return the best coordinate
         return best_global_coord
+       
+       
+        #--------------------------------------------------
+    
+    def __readAlgoArgs(self):
+        '''To read all algorithm-specific arguments'''
+
+        # check for algorithm-specific arguments
+        for vname, rhs in self.search_opts.iteritems():
+
+            # local search distance
+            if vname == self.__LOCAL_DIST:
+                if not isinstance(rhs, int) or rhs < 0:
+                    print ('error: %s argument "%s" must be a positive integer or zero'
+                           % (self.__class__.__name__, vname))
+                    sys.exit(1)
+                self.local_distance = rhs
+
+            # the temperature reduction factor
+            elif vname == self.__COOL_FACT:
+                if not isinstance(rhs, float) or rhs <= 0 or rhs >= 1:
+                    print ('error: %s argument "%s" must be a real number between zero and one'
+                           % (self.__class__.__name__, vname))
+                    sys.exit(1)
+                self.cooling_factor = rhs
+
+            # the final temperature ratio
+            elif vname == self.__FTEMP_RATIO:
+                if not isinstance(rhs, float) or rhs <= 0 or rhs >= 1:
+                    print ('error: %s argument "%s" must be a real number between zero and one'
+                           % (self.__class__.__name__, vname))
+                    sys.exit(1)
+                self.final_temp_ratio = rhs
+
+            # the maximum limit of numbers of trials at each temperature 
+            elif vname == self.__TR_LIMIT:
+                if not isinstance(rhs, int) or rhs <= 0:
+                    print ('error: %s argument "%s" must be a positive integer'
+                           % (self.__class__.__name__, vname))
+                    sys.exit(1)
+                self.trials_limit = rhs
+
+            # the maximum limit of numbers of successful moves at each temperature
+            elif vname == self.__MV_LIMIT:
+                if not isinstance(rhs, int) or rhs <= 0:
+                    print ('error: %s argument "%s" must be a positive integer'
+                           % (self.__class__.__name__, vname))
+                    sys.exit(1)
+                self.moves_limit = rhs
+
+            # unrecognized algorithm-specific argument
+            else:
+                print ('error: unrecognized %s algorithm-specific argument: "%s"' %
+                       (self.__class__.__name__, vname))
+                sys.exit(1)
+
+    # Private methods
+    #--------------------------------------------------
+
+    def __initTemperature(self):
+        '''
+        Provide an estimation of the initial temperature by taking the average of
+        the performance-cost differences among randomly chosen coordinates
+        '''
+
+        # set some useful variables
+        cur_coord_records = {}
+        max_distinct_coords = min(self.space_size, 5000)
+        max_random_coords = min(self.space_size, 10)
+
+        # randomly pick several random coordinates with their performance costs
+        random_coords = []
+        perf_costs = []
+        while True:
+            if len(cur_coord_records) >= max_distinct_coords:
+                break
+            coord = self.getRandomCoord()
+            if str(coord) not in cur_coord_records:
+                cur_coord_records[str(coord)] = None
+                perf_cost = self.getPerfCost(coord)
+                if perf_cost != self.MAXFLOAT:
+                    random_coords.append(coord)
+                    perf_costs.append(perf_cost)
+                    if len(random_coords) >= max_random_coords:
+                        break
+
+        # check if not enough random coordinates are found
+        if len(random_coords) == 0:
+            print ('error: initialization of Simulated Annealing failed: no valid values of ' +
+                   'performance parameters can be found. the performance parameter constraints ' +
+                   'might prune out the entire search space.')
+            sys.exit(1)
         
+        # sort the random coordinates in an increasing order of performance costs
+        sorted_coords = zip(random_coords, perf_costs)
+        sorted_coords.sort(lambda x,y: cmp(x[1],y[1]))
+        random_coords, perf_costs = zip(*sorted_coords)
+
+        # take the best coordinate
+        best_coord = random_coords[0]
+        best_perf_cost = perf_costs[0]
+
+        # compute the average performance-cost difference
+        total_cost_diff = reduce(lambda x,y: x+y, map(lambda x: x-best_perf_cost, perf_costs), 0)
+        avg_cost_diff = 0
+        if total_cost_diff > 0:
+            avg_cost_diff = total_cost_diff / (len(random_coords)-1)
+
+        # select an initial temperature value that results in a 80% acceptance probability
+        # the acceptance probability formula: p = e^(-delta/temperature)
+        # hence, temperature = -delta/ln(p)
+        # where the delta is the average performance-cost difference relative to the minimum cost
+        init_temperature = -avg_cost_diff / math.log(0.8, math.e)
+
+        # return the initial temperature
+        return init_temperature
+
+    #--------------------------------------------------
+
+    def __initRandomCoord(self, coord_records):
+        '''Randomly initialize a coordinate in the search space'''
+
+        # check if all coordinates have been explored
+        if len(coord_records) >= self.space_size:
+            return None
+        
+        # randomly pick a coordinate that has never been explored before
+        while True:
+            coord = self.getRandomCoord()
+            if str(coord) not in coord_records:
+                coord_records[str(coord)] = None
+                return coord
+            
+    #--------------------------------------------------
+
+    def __getRandomNeighbor(self, coord):
+        '''
+        Return a random neighboring coordinate, that is different from the given coordinate.
+        If no neighboring coordinate is found (after many attempts), return the given coordinate.
+        '''
+
+        neigh_coord = None
+        total_trials = 1000
+        for trial in range(0, total_trials):
+            n_coord = coord[:]
+            for i in range(0, self.total_dims):
+                ipoint = coord[i] + self.getRandomInt(-1,1)
+                if 0 <= ipoint < self.dim_uplimits[i]:
+                    n_coord[i] = ipoint
+            if n_coord != coord:
+                return n_coord
+        return neigh_coord 

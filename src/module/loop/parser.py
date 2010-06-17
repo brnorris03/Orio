@@ -87,7 +87,7 @@ for r in reserved:
 
 # identifiers
 def t_ID(t):
-    r'[A-Za-z_]\w*'
+    r'[A-Za-z_]([_\.\w]*[_\w]+)*'
     t.type = reserved_map.get(t.value,'ID')
     return t
 

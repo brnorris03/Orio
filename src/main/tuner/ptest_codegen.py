@@ -63,6 +63,7 @@ class PerfTestCodeGen:
         # generate the input variable declarations
         decls = []
         for is_static, vtype, vname, vdims, rhs in input_decls:
+            #TODO: handle structs (look for period in vname)
             if len(vdims) == 0:
                 decls.append('%s %s;' % (vtype, vname))
             else:

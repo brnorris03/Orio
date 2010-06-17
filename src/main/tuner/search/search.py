@@ -1,11 +1,7 @@
 #
 # The search engine used for search space exploration
 #
-
-import math, sys
-from ...random import uniform, randint  # a workaround to resolve the 'random' package-name conflict
-
-#-----------------------------------------------------
+import sys
 
 class Search:
     '''The search engine used to explore the search space '''
@@ -14,32 +10,55 @@ class Search:
 
     #----------------------------------------------------------
     
-    def __init__(self, cfrags, axis_names, axis_val_ranges, constraint, time_limit, total_runs,
-                 search_opts, cmd_line_opts, ptcodegen, ptdriver, odriver, use_parallel_search):
+    def __init__(self, params):
         '''To instantiate a search engine'''
 
         # the class variables that are essential to know when developing a new search engine subclass
-        self.time_limit = time_limit
-        self.total_runs = total_runs
-        self.search_opts = search_opts
-        self.total_dims = len(axis_names)
-        self.dim_uplimits = [len(r) for r in axis_val_ranges]
+        if 'time_limit' in params.keys(): self.time_limit = params['time_limit']
+        else: self.time_limit = -1
+        if 'total_runs' in params.keys(): self.total_runs = params['total_runs']
+        else: self.total_runs = -1
+        if 'search_opts' in params.keys(): self.search_opts = params['search_opts']
+        else: self.search_opts = {}
+        if 'axis_names' in params.keys(): self.total_dims = len(params['axis_names'])
+        else: 
+            print('error: the search space was not defined correctly, missing axis_names parameter')
+            traceback.print_stack()
+            sys.exit(1)
+        if 'axis_val_ranges' in params.keys(): self.dim_uplimits = [len(r) for r in params['axis_val_ranges']]
+        else: 
+            print('error: the search space was not defined correctly, missing axis_val_ranges parameter')
+            traceback.print_stack()
+            sys.exit(1)
+            
         self.space_size = 0
         if self.total_dims > 0:
             self.space_size = reduce(lambda x,y: x*y, self.dim_uplimits, 1)
-        self.verbose = cmd_line_opts.verbose
-        self.use_parallel_search = use_parallel_search
-        self.num_procs = ptdriver.num_procs
+        if 'cmd_line_opts' in params.keys(): self.verbose = params['cmd_line_opts'].verbose
+        else: self.verbose = False
+        if 'use_parallel_search' in params.keys(): self.use_parallel_search = params['use_parallel_search']
+        else: self.use_parallel_search = False
+        if 'ptdriver' in params.keys(): self.num_procs = params['ptdriver'].num_procs
+        else: self.num_procs = 1
         
         # the class variables that may be ignored when developing a new search engine subclass
-        self.cfrags = cfrags
-        self.axis_names = axis_names
-        self.axis_val_ranges = axis_val_ranges
-        self.constraint = constraint
-        self.cmd_line_opts = cmd_line_opts
-        self.ptcodegen = ptcodegen
-        self.ptdriver = ptdriver
-        self.odriver = odriver
+        if 'cfrags' in params.keys(): self.cfrags = params['cfrags']
+        else: self.cfrags = None
+        if 'axis_names' in params.keys(): self.axis_names = params['axis_names']
+        else: self.axis_names = None
+        if 'axis_val_ranges' in params.keys(): self.axis_val_ranges = params['axis_val_ranges']
+        else: self.axis_val_ranges = None
+        if 'pparam_constraint' in params.keys(): self.constraint = params['pparam_constraint']
+        else: self.constraint = 'None'
+        if 'cmd_line_opts' in params.keys(): self.cmd_line_opts = params['cmd_line_opts']
+        else: self.cmd_line_opts = None
+        if 'ptcodegen' in params.keys(): self.ptcodegen = params['ptcodegen']
+        else: self.ptcodegen = None
+        if 'ptdriver' in params.keys(): self.ptdriver = params['ptdriver']
+        else: self.ptdriver = None
+        if 'odriver' in params.keys(): self.odriver = params['odriver']
+        else: self.odriver = None
+        
         self.perf_cost_records = {}
         
     #----------------------------------------------------------
@@ -196,6 +215,7 @@ class Search:
 
     def getRandomInt(self, lbound, ubound):
         '''To generate a random integer N such that lbound <= N <= ubound'''
+        from random import uniform, randint 
         if lbound > ubound:
             print ('internal error: the lower bound of genRandomInt must not be ' +
                    'greater than the upper bound')
