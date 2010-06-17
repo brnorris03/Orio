@@ -14,9 +14,9 @@ class Search:
         '''To instantiate a search engine'''
 
         # the class variables that are essential to know when developing a new search engine subclass
-        if 'time_limit' in params.keys(): self.time_limit = params['time_limit']
+        if 'search_time_limit' in params.keys(): self.time_limit = params['search_time_limit']
         else: self.time_limit = -1
-        if 'total_runs' in params.keys(): self.total_runs = params['total_runs']
+        if 'search_total_runs' in params.keys(): self.total_runs = params['search_total_runs']
         else: self.total_runs = -1
         if 'search_opts' in params.keys(): self.search_opts = params['search_opts']
         else: self.search_opts = {}
@@ -215,7 +215,11 @@ class Search:
 
     def getRandomInt(self, lbound, ubound):
         '''To generate a random integer N such that lbound <= N <= ubound'''
-        from random import uniform, randint 
+        try:
+            from random import randint
+        except:
+            from ...random import randint
+
         if lbound > ubound:
             print ('internal error: the lower bound of genRandomInt must not be ' +
                    'greater than the upper bound')
@@ -224,6 +228,11 @@ class Search:
 
     def getRandomReal(self, lbound, ubound):
         '''To generate a random real number N such that lbound <= N < ubound'''
+        try:
+            from random import uniform
+        except:
+            from ...random import uniform
+            
         if lbound > ubound:
             print ('internal error: the lower bound of genRandomReal must not be ' +
                    'greater than the upper bound')
