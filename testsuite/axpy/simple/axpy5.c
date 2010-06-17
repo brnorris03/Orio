@@ -33,7 +33,10 @@ void axpy_5(int N, double *y,
    decl double a5 = random;
  }
  def search {
-   arg algorithm = 'Exhaustive';
+#   arg algorith = 'Exhaustive';
+   arg algorithm = 'Simplex';
+   arg total_runs = 10;
+   arg time_limit = 5;
  }
 ) @*/
 
