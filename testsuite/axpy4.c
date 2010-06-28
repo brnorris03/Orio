@@ -22,6 +22,10 @@
   decl static double x3[N] = random;
   decl static double x4[N] = random;
  }
+
+ def search {
+  arg algorithm = 'ChaosGA';
+ }
 ) @*/
 
 int i;
