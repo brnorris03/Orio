@@ -1,7 +1,9 @@
 #
 # The search engine used for search space exploration
 #
-import sys
+import sys, math
+from main.util.messages import err
+from random import randint,uniform
 
 class Search:
     '''The search engine used to explore the search space '''
@@ -20,16 +22,14 @@ class Search:
         else: self.total_runs = -1
         if 'search_opts' in params.keys(): self.search_opts = params['search_opts']
         else: self.search_opts = {}
-        if 'axis_names' in params.keys(): self.total_dims = len(params['axis_names'])
+        if 'axis_names' in params.keys(): 
+            self.total_dims = len(params['axis_names'])
         else: 
-            print('error: the search space was not defined correctly, missing axis_names parameter')
-            traceback.print_stack()
-            sys.exit(1)
-        if 'axis_val_ranges' in params.keys(): self.dim_uplimits = [len(r) for r in params['axis_val_ranges']]
+            err('the search space was not defined correctly, missing axis_names parameter')
+        if 'axis_val_ranges' in params.keys(): 
+            self.dim_uplimits = [len(r) for r in params['axis_val_ranges']]
         else: 
-            print('error: the search space was not defined correctly, missing axis_val_ranges parameter')
-            traceback.print_stack()
-            sys.exit(1)
+            err('the search space was not defined correctly, missing axis_val_ranges parameter')
             
         self.space_size = 0
         if self.total_dims > 0:
@@ -65,8 +65,9 @@ class Search:
 
     def searchBestCoord(self):
         '''
-        To explore the search space and return the coordinate that yields the best performance
+        Explore the search space and return the coordinate that yields the best performance
         (i.e. minimum performance cost).
+        
         This is the function that needs to be implemented in each new search engine subclass.
         '''
         raise NotImplementedError('%s: unimplemented abstract function "searchBestCoord"' %
@@ -118,7 +119,7 @@ class Search:
 
     def getPerfCost(self, coord):
         '''
-        To empirically evaluate the performance cost of the code corresponding the given coordinate
+        To empirically evaluate the performance cost of the code corresponding to the given coordinate
         '''
 
         perf_costs = self.getPerfCosts([coord])
@@ -129,7 +130,8 @@ class Search:
 
     def getPerfCosts(self, coords):
         '''
-        To empirically evaluate the performance costs of the codes corresponding the given coordinates
+        Empirically evaluate the performance costs of the codes corresponding the given coordinates
+        @param coords:  all search space coordinates
         '''
 
         # initialize the performance costs mapping
@@ -189,6 +191,7 @@ class Search:
                 sys.exit(1)
             transformed_code, _ = transformed_code_seq[0]
             code_map[coord_key] = transformed_code
+            print "coord, code_map:", coord_key, code_map
 
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)
@@ -215,11 +218,6 @@ class Search:
 
     def getRandomInt(self, lbound, ubound):
         '''To generate a random integer N such that lbound <= N <= ubound'''
-        try:
-            from random import randint
-        except:
-            from ...random import randint
-
         if lbound > ubound:
             print ('internal error: the lower bound of genRandomInt must not be ' +
                    'greater than the upper bound')
@@ -228,11 +226,6 @@ class Search:
 
     def getRandomReal(self, lbound, ubound):
         '''To generate a random real number N such that lbound <= N < ubound'''
-        try:
-            from random import uniform
-        except:
-            from ...random import uniform
-            
         if lbound > ubound:
             print ('internal error: the lower bound of genRandomReal must not be ' +
                    'greater than the upper bound')
