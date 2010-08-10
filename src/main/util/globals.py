@@ -33,7 +33,7 @@ class Globals_Singleton:
         
         # Configure logging
         self.logger = logging.getLogger("Orio")
-        self.logfile = 'tuning' + os.getpid() + '.log'        
+        self.logfile = 'tuning' + str(os.getpid()) + '.log'        
         self.logger.addHandler(logging.FileHandler(filename=self.logfile))
         # Because commands are output with extra formatting, for now do not use the logger for stderr output
         #streamhandler = logging.StreamHandler()
