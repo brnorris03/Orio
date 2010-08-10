@@ -33,6 +33,7 @@ Options:
 environment variables: 
   ORIO_FLAGS                     the string value is used to augment the list of Orio command-lin
                                  options
+  ORIO_DEBUG                     when set, print debugging information (mainly for developer use)
                                  
 For more details, please refer to the documentation at https://trac.mcs.anl.gov/projects/performance/wiki/OrioUserGuide
 ''' % os.path.basename(sys.argv[0])

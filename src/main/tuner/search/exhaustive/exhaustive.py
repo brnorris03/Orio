@@ -33,8 +33,10 @@ class Exhaustive(main.tuner.search.search.Search):
     # Method required by the search interface
     def searchBestCoord(self):
         '''
-        To explore the search space and retun the coordinate that yields the best performance
+        Explore the search space and return the coordinate that yields the best performance
         (i.e. minimum performance cost).
+        
+        @return:  A list of coordinates
         '''
 
         if self.verbose: print '\n----- begin exhaustive search -----'
@@ -126,6 +128,8 @@ class Exhaustive(main.tuner.search.search.Search):
         '''
         Return the next neighboring coordinate to be considered in the search space.
         Return None if all coordinates in the search space have been visited.
+        
+        @return: the
         '''
         next_coord = coord[:]
         for i in range(0, self.total_dims):

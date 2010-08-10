@@ -2,8 +2,7 @@
 # The search engine used for search space exploration
 #
 import sys, math
-from main.util.messages import err
-from random import randint,uniform
+from main.util.messages import err, debug
 
 class Search:
     '''The search engine used to explore the search space '''
@@ -87,10 +86,10 @@ class Search:
 
         # if no best coordinate can be found
         if best_coord == None:
-            print ('error: the search cannot find a valid set of performance parameters. ' +
-                   'the search time limit might be too short, or the performance parameter ' +
-                   'constraints might prune out the entire search space.')
-            sys.exit(1)
+            err ('the search cannot find a valid set of performance parameters. ' +
+                 'the search time limit might be too short, or the performance parameter ' +
+                 'constraints might prune out the entire search space.')
+           
 
         # get the performance cost of the best parameters
         best_perf_cost = self.getPerfCost(best_coord)
@@ -164,9 +163,7 @@ class Search:
             try:
                 is_valid = eval(self.constraint, perf_params)
             except Exception, e:
-                print 'error: failed to evaluate the constraint expression: "%s"' % self.constraint
-                print ' --> %s: %s' % (e.__class__.__name__, e)
-                sys.exit(1)
+                err('failed to evaluate the constraint expression: "%s"\n%s %s' % (self.constraint,e.__class__.__name__, e))
 
             # if invalid performance parameters
             if not is_valid:
@@ -187,11 +184,11 @@ class Search:
             perf_params = self.coordToPerfParams(coord)
             transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
             if len(transformed_code_seq) != 1:
-                print 'internal error: the optimized annotation code cannot be multiple versions'
+                err('internal error: the optimized annotation code cannot contain multiple versions')
                 sys.exit(1)
             transformed_code, _ = transformed_code_seq[0]
             code_map[coord_key] = transformed_code
-            print "coord, code_map:", coord_key, code_map
+        debug("search.py: about to test the following code segments (code_map):\n%s" % code_map)
 
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)
@@ -218,6 +215,8 @@ class Search:
 
     def getRandomInt(self, lbound, ubound):
         '''To generate a random integer N such that lbound <= N <= ubound'''
+        from random import randint
+
         if lbound > ubound:
             print ('internal error: the lower bound of genRandomInt must not be ' +
                    'greater than the upper bound')
@@ -226,6 +225,8 @@ class Search:
 
     def getRandomReal(self, lbound, ubound):
         '''To generate a random real number N such that lbound <= N < ubound'''
+        from random import uniform
+
         if lbound > ubound:
             print ('internal error: the lower bound of genRandomReal must not be ' +
                    'greater than the upper bound')
