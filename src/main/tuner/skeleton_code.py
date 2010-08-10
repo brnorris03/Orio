@@ -309,7 +309,16 @@ class PerfTestSkeletonCode:
     #-----------------------------------------------------
 
     def insertCode(self, global_code, prologue_code, epilogue_code, tested_code_map):
-        '''To insert code fragments into the skeleton code'''
+        '''
+        Insert code fragments into the skeleton driver code.
+        
+        @return: Complete specialized C source code string for the performance testing driver.
+        
+        @param global_code:
+        @param prologue_code: 
+        @param epilogue code:
+        @param tested_code_map:
+        '''
 
         # check the given tested code mapping
         if len(tested_code_map) == 0:

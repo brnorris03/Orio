@@ -61,7 +61,12 @@ class Simplex(main.tuner.search.search.Search):
     #-----------------------------------------------------
     # Method required by the search interface
     def searchBestCoord(self):
-        '''To search the coordinate that yields the best performance parameters'''
+        '''
+        Search for the coordinate that yields the best performance parameters.
+        
+        
+        '''
+        
 
         if self.verbose: print '\n----- begin simplex search -----'
 
