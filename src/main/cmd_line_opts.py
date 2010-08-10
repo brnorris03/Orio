@@ -9,12 +9,12 @@ import getopt, os, sys
 
 # the usage message
 USAGE_MSG = '''
-description: compile shell for Orio
+Description: compile shell for Orio
 
-usage: %s [options] <ifile> 
+Usage: %s [options] <ifile> 
   <ifile>   input file containing the annotated code
 
-options:
+Options:
   -c, --pre-command=<string>     Command string with which to prefix the execution of the 
                                  Orio-built code, e.g., tauex
   -e, --erase-annot              remove annotations from the output
@@ -33,6 +33,8 @@ options:
 environment variables: 
   ORIO_FLAGS                     the string value is used to augment the list of Orio command-lin
                                  options
+                                 
+For more details, please refer to the documentation at https://trac.mcs.anl.gov/projects/performance/wiki/OrioUserGuide
 ''' % os.path.basename(sys.argv[0])
 
 #----------------------------------------------

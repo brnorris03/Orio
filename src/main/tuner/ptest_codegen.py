@@ -256,7 +256,12 @@ class PerfTestCodeGen:
     #-----------------------------------------------------
 
     def generate(self, code_map):
-        '''Generate the testing code used to get performance cost'''
+        '''
+        Generate the testing code, which is evaluated to get the performance cost.
+
+        @return: The test C code string        
+        @param code_map: A dictionary index by search space coordinates and containing code to be evaluated. 
+        '''
 
         # generate the macro definition codes for the input parameters
         iparam_code = self.iparam_code

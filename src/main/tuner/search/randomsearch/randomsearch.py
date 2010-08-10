@@ -7,7 +7,7 @@ import main.tuner.search.search
 
 #-----------------------------------------------------
 
-class Random(main.tuner.search.search.Search):
+class Randomsearch(main.tuner.search.search.Search):
     '''
     The search engine that uses a random search approach, enhanced with a local search that finds
     the best neighboring coordinate.
