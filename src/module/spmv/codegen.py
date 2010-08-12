@@ -4,6 +4,7 @@
 
 import re, sys
 import arg_info
+from main.util.globals import *
 
 #-------------------------------------------
 
@@ -1312,8 +1313,7 @@ class CodeGen:
                 elif ainfo.simd == arg_info.ArgInfo.SIMD_XLC:
                     code = self.__generateXlcSimdCode()
                 else:
-                    print 'error:SpMV: unsupported SIMD type'
-                    sys.exit(1)
+                    err('module.spmv.codegen: SpMV: unsupported SIMD type')
             else:
                 if ainfo.simd == arg_info.ArgInfo.SIMD_NONE:
                     code = self.__generateParCode()
@@ -1324,8 +1324,7 @@ class CodeGen:
                 elif ainfo.simd == arg_info.ArgInfo.SIMD_XLC:
                     code = self.__generateParXlcSimdCode()
                 else:
-                    print 'error:SpMV: unsupported SIMD type'
-                    sys.exit(1)
+                    err('module.spmv.codegen: SpMV: unsupported SIMD type')
 
         # inode structure format
         elif ainfo.block_structure == arg_info.ArgInfo.BSTRUC_INODE:
@@ -1339,8 +1338,7 @@ class CodeGen:
                 elif ainfo.simd == arg_info.ArgInfo.SIMD_XLC:
                     code = self.__generateXlcSimdInodeCode()
                 else:
-                    print 'error:SpMV: unsupported SIMD type'
-                    sys.exit(1)
+                    err('module.spmv.codegen: SpMV: unsupported SIMD type')
             else:
                 if ainfo.simd == arg_info.ArgInfo.SIMD_NONE:
                     code = self.__generateParInodeCode()
@@ -1351,11 +1349,9 @@ class CodeGen:
                 elif ainfo.simd == arg_info.ArgInfo.SIMD_XLC:
                     code = self.__generateParXlcSimdInodeCode()
                 else:
-                    print 'error:SpMV: unsupported SIMD type'
-                    sys.exit(1)
+                    err('module.spmv.codegen: SpMV: unsupported SIMD type')
         else:
-            print 'error:SpMV: unsupported matrix block structure'
-            sys.exit(1)
+            err('module.spmv.codegen: SpMV: unsupported matrix block structure')
 
         # return the optimized code
         return code

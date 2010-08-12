@@ -3,19 +3,20 @@
 #
 
 import re, sys
-import ann_parser, ast, code_parser, module.module, transformator
+import ann_parser, ast, code_parser, module.module, transformation
+from main.util.globals import *
 
 #-----------------------------------------
 
 class OrTilDriver(module.module.Module):
     '''The class definition for OrTil's optimization driver'''
     
-    def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
+    def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
         '''To instantiate an OrTil's optimization driver'''
         
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
-                                      cmd_line_opts, line_no, indent_size, language)
+                                      line_no, indent_size, language)
         
     #---------------------------------------------------------------------
 
@@ -49,8 +50,7 @@ class OrTilDriver(module.module.Module):
             # get the next trailer directive
             m = re.search(trailer_ann_re, code)
             if not m:
-                print 'error:OrTilDriver: missing closing directive for full core tiles region'
-                sys.exit(1)
+                err('module.ortildriver.ortildriver: OrTilDriver: missing closing directive for full core tiles region')
             trailer_iters = m.group(1)
             body_code = code[:m.start()]
 
@@ -70,8 +70,7 @@ class OrTilDriver(module.module.Module):
             tile_size_vars = [('T1%s' % i) for i in iters]
             for v in tile_size_vars:
                 if v not in tile_size_table:
-                    print 'error:OrTilDriver: undefined tile size variable: "%s"' % v
-                    sys.exit(1)
+                    err('module.ortildriver.ortildriver: OrTilDriver: undefined tile size variable: "%s"' % v)
 
             # get the tile size values
             tile_size_vals = [tile_size_table[v] for v in tile_size_vars]
@@ -124,8 +123,7 @@ class OrTilDriver(module.module.Module):
             i,v,c = cr
             stmts = code_parser.getParser().parse(c)
             if len(stmts) != 1 or not isinstance(stmts[0], ast.ForStmt):
-                print 'error:OrTilDriver: invalid full core-tile code'
-                sys.exit(1)
+                err('module.ortildriver.ortildriver: OrTilDriver: invalid full core-tile code')
             n_code_regions.append((i,v,stmts[0]))
         code_regions = n_code_regions
         
@@ -136,7 +134,7 @@ class OrTilDriver(module.module.Module):
                 transformed_code += cr
                 continue
             i,v,s = cr
-            t = transformator.Transformator(unroll, vectorize, scalar_replacement, constant_folding)
+            t = transformation.Transformation(unroll, vectorize, scalar_replacement, constant_folding)
             transformed_code += t.transform(i,v,s)
 
         # insert the declaration code for the tile sizes

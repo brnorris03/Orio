@@ -4,6 +4,7 @@
 
 import sys
 import module.loop.ast
+from main.util.globals import *
 
 #-----------------------------------------------------------
  
@@ -80,15 +81,13 @@ class CommonLib:
             return tnode
 
         elif isinstance(tnode, module.loop.ast.TransformStmt):
-            print 'internal error: unexpected AST type: "%s"' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
         
         elif isinstance(tnode, module.loop.ast.NewAST):
             return tnode
         
         else:
-            print 'internal error: unexpected AST type: "%s"' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
         
     #-------------------------------------------------------
 
@@ -131,8 +130,7 @@ class CommonLib:
             return False
         
         else:
-            print 'internal error: unexpected AST type: "%s"' % exp.__class__.__name__
-            sys.exit(1)
+            err('module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % exp.__class__.__name__)
             
     #-------------------------------------------------------
 
@@ -173,8 +171,7 @@ class CommonLib:
             return True
         
         else:
-            print 'internal error: unexpected AST type: "%s"' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
             
             
             

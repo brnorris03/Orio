@@ -3,6 +3,7 @@
 #
 
 import re, sys
+from main.util.globals import *
 
 #----------------------------------------------------------------
 
@@ -54,13 +55,11 @@ class AnnParser:
         # get all iterator names of the loops to be tiled
         m = re.match(__oparenth_re, text)
         if not m:
-            print 'error:OrTil: annotation syntax error: "%s"' % orig_text
-            sys.exit(1)
+            err('module.ortil.ann_parser: OrTil: annotation syntax error: "%s"' % orig_text)
         text = text[m.end():]        
         m = re.search(__cparenth_re, text)
         if not m:
-            print 'error:OrTil: annotation syntax error: "%s"' % orig_text
-            sys.exit(1)
+            err('module.ortil.ann_parser: OrTil: annotation syntax error: "%s"' % orig_text)
         itext = text[:m.end()-1]
         text = text[m.end():]
         while True:
@@ -68,12 +67,10 @@ class AnnParser:
                 break
             m = re.match(__var_re, itext)
             if not m:
-                print 'error:OrTil: annotation syntax error: "%s"' % orig_text
-                sys.exit(1)
+                err('module.ortil.ann_parser: OrTil: annotation syntax error: "%s"' % orig_text)
             iname = m.group(1)
             if iname in iter_names:
-                print 'error:OrTil: repeated iterator name: "%s"' % iname
-                sys.exit(1)
+                err('module.ortil.ann_parser: OrTil: repeated iterator name: "%s"' % iname)
             iter_names.append(iname)
             itext = itext[m.end():]
             m = re.match(__comma_re, itext)
@@ -88,8 +85,7 @@ class AnnParser:
         # get a colon
         m = re.match(__colon_re, text)
         if not m:
-            print 'error:OrTil: annotation syntax error: "%s"' % orig_text
-            sys.exit(1)
+            err('module.ortil.ann_parser: OrTil: annotation syntax error: "%s"' % orig_text)
         text = text[m.end():]
 
         # get the number of tiling levels
@@ -97,21 +93,18 @@ class AnnParser:
         if not m:
             m = re.match(__var_re, text)
         if not m:
-            print 'error:OrTil: annotation syntax error: "%s"' % orig_text
-            sys.exit(1)
+            err('module.ortil.ann_parser: OrTil: annotation syntax error: "%s"' % orig_text)
         text = text[m.end():]
         num_level = m.group(1)
         num_level = self.__evalExp(num_level)
 
         # check the semantic of the number of tiling levels
         if not isinstance(num_level, int) or num_level <= 0:
-            print 'error:OrTil: the number of tiling levels must be a positive integer'
-            sys.exit(1)
+            err('module.ortil.ann_parser: OrTil: the number of tiling levels must be a positive integer')
 
         # is there any trailing texts?
         if text and not text.isspace():
-            print 'error:OrTil: annotation syntax error: "%s"' % orig_text
-            sys.exit(1)
+            err('module.ortil.ann_parser: OrTil: annotation syntax error: "%s"' % orig_text)
         
         # return the tiling information
         tiling_info = [num_level, iter_names]

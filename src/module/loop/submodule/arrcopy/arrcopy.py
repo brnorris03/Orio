@@ -3,7 +3,8 @@
 #
 
 import sys
-import module.loop.submodule.submodule, transformator
+import module.loop.submodule.submodule, transformation
+from main.util.globals import *
 
 #---------------------------------------------------------------------
 
@@ -39,9 +40,7 @@ class ArrCopy(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                print 'error:%s: failed to evaluate the argument expression: %s' % (line_no, rhs)
-                print ' --> %s: %s' % (e.__class__.__name__, e)
-                sys.exit(1)
+                err('module.loop.submodule.arrcopy.arrcopy: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
 
             # array reference
             if aname == AREF:
@@ -61,16 +60,13 @@ class ArrCopy(module.loop.submodule.submodule.SubModule):
 
             # unknown argument name
             else:
-                print 'error:%s: unrecognized transformation argument: "%s"' % (line_no, aname)
-                sys.exit(1)
+                err('module.loop.submodule.arrcopy.arrcopy: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check for undefined transformation arguments
         if aref == None:
-            print 'error:%s: missing array reference argument' % self.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.arrcopy.arrcopy: %s: missing array reference argument' % self.__class__.__name__)
         if dimsizes == None:
-            print 'error:%s: missing array dimension sizes argument' % self.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.arrcopy.arrcopy: %s: missing array dimension sizes argument' % self.__class__.__name__)
 
         # check semantics of the transformation arguments
         (aref, suffix, dtype, dimsizes) = self.checkTransfArgs(aref, suffix, dtype, dimsizes)
@@ -86,24 +82,21 @@ class ArrCopy(module.loop.submodule.submodule.SubModule):
         # evaluate the array reference
         rhs, line_no = aref
         if not isinstance(rhs, str):
-            print 'error:%s: array reference argument must be a string: %s' % (line_no, rhs)
-            sys.exit(1)
+            err('module.loop.submodule.arrcopy.arrcopy: %s: array reference argument must be a string: %s' % (line_no, rhs))
         aref = rhs
 
         # evaluate the suffix of the array buffer name
         if suffix != None:
             rhs, line_no = suffix
             if rhs != None and not isinstance(rhs, str):
-                print 'error:%s: suffix argument must be a string: %s' % (line_no, rhs)
-                sys.exit(1)
+                err('module.loop.submodule.arrcopy.arrcopy: %s: suffix argument must be a string: %s' % (line_no, rhs))
             suffix = rhs
 
         # evaluate the data type of the array elements
         if dtype != None:
             rhs, line_no = dtype
             if rhs != None and not isinstance(rhs, str):
-                print 'error:%s: data type argument must be a string: %s' % (line_no, rhs)
-                sys.exit(1)
+                err('module.loop.submodule.arrcopy.arrcopy: %s: data type argument must be a string: %s' % (line_no, rhs))
             dtype = rhs
 
         # evaluate the data type of the array elements
@@ -125,7 +118,7 @@ class ArrCopy(module.loop.submodule.submodule.SubModule):
         '''To apply array copy optimization'''
 
         # perform the bound replacement transformation
-        t = transformator.Transformator(aref, suffix, dtype, dimsizes, stmt)
+        t = transformation.Transformation(aref, suffix, dtype, dimsizes, stmt)
         transformed_stmt = t.transform()
         
         # return the transformed statement

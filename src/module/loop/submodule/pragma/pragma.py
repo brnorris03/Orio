@@ -3,7 +3,8 @@
 #
 
 import sys
-import module.loop.submodule.submodule, transformator
+import module.loop.submodule.submodule, transformation
+from main.util.globals import *
 
 #---------------------------------------------------------------------
 
@@ -33,9 +34,7 @@ class Pragma(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                print 'error:%s: failed to evaluate the argument expression: %s' % (line_no, rhs)
-                print ' --> %s: %s' % (e.__class__.__name__, e)
-                sys.exit(1)
+                err('module.loop.submodule.pragma.pragma: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
 
             # pragma directives
             if aname == PRAGMAS:
@@ -43,8 +42,7 @@ class Pragma(module.loop.submodule.submodule.SubModule):
 
             # unknown argument name
             else:
-                print 'error:%s: unrecognized transformation argument: "%s"' % (line_no, aname)
-                sys.exit(1)
+                err('module.loop.submodule.pragma.pragma: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check semantics of the transformation arguments
         pragmas, = self.checkTransfArgs(pragmas)
@@ -78,7 +76,7 @@ class Pragma(module.loop.submodule.submodule.SubModule):
         '''To apply pragma directive insertion'''
 
         # perform the pragma directive insertion
-        t = transformator.Transformator(pragmas, stmt)
+        t = transformation.Transformation(pragmas, stmt)
         transformed_stmt = t.transform()
 
         # return the transformed statement

@@ -3,6 +3,7 @@
 #
 
 import os, re, sys
+from main.util.globals import *
 
 #-----------------------------------------------------
 
@@ -254,57 +255,47 @@ class PerfTestSkeletonCode:
 
         match_obj = re.search(self.__GLOBAL_TAG, code)
         if not match_obj:
-            print 'error: missing "global" tag in the skeleton code'
-            sys.exit(1)
+            err('main.tuner.skeleton_code:  missing "global" tag in the skeleton code')
 
         match_obj = re.search(self.__PROLOGUE_TAG, code)
         if not match_obj:
-            print 'error: missing "prologue" tag in the skeleton code'
-            sys.exit(1)
+            err('main.tuner.skeleton_code:  missing "prologue" tag in the skeleton code')
 
         match_obj = re.search(self.__EPILOGUE_TAG, code)
         if not match_obj:
-            print 'error: missing "epilogue" tag in the skeleton code'
-            sys.exit(1)
+            err('main.tuner.skeleton_code:  missing "epilogue" tag in the skeleton code')
 
         match_obj = re.search(self.__TCODE_TAG, code)
         if not match_obj:
-            print 'error: missing "tested code" tag in the skeleton code'
-            sys.exit(1)
+            err('main.tuner.skeleton_code:  missing "tested code" tag in the skeleton code')
 
         match_obj = re.search(self.__COORD_TAG, code)
         if not match_obj:
-            print 'error: missing "coordinate" tag in the skeleton code'
-            sys.exit(1)
+            err('main.tuner.skeleton_code:  missing "coordinate" tag in the skeleton code')
             
         if self.use_parallel_search:
 
             match_obj = re.search(self.__BEGIN_SWITCHBODY_TAG, code)
             if not match_obj:
-                print 'error: missing "begin switch body" tag in the skeleton code'
-                sys.exit(1)
+                err('main.tuner.skeleton_code:  missing "begin switch body" tag in the skeleton code')
         
             match_obj = re.search(self.__END_SWITCHBODY_TAG, code)
             if not match_obj:
-                print 'error: missing "end switch body" tag in the skeleton code'
-                sys.exit(1)
+                err('main.tuner.skeleton_code:  missing "end switch body" tag in the skeleton code')
         
             match_obj = re.search(self.__SWITCHBODY_TAG, code)
             if not match_obj:
-                print 'internal error: missing placement of switch body statement'
-                sys.exit(1)
+                err('main.tuner.skeleton_code internal error:  missing placement of switch body statement')
 
             switch_body_code = match_obj.group(1)
 
             match_obj = re.search(self.__TCODE_TAG, switch_body_code)
             if not match_obj:
-                print 'error: missing "tested code" tag in the switch body statement'
-                sys.exit(1)
+                err('main.tuner.skeleton_code:  missing "tested code" tag in the switch body statement')
             
             match_obj = re.search(self.__COORD_TAG, switch_body_code)
             if not match_obj:
-                print 'error: missing "coordinate" tag in the switch body statement'
-                sys.exit(1)
+                err('main.tuner.skeleton_code:  missing "coordinate" tag in the switch body statement')
 
     #-----------------------------------------------------
 
@@ -322,11 +313,9 @@ class PerfTestSkeletonCode:
 
         # check the given tested code mapping
         if len(tested_code_map) == 0:
-            print 'internal error: the number of tested codes cannot be zero'
-            sys.exit(1)
+            err('main.tuner.skeleton_code internal error:  the number of tested codes cannot be zero')
         if not self.use_parallel_search and len(tested_code_map) != 1:
-            print 'internal error: the number of tested sequential codes must be exactly one'
-            sys.exit(1)
+            err('main.tuner.skeleton_code internal error:  the number of tested sequential codes must be exactly one')
 
         # initialize the performance-testing code
         code = self.code

@@ -3,6 +3,7 @@
 #
 
 import sys
+from main.util.globals import *
 
 #-----------------------------------------------
 
@@ -39,17 +40,14 @@ class Variable:
 
         # check if the variable has no dimensions at all
         if len(self.dims) == 0:
-            print 'error:%s: at least one dimension must be defined: "%s"' % (self.line_no, self)
-            sys.exit(1)
+            err('module.align.variable: %s: at least one dimension must be defined: "%s"' % (self.line_no, self))
         
         # one of the dimensions must contain nothing
         if self.dims.count(None) != 1:
-            print 'error:%s: there must be one empty bracket: "%s"' % (self.line_no, self)
-            sys.exit(1)
+            err('module.align.variable: %s: there must be one empty bracket: "%s"' % (self.line_no, self))
 
         # the last the dimension must be empty
         if self.dims[-1] != None:
-            print (('error:%s: the last dimension must be an empty bracket ' + 
+            err(('module.align.variable:%s: the last dimension must be an empty bracket ' + 
                     '(due to the row-major array allocation): "%s"') % (self.line_no, self))
-            sys.exit(1)
 

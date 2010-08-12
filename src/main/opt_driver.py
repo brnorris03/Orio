@@ -4,6 +4,7 @@
 
 import sys, traceback, os
 import code_frag, dyn_loader, tuner.tuner
+from util.globals import *
 
 #----------------------------------------------------------------
 
@@ -18,10 +19,9 @@ TMOD_NAME = 'module'
 class OptDriver:
     '''The optimization driver whose function is to initiate the optimization process'''
 
-    def __init__(self, specs_map, cmd_line_opts, language='C'):
+    def __init__(self, specs_map, language='C'):
         '''To instantiate an optimization driver'''
         self.specs_map = specs_map
-        self.cmd_line_opts = cmd_line_opts
         self.lang = language
         self.ptuner = tuner.tuner.PerfTuner(specs_map, self)
         self.dloader = dyn_loader.DynLoader()
@@ -47,9 +47,8 @@ class OptDriver:
 
                 # if the total number of top-level performance-tuning annotations is more than one
                 if num_ptune_anns > 1:
-                    print (('error:%s: the total number of performance-tuning annotations cannot ' +
-                            'be more than one') % cf.leader_ann.mod_name_line_no)
-                    sys.exit(1)
+                    err(('main.opt_driver: %s: the total number of performance-tuning annotations cannot ' +
+                         'be more than one') % cf.leader_ann.mod_name_line_no)
 
                 # iterate over all nested code fragments
                 nested_cfrags = cf.cfrags[:]
@@ -59,7 +58,7 @@ class OptDriver:
                     # if the nested code fragment is a performance-tuning annotation
                     if (isinstance(nested_cf, code_frag.LeaderAnn) and
                         nested_cf.mod_name == PTUNE_NAME):
-                        print (('error:%s: performance-tuning annotations must be defined at ' +
+                        err(('main.opt_driver: %s: performance-tuning annotations must be defined at ' +
                                 'top level and cannot be nested') % nested_cf.line_no)
                         sys.exit(1)
                                                 
@@ -97,7 +96,7 @@ class OptDriver:
 
                 # check the optimized body code sequence
                 if len(optimized_body_code_seq) != 1:
-                    print ('internal error: the optimized annotation body code cannot ' +
+                    err('main.opt_driver internal error:  the optimized annotation body code cannot ' +
                            'be multiple versions')
                     sys.exit(1)
 
@@ -108,25 +107,23 @@ class OptDriver:
                 class_name = cfrag.leader_ann.mod_name
                 mod_name = '.'.join([TMOD_NAME, class_name.lower(), class_name.lower()])
                 mod_class = self.dloader.loadClass(mod_name, class_name)
+                debug("about to instantiate transformation class: %s.%s" %(mod_name,class_name))
 
                 # apply code transformations
                 try:
-                    transformator = mod_class(perf_params,
+                    transformation = mod_class(perf_params,
                                               cfrag.leader_ann.mod_code,
                                               optimized_body_code,
-                                              self.cmd_line_opts,
                                               cfrag.leader_ann.mod_code_line_no,
                                               cfrag.leader_ann.indent_size,
                                               language=self.lang)
-                    
-                    optimized_code = transformator.transform()
                 except Exception, e:
-                    print ('error:%s: encountered an error when transforming annotation "%s"' %
-                           (cfrag.leader_ann.mod_name_line_no, cfrag.leader_ann.mod_name))
-                    print ' --> %s: %s' % (e.__class__.__name__, e)
-                    if 'ORIO_DEBUG' in os.environ.keys() and os.environ['ORIO_DEBUG'] == '1':
-                        traceback.print_stack()                    
-                    sys.exit(1)
+                    err('main.opt_driver: %s: encountered an error when transforming annotation "%s"\n --> %s: %s' %
+                           (cfrag.leader_ann.mod_name_line_no, cfrag.leader_ann.mod_name,e.__class__.__name__, e))
+                    
+                debug("successfully loaded transformation class: %s.%s" %(mod_name,class_name))
+                
+                optimized_code = transformation.transform()
 
                 # create the optimized code sequence
                 optimized_code_seq = [(optimized_code, [])]
@@ -143,7 +140,7 @@ class OptDriver:
         
         # unexpected type of code fragment
         else:
-            print 'internal error: unexpected type of code fragment'
+            err('main.opt_driver internal error:  unexpected type of code fragment')
             sys.exit(1)
         
     #-------------------------------------------------------------

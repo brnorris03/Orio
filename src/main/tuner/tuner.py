@@ -5,6 +5,9 @@
 import re, sys
 import main.dyn_loader, main.tspec.tspec, ptest_codegen, ptest_driver
 
+from main.util.globals import *
+
+
 #--------------------------------------------------
 
 # the name of the module containing various search algorithms
@@ -27,8 +30,6 @@ class PerfTuner:
         self.specs_map = specs_map
         self.odriver = odriver
         self.dloader = main.dyn_loader.DynLoader()
-        self.cmd_line_opts = odriver.cmd_line_opts
-        self.verbose = self.cmd_line_opts.verbose
         
     
     #-------------------------------------------------
@@ -56,8 +57,7 @@ class PerfTuner:
         # create the performance-testing driver
         ptdriver = ptest_driver.PerfTestDriver(tinfo.build_cmd, tinfo.batch_cmd, tinfo.status_cmd,
                                                tinfo.num_procs, tinfo.pcount_method,
-                                               tinfo.pcount_reps, use_parallel_search, self.verbose,
-                                               self.cmd_line_opts.pre_cmd, self.cmd_line_opts.keep_temps)
+                                               tinfo.pcount_reps, use_parallel_search)
 
         # get the axis names and axis value ranges to represent the search space
         axis_names, axis_val_ranges = self.__buildCoordSystem(tinfo.pparam_params)
@@ -84,12 +84,12 @@ class PerfTuner:
         optimized_code_seq = []
         for ptcodegen in ptcodegens:
 
-            if self.verbose:
-                print '\n----- begin empirical tuning for problem size -----'
+            if Globals().verbose:
+                info('\n----- begin empirical tuning for problem size -----')
                 iparams = ptcodegen.input_params[:]
                 iparams.sort(lambda x,y: cmp(x[0],y[0]))
                 for pname, pvalue in iparams:
-                    print ' %s = %s' % (pname, pvalue)
+                    info(' %s = %s' % (pname, pvalue))
 
             # create the search engine
             search_eng = search_class({'cfrags':cfrags, 
@@ -99,7 +99,6 @@ class PerfTuner:
                                        'search_time_limit':search_time_limit, 
                                        'search_total_runs':search_total_runs, 
                                        'search_opts':search_opts,
-                                       'self.cmd_line_opts':self.cmd_line_opts, 
                                        'ptcodegen':ptcodegen, 
                                        'ptdriver':ptdriver, 'odriver':self.odriver,
                                        'use_parallel_search':use_parallel_search})
@@ -108,20 +107,19 @@ class PerfTuner:
             best_perf_params, best_perf_cost = search_eng.search()
 
             # print the best performance parameters
-            if self.verbose:
-                print '----- the obtained best performance parameters -----'
+            if Globals().verbose:
+                info('----- the obtained best performance parameters -----')
                 pparams = best_perf_params.items()
                 pparams.sort(lambda x,y: cmp(x[0],y[0]))
                 for pname, pvalue in pparams:
-                    print ' %s = %s' % (pname, pvalue)
+                    info(' %s = %s' % (pname, pvalue))
         
             # generate the optimized code using the obtained best performance parameters
             cur_optimized_code_seq = self.odriver.optimizeCodeFrags(cfrags, best_perf_params)
 
             # check the optimized code sequence
             if len(cur_optimized_code_seq) != 1:
-                print 'internal error: the empirically optimized code cannot be multiple versions'
-                sys.exit(1)
+                err('main.tuner internal error: the empirically optimized code cannot contain multiple versions')
             
             # get the optimized code
             optimized_code, _ = cur_optimized_code_seq[0]
@@ -176,8 +174,7 @@ class PerfTuner:
             
             # if the tuning info is not defined
             if spec_name not in self.specs_map:
-                print 'error:%s: undefined specification: "%s"' % (spec_name_line_no, spec_name)
-                sys.exit(1)
+                err('main.tuner.tuner: %s: undefined specification: "%s"' % (spec_name_line_no, spec_name))
 
             # get the tuning information from the specifications map
             tinfo = self.specs_map[spec_name]
@@ -240,18 +237,15 @@ class PerfTuner:
             try:
                 is_valid = eval(iparam_constraint, dict(p))
             except Exception, e:
-                print 'error:%s: failed to evaluate the input parameter constraint expression'
-                print ' --> %s: %s' % (e.__class__.__name__, e)
-                sys.exit(1)
+                err('main.tuner.tuner:%s: failed to evaluate the input parameter constraint expression\n --> %s: %s' %  (iparam_constraint,e.__class__.__name__, e))
             if is_valid:
                 n_prob_sizes.append(p)
         prob_sizes = n_prob_sizes
 
         # check if the new problem sizes is empty
         if len(prob_sizes) == 0:
-            print ('error: no valid problem sizes exist. please check the input parameter ' +
+            err ('main.tuner.tuner: no valid problem sizes exist. please check the input parameter ' +
                    'constraints')
-            sys.exit(1)
         
         # return all possible combinations of problem sizes
         return prob_sizes

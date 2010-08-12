@@ -4,11 +4,14 @@
 
 import re, sys
 import code_frag
+from util.globals import Globals
+from util.globals import *
+
 
 #----------------------------------------
 
 class AnnParser:
-    '''The parser used for annotations extraction'''
+    '''The parser used for annotations extraction.'''
 
     # regular expressions
     __vname_re = r'[A-Za-z_]\w*'
@@ -21,9 +24,8 @@ class AnnParser:
     
     #----------------------------------------
 
-    def __init__(self, verbose=False):
+    def __init__(self):
         '''To instantiate the annotation parser'''
-        self.verbose = verbose
         pass
     
     #----------------------------------------
@@ -32,6 +34,31 @@ class AnnParser:
         return AnnParser.__leader_ann_re
     leaderAnnRE = staticmethod(leaderAnnRE)
 
+    #----------------------------------------
+
+    def removeAnns(self, code):
+        '''Remove all annotations from the given code'''
+        code = self.__leader_ann_re.sub('', code)
+        return self.__trailer_ann_re.sub('', code)
+
+    #----------------------------------------
+
+    def parse(self, code, line_no = 1):
+        '''Parse the code and return a sequence of code fragments'''
+
+        # parse the code to obtain the code sequence
+        code_seq = self.__getCodeSeq(code, line_no)
+
+        # convert the code sequence to a sequence of code fragments
+        cfrags = map(self.__convertToCodeFragment, code_seq)
+
+        # return the sequence of code fragments
+        return cfrags
+
+    #----------------------------------------
+    # Private methods:
+    #----------------------------------------
+   
     def __getIndentSizeFrom(self, code):
         '''
         Compute the indentation size based on the given code (i.e. count the number of spaces from
@@ -80,8 +107,7 @@ class AnnParser:
 
                     # if no matching trailer annotations
                     if trailer_ipos == -1:
-                        print 'error:%s: no matching trailer annotation exists' % code_line_no
-                        sys.exit(1)
+                        err('main.ann_parser: %s: no matching trailer annotation exists' % code_line_no)
 
                     # apply recursions on the annotation body and the trailing code sequence
                     body_code_seq = self.__markAnnCodeRegions(code_seq[i+1:trailer_ipos])
@@ -93,8 +119,7 @@ class AnnParser:
 
                 # if a trailer annotation
                 else:
-                    print 'error:%s: no matching leader annotation exists' % code_line_no
-                    sys.exit(1)
+                    err('main.ann_parser: %s: no matching leader annotation exists' % code_line_no)
 
             # if a non-annotation
             else:
@@ -156,8 +181,7 @@ class AnnParser:
             skip = False
             # an unrecognized form of annotation
             if not self.__leader_ann_re.match(ann) and not self.__trailer_ann_re.match(ann):
-                if self.verbose: 
-                    print 'Orio warning:%s: unrecognized form of annotation, skipping...' % ann_line_no
+                warn('main.ann_parser warning:%s: unrecognized form of annotation, skipping...' % ann_line_no)
                 skip = True
                 #sys.exit(1)
                     
@@ -184,8 +208,7 @@ class AnnParser:
 
         # if not a match
         if not match_obj:
-            print 'error:%s: not a leader annotation code' % line_no
-            sys.exit(1)
+            err('main.ann_parser: %s: not a leader annotation code' % line_no)
 
         # create the module info
         mname = match_obj.group(1)
@@ -207,8 +230,7 @@ class AnnParser:
 
             # assert that the code list has exactly three elements
             if len(code) != 3:
-                print 'internal error: the code list must have a length of three '
-                sys.exit(1)
+                err('main.ann_parser internal error:  the code list must have a length of three ')
 
             # get all three elements
             leader, leader_line_no, leader_indent_size, leader_is_ann = code[0]
@@ -238,31 +260,11 @@ class AnnParser:
 
             # check if the given code is an annotation
             if is_ann:
-                print 'internal error:%s: unexpected annotation' % line_no
-                sys.exit(1)
+                err('main.ann_parser internal error: %s: unexpected annotation' % line_no)
             
             # return the code fragment
             return cfrag
 
     #----------------------------------------
-
-    def removeAnns(self, code):
-        '''Remove all annotations from the given code'''
-        code = self.__leader_ann_re.sub('', code)
-        return self.__trailer_ann_re.sub('', code)
-
-    #----------------------------------------
-
-    def parse(self, code, line_no = 1):
-        '''Parse the code and return a sequence of code fragments'''
-
-        # parse the code to obtain the code sequence
-        code_seq = self.__getCodeSeq(code, line_no)
-
-        # convert the code sequence to a sequence of code fragments
-        cfrags = map(self.__convertToCodeFragment, code_seq)
-
-        # return the sequence of code fragments
-        return cfrags
 
 

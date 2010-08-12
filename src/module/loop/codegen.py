@@ -4,6 +4,7 @@
 
 import sys
 import ast
+from main.util.globals import *
 
 #-------------------------------------------------
 
@@ -340,12 +341,10 @@ class CodeGen_F(CodeGen):
             if tnode.init:
                 s += self.generate(tnode.init, indent, extra_indent)
             if not tnode.test:
-                print 'error: missing loop test expression. Fortran code generation requires a loop test expression.'
-                sys.exit(1)
+                err('module.loop.codegen:  missing loop test expression. Fortran code generation requires a loop test expression.')
                 
             if not tnode.iter:
-                print 'error: missing loop increment expression. Fortran code generation requires a loop increment expression.'
-                sys.exit(1)
+                err('module.loop.codegen:  missing loop increment expression. Fortran code generation requires a loop increment expression.')
             s += ', '
             if not isinstance(tnode.test, ast.BinOpExp):
                 print 'internal error: cannot handle code generation for loop test expression'

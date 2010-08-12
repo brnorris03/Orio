@@ -4,6 +4,7 @@
 
 import re, sys
 from tool.ZestyParser import *
+from main.util.globals import *
 
 #--------------------------------------------------------------------------------
 
@@ -82,8 +83,7 @@ class Parser:
         try:
             assigns = p.scan(p_program)
         except ParseError, e:
-            print 'error: %s' % e
-            sys.exit(1)
+            err('module.polysyn.parser:  %s' % e)
 
         # return the assignment sequence
         return assigns

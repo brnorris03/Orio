@@ -4,6 +4,7 @@
 
 import math, sys, time
 import main.tuner.search.search
+from main.util.globals import *
 
 #-----------------------------------------------------
 
@@ -56,12 +57,11 @@ class Annealing(main.tuner.search.search.Search):
         (i.e. minimum performance cost).
         '''
 
-        if self.verbose: print '\n----- begin simulated annealing search -----'
+        info('\n----- begin simulated annealing search -----')
 
         # check for parallel search
         if self.use_parallel_search:
-            print 'error: simulated annealing search does not support parallel search'
-            sys.exit(1)
+            err('main.tuner.search.annealing.annealing: simulated annealing search does not support parallel search')
 
         # initialize a storage to remember all initial coordinates that have been explored
         coord_records = {}
@@ -70,13 +70,13 @@ class Annealing(main.tuner.search.search.Search):
         best_global_coord = None
         best_global_perf_cost = self.MAXFLOAT
 
-        if self.verbose: print '--> begin temperature initialization'
+        info('--> begin temperature initialization')
         
         # calculate the initial and final temperatures
         init_temperature = self.__initTemperature()
         final_temperature = self.final_temp_ratio * init_temperature
 
-        if self.verbose: print '--> end temperature initialization'
+        info('--> end temperature initialization')
 
         # record the number of runs
         runs = 0
@@ -104,16 +104,15 @@ class Annealing(main.tuner.search.search.Search):
             best_coord = coord
             best_perf_cost = perf_cost
             
-            if self.verbose: print ('\n(run %s) initial coord: %s, cost: %s' %
-                                    (runs+1, coord, perf_cost))
+            info('\n(run %s) initial coord: %s, cost: %s' % (runs+1, coord, perf_cost))
             
             # the annealing loop
             while temperature > final_temperature:
 
-                if self.verbose:
-                    print ('-> anneal step: temperature: %.2f%%, final temperature: %.2f%%' %
-                           (100.0 * temperature / init_temperature,
-                            100.0 * final_temperature / init_temperature))
+                
+                info('-> anneal step: temperature: %.2f%%, final temperature: %.2f%%' %
+                     (100.0 * temperature / init_temperature,
+                      100.0 * final_temperature / init_temperature))
 
                 # initialize the number of good moves
                 good_moves = 0
@@ -135,8 +134,8 @@ class Annealing(main.tuner.search.search.Search):
                     if new_perf_cost < best_perf_cost:
                         best_coord = new_coord
                         best_perf_cost = new_perf_cost
-                        if self.verbose: print ('--> best annealing coordinate found: %s, cost: %s' %
-                                                (best_coord, best_perf_cost))
+                        info('--> best annealing coordinate found: %s, cost: %s' %
+                             (best_coord, best_perf_cost))
 
                     # calculate the performance cost difference
                     delta = new_perf_cost - perf_cost
@@ -146,8 +145,8 @@ class Annealing(main.tuner.search.search.Search):
                         coord = new_coord
                         perf_cost = new_perf_cost
                         good_moves += 1
-                        if self.verbose: print ('--> move to BETTER coordinate: %s, cost: %s' %
-                                                (coord, perf_cost))
+                        info('--> move to BETTER coordinate: %s, cost: %s' %
+                             (coord, perf_cost))
 
                     # compute the acceptance probability (i.e. the Boltzmann probability or
                     # the Metropolis criterion) to see whether a move to the new coordinate is
@@ -161,8 +160,7 @@ class Annealing(main.tuner.search.search.Search):
                             coord = new_coord
                             perf_cost = new_perf_cost
                             good_moves += 1
-                            if self.verbose: print ('--> move to WORSE coordinate: %s, cost: %s' %
-                                                    (coord, perf_cost))
+                            info('--> move to WORSE coordinate: %s, cost: %s' % (coord, perf_cost))
 
                     # check if the maximum limit of the good moves is reached
                     if good_moves > self.moves_limit:
@@ -179,8 +177,7 @@ class Annealing(main.tuner.search.search.Search):
                 if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
                     break
 
-            if self.verbose: print ('-> best annealing coordinate: %s, cost: %s' %
-                                    (best_coord, best_perf_cost))
+            info('-> best annealing coordinate: %s, cost: %s' % (best_coord, best_perf_cost))
 
             # record the current best performance cost
             old_best_perf_cost = best_perf_cost
@@ -193,15 +190,13 @@ class Annealing(main.tuner.search.search.Search):
 
                 # if the neighboring coordinate has a better performance cost
                 if best_perf_cost < old_best_perf_cost:
-                    if self.verbose: print ('---> better neighbor found: %s, cost: %s' %
-                                            (best_coord, best_perf_cost))
+                    info('---> better neighbor found: %s, cost: %s' % (best_coord, best_perf_cost))
                 
             # compared to the best global result so far
             if best_perf_cost < best_global_perf_cost:
                 best_global_coord = best_coord
                 best_global_perf_cost = best_perf_cost
-                if self.verbose: print ('>>>> best coordinate found: %s, cost: %s' %
-                                        (best_global_coord, best_global_perf_cost))
+                info('>>>> best coordinate found: %s, cost: %s' % (best_global_coord, best_global_perf_cost))
                             
             # increment the number of runs
             runs += 1
@@ -217,13 +212,12 @@ class Annealing(main.tuner.search.search.Search):
         # compute the total search time
         search_time = time.time() - start_time
         
-        if self.verbose: print '----- end simulated annealing search -----'
-        if self.verbose: print '----- begin summary -----'
-        if self.verbose: print (' best coordinate: %s, cost: %s' %
-                                (best_global_coord, best_global_perf_cost))
-        if self.verbose: print ' total search time: %.2f seconds' % search_time
-        if self.verbose: print ' total completed runs: %s' % runs
-        if self.verbose: print '----- end summary -----'
+        info('----- end simulated annealing search -----')
+        info('----- begin summary -----')
+        info(' best coordinate: %s, cost: %s' % (best_global_coord, best_global_perf_cost))
+        info(' total search time: %.2f seconds' % search_time)
+        info(' total completed runs: %s' % runs)
+        info('----- end summary -----')
         
         # return the best coordinate
         return best_global_coord
@@ -240,48 +234,42 @@ class Annealing(main.tuner.search.search.Search):
             # local search distance
             if vname == self.__LOCAL_DIST:
                 if not isinstance(rhs, int) or rhs < 0:
-                    print ('error: %s argument "%s" must be a positive integer or zero'
-                           % (self.__class__.__name__, vname))
-                    sys.exit(1)
+                    err('main.tuner.search.annealing: %s argument "%s" must be a positive integer or zero'
+                        % (self.__class__.__name__, vname))
                 self.local_distance = rhs
 
             # the temperature reduction factor
             elif vname == self.__COOL_FACT:
                 if not isinstance(rhs, float) or rhs <= 0 or rhs >= 1:
-                    print ('error: %s argument "%s" must be a real number between zero and one'
+                    err('main.tuner.search.annealing: %s argument "%s" must be a real number between zero and one'
                            % (self.__class__.__name__, vname))
-                    sys.exit(1)
                 self.cooling_factor = rhs
 
             # the final temperature ratio
             elif vname == self.__FTEMP_RATIO:
                 if not isinstance(rhs, float) or rhs <= 0 or rhs >= 1:
-                    print ('error: %s argument "%s" must be a real number between zero and one'
+                    err('main.tuner.search.annealing: %s argument "%s" must be a real number between zero and one'
                            % (self.__class__.__name__, vname))
-                    sys.exit(1)
                 self.final_temp_ratio = rhs
 
             # the maximum limit of numbers of trials at each temperature 
             elif vname == self.__TR_LIMIT:
                 if not isinstance(rhs, int) or rhs <= 0:
-                    print ('error: %s argument "%s" must be a positive integer'
+                    err('main.tuner.search.annealing: %s argument "%s" must be a positive integer'
                            % (self.__class__.__name__, vname))
-                    sys.exit(1)
                 self.trials_limit = rhs
 
             # the maximum limit of numbers of successful moves at each temperature
             elif vname == self.__MV_LIMIT:
                 if not isinstance(rhs, int) or rhs <= 0:
-                    print ('error: %s argument "%s" must be a positive integer'
+                    err('main.tuner.search.annealing: %s argument "%s" must be a positive integer'
                            % (self.__class__.__name__, vname))
-                    sys.exit(1)
                 self.moves_limit = rhs
 
             # unrecognized algorithm-specific argument
             else:
-                print ('error: unrecognized %s algorithm-specific argument: "%s"' %
+                err('main.tuner.search.annealing: unrecognized %s algorithm-specific argument: "%s"' %
                        (self.__class__.__name__, vname))
-                sys.exit(1)
 
     # Private methods
     #--------------------------------------------------
@@ -315,10 +303,9 @@ class Annealing(main.tuner.search.search.Search):
 
         # check if not enough random coordinates are found
         if len(random_coords) == 0:
-            print ('error: initialization of Simulated Annealing failed: no valid values of ' +
+            err('main.tuner.search.annealing: initialization of Simulated Annealing failed: no valid values of ' +
                    'performance parameters can be found. the performance parameter constraints ' +
                    'might prune out the entire search space.')
-            sys.exit(1)
         
         # sort the random coordinates in an increasing order of performance costs
         sorted_coords = zip(random_coords, perf_costs)

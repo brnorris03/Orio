@@ -3,14 +3,15 @@
 #
 
 import os, re, shlex, sys
+from main.util.globals import *
 
 #---------------------------------------------------------
 
-class SynTransformator:
-    '''The syntactic transformator'''
+class SynTransformation:
+    '''The syntactic transformation'''
 
     def __init__(self, verbose, permut, unroll_factors, scalar_replace, vectorize, rect_regtile):
-        '''To instantiate a syntactic transformator instance'''
+        '''To instantiate a syntactic transformation instance'''
 
         self.verbose = verbose
         self.permut = permut
@@ -34,8 +35,7 @@ class SynTransformator:
             f.write(code)
             f.close()
         except:
-            print 'error: cannot write to file: %s' % ifname
-            sys.exit(1)
+            err('module.polysyn.syn_transformation:  cannot write to file: %s' % ifname)
             
         # execute Orio
         cmd = 'orcc -o %s %s' % (ofname, ifname)
@@ -43,8 +43,7 @@ class SynTransformator:
         try:
             os.system(cmd)
         except:
-            print 'error: failed to execute command: "%s"' % cmd
-            sys.exit(1)
+            err('module.polysyn.syn_transformation:  failed to execute command: "%s"' % cmd)
             
         # read the generated code
         try:
@@ -52,16 +51,14 @@ class SynTransformator:
             transformed_code = f.read()
             f.close()
         except:
-            print 'error: cannot read file: %s' % ofname
-            sys.exit(1)
+            err('module.polysyn.syn_transformation:  cannot read file: %s' % ofname)
             
         # delete the used files
         for fname in [ifname, ofname]:
             try:
                 os.unlink(fname)
             except:
-                print 'error: cannot delete files: %s' % fname
-                sys.exit(1)
+                err('module.polysyn.syn_transformation:  cannot delete files: %s' % fname)
                 
         # return the transformed code
         return transformed_code

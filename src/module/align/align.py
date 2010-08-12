@@ -10,12 +10,12 @@ import codegen, module.module, parser
 class Align(module.module.Module):
     '''Memory-alignment transformation module'''
 
-    def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
+    def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='c'):
         '''To instantiate a memory-alignment transformation module'''
 
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
-                                      cmd_line_opts, line_no, indent_size, language)
+                                      line_no, indent_size, language)
 
     #---------------------------------------------------------------------
     

@@ -3,19 +3,19 @@
 #
 
 import sys
-import ann_parser, code_parser, module.module, pprinter, semant, transformator
+import ann_parser, code_parser, module.module, pprinter, semant, transformation
 
 #-----------------------------------------
 
 class Tilic(module.module.Module):
     '''The class definition for Tilic module'''
     
-    def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
+    def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
         '''To instantiate the Tilic tiling module'''
         
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
-                                      cmd_line_opts, line_no, indent_size, language)
+                                      line_no, indent_size, language)
 
     #---------------------------------------------------------------------
     
@@ -64,7 +64,7 @@ class Tilic(module.module.Module):
         stmts = semant.SemanticChecker().check(stmts)
 
         # perform loop-tiling transformation
-        (stmts, int_vars) = transformator.Transformator(tiling_params).transform(stmts)
+        (stmts, int_vars) = transformation.Transformation(tiling_params).transform(stmts)
 
         # generate the tiled code
         code = self.__generate(stmts, int_vars)
