@@ -7,11 +7,10 @@ import module.loop.ast
 
 #-----------------------------------------
 
-class Transformator:
-    '''Code transformator'''
+class Transformation:
+    '''Insertion of pragma directives.'''
 
     def __init__(self, pragmas, stmt):
-        '''To instantiate a code transformator object'''
 
         self.pragmas = pragmas
         self.stmt = stmt
@@ -22,7 +21,7 @@ class Transformator:
     #----------------------------------------------------------
 
     def transform(self):
-        '''To insert pragma directives'''
+        '''Insert pragma directives'''
 
         # no pragma directives insertions
         if len(self.pragmas) == 0:

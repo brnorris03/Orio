@@ -1,5 +1,5 @@
 #
-# The implementation of the code transformator
+# The implementation of the code transformation
 #
 
 import sys
@@ -7,11 +7,11 @@ import ast, ast_util
 
 #-------------------------------------------------
 
-class Transformator:
-    '''The code transformator that performs several code optimizations'''
+class Transformation:
+    '''The code transformation that performs several code optimizations'''
 
     def __init__(self, unroll, vectorize, scalar_replacement, constant_folding):
-        '''To instantiate a code transformator'''
+        '''To instantiate a code transformation'''
         
         self.ast_util = ast_util.ASTUtil()
 

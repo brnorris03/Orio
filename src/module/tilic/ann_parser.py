@@ -3,6 +3,7 @@
 #
 
 import re, sys
+from main.util.globals import *
 
 #----------------------------------------------------------------
 
@@ -31,37 +32,31 @@ class AnnParser:
 
             if var == 'num_tiling_levels':
                 if not isinstance(val, int) or val <= -1:
-                    print 'error:Tilic: the number of tiling levels must be a positive integer or zero: "%s"' % val
-                    sys.exit(1)
+                    err('module.tilic.ann_parser: Tilic: the number of tiling levels must be a positive integer or zero: "%s"' % val)
                 num_tiling_levels = val
 
             elif var == 'first_depth':
                 if not isinstance(val, int) or val <= 0:
-                    print 'error:Tilic: the first loop depth to be tiled must be a positive integer: "%s"' % val
-                    sys.exit(1)
+                    err('module.tilic.ann_parser: Tilic: the first loop depth to be tiled must be a positive integer: "%s"' % val)
                 first_depth = val
 
             elif var == 'last_depth':
                 if not isinstance(val, int):
-                    print 'error:Tilic: the last loop depth to be tiled must be an integer: "%s"' % val
-                    sys.exit(1)
+                    err('module.tilic.ann_parser: Tilic: the last loop depth to be tiled must be an integer: "%s"' % val)
                 last_depth = val
                 
             elif var == 'max_boundary_tiling_level':
                 if not isinstance(val, int):
-                    print 'error:Tilic: the maximum tiling level used to tile boundary tiles must be an integer: "%s"' % val
-                    sys.exit(1)
+                    err('module.tilic.ann_parser: Tilic: the maximum tiling level used to tile boundary tiles must be an integer: "%s"' % val)
                 max_boundary_tiling_level = val
 
             elif var == 'affine_lbound_exps':
                 if not isinstance(val, bool):
-                    print 'error:Tilic: the value of affine loop-bound expressions must be a boolean: "%s"' % val
-                    sys.exit(1)
+                    err('module.tilic.ann_parser: Tilic: the value of affine loop-bound expressions must be a boolean: "%s"' % val)
                 affine_lbound_exps = val
 
             else:
-                print 'error:Tilic: unknown tiling parameter: "%s"' % var
-                sys.exit(1)
+                err('module.tilic.ann_parser: Tilic: unknown tiling parameter: "%s"' % var)
 
         # return the tiling parameters
         return (num_tiling_levels, first_depth, last_depth, max_boundary_tiling_level, affine_lbound_exps)
@@ -101,8 +96,7 @@ class AnnParser:
             m = re.match(__assignment_re, ann)
             if not m:
                 if ann and (not ann.isspace()):
-                    print 'error:Tilic: annotation syntax error: "%s"' % orig_ann
-                    sys.exit(1)
+                    err('module.tilic.ann_parser: Tilic: annotation syntax error: "%s"' % orig_ann)
                 break
             var = m.group(1)
             val = m.group(2)

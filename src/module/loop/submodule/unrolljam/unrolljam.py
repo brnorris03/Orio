@@ -3,7 +3,8 @@
 #
 
 import sys
-import module.loop.submodule.submodule, transformator
+import module.loop.submodule.submodule, transformation
+from main.util.globals import *
 
 #---------------------------------------------------------------------
 
@@ -35,9 +36,7 @@ class UnrollJam(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                print 'error:%s: failed to evaluate the argument expression: %s' % (line_no, rhs)
-                print ' --> %s: %s' % (e.__class__.__name__, e)
-                sys.exit(1)
+                err('module.loop.submodule.unrolljam.unrolljam: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
                 
             # unroll factor
             if aname == UFACTOR:
@@ -49,13 +48,11 @@ class UnrollJam(module.loop.submodule.submodule.SubModule):
     
             # unknown argument name
             else:
-                print 'error:%s: unrecognized transformation argument: "%s"' % (line_no, aname)
-                sys.exit(1)
+                err('module.loop.submodule.unrolljam.unrolljam: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check for undefined transformation arguments
         if ufactor == None:
-            print 'error:%s: missing unroll factor argument' % self.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.unrolljam.unrolljam: %s: missing unroll factor argument' % self.__class__.__name__)
 
         # check semantics of the transformation arguments
         ufactor, parallelize = self.checkTransfArgs(ufactor, parallelize)
@@ -71,15 +68,13 @@ class UnrollJam(module.loop.submodule.submodule.SubModule):
         # evaluate the unroll factor
         rhs, line_no = ufactor
         if not isinstance(rhs, int) or rhs <= 0:
-            print 'error:%s: unroll factor must be a positive integer: %s' % (line_no, rhs)
-            sys.exit(1)
+            err('module.loop.submodule.unrolljam.unrolljam: %s: unroll factor must be a positive integer: %s' % (line_no, rhs))
         ufactor = rhs
 
         # evaluate the parallelization indicator
         rhs, line_no = parallelize
         if not isinstance(rhs, bool):
-            print 'error:%s: loop parallelization value must be a boolean: %s' % (line_no, rhs)
-            sys.exit(1)
+            err('module.loop.submodule.unrolljam.unrolljam: %s: loop parallelization value must be a boolean: %s' % (line_no, rhs))
         parallelize = rhs
 
         # return information about the transformation arguments
@@ -91,7 +86,7 @@ class UnrollJam(module.loop.submodule.submodule.SubModule):
         '''To apply unroll-and-jam transformation'''
 
         # perform the unroll-and-jam transformation
-        t = transformator.Transformator(ufactor, do_jamming, stmt, parallelize)
+        t = transformation.Transformation(ufactor, do_jamming, stmt, parallelize)
         transformed_stmt = t.transform()
 
         # return the transformed statement

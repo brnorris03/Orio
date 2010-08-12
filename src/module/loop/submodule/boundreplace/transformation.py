@@ -7,11 +7,11 @@ import module.loop.ast, module.loop.ast_lib.common_lib, module.loop.ast_lib.forl
 
 #-----------------------------------------
 
-class Transformator:
-    '''Code transformator'''
+class Transformation:
+    '''Code transformation implementation'''
 
     def __init__(self, lprefix, uprefix, stmt):
-        '''To instantiate a code transformator object'''
+        '''To instantiate a code transformation object'''
 
         self.lprefix = 'lb_'
         self.uprefix = 'ub_'
@@ -26,7 +26,38 @@ class Transformator:
         self.ucounter = 1
         self.flib = module.loop.ast_lib.forloop_lib.ForLoopLib()
         self.clib = module.loop.ast_lib.common_lib.CommonLib()
-        
+
+    #----------------------------------------------------------
+
+    def transform(self):
+        '''To replace loop bounds with scalars, and also perform hoisting on the loop bounds'''
+
+        # reset counters
+        self.lcounter = 1
+        self.ucounter = 1
+
+        # perform loop bounds replacement
+        transformed_stmt, asgns = self.__replaceBounds(self.stmt, None)
+
+        # create the loop bounds declarations
+        decls = []
+        for asgn in asgns:
+            intmd_name = asgn.exp.lhs.name
+            if len(decls) == 0 or len(decls[-1].var_names) > 8:
+                decls.append(module.loop.ast.VarDecl(self.dtype, [intmd_name]))
+            else:
+                decls[-1].var_names.append(intmd_name)
+                decls[-1].var_names.sort()
+
+        if len(asgns) > 0:
+            if isinstance(transformed_stmt, module.loop.ast.CompStmt):
+                transformed_stmt.stmts = decls + asgns + transformed_stmt.stmts
+            else:
+                transformed_stmt = module.loop.ast.CompStmt(decls + asgns + [transformed_stmt])
+
+        # return the transformed statement
+        return transformed_stmt
+            
     #----------------------------------------------------------
 
     def __replaceBounds(self, stmt, iter_name):
@@ -133,33 +164,4 @@ class Transformator:
             print 'internal error: unexpected AST type: "%s"' % exp.__class__.__name__
             sys.exit(1)
                                     
-    #----------------------------------------------------------
 
-    def transform(self):
-        '''To replace loop bounds with scalars, and also perform hoisting on the loop bounds'''
-
-        # reset counters
-        self.lcounter = 1
-        self.ucounter = 1
-
-        # perform loop bounds replacement
-        transformed_stmt, asgns = self.__replaceBounds(self.stmt, None)
-
-        # create the loop bounds declarations
-        decls = []
-        for asgn in asgns:
-            intmd_name = asgn.exp.lhs.name
-            if len(decls) == 0 or len(decls[-1].var_names) > 8:
-                decls.append(module.loop.ast.VarDecl(self.dtype, [intmd_name]))
-            else:
-                decls[-1].var_names.append(intmd_name)
-                decls[-1].var_names.sort()
-
-        if len(asgns) > 0:
-            if isinstance(transformed_stmt, module.loop.ast.CompStmt):
-                transformed_stmt.stmts = decls + asgns + transformed_stmt.stmts
-            else:
-                transformed_stmt = module.loop.ast.CompStmt(decls + asgns + [transformed_stmt])
-
-        # return the transformed statement
-        return transformed_stmt

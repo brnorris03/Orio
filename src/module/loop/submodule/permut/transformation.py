@@ -4,14 +4,15 @@
 
 import sys
 import module.loop.ast, module.loop.ast_lib.forloop_lib
+from main.util.globals import *
 
 #-----------------------------------------
 
-class Transformator:
-    '''Code transformator'''
+class Transformation:
+    '''Code transformation implementation'''
 
     def __init__(self, seq, stmt):
-        '''To instantiate a code transformator object'''
+        '''To instantiate a code transformation object'''
 
         self.seq = seq
         self.stmt = stmt
@@ -26,8 +27,7 @@ class Transformator:
         inames = self.flib.getLoopIndexNames(stmt)
         for i in self.seq:
             if isinstance(i, str) and i not in inames:
-                print 'error: loop permutation with index name "%s" does not exist' % i
-                sys.exit(1)
+                err('module.loop.submodule.permut.transformation:  loop permutation with index name "%s" does not exist' % i)
 
     #----------------------------------------------------------
 
@@ -172,8 +172,7 @@ class Transformator:
 
         # check if no permutation was done
         if not permut_executed:
-            print 'error: permutation cannot be executed. please check the sequence: %s' % self.seq
-            sys.exit(1)
+            err('module.loop.submodule.permut.transformation:  permutation cannot be executed. please check the sequence: %s' % self.seq)
         
         # return the transformed statement
         return transformed_stmt

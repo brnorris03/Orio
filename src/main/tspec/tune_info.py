@@ -3,6 +3,7 @@
 #
 
 import StringIO, sys, os, tokenize
+from main.util.globals import *
 
 #--------------------------------------------------------------
 
@@ -161,44 +162,43 @@ class TuningInfoGen:
             if keyw == 'let':
                 continue
             if keyw not in ('arg',):
-                print 'error:%s: unexpected statement type: "%s"' % (line_no, keyw)
-                sys.exit(1)
+                err('main.tspec.tune_info: %s: unexpected statement type: "%s"' % (line_no, keyw))
+                
 
             # unpack the statement
             _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
             
             # unknown argument name
             if id_name not in (BUILDCMD, BATCHCMD, STATUSCMD, NUMPROCS):
-                print 'error:%s: unknown build argument: "%s"' % (id_line_no, id_name)
-                sys.exit(1)
+                err('main.tspec.tune_info: %s: unknown build argument: "%s"' % (id_line_no, id_name))
+                
 
             # evaluate the build command
             if id_name == BUILDCMD:
                 if not isinstance(rhs, str):
-                    print 'error:%s: build command in build section must be a string' % rhs_line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: build command in build section must be a string' % rhs_line_no)
+                    
                 build_cmd = rhs
 
             # evaluate the batch command
             elif id_name == BATCHCMD:
                 if not isinstance(rhs, str):
-                    print 'error:%s: batch command in build section must be a string' % rhs_line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: batch command in build section must be a string' % rhs_line_no)
+                    
                 batch_cmd = rhs
 
             # evaluate the status command
             elif id_name == STATUSCMD:
                 if not isinstance(rhs, str):
-                    print 'error:%s: status command in build section must be a string' % rhs_line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: status command in build section must be a string' % rhs_line_no)
+                    
                 status_cmd = rhs
 
             # evaluate the number of processors
             elif id_name == NUMPROCS:
                 if not isinstance(rhs, int) or rhs <= 0:
-                    print (('error:%s: number of processors in build section must be a positive ' +
-                            'integer') % rhs_line_no)
-                    sys.exit(1)
+                    warn('main.tspec.tune_info:%s: number of processors in build section must be a positive integer' % rhs_line_no)
+                    
                 num_procs = rhs
 
         # return all build information
@@ -228,30 +228,29 @@ class TuningInfoGen:
             if keyw == 'let':
                 continue
             if keyw not in ('arg',):
-                print 'error:%s: unexpected statement type: "%s"' % (line_no, keyw)
-                sys.exit(1)
+                err('main.tspec.tune_info: %s: unexpected statement type: "%s"' % (line_no, keyw))
+                
 
             # unpack the statement
             _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
             
             # unknown argument name
             if id_name not in (METHOD, REPS):
-                print 'error:%s: unknown performance counter argument: "%s"' % (id_line_no, id_name)
-                sys.exit(1)
+                err('main.tspec.tune_info: %s: unknown performance counter argument: "%s"' % (id_line_no, id_name))
+                
 
             # evaluate build command
             if id_name == METHOD:
                 if not isinstance(rhs, str):
-                    print 'error:%s: performance counting method must be a string' % rhs_line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: performance counting method must be a string' % rhs_line_no)
+                    
                 pcount_method = rhs
 
             # evaluate performance counting repetitions
             elif id_name == REPS:
                 if not isinstance(rhs, int) or rhs <= 0:
-                    print ('error:%s: performance counting repetitions must be a positive integer' %
-                           rhs_line_no)
-                    sys.exit(1)
+                    warn('main.tspec.tune_info: %s: performance counting repetitions must be a positive integer' % rhs_line_no)
+                    
                 pcount_reps = rhs
         
         # return all performance counting information
@@ -284,38 +283,35 @@ class TuningInfoGen:
             if keyw == 'let':
                 continue
             if keyw not in ('arg',):
-                print 'error:%s: unexpected statement type: "%s"' % (line_no, keyw)
-                sys.exit(1)
-
+                err('main.tspec.tune_info: %s: unexpected statement type: "%s"' % (line_no, keyw))
+                
             # unpack the statement
             _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
 
             # unknown argument name
             if id_name not in (ALGO, TLIMIT, TRUNS):
                 if search_algo == None or not id_name.startswith(search_algo.lower() + '_'):
-                    print 'error:%s: unknown search argument: "%s"' % (id_line_no, id_name)
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: unknown search argument: "%s"' % (id_line_no, id_name))                    
 
             # evaluate build command
             if id_name == ALGO:
                 if not isinstance(rhs, str):
-                    print 'error:%s: search algorithm must be a string' % rhs_line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: search algorithm must be a string' % rhs_line_no)
+                    
                 search_algo = rhs
 
             # evaluate search time limit
             elif id_name == TLIMIT:
                 if (not isinstance(rhs, int) and not isinstance(rhs, float)) or rhs <= 0:
-                    print 'error:%s: search time limit must be a positive number' % rhs_line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: search time limit must be a positive number' % rhs_line_no)
+                    
                 search_time_limit = rhs
 
             # evaluate the total number of search runs
             elif id_name == TRUNS:
                 if not isinstance(rhs, int) or rhs <= 0:
-                    print ('error:%s: total number of search runs must be a positive number' %
-                           rhs_line_no)
-                    sys.exit(1)
+                    warn('main.tspec.tune_info: %s: total number of search runs must be a positive number'  % rhs_line_no)
+                    
                 search_total_runs = rhs
 
             # evaluate all other algorithm-specific arguments
@@ -323,9 +319,8 @@ class TuningInfoGen:
                 id_name_orig = id_name
                 id_name = id_name[len(search_algo)+1:]
                 if id_name == '':
-                    print ('error:%s: invalid algorithm-specific argument name: "%s"' %
-                           (id_line_no, id_name_orig))
-                    sys.exit(1)
+                    warn('main.tspec.tune_info: %s: invalid algorithm-specific argument name: "%s"'  % (id_line_no, id_name_orig))
+                    
                 search_opts.append((id_name, rhs))
 
         # return all search information
@@ -351,9 +346,8 @@ class TuningInfoGen:
             if keyw == 'let':
                 continue
             if keyw not in ('param', 'constraint'):
-                print 'error:%s: unexpected statement type: "%s"' % (line_no, keyw)
-                sys.exit(1)
-
+                err('main.tspec.tune_info: %s: unexpected statement type: "%s"' % (line_no, keyw))
+                
             # evaluate parameter
             if keyw == 'param':
                 _, _, (id_name, id_line_no), is_range, (rhs, rhs_line_no) = stmt
@@ -389,9 +383,8 @@ class TuningInfoGen:
             if keyw == 'let':
                 continue
             if keyw not in ('param', 'constraint'):
-                print 'error:%s: unexpected statement type: "%s"' % (line_no, keyw)
-                sys.exit(1)
-
+                err('main.tspec.tune_info: %s: unexpected statement type: "%s"' % (line_no, keyw))
+                
             # evaluate parameter
             if keyw == 'param':
                 _, _, (id_name, id_line_no), is_range, (rhs, rhs_line_no) = stmt
@@ -432,9 +425,8 @@ class TuningInfoGen:
             if keyw == 'let':
                 continue
             if keyw not in ('arg', 'decl'):
-                print 'error:%s: unexpected statement type: "%s"' % (line_no, keyw)
-                sys.exit(1)
-
+                err('main.tspec.tune_info: %s: unexpected statement type: "%s"' % (line_no, keyw))
+                
             # evaluate arguments
             if keyw == 'arg':
                 
@@ -444,29 +436,27 @@ class TuningInfoGen:
                 # declaration code
                 if id_name == DECL_FILE:
                     if not isinstance(rhs, str):
-                        print 'error:%s: declaration file must be a string' % rhs_line_no
-                        sys.exit(1)
+                        err('main.tspec.tune_info: %s: declaration file must be a string' % rhs_line_no)
+                        
                     if not os.path.exists(rhs):
-                        print 'error:%s: cannot find the declaration file: "%s"' % (rhs_line_no, rhs)
-                        sys.exit(1)
+                        err('main.tspec.tune_info: %s: cannot find the declaration file: "%s"' % (rhs_line_no, rhs))
+                        
                     ivar_decl_file = rhs
 
                 # initialization code
                 elif id_name == INIT_FILE:
                     if not isinstance(rhs, str):
-                        print 'error:%s: initialization file must be a string' % rhs_line_no
-                        sys.exit(1)
+                        err('main.tspec.tune_info: %s: initialization file must be a string' % rhs_line_no)
+                        
                     if not os.path.exists(rhs):
-                        print ('error:%s: cannot find the initialization file: "%s"' % 
-                               (rhs_line_no, rhs))
-                        sys.exit(1)
+                        warn('main.tspec.tune_info: %s: cannot find the initialization file: "%s"' % (rhs_line_no, rhs))
+                        
                     ivar_init_file = rhs
 
                 # unknown argument name
                 else:
-                    print 'error:%s: unknown input variable argument: "%s"' % (id_line_no, id_name)
-                    sys.exit(1)
-
+                    err('main.tspec.tune_info: %s: unknown input variable argument: "%s"' % (id_line_no, id_name))
+                    
             # evaluate declarations
             elif keyw == 'decl':
                 _, _, (id_name, id_line_no), type_seq, dim_exp_seq, (rhs, rhs_line_no) = stmt
@@ -477,14 +467,14 @@ class TuningInfoGen:
                 # TODO handle structs
 
                 if is_static and is_dynamic:
-                    print 'error:%s: a declared variable cannot be both static and dynamic' % line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: a declared variable cannot be both static and dynamic' % line_no)
+                    
                 if (not is_array) and (is_static or is_dynamic):
-                    print 'error:%s: static and dynamic types are only for arrays' % line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: static and dynamic types are only for arrays' % line_no)
+                    
                 if is_array and (not is_static) and (not is_dynamic):
-                    print 'error:%s: missing static/dynamic type for arrays variable' % line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: missing static/dynamic type for arrays variable' % line_no)
+                    
                 if not is_array:
                     is_static = None
                 if 'static' in type_seq:
@@ -492,11 +482,11 @@ class TuningInfoGen:
                 if 'dynamic' in type_seq:
                     type_seq.remove('dynamic')
                 if len(type_seq) == 0:
-                    print 'error:%s: missing type name' % line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: missing type name' % line_no)
+                    
                 if len(type_seq) > 1:
-                    print 'error:%s: unrecognized type name: "%s"' % (line_no, type_seq[0])
-                    sys.exit(1)                    
+                    err('main.tspec.tune_info: %s: unrecognized type name: "%s"' % (line_no, type_seq[0]))
+               
                 dtype = type_seq[-1]
                 ddims = [d for d,_ in dim_exp_seq]
                 ivar_decls.append((is_static, dtype, id_name, ddims, rhs))
@@ -506,34 +496,34 @@ class TuningInfoGen:
             
             # invalid options
             if ivar_decl_file:
-                print (('error: since input variables are declared in the tuning specification, ' + 
+                warn(('main.tspec.tune_info:  since input variables are declared in the tuning specification, ' +
                        'the declaration file "%s" is not needed') % ivar_decl_file)
-                sys.exit(1)
+                
             
             # both declarations and initializations are generated by the driver
             if ivar_init_file == None:
                 for _,_,iname,_,rhs in ivar_decls:
                     if rhs == None:
-                        print (('error: missing an initial value in the input variable ' +
+                        warn(('main.tspec.tune_info:  missing an initial value in the input variable ' +
                                 'declaration of "%s" in the tuning specification') % iname)
-                        sys.exit(1)
+                        
 
             # declarations are generated by the driver; initializations are provided by the user
             else:   
                 for _,_,iname,_,rhs in ivar_decls:
                     if rhs != None:
-                        print (('error: since initializations of the input variables are provided ' +
+                        warn (('main.tspec.tune_info: since initializations of the input variables are provided ' +
                                 'by the user in file "%s", input variable "%s" must be ' +
                                 'declared without an initial value') % (ivar_init_file, iname))
-                        sys.exit(1)
+                        
 
         else:
             
             # missing declarations and/or initializations
             if ivar_decl_file == None or ivar_init_file == None:
-                print ('error: missing declarations and/or initializations of the input ' +
+                warn('main.tspec.tune_info:  missing declarations and/or initializations of the input ' +
                        'variables in the tuning specification.')
-                sys.exit(1)
+                
             
             # both declaration and initialization are provided by the user
             else:
@@ -564,27 +554,25 @@ class TuningInfoGen:
             if keyw == 'let':
                 continue
             if keyw not in ('arg',):
-                print 'error:%s: unexpected statement type: "%s"' % (line_no, keyw)
-                sys.exit(1)
-
+                err('main.tspec.tune_info: %s: unexpected statement type: "%s"' % (line_no, keyw))
+                
             # unpack the statement
             _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
             
             # unknown argument name
             if id_name not in (SKELETON_CODE_FILE,):
-                print 'error:%s: unknown performance counter argument: "%s"' % (id_line_no, id_name)
-                sys.exit(1)
-
+                err('main.tspec.tune_info: %s: unknown performance counter argument: "%s"' % (id_line_no, id_name))
+                
             # evaluate skeleton code file
             if id_name == SKELETON_CODE_FILE:
                 if not isinstance(rhs, str):
-                    print (('error:%s: filename of the performance-test skeleton code file must be ' +
+                    warn(('main.tspec.tune_info: %s: filename of the performance-test skeleton code file must be ' +
                             'a string') % rhs_line_no)
-                    sys.exit(1)
+                    
                 if not os.path.exists(rhs):
-                    print (('error:%s: cannot find the file specified in performance-test ' + 
+                    warn(('main.tspec.tune_info: %s: cannot find the file specified in performance-test ' +
                             'skeleton code file: "%s"') % (rhs_line_no, rhs))
-                    sys.exit(1)
+                    
                 ptest_skeleton_code_file = rhs
 
         # return all performance-test code information
@@ -625,7 +613,7 @@ class TuningInfoGen:
                 continue
             if keyw != 'def':
                 print 'internal error: unrecognized keyword: "%s"' % keyw
-                sys.exit(1)
+                
 
             # unpack the statement
             _, _, (dname, dname_line_no), body_stmt_seq = stmt
@@ -633,25 +621,25 @@ class TuningInfoGen:
             # unknown definition name
             if dname not in (BUILD, PERF_COUNTER, SEARCH, PERF_PARAMS, INPUT_PARAMS, 
                              INPUT_VARS, PTEST_CODE):
-                print 'error:%s: unknown definition name: "%s"' % (dname_line_no, dname)
-                sys.exit(1)
+                err('main.tspec.tune_info: %s: unknown definition name: "%s"' % (dname_line_no, dname))
+                
             
             # build definition
             if dname == BUILD:
                 (build_cmd, batch_cmd, status_cmd,
                  num_procs) = self.__genBuildInfo(body_stmt_seq, line_no)
                 if build_cmd == None:
-                    print 'error:%s: missing build command in the build section' % line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: missing build command in the build section' % line_no)
+                    
                 if ((batch_cmd != None and status_cmd == None) or
                     (batch_cmd == None and status_cmd != None)):
-                    print (('error:%s: both batch and status commands in build section ' +
+                    warn(('main.tspec.tune_info: %s: both batch and status commands in build section ' +
                             'must not be empty') % line_no)
-                    sys.exit(1)
+                    
                 if batch_cmd == None and num_procs > 1:
-                    print (('error:%s: number of processors in build section must be greater than ' +
+                    warn(('main.tspec.tune_info: %s: number of processors in build section must be greater than ' +
                             'one for non-batch (or non-parallel) search') % line_no)
-                    sys.exit(1)
+                    
                 build_info = (build_cmd, batch_cmd, status_cmd, num_procs)
 
             # performance counter definition
@@ -681,16 +669,16 @@ class TuningInfoGen:
             elif dname == PERF_PARAMS:
                 pparam_params, pparam_constraints = self.__genPerfParamsInfo(body_stmt_seq, line_no)
                 if len(pparam_constraints) > 0 and len(pparam_params) == 0:
-                    print 'error:%s: constraints require parameters definitions' % dname_line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: constraints require parameters definitions' % dname_line_no)
+                    
                 pparam_info = (pparam_params, pparam_constraints)
                 
             # input parameters definition
             elif dname == INPUT_PARAMS:
                 iparam_params, iparam_constraints = self.__genInputParamsInfo(body_stmt_seq, line_no)
                 if len(iparam_constraints) > 0 and len(iparam_params) == 0:
-                    print 'error:%s: constraints require parameters definitions' % dname_line_no
-                    sys.exit(1)
+                    err('main.tspec.tune_info: %s: constraints require parameters definitions' % dname_line_no)
+                    
                 iparam_info = (iparam_params, iparam_constraints)
 
             # input variables definition
@@ -706,14 +694,12 @@ class TuningInfoGen:
 
         # check if the build definition is missing
         if build_info == None:
-            print 'error: missing build definition in the tuning specification'
-            sys.exit(1)
-
+            err('main.tspec.tune_info:  missing build definition in the tuning specification')
+            
         # check if the input variables definition is missing
         if ivar_info == None:
-            print 'error: missing input variables definition in the tuning specification'
-            sys.exit(1)
-
+            err('main.tspec.tune_info:  missing input variables definition in the tuning specification')
+            
         # return the tuning information
         return TuningInfo(build_info, pcount_info, search_info, pparam_info, iparam_info,
                           ivar_info, ptest_code_info)

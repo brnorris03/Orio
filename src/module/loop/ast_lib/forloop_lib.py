@@ -4,6 +4,7 @@
 
 import sets, sys
 import module.loop.ast
+from main.util.globals import *
 
 #-----------------------------------------
 
@@ -32,8 +33,7 @@ class ForLoopLib:
 
         # check if it is a for-loop statement
         if not isinstance(stmt, module.loop.ast.ForStmt):
-            print 'error:%s: not a for-loop statement' % stmt.line_no
-            sys.exit(1)
+            err('module.loop.ast_lib.forloop_lib: %s: not a for-loop statement' % stmt.line_no)
 
         # check initialization expression
         if stmt.init:

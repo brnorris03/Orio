@@ -4,6 +4,7 @@
 
 import sys
 import ast, tool.ply.lex, tool.ply.yacc
+from main.util.globals import *
 
 #------------------------------------------------
 
@@ -110,8 +111,7 @@ def t_NEWLINE(t):
     
 # syntactical error
 def t_error(t):
-    print 'error:%s: syntactical error: "%s"' % ((t.lineno + __start_line_no - 1), t.value[0])
-    sys.exit(1)
+    err('module.loop.parser: %s: syntactical error: "%s"' % ((t.lineno + __start_line_no - 1), t.value[0]))
     
 #------------------------------------------------
 
@@ -468,8 +468,7 @@ def p_argument_expression_list_2(p):
 
 # grammatical error
 def p_error(p):
-    print 'error:%s: grammatical error: "%s"' % ((p.lineno + __start_line_no - 1), p.value)
-    sys.exit(1)
+    err('module.loop.parser: %s: grammatical error: "%s"' % ((p.lineno + __start_line_no - 1), p.value))
 
 #------------------------------------------------
 

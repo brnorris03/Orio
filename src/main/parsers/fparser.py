@@ -20,6 +20,8 @@ import sys, os
 import ast, tool.ply.yacc
 import main.parsers.flexer as lexer
 from main.parsers.fAST import *
+from main.util.globals import *
+
 
 # Get the token map
 tokens = lexer.tokens
@@ -2169,12 +2171,10 @@ def p_assignment_expression_2(p):
         elif (p[2] == '-='):
             rhs = ast.BinOpExp(p[1], p[3], ast.BinOpExp.SUB, p.lineno(1) + __start_line_no - 1)
         else:
-            print 'internal error: missing case for assignment operator'
-            sys.exit(1)
+            err('main.parsers.fparser internal error:  missing case for assignment operator')
         p[0] = ast.BinOpExp(lhs, rhs, ast.BinOpExp.EQ_ASGN, p.lineno(1) + __start_line_no - 1)
     else:
-        print 'internal error: unknown assignment operator'
-        sys.exit(1)
+        err('main.parsers.fparser internal error:  unknown assignment operator')
 
 # assignment-operator:
 def p_assignment_operator(p):
@@ -2217,8 +2217,7 @@ def p_equality_expression_2(p):
     elif p[2] == '!=':
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.NE, p.lineno(1) + __start_line_no - 1)
     else:
-        print 'internal error: unknown equality operator'
-        sys.exit(1)
+        err('main.parsers.fparser internal error:  unknown equality operator')
 
 # equality-operator:
 def p_equality_operator(p):
@@ -2242,8 +2241,7 @@ def p_relational_expression_2(p):
     elif (p[2] == '>='):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.GE, p.lineno(1) + __start_line_no - 1)
     else:
-        print 'internal error: unknown relational operator'
-        sys.exit(1)
+        err('main.parsers.fparser internal error:  unknown relational operator')
         
 # relational-operator
 def p_relational_operator(p):
@@ -2265,8 +2263,7 @@ def p_additive_expression_2(p):
     elif (p[2] == '-'):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.SUB, p.lineno(1) + __start_line_no - 1)
     else:
-        print 'internal error: unknown additive operator' 
-        sys.exit(1)
+        err('main.parsers.fparser internal error:  unknown additive operator' )
 
 # additive-operator:
 def p_additive_operator(p):
@@ -2288,8 +2285,7 @@ def p_multiplicative_expression_2(p):
     elif (p[2] == '%'):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.MOD, p.lineno(1) + __start_line_no - 1)
     else:
-        print 'internal error: unknown multiplicative operator'
-        sys.exit(1)
+        err('main.parsers.fparser internal error:  unknown multiplicative operator')
 
 # multiplicative-operator
 def p_multiplicative_operator(p):
@@ -2320,8 +2316,7 @@ def p_unary_expression_4(p):
     elif p[1] == '!':
         p[0] = ast.UnaryExp(p[2], ast.UnaryExp.LNOT, p.lineno(1) + __start_line_no - 1)
     else:
-        print 'internal error: unknown unary operator'
-        sys.exit(1)
+        err('main.parsers.fparser internal error:  unknown unary operator')
 
 # unary-operator
 def p_unary_operator(p):
@@ -2394,7 +2389,7 @@ def p_argument_expression_list_2(p):
 
 # grammatical error
 def p_error(p):
-    print 'error:%s: grammatical error: "%s"' % ((p.lineno + __start_line_no - 1), p.value)
+    err('main.parsers.fparser:%s: grammatical error: "%s"' % ((p.lineno + __start_line_no - 1), p.value))
     sys.exit(1)
 
 #------------------------------------------------
@@ -2604,19 +2599,19 @@ if __name__ == '__main__':
 
     for i in range(1, len(sys.argv)):
         fname = sys.argv[i]
-        print >>DEBUGSTREAM, "[fparser] About to parse %s" % fname
+        debug("main.parsers.fparser: About to parse %s" % fname, level=1)
         f = open(fname,"r")
         s = f.read()
         f.close()
-        # print "Contents of %s: %s" % (fname, s)
+        # debug("main.parsers.fparser: Contents of %s: %s" % (fname, s))
         if s == '' or s.isspace(): sys.exit(0)
         if not s.endswith('\n'): 
-            print 'Orio WARNING: file does not end with newline.'
+            warn('main.parser.fparser: file does not end with newline.')
             s += '\n'
         
         lex.reset(fname)
         ast = parser.parse(s, lexer=lex.lexer, debug=0)
-        print >>DEBUGSTREAM, '[iparse] Successfully parsed %s' % fname
+        debug('main.parsers.fparser: Successfully parsed %s' % fname, level=1)
 
         
         #printer = visitor.printer.Printer()

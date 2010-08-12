@@ -4,19 +4,19 @@
 #
 
 import sys
-import ann_parser, code_parser, module.module, pprinter, semant, transformator
+import ann_parser, code_parser, module.module, pprinter, semant, transformation
 
 #-----------------------------------------
 
 class OrTil(module.module.Module):
     '''The class definition for OrTil tiling module'''
     
-    def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
+    def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
         '''To instantiate an OrTil tiling module'''
         
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
-                                      cmd_line_opts, line_no, indent_size, language)
+                                      line_no, indent_size, language)
         
     #---------------------------------------------------------------------
     
@@ -64,7 +64,7 @@ class OrTil(module.module.Module):
         stmts = semant.SemanticAnalyzer(tiling_info).analyze(stmts)
 
         # perform loop-tiling transformation
-        t = transformator.Transformator(tiling_info)
+        t = transformation.Transformation(tiling_info)
         (stmts, int_vars) = t.transform(stmts)
 
         # generate the tiled code

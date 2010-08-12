@@ -4,6 +4,7 @@
 
 import sys
 import ast
+from main.util.globals import *
 
 #-------------------------------------------------------------------
 
@@ -77,8 +78,7 @@ class ASTUtil:
 
         # check if it is a for-loop statement
         if not isinstance(stmt, ast.ForStmt):
-            print 'error:OrTilDriver:%s: not a for-loop statement' % stmt.line_no
-            sys.exit(1)
+            err('module.ortildriver.ast_util: OrTilDriver:%s: not a for-loop statement' % stmt.line_no)
 
         # check initialization expression
         if stmt.init:

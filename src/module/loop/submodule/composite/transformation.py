@@ -15,12 +15,12 @@ import module.loop.submodule.arrcopy.arrcopy
 
 #-----------------------------------------
 
-class Transformator:
-    '''Code transformator'''
+class Transformation:
+    '''Code transformation implementation'''
 
     def __init__(self, tiles, permuts, regtiles, ujams, scalarrep, boundrep,
                  pragma, openmp, vector, arrcopy, stmt):
-        '''To instantiate a code transformator object'''
+        '''Instantiate a code transformation object'''
 
         self.tiles = tiles
         self.permuts = permuts

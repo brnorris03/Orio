@@ -3,7 +3,8 @@
 #
 
 import sys
-import module.loop.submodule.submodule, transformator
+import module.loop.submodule.submodule, transformation
+from main.util.globals import *
 
 #---------------------------------------------------------------------
 
@@ -33,9 +34,7 @@ class Permut(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                print 'error:%s: failed to evaluate the argument expression: %s' % (line_no, rhs)
-                print ' --> %s: %s' % (e.__class__.__name__, e)
-                sys.exit(1)
+                err('module.loop.submodule.permut.permut: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
                 
             # permutation sequence
             if aname == SEQ:
@@ -43,13 +42,11 @@ class Permut(module.loop.submodule.submodule.SubModule):
                 
             # unknown argument name
             else:
-                print 'error:%s: unrecognized transformation argument: "%s"' % (line_no, aname)
-                sys.exit(1)
+                err('module.loop.submodule.permut.permut: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check for undefined transformation arguments
         if seq == None:
-            print 'error:%s: missing permutation sequence argument' % self.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.permut.permut: %s: missing permutation sequence argument' % self.__class__.__name__)
 
         # check semantics of the transformation arguments
         seq, = self.checkTransfArgs(seq)
@@ -94,7 +91,7 @@ class Permut(module.loop.submodule.submodule.SubModule):
         '''To apply loop permutation/interchange transformation'''
 
         # perform the loop permutation transformation
-        t = transformator.Transformator(seq, stmt)
+        t = transformation.Transformation(seq, stmt)
         transformed_stmt = t.transform()
 
         # return the transformed statement

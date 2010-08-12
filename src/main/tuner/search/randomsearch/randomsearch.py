@@ -4,6 +4,7 @@
 
 import sys, time
 import main.tuner.search.search
+from main.util.globals import *
 
 #-----------------------------------------------------
 
@@ -35,10 +36,8 @@ class Randomsearch(main.tuner.search.search.Search):
         
         # complain if both the search time limit and the total number of search runs are undefined
         if self.time_limit <= 0 and self.total_runs <= 0:
-            print (('error: %s search requires either (both) the search time limit or (and) the ' +
+            err(('main.tuner.search.randomsearch.randomsearch: %s search requires either (both) the search time limit or (and) the ' +
                     'total number of search runs to be defined') % self.__class__.__name__)
-            sys.exit(1)
-
      
     # Method required by the search interface
     def searchBestCoord(self):
@@ -47,7 +46,7 @@ class Randomsearch(main.tuner.search.search.Search):
         (i.e. minimum performance cost).
         '''
 
-        if self.verbose: print '\n----- begin random search -----'
+        info('\n----- begin random search -----')
 
         # get the total number of coordinates to be tested at the same time
         coord_count = 1
@@ -95,13 +94,11 @@ class Randomsearch(main.tuner.search.search.Search):
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
             for i, (coord_str, perf_cost) in enumerate(pcost_items):
                 coord_val = eval(coord_str)
-                if self.verbose:
-                    print '(run %s) coordinate: %s, cost: %s' % (runs+i+1, coord_val, perf_cost)
+                info('(run %s) coordinate: %s, cost: %s' % (runs+i+1, coord_val, perf_cost))
                 if perf_cost < best_perf_cost:
                     best_coord = coord_val
                     best_perf_cost = perf_cost
-                    if self.verbose:
-                        print '>>>> best coordinate found: %s, cost: %s' % (coord_val, perf_cost)
+                    info('>>>> best coordinate found: %s, cost: %s' % (coord_val, perf_cost))
 
             # if a better coordinate is found, explore the neighboring coordinates
             if old_perf_cost != best_perf_cost:
@@ -122,12 +119,12 @@ class Randomsearch(main.tuner.search.search.Search):
         # compute the total search time
         search_time = time.time() - start_time
         
-        if self.verbose: print '----- end random search -----'
-        if self.verbose: print '----- begin summary -----'
-        if self.verbose: print ' best coordinate: %s, cost: %s' % (best_coord, best_perf_cost)
-        if self.verbose: print ' total search time: %.2f seconds' % search_time
-        if self.verbose: print ' total completed runs: %s' % runs
-        if self.verbose: print '----- end summary -----'
+        info('----- end random search -----')
+        info('----- begin summary -----')
+        info(' best coordinate: %s, cost: %s' % (best_coord, best_perf_cost))
+        info(' total search time: %.2f seconds' % search_time)
+        info(' total completed runs: %s' % runs)
+        info('----- end summary -----')
         
         # return the best coordinate
         return best_coord
@@ -144,16 +141,14 @@ class Randomsearch(main.tuner.search.search.Search):
             # local search distance
             if vname == self.__LOCAL_DIST:
                 if not isinstance(rhs, int) or rhs < 0:
-                    print ('error: %s argument "%s" must be a positive integer or zero'
+                    err('main.tuner.search.randomsearch: %s argument "%s" must be a positive integer or zero'
                            % (self.__class__.__name__, vname))
-                    sys.exit(1)
                 self.local_distance = rhs
 
             # unrecognized algorithm-specific argument
             else:
-                print ('error: unrecognized %s algorithm-specific argument: "%s"' %
+                err('main.tuner.search.randomsearch: unrecognized %s algorithm-specific argument: "%s"' %
                        (self.__class__.__name__, vname))
-                sys.exit(1)
 
     #--------------------------------------------------
 

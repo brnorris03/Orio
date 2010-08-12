@@ -3,7 +3,8 @@
 #
 
 import sys
-import module.loop.submodule.submodule, transformator
+import module.loop.submodule.submodule, transformation
+from main.util.globals import *
 
 #---------------------------------------------------------------------
 
@@ -35,9 +36,8 @@ class Tile(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                print 'error:%s: failed to evaluate the argument expression: %s' % (line_no, rhs)
-                print ' --> %s: %s' % (e.__class__.__name__, e)
-                sys.exit(1)
+                err('module.loop.submodule.tile.tile: %s: failed to evaluate the argument expression: %s\n --> %s: %s' 
+                    % (line_no, rhs,e.__class__.__name__, e))
 
             # tile size
             if aname == TSIZE:
@@ -49,16 +49,13 @@ class Tile(module.loop.submodule.submodule.SubModule):
 
             # unknown argument name
             else:
-                print 'error:%s: unrecognized transformation argument: "%s"' % (line_no, aname)
-                sys.exit(1)
+                err('module.loop.submodule.tile.tile: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check for undefined transformation arguments
         if tsize == None:
-            print 'error:%s: missing tile size argument' % self.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.tile.tile: %s: missing tile size argument' % self.__class__.__name__)
         if tindex == None:
-            print 'error:%s: missing tile loop index name argument' % self.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.tile.tile: %s: missing tile loop index name argument' % self.__class__.__name__)
 
         # check semantics of the transformation arguments
         tsize, tindex = self.checkTransfArgs(tsize, tindex)
@@ -74,15 +71,13 @@ class Tile(module.loop.submodule.submodule.SubModule):
         # evaluate the tile size
         rhs, line_no = tsize
         if not isinstance(rhs, int) or rhs <= 0:
-            print 'error:%s: tile size must be a positive integer: %s' % (line_no, rhs)
-            sys.exit(1)
+            err('module.loop.submodule.tile.tile: %s: tile size must be a positive integer: %s' % (line_no, rhs))
         tsize = rhs
             
         # evaluate the tile loop index name
         rhs, line_no = tindex
         if not isinstance(rhs, str):
-            print 'error:%s: tile loop index name must be a string: %s' % (line_no, rhs)
-            sys.exit(1)
+            err('module.loop.submodule.tile.tile: %s: tile loop index name must be a string: %s' % (line_no, rhs))
         tindex = rhs
 
         # return information about the transformation arguments
@@ -94,7 +89,7 @@ class Tile(module.loop.submodule.submodule.SubModule):
         '''To apply loop tiling transformation'''
         
         # perform the loop tiling transformation
-        t = transformator.Transformator(tsize, tindex, stmt)
+        t = transformation.Transformation(tsize, tindex, stmt)
         transformed_stmt = t.transform()
         
         # return the transformed statement

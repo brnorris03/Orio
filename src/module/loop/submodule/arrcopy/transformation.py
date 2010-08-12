@@ -5,14 +5,15 @@
 import sets, sys
 import module.loop.ast, module.loop.ast_lib.common_lib, module.loop.ast_lib.constant_folder
 import module.loop.ast_lib.forloop_lib
+from main.util.globals import *
 
 #-----------------------------------------
 
-class Transformator:
-    '''Code transformator'''
+class Transformation:
+    '''Code transformation interface'''
 
     def __init__(self, aref, suffix, dtype, dimsizes, stmt):
-        '''To instantiate a code transformator object'''
+        '''To instantiate a code transformation object'''
 
         # remove any whitespaces from the array reference string
         aref = aref.replace(' ','')
@@ -31,6 +32,45 @@ class Transformator:
         self.clib = module.loop.ast_lib.common_lib.CommonLib()
         self.cfolder = module.loop.ast_lib.constant_folder.ConstFolder()
 
+    #----------------------------------------------------------
+
+    def transform(self):
+        '''Perform the code transformation.'''
+
+        # get the array reference information
+        aref_info = self.__getARefInfo()
+
+        # check if one of the array buffer dimension sizes is one (i.e. no tiling)
+        aref, arr_name, ivar_names, dim_sizes, is_output = aref_info
+        one_one = reduce(lambda x,y: x or y, map(lambda x: x==1, dim_sizes), False)
+        if one_one:
+            decl = module.loop.ast.VarDecl(self.dtype, [arr_name + self.suffix])
+            if isinstance(self.stmt, module.loop.ast.CompStmt):
+                self.stmt.stmts = [decl] + self.stmt.stmts
+            else:
+                self.stmt = module.loop.ast.CompStmt([decl, self.stmt])
+            return self.stmt
+
+        # perform array copy optimization
+        tstmt, is_done, decl, rinfo = self.__optimizeCopy(self.stmt, aref_info, [])
+
+        # if it is done
+        if is_done:
+            if decl == None:
+                err('module.loop.submodule.arrcopy.transformation:  array copy optimization was unsuccessful')
+            else:
+                if isinstance(tstmt, module.loop.ast.CompStmt):
+                    tstmt.stmts = [decl] + tstmt.stmts
+                else:
+                    tstmt = module.loop.ast.CompStmt([decl, tstmt])
+        else:
+            err('module.loop.submodule.arrcopy.transformation:  array copy optimization must be applied on a tiled perfect loop nest')
+        
+        # return the transformed statement
+        return tstmt
+
+    #----------------------------------------------------------
+    # Private methods
     #----------------------------------------------------------
 
     def __containARef(self, tnode, is_output):
@@ -256,15 +296,13 @@ class Transformator:
                         pass
                 else:
                     if nrinfo != None:
-                        print 'error: array copy optimization cannot work for imperfect loop nests'
-                        sys.exit(1)
+                        err('module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
                     else:
                         nrinfo = rinfo
             stmt.stmts = nstmts
             if ndecl != None:
                 if nrinfo != None:
-                        print 'error: array copy optimization cannot work for imperfect loop nests'
-                        sys.exit(1)
+                        err('module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
                 return (stmt, True, ndecl, None)
             else:
                 if nrinfo != None:
@@ -281,22 +319,18 @@ class Transformator:
             stmt.false_stmt = stmt2
             if is_done1 and is_done2:
                 if decl1 != None and decl2 != None:
-                    print 'error: array copy optimization cannot work for imperfect loop nests'
-                    sys.exit(1)
+                    err('module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
                 return (stmt, True, (decl1 or decl2), None)
             elif is_done1:
                 if decl1 != None:
-                    print 'error: array copy optimization cannot work for imperfect loop nests'
-                    sys.exit(1)
+                    err('module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
                 return (stmt, False, None, rinfo2)
             elif is_done2:
                 if decl2 != None:
-                    print 'error: array copy optimization cannot work for imperfect loop nests'
-                    sys.exit(1)
+                    err('module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
                 return (stmt, False, None, rinfo1)
             else:
-                print 'error: array copy optimization cannot work for imperfect loop nests'
-                sys.exit(1)
+                err('module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
 
         elif isinstance(stmt, module.loop.ast.ForStmt):
 
@@ -402,8 +436,7 @@ class Transformator:
             aref = a
             is_output = is_output or i
         if aref == None:
-            print 'error: array-copy statement does not contain array reference: "%s"' % self.aref
-            sys.exit(1)
+            err('module.loop.submodule.arrcopy.transformation:  array-copy statement does not contain array reference: "%s"' % self.aref)
 
         # get the array name and the array dimension expressions
         dexps = []
@@ -436,8 +469,7 @@ class Transformator:
 
         # get the sizes of the dimensions of the array buffer
         if len(self.dimsizes) != len(dim_exps):
-            print 'error: incorrect the number of array dimensions: %s' % self.dimsizes
-            sys.exit(1)
+            err('module.loop.submodule.arrcopy.transformation:  incorrect the number of array dimensions: %s' % self.dimsizes)
         dim_sizes = self.dimsizes
         
         # create information about the array reference
@@ -446,41 +478,3 @@ class Transformator:
         # return the information of the array reference
         return aref_info
         
-    #----------------------------------------------------------
-
-    def transform(self):
-        '''To perform explicit array-copying optimization'''
-
-        # get the array reference information
-        aref_info = self.__getARefInfo()
-
-        # check if one of the array buffer dimension sizes is one (i.e. no tiling)
-        aref, arr_name, ivar_names, dim_sizes, is_output = aref_info
-        one_one = reduce(lambda x,y: x or y, map(lambda x: x==1, dim_sizes), False)
-        if one_one:
-            decl = module.loop.ast.VarDecl(self.dtype, [arr_name + self.suffix])
-            if isinstance(self.stmt, module.loop.ast.CompStmt):
-                self.stmt.stmts = [decl] + self.stmt.stmts
-            else:
-                self.stmt = module.loop.ast.CompStmt([decl, self.stmt])
-            return self.stmt
-
-        # perform array copy optimization
-        tstmt, is_done, decl, rinfo = self.__optimizeCopy(self.stmt, aref_info, [])
-
-        # if it is done
-        if is_done:
-            if decl == None:
-                print 'error: array copy optimization was unsuccessful'
-                sys.exit(1)
-            else:
-                if isinstance(tstmt, module.loop.ast.CompStmt):
-                    tstmt.stmts = [decl] + tstmt.stmts
-                else:
-                    tstmt = module.loop.ast.CompStmt([decl, tstmt])
-        else:
-            print 'error: array copy optimization must be applied on a tiled perfect loop nest'
-            sys.exit(1)
-        
-        # return the transformed statement
-        return tstmt

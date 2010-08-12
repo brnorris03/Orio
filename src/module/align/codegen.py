@@ -3,6 +3,7 @@
 #
 
 import sys
+from main.util.globals import *
 
 #-------------------------------------------
 
@@ -15,15 +16,14 @@ class CodeGen:
         self.generator = None
         
         if not language.strip(): language='c'
-	else: language = language.strip().lower()
+        else: language = language.strip().lower()
 
         if language in ['c','c++','cxx']:
             self.generator = CodeGen_C(vars, annot_body_code, indent)
         elif language in ['f', 'f90', 'fortran']:
-            self.generator = CodeGen_F(vars, annot_body_code, indent)
+            self.generator = CodeGen_F(vars, annot_body_code, indent) # TODO
         else:
-            print 'Error: Unknown language specified for code generation: %s' % language
-            sys.exit(1)
+            err('module.align.codegen: Unknown language specified for code generation: %s' % language)
 
         pass
         

@@ -3,7 +3,8 @@
 #
 
 import sys
-import module.loop.submodule.submodule, transformator
+import module.loop.submodule.submodule, transformation
+from main.util.globals import *
 
 #---------------------------------------------------------------------
 
@@ -35,9 +36,7 @@ class BoundReplace(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                print 'error:%s: failed to evaluate the argument expression: %s' % (line_no, rhs)
-                print ' --> %s: %s' % (e.__class__.__name__, e)
-                sys.exit(1)
+                err('module.loop.boundreplace.boundreplace: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
                 
             # prefix name for lower bound
             if aname == LPREFIX:
@@ -49,8 +48,7 @@ class BoundReplace(module.loop.submodule.submodule.SubModule):
 
             # unknown argument name
             else:
-                print 'error:%s: unrecognized transformation argument: "%s"' % (line_no, aname)
-                sys.exit(1)
+                err('module.loop.boundreplace.boundreplace: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check semantics of the transformation arguments
         lprefix, uprefix = self.checkTransfArgs(lprefix, uprefix)
@@ -85,7 +83,7 @@ class BoundReplace(module.loop.submodule.submodule.SubModule):
         '''To apply bound replacement transformation'''
 
         # perform the bound replacement transformation
-        t = transformator.Transformator(lprefix, uprefix, stmt)
+        t = transformation.Transformation(lprefix, uprefix, stmt)
         transformed_stmt = t.transform()
         
         # return the transformed statement

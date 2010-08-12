@@ -4,6 +4,7 @@
 
 import sys
 import ast
+from main.util.globals import *
 
 #-------------------------------------------------------------------
 
@@ -108,22 +109,19 @@ class ASTUtil:
 
         # check if it is a loop
         if not isinstance(stmt, ast.ForStmt):
-            print 'error:Tilic: input not a loop statement'
-            sys.exit(1)
+            err('module.tilic.ast_util: Tilic: input not a loop statement')
 
         # check loop initialization
         if stmt.init:
             if not (isinstance(stmt.init, ast.BinOpExp) and stmt.init.op_type == ast.BinOpExp.EQ_ASGN and 
                     isinstance(stmt.init.lhs, ast.IdentExp)):
-                print 'error:Tilic: loop initialization not in "id = lb" form'
-                sys.exit(1)
+                err('module.tilic.ast_util: Tilic: loop initialization not in "id = lb" form')
                 
         # check loop test
         if stmt.test:
             if not (isinstance(stmt.test, ast.BinOpExp) and stmt.test.op_type in (ast.BinOpExp.LE, ast.BinOpExp.LT) and 
                     isinstance(stmt.test.lhs, ast.IdentExp)):
-                print 'error:Tilic: loop test not in "id <= ub" or "id < ub" form'
-                sys.exit(1)
+                err('module.tilic.ast_util: Tilic: loop test not in "id <= ub" or "id < ub" form')
 
         # check loop iteration
         if stmt.iter:
@@ -134,13 +132,11 @@ class ASTUtil:
                     or
                     (isinstance(stmt.iter, ast.UnaryExp) and isinstance(stmt.iter.exp, ast.IdentExp) and
                      stmt.iter.op_type in (ast.UnaryExp.PRE_INC, ast.UnaryExp.POST_INC))):
-                print 'error:Tilic: loop iteration not in "id++" or "id += st" or "id = id + st" form'
-                sys.exit(1)
+                err('module.tilic.ast_util: Tilic: loop iteration not in "id++" or "id += st" or "id = id + st" form')
 
         # check if the control expressions are all empty
         if not stmt.init and not stmt.test and not stmt.iter:
-            print 'error:Tilic: loop with an empty control expression cannot be handled'
-            sys.exit(1)
+            err('module.tilic.ast_util: Tilic: loop with an empty control expression cannot be handled')
     
         # check if the iterator names in the control expressions are all the same
         inames = []
@@ -154,8 +150,7 @@ class ASTUtil:
             else:
                 inames.append(stmt.iter.exp.name)
         if inames.count(inames[0]) != len(inames):
-            print 'error:Tilic: different iterator names used in the loop control expressions'
-            sys.exit(1)
+            err('module.tilic.ast_util: Tilic: different iterator names used in the loop control expressions')
         
         # extract the loop structure information
         id = ast.IdentExp(inames[0])

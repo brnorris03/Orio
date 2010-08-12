@@ -4,6 +4,7 @@
 
 import sys
 import ast, tool.ply.lex, tool.ply.yacc
+from main.util.globals import *
 
 #------------------------------------------------
 
@@ -101,8 +102,7 @@ def t_NEWLINE(t):
     
 # syntactical error
 def t_error(t):
-    print 'error:Tilic: syntactical error: "%s"' % (t.value[0])
-    sys.exit(1)
+    err('module.tilic.code_parser: Tilic: syntactical error: "%s"' % (t.value[0]))
     
 #------------------------------------------------
 
@@ -430,8 +430,7 @@ def p_argument_expression_list_2(p):
 
 # grammatical error
 def p_error(p):
-    print 'error:Tilic: grammatical error: "%s"' % p.value
-    sys.exit(1)
+    err('module.tilic.code_parser: Tilic: grammatical error: "%s"' % p.value)
 
 #------------------------------------------------
 

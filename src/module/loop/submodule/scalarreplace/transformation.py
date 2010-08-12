@@ -7,11 +7,11 @@ import module.loop.ast, module.loop.ast_lib.common_lib, module.loop.ast_lib.forl
 
 #-----------------------------------------
 
-class Transformator:
-    '''Code transformator'''
+class Transformation:
+    '''Code transformation implementation'''
 
     def __init__(self, dtype, prefix, stmt):
-        '''To instantiate a code transformator object'''
+        '''Instantiate a code transformation object'''
 
         self.dtype = 'double'
         self.prefix = 'scv_'

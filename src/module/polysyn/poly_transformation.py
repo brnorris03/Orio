@@ -5,14 +5,15 @@
 #
 
 import glob, re, os, sys
+from main.util.globals import *
 
 #---------------------------------------------------------
 
-class PolyTransformator:
-    '''The polyhedral transformator'''
+class PolyTransformation:
+    '''The polyhedral transformation'''
 
     def __init__(self, verbose, parallel, tiles):
-        '''To instantiate a polyhedral transformator instance'''
+        '''To instantiate a polyhedral transformation instance'''
 
         self.verbose = verbose
         self.tiles = tiles
@@ -25,8 +26,7 @@ class PolyTransformator:
 
         # check if Pluto has been correctly installed
         if os.popen('polycc').read() == '':
-            print 'error: Pluto is not installed. Cannot use "polycc" command.'
-            sys.exit(1)
+            err('module.polysyn.poly_transformation:  Pluto is not installed. Cannot use "polycc" command.')
 
         # check loop tiling
         use_tiling = True
@@ -44,8 +44,7 @@ class PolyTransformator:
                 f.write(content)
                 f.close()
             except:
-                print 'error: cannot write to file: %s' % ts_fname
-                sys.exit(1)
+                err('module.polysyn.poly_transformation:  cannot write to file: %s' % ts_fname)
                 
         # write the annotation body code into a file
         fname = '_orio_polysyn.c'
@@ -54,8 +53,7 @@ class PolyTransformator:
             f.write(code)
             f.close()
         except:
-            print 'error: cannot open file for writing: %s' % fname
-            sys.exit(1)
+            err('module.polysyn.poly_transformation:  cannot open file for writing: %s' % fname)
 
         # create the Pluto command
         cmd = 'polycc %s --noprevector' % fname
@@ -69,8 +67,7 @@ class PolyTransformator:
         try:
             os.system(cmd)
         except:
-            print 'error: failed to run command: %s' % cmd
-            sys.exit(1)
+            err('module.polysyn.poly_transformation:  failed to run command: %s' % cmd)
    
         # delete unneeded files
         path_name, ext = os.path.splitext(fname)
@@ -81,29 +78,25 @@ class PolyTransformator:
             try:
                 os.unlink(f)
             except:
-                print 'error: failed to remove file: %s' % f
-                sys.exit(1)
+                err('module.polysyn.poly_transformation:  failed to remove file: %s' % f)
 
         # get the Pluto-generated code
         plutogen_fnames = glob.glob(path_name + '.*' + ext)
         if len(plutogen_fnames) != 1:
-            print 'error: failed to generate Pluto-transformed code'
-            sys.exit(1)
+            err('module.polysyn.poly_transformation:  failed to generate Pluto-transformed code')
         plutogen_fname = plutogen_fnames[0]
         try:
             f = open(plutogen_fname, 'r')
             pluto_code = f.read()
             f.close()
         except:
-            print 'error: cannot open file for writing: %s' % fname
-            sys.exit(1)
+            err('module.polysyn.poly_transformation:  cannot open file for writing: %s' % fname)
             
         # delete the Pluto-generated file
         try:
             os.unlink(plutogen_fname)
         except:
-            print 'error: failed to remove file: %s' % plutogen_fname
-            sys.exit(1)
+            err('module.polysyn.poly_transformation:  failed to remove file: %s' % plutogen_fname)
 
         # return the Pluto-generated code
         return pluto_code
