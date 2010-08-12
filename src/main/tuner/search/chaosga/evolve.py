@@ -1,5 +1,7 @@
 from random import choice
 from pdb import set_trace
+from main.util.globals import *
+
 class Problem:
     '''Just to show the necessary functions.  Do not use.'''
 
@@ -96,4 +98,4 @@ def parent_analysis(f):
         sc.append(eval(line))
     for line in sc:
         best = max(line, key = lambda x : x.fitresult)
-        print best.name, best.fitresult, best.parents
+        info("main.tuner.search.chaosga.evolve: %s,%s,%s" % (best.name,str(best.fitresult), str(best.parents)))

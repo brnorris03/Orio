@@ -1,5 +1,5 @@
 #
-# The implementation of the code transformator that performs loop tiling
+# The implementation of the code transformation that performs loop tiling
 #
 
 import sys
@@ -7,11 +7,11 @@ import ast, ast_util
 
 #-------------------------------------------------
 
-class Transformator:
-    '''The code transformator that performs loop tiling'''
+class Transformation:
+    '''The code transformation that performs loop tiling'''
 
     def __init__(self, tiling_params):
-        '''To instantiate the code transformator'''
+        '''To instantiate the code transformation'''
 
         # unpack the tiling parameters
         (num_tiling_levels, first_depth, last_depth, 

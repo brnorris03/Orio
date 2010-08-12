@@ -4,6 +4,7 @@
 
 import sys, time
 import main.tuner.search.search
+from main.util.globals import *
 
 #-----------------------------------------------------
 
@@ -24,7 +25,7 @@ class Exhaustive(main.tuner.search.search.Search):
         # complain if the total number of search runs is defined (i.e. exhaustive search
         # only needs to be run once)
         if self.total_runs > 1:
-            print ('error: the total number of %s search runs must be one (or can be undefined)' %
+            err('main.tuner.search.exhaustive: the total number of %s search runs must be one (or can be undefined)' %
                    self.__class__.__name__)
             sys.exit(1)
             
@@ -39,7 +40,7 @@ class Exhaustive(main.tuner.search.search.Search):
         @return:  A list of coordinates
         '''
 
-        if self.verbose: print '\n----- begin exhaustive search -----'
+        info('\n----- begin exhaustive search -----')
 
         # get the total number of coordinates to be tested at the same time
         coord_count = 1
@@ -74,12 +75,11 @@ class Exhaustive(main.tuner.search.search.Search):
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
             for coord_str, perf_cost in pcost_items:
                 coord_val = eval(coord_str)
-                if self.verbose: print 'coordinate: %s, cost: %s' % (coord_val, perf_cost)
+                info('coordinate: %s, cost: %s' % (coord_val, perf_cost))
                 if perf_cost < best_perf_cost:
                     best_coord = coord_val
                     best_perf_cost = perf_cost
-                    if self.verbose:
-                        print '>>>> best coordinate found: %s, cost: %s' % (coord_val, perf_cost)
+                    info('>>>> best coordinate found: %s, cost: %s' % (coord_val, perf_cost))
 
             # check if the time is up
             if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
@@ -102,11 +102,11 @@ class Exhaustive(main.tuner.search.search.Search):
         # compute the total search time
         search_time = time.time() - start_time
 
-        if self.verbose: print '----- end exhaustive search -----'
-        if self.verbose: print '----- begin summary -----'
-        if self.verbose: print ' best coordinate: %s, cost: %s' % (best_coord, best_perf_cost)
-        if self.verbose: print ' total search time: %.2f seconds' % search_time
-        if self.verbose: print '----- end summary -----'
+        info('----- end exhaustive search -----')
+        info('----- begin summary -----')
+        info(' best coordinate: %s, cost: %s' % (best_coord, best_perf_cost))
+        info(' total search time: %.2f seconds' % search_time)
+        info('----- end summary -----')
         
         # return the best coordinate
         return best_coord
@@ -118,7 +118,7 @@ class Exhaustive(main.tuner.search.search.Search):
         '''To read all algorithm-specific arguments'''
                 
         for vname, rhs in self.search_opts.iteritems():
-            print ('error: unrecognized %s algorithm-specific argument: "%s"' %
+            err('main.tuner.search.exhaustive: unrecognized %s algorithm-specific argument: "%s"' %
                    (self.__class__.__name__, vname))
             sys.exit(1)
 

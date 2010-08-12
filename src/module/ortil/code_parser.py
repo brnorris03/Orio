@@ -4,6 +4,7 @@
 
 import sys
 import ast, tool.ply.lex, tool.ply.yacc
+from main.util.globals import *
 
 #------------------------------------------------
 
@@ -112,8 +113,7 @@ def t_NEWLINE(t):
     
 # syntactical error
 def t_error(t):
-    print 'error:OrTil:%s: syntactical error: "%s"' % (getLineNumber(t.lineno), t.value[0])
-    sys.exit(1)
+    err('module.ortil.code_parser: OrTil:%s: syntactical error: "%s"' % (getLineNumber(t.lineno), t.value[0]))
     
 #------------------------------------------------
 
@@ -441,8 +441,7 @@ def p_argument_expression_list_2(p):
 
 # grammatical error
 def p_error(p):
-    print 'error:OrTil:%s: grammatical error: "%s"' % (getLineNumber(p.lineno), p.value)
-    sys.exit(1)
+    err('module.ortil.code_parser: OrTil:%s: grammatical error: "%s"' % (getLineNumber(p.lineno), p.value))
 
 #------------------------------------------------
 

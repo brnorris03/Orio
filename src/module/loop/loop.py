@@ -3,19 +3,20 @@
 #
 
 import sys
-import codegen, module.module, parser, transformator
+from main.util.globals import *
+import codegen, module.module, parser, transformation
 
 #-----------------------------------------
 
 class Loop(module.module.Module):
     '''Loop transformation module'''
     
-    def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
+    def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
         '''To instantiate a loop transformation module'''
         
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
-                                      cmd_line_opts, line_no, indent_size, language)
+                                      line_no, indent_size, language)
 
     #---------------------------------------------------------------------
     
@@ -26,7 +27,7 @@ class Loop(module.module.Module):
         stmts = parser.getParser(self.line_no).parse(self.module_body_code)
 
         # apply transformations
-        t = transformator.Transformator(self.perf_params, self.verbose)
+        t = transformation.Transformation(self.perf_params, self.verbose)
         transformed_stmts = t.transform(stmts)
         
         # generate code for the transformed ASTs

@@ -203,8 +203,7 @@ class PerfTestCodeGen:
             f = open(self.decl_file)
             f.close()
         except:
-            print 'error: cannot read file: "%s"' % self.decl_file
-            sys.exit(1)
+            err('main.tuner.ptest_codegen:  cannot read file: "%s"' % self.decl_file)
 
     #-----------------------------------------------------
 
@@ -221,16 +220,14 @@ class PerfTestCodeGen:
             init_code = f.read()
             f.close()
         except:
-            print 'error: cannot read file: "%s"' % self.init_file
-            sys.exit(1)
+            err('main.tuner.ptest_codegen:  cannot read file: "%s"' % self.init_file)
 
         # check if the file contains the initialization function
         init_func_re = r'void\s+%s\(\s*\)\s*\{' % self.init_func_name
         match_obj = re.search(init_func_re, init_code)
         if not match_obj:
-            print (('error: no initialization function (named "%s") can be found in the ' +
+            err (('main.tuner.ptest_codegen: no initialization function (named "%s") can be found in the ' +
                     'initialization file: "%s"') % (self.init_func_name, self.init_file))
-            sys.exit(1)
 
     #-----------------------------------------------------
 
@@ -247,8 +244,7 @@ class PerfTestCodeGen:
             skton_code = f.read()
             f.close()
         except:
-            print 'error: cannot read file: "%s"' % self.decl_file
-            sys.exit(1)
+            err('main.tuner.ptest_codegen:  cannot read file: "%s"' % self.decl_file)
 
         # return the skeleton code
         return skton_code

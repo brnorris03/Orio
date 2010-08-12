@@ -3,6 +3,7 @@
 #
 
 import re, sys
+from main.util.globals import *
 
 #----------------------------------------------------------------
 
@@ -50,22 +51,18 @@ class AnnParser:
                 break
             m = re.match(__var_re, text)
             if not m:
-                print 'error:Pluto: annotation syntax error: "%s"' % orig_text
-                sys.exit(1)
+                err('module.pluto.ann_parser: Pluto: annotation syntax error: "%s"' % orig_text)
             text = text[m.end():]
             var = m.group(1)
             m = re.match(__equal_re, text)
             if not m:
-                print 'error:Pluto: annotation syntax error: "%s"' % orig_text
-                sys.exit(1)
+                err('module.pluto.ann_parser: Pluto: annotation syntax error: "%s"' % orig_text)
             text = text[m.end():]
             if text.count(';') == 0:
-                print 'error:Pluto: annotation syntax error: "%s"' % orig_text
-                sys.exit(1)
+                err('module.pluto.ann_parser: Pluto: annotation syntax error: "%s"' % orig_text)
             m = re.match(__python_exp_re, text)
             if not m:
-                print 'error:Pluto: annotation syntax error: "%s"' % orig_text
-                sys.exit(1)
+                err('module.pluto.ann_parser: Pluto: annotation syntax error: "%s"' % orig_text)
             text = text[m.end():]
             val = m.group(1)
             var_val_pairs.append((var, val))

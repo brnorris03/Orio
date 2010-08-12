@@ -1,17 +1,18 @@
 #
-# The implementation of the code transformator that performs loop tiling
+# The implementation of the code transformation that performs loop tiling
 #
 
 import sys
 import ast, ast_util
+from main.util.globals import *
 
 #-------------------------------------------------
 
-class Transformator:
-    '''The code transformator that performs loop tiling'''
+class Transformation:
+    '''The code transformation that performs loop tiling'''
 
     def __init__(self, tiling_info):
-        '''To instantiate a code transformator'''
+        '''To instantiate a code transformation'''
 
         # unpack the tiling information
         num_tile_level, iter_names = tiling_info
@@ -131,8 +132,7 @@ class Transformator:
         
         # string expression
         elif isinstance(exp, ast.StringLitExp):
-            print 'error:OrTil: invalid string expression found in loop bound expression: %s' % exp
-            sys.exit(1)
+            err('module.ortil.transformation: OrTil: invalid string expression found in loop bound expression: %s' % exp)
         
         # identifier expression
         elif isinstance(exp, ast.IdentExp):

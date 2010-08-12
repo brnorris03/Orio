@@ -2,7 +2,8 @@
 # The search engine used for search space exploration
 #
 import sys, math
-from main.util.messages import err, debug
+from main.util.globals import *
+
 
 class Search:
     '''The search engine used to explore the search space '''
@@ -33,8 +34,6 @@ class Search:
         self.space_size = 0
         if self.total_dims > 0:
             self.space_size = reduce(lambda x,y: x*y, self.dim_uplimits, 1)
-        if 'cmd_line_opts' in params.keys(): self.verbose = params['cmd_line_opts'].verbose
-        else: self.verbose = False
         if 'use_parallel_search' in params.keys(): self.use_parallel_search = params['use_parallel_search']
         else: self.use_parallel_search = False
         if 'ptdriver' in params.keys(): self.num_procs = params['ptdriver'].num_procs
@@ -49,8 +48,6 @@ class Search:
         else: self.axis_val_ranges = None
         if 'pparam_constraint' in params.keys(): self.constraint = params['pparam_constraint']
         else: self.constraint = 'None'
-        if 'cmd_line_opts' in params.keys(): self.cmd_line_opts = params['cmd_line_opts']
-        else: self.cmd_line_opts = None
         if 'ptcodegen' in params.keys(): self.ptcodegen = params['ptcodegen']
         else: self.ptcodegen = None
         if 'ptdriver' in params.keys(): self.ptdriver = params['ptdriver']
@@ -58,6 +55,7 @@ class Search:
         if 'odriver' in params.keys(): self.odriver = params['odriver']
         else: self.odriver = None
         
+        self.verbose = Globals().verbose
         self.perf_cost_records = {}
         
     #----------------------------------------------------------
@@ -188,7 +186,7 @@ class Search:
                 sys.exit(1)
             transformed_code, _ = transformed_code_seq[0]
             code_map[coord_key] = transformed_code
-        debug("search.py: about to test the following code segments (code_map):\n%s" % code_map)
+        debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
 
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)
@@ -218,9 +216,8 @@ class Search:
         from random import randint
 
         if lbound > ubound:
-            print ('internal error: the lower bound of genRandomInt must not be ' +
+            err('main.tuner.search.search internal error: the lower bound of genRandomInt must not be ' +
                    'greater than the upper bound')
-            sys.exit()
         return randint(lbound, ubound)
 
     def getRandomReal(self, lbound, ubound):
@@ -228,9 +225,8 @@ class Search:
         from random import uniform
 
         if lbound > ubound:
-            print ('internal error: the lower bound of genRandomReal must not be ' +
+            err('main.tuner.search.search internal error: the lower bound of genRandomReal must not be ' +
                    'greater than the upper bound')
-            sys.exit()
         return uniform(lbound, ubound)
 
     #----------------------------------------------------------

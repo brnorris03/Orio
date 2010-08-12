@@ -3,20 +3,21 @@
 #
 
 import re, os, sys
-import cloop_parser, macro_expander, module.module, parser, poly_transformator, profiler
-import syn_transformator, transf_info
+import cloop_parser, macro_expander, module.module, parser, poly_transformation, profiler
+import syn_transformation, transf_info
+
 
 #-----------------------------------------
 
 class PolySyn(module.module.Module):
     '''Polyhedral-syntactic combined transformation module'''
 
-    def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
+    def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
         '''To instantiate a polyhedral-syntactic combined transformation module'''
 
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
-                                      cmd_line_opts, line_no, indent_size, language)
+                                      line_no, indent_size, language)
 
     #---------------------------------------------------------------------
 
@@ -64,13 +65,13 @@ class PolySyn(module.module.Module):
         tinfo = transf_info.TransfInfoGen().generate(assigns, self.perf_params)
 
         # perform polyhedral transformations
-        ptrans = poly_transformator.PolyTransformator(self.cmd_line_opts.verbose,
+        ptrans = poly_transformation.PolyTransformation(Globals().verbose,
                                                       tinfo.parallel,
                                                       tinfo.tiles)
         pluto_code = ptrans.transform(self.annot_body_code)
         
         # use a profiling tool (i.e. gprof) to get hotspots information
-        prof = profiler.Profiler(self.cmd_line_opts.verbose,
+        prof = profiler.Profiler(Globals().verbose,
                                  tinfo.profiling_code,
                                  tinfo.compile_cmd,
                                  tinfo.compile_opts)
@@ -83,7 +84,7 @@ class PolySyn(module.module.Module):
         pluto_code = macro_expander.MacroExpander().replaceStatements(pluto_code)
 
         # perform syntactic transformations
-        strans = syn_transformator.SynTransformator(self.cmd_line_opts.verbose,
+        strans = syn_transformation.SynTransformation(Globals().verbose,
                                                     tinfo.permut,
                                                     tinfo.unroll_factors,
                                                     tinfo.scalar_replace,

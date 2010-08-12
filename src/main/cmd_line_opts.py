@@ -40,26 +40,6 @@ For more details, please refer to the documentation at https://trac.mcs.anl.gov/
 
 #----------------------------------------------
 
-class CmdLineOpts:
-    '''The command line options'''
-
-    def __init__(self, src_filenames, spec_filename, verbose, erase_annot, 
-                keep_temps, rename_objects, ext_cline, disable_orio, pre_cmd=''):
-        '''To instantiate an object that represents the command line options'''
-
-        self.src_filenames = src_filenames     # dictionary; keys: input source files; vals: names of output files
-        self.spec_filename = spec_filename     # the name of the tuning specification file
-        self.verbose = verbose                 # show details of the results of the running program
-        self.erase_annot = erase_annot         # do we need to remove annotations from the output?
-        self.keep_temps = keep_temps           # keep intermediate generated files
-        self.rename_objects = rename_objects   # rename compiler files to match original source name
-        self.external_command = ext_cline      # command line being wrapped (not processed, just passed along)
-        self.disable_orio = disable_orio       # True when orio is wrapping something other than compilation, e.g., linking
-        self.pre_cmd = pre_cmd                 # Command string with which to prefix the execution of the Orio-built code
-        pass
-
-#----------------------------------------------
-
 class CmdParser:
     '''Parser for command line options'''
     
@@ -73,7 +53,7 @@ class CmdParser:
         '''To extract the command line options'''
 
         # Preprocess the command line to accomodate cases when Orio is used 
-		# as a preprocessor to the compiler, e.g., orcc <orio_opts> compiler <compiler_tops> source.c
+        # as a preprocessor to the compiler, e.g., orcc <orio_opts> compiler <compiler_tops> source.c
         orioargv = []
         otherargv = []
         srcfiles = {}
@@ -118,22 +98,11 @@ class CmdParser:
             else:
                 externalargs.append(arg)
                 index += 1
-        #print >>sys.stderr,'new args:',externalargs
+        #debug('main.cmd_line_opts: new args: %s' % str(externalargs))
 
         # check the ORIO_FLAGS env. variable for more options
         if 'ORIO_FLAGS' in os.environ.keys():
             orioargv.extend(os.environ['ORIO_FLAGS'].split())
-
-        # variables to represents the command line options
-        out_prefix = '_'
-        out_filename = None
-        rename_objects = False
-        spec_filename = None
-        verbose = False
-        erase_annot = False      
-        keep_temps = False
-        disable_orio = False
-        pre_cmd = ''
 
         # get all options
         try:
@@ -142,39 +111,40 @@ class CmdParser:
                                        ['pre-command=', 'erase-annot', 'help', 'keep-temps',' output=', 
                                        'output-prefix=', 'rename-objects', 'spec=', 'verbose'])
         except Exception, e:
-            print 'Orio error: %s' % e
-            print USAGE_MSG
+            sys.stderr.write('Orio command-line error: %s' % e)
+            sys.stderr.write(USAGE_MSG + '\n')
             sys.exit(1)
 
+        cmdline = {}
         # evaluate all options
         for opt, arg in opts:
             if opt in ('-c', '--pre-command'):
-                pre_cmd = arg
+                cmdline['pre_cmd'] = arg
             elif opt in ('-e', '--erase-annot'):
-                erase_annot = True
+                cmdline['erase_annot'] = True
             elif opt in ('-h', '--help'):
-                print USAGE_MSG
-                sys.exit(1)
+                sys.stdout.write(USAGE_MSG +'\n')
+                sys.exit(0)
             elif opt in ('-k', '--keep-temps'):
-                keep_temps = True
+                cmdline['keep_temps'] = True
             elif opt in ('-o', '--output'):
-                out_filename = arg
+                cmdline['out_filename'] = arg
             elif opt in ('-p', '--output-prefix'):
-                out_prefix = arg
+                cmdline['out_prefix'] = arg
             elif opt in ('-r', '--rename-objects'):
-                rename_objects = True
+                cmdline['rename_objects'] = True
             elif opt in ('-s', '--spec'):
-                spec_filename = arg
+                cmdline['spec_filename'] = arg
             elif opt in ('-v', '--verbose'):
-                verbose = True
+                cmdline['verbose'] = True
 
         # check on the arguments
         if len(srcfiles) < 1:
             if otherargv: 
-                disable_orio = True
+                cmdline['disable_orio'] = True
             else:
-                print 'Orio error: missing file arguments'
-                print USAGE_MSG
+                sys.stderr.write('Orio command-line error: missing file arguments')
+                sys.stderr.write(USAGE_MSG + '\n')
                 sys.exit(1)
 
         for src_filename in srcfiles:
@@ -183,29 +153,30 @@ class CmdParser:
                 f = open(src_filename, 'r')
                 f.close()
             except:
-                print 'Orio error: cannot open source file for reading: %s' % src_filename
+                sys.stderr.write('main.cmd_line_opts: cannot open source file for reading: %s' % src_filename)
                 sys.exit(1)
 
+        if 'spec_filename' in cmdline.keys(): spec_filename = cmdline['spec_filename']
+        else: spec_filename = None
         # check if the tuning specification file is readable
         if spec_filename:
             try:
                 f = open(spec_filename, 'r')
                 f.close()
             except:
-                print 'Orio error: cannot open file for reading: %s' % spec_filename
+                sys.stderr.write('main.cmd_line_opts: cannot open file for reading: %s' % spec_filename)
                 sys.exit(1)
 
         # create the output filenames
-        if len(srcfiles) == 1 and out_filename: srcfiles[srcfiles.keys()[0]] = out_filename
+        if len(srcfiles) == 1 and 'out_filename' in cmdline.keys(): 
+            srcfiles[srcfiles.keys()[0]] = cmdline['out_filename']
         else:
             for src_filename in srcfiles.keys():
                 dirs, fname = os.path.split(src_filename)
+                if ['out_prefix'] in cmdline.keys(): out_prefix=cmdline['out_prefix']
+                else: out_prefix = '_'
                 srcfiles[src_filename] = os.path.join(dirs, out_prefix + fname)
 
-        # create an object for the command line options
-        cline_opts = CmdLineOpts(srcfiles, spec_filename, verbose, erase_annot, keep_temps, 
-                                 rename_objects, externalargs, disable_orio, pre_cmd)
-
-        # return the command line option object
-        return cline_opts
+        cmdline['src_filenames'] = srcfiles
+        return cmdline
 

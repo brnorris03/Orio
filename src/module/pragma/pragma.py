@@ -10,12 +10,12 @@ import module.module
 class Pragma(module.module.Module):
     '''Pragma transformation module'''
 
-    def __init__(self, perf_params, module_body_code, annot_body_code, cmd_line_opts,
+    def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
         '''To instantiate a pragma transformation module'''
         
         module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
-                                      cmd_line_opts, line_no, indent_size, language)
+                                      line_no, indent_size, language)
 
     #---------------------------------------------------------------------
 

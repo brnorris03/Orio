@@ -3,7 +3,8 @@
 #
 
 import sys
-import module.loop.submodule.submodule, transformator
+import module.loop.submodule.submodule, transformation
+from main.util.globals import *
 
 #---------------------------------------------------------------------
 
@@ -35,9 +36,8 @@ class ScalarReplace(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                print 'error:%s: failed to evaluate the argument expression: %s' % (line_no, rhs)
-                print ' --> %s: %s' % (e.__class__.__name__, e)
-                sys.exit(1)
+                err('module.loop.submodule.scalarreplace.scalarreplace: %s: failed to evaluate the argument expression: %s\n --> %s: %s' 
+                    % (line_no, rhs,e.__class__.__name__, e))
                 
             # data type
             if aname in DTYPE:
@@ -49,8 +49,7 @@ class ScalarReplace(module.loop.submodule.submodule.SubModule):
 
             # unknown argument name
             else:
-                print 'error:%s: unrecognized transformation argument: "%s"' % (line_no, aname)
-                sys.exit(1)
+                err('module.loop.submodule.scalarreplace.scalarreplace: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check semantics of the transformation arguments
         dtype, prefix = self.checkTransfArgs(dtype, prefix) 
@@ -67,16 +66,14 @@ class ScalarReplace(module.loop.submodule.submodule.SubModule):
         if dtype != None:
             rhs, line_no = dtype
             if dtype != None and not isinstance(rhs, str):
-                print 'error:%s: data type argument must be a string: %s' % (line_no, rhs)
-                sys.exit(1)
+                err('module.loop.submodule.scalarreplace.scalarreplace: %s: data type argument must be a string: %s' % (line_no, rhs))
             dtype = rhs
         
         # evaluate the prefix name for scalars variables
         if prefix != None:
             rhs, line_no = prefix
             if rhs != None and not isinstance(rhs, str):
-                print 'error:%s: the prefix name of scalars must be a string: %s' % (line_no, rhs)
-                sys.exit(1)
+                err('module.loop.submodule.scalarreplace.scalarreplace: %s: the prefix name of scalars must be a string: %s' % (line_no, rhs))
             prefix = rhs
             
         # return information about the transformation arguments
@@ -88,7 +85,7 @@ class ScalarReplace(module.loop.submodule.submodule.SubModule):
         '''To apply scalar replacement transformation'''
         
         # perform the scalar replacement transformation
-        t = transformator.Transformator(dtype, prefix, stmt)
+        t = transformation.Transformation(dtype, prefix, stmt)
         transformed_stmt = t.transform()
         
         # return the transformed statement

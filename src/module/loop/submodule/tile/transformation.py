@@ -7,11 +7,11 @@ import module.loop.ast, module.loop.ast_lib.constant_folder, module.loop.ast_lib
 
 #-----------------------------------------
 
-class Transformator:
-    '''Code transformator'''
+class Transformation:
+    '''Code transformation'''
 
     def __init__(self, tsize, tindex, stmt, language='C'):
-        '''To instantiate a code transformator object'''
+        '''To instantiate a code transformation object'''
 
         self.tsize = tsize
         self.tindex = tindex

@@ -8,8 +8,8 @@ import module.loop.ast_lib.common_lib, semant
 
 #-----------------------------------------
 
-class Transformator:
-    '''Code transformator'''
+class Transformation:
+    '''Code transformation implementation'''
 
     __ivar_suffix = 't'
     __newlb_prefix = 'newlb_'
@@ -20,7 +20,7 @@ class Transformator:
     #---------------------------------------------------------
 
     def __init__(self, loops, ufactors, stmt):
-        '''To instantiate a code transformator object'''
+        '''Instantiate a code transformation object'''
 
         self.loops = loops
         self.ufactors = ufactors

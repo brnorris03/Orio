@@ -4,6 +4,8 @@
 
 import os, sys, time, random, re
 
+from main.util.globals import *
+
 #-----------------------------------------------------
 
 # define an integer counter used for file naming 
@@ -27,7 +29,7 @@ class PerfTestDriver:
     #-----------------------------------------------------
     
     def __init__(self, build_cmd, batch_cmd, status_cmd, num_procs, pcount_method, pcount_reps,
-                 use_parallel_search, verbose, pre_cmd='', keep_temps=False):
+                 use_parallel_search):
         '''To instantiate the performance-testing driver'''
 
         self.build_cmd = build_cmd
@@ -37,9 +39,6 @@ class PerfTestDriver:
         self.pcount_method = pcount_method
         self.pcount_reps = pcount_reps
         self.use_parallel_search = use_parallel_search
-        self.verbose = verbose
-        self.pre_cmd = pre_cmd
-        self.keep_temps = keep_temps
 
         global counter
         counter += 1
@@ -47,8 +46,7 @@ class PerfTestDriver:
         self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
 
         if self.pcount_method not in (self.__PCOUNT_BASIC, self.__PCOUNT_BGP):
-            print 'error: unknown performance-counting method: "%s"' % self.pcount_method
-            sys.exit(1)
+            err('main.tuner.ptest_driver:  unknown performance-counting method: "%s"' % self.pcount_method)
 
     #-----------------------------------------------------
 
@@ -60,8 +58,7 @@ class PerfTestDriver:
             f.write(test_code)
             f.close()
         except:
-            print 'error: cannot open file for writing: %s' % self.src_name
-            sys.exit(1)
+            err('main.tuner.ptest_driver:  cannot open file for writing: %s' % self.src_name)
 
     #-----------------------------------------------------
 
@@ -77,11 +74,10 @@ class PerfTestDriver:
         # compile the testing code
         cmd = ('%s %s -o %s %s' % (self.build_cmd, extra_compiler_opts,
                                    self.exe_name, self.src_name))
-        if self.verbose: print ' compiling:\n\t' + cmd
+        info(' compiling:\n\t' + cmd)
         status = os.system(cmd)
         if status:
-            print 'error: failed to compile the testing code: "%s"' % cmd
-            sys.exit(1)
+            err('main.tuner.ptest_driver:  failed to compile the testing code: "%s"' % cmd)
 
     #-----------------------------------------------------
 
@@ -90,8 +86,7 @@ class PerfTestDriver:
 
         # check if the executable exists
         if not os.path.exists(self.exe_name):
-            print 'error: the executable of the testing code does not exist'
-            sys.exit(1)
+            err('main.tuner.ptest_driver:  the executable of the testing code does not exist')
 
         # initialize the performance costs dictionary
         # (indexed by the string representation of the search coordinates)
@@ -101,7 +96,7 @@ class PerfTestDriver:
         # execute the search process in parallel
         if self.use_parallel_search:
             cmd = '%s %s' % (self.batch_cmd, self.exe_name)
-            if self.verbose: print ' running:\n\t' + cmd
+            info(' running:\n\t' + cmd)
             # TODO: redo this to take output file name
             try:
                 f = os.popen(cmd)    
@@ -125,22 +120,19 @@ class PerfTestDriver:
                 f.close()
                 if output: perf_costs = eval(output)
             except Exception, e:
-                print 'error: failed to execute the testing code: "%s"' % cmd
-                print ' --> %s: %s' % (e.__class__.__name__, e)
-                sys.exit(1)
+                err('main.tuner.ptest_driver: failed to execute the testing code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
                 
         # execute the search sequentially
         else:
-            cmd = '%s ./%s' % (self.pre_cmd,self.exe_name)
-            if self.verbose: print ' running:\n\t' + cmd
+            cmd = '%s ./%s' % (Globals().pre_cmd,self.exe_name)
+            info(' running:\n\t' + cmd)
             try:
                 f = os.popen(cmd)
                 out = f.readlines()
                 f.close()
             except Exception, e:
-                print 'error: failed to execute the testing code: "%s"' % cmd
-                print ' --> %s: %s' % (e.__class__.__name__, e)
-                sys.exit(1)
+                err('main.tuner.ptest_driver: failed to execute the testing code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
+                
             try:
                 if out: 
                     for line in out: 
@@ -149,13 +141,13 @@ class PerfTestDriver:
                             break
                 if output: perf_costs = eval(str(output))
             except Exception, e:
-                print 'error: failed to process test result, command was "%s", output: "%s"' % (cmd,perf_costs)
-                print ' --> %s: %s' % (e.__class__.__name__, e)
+                err('main.tuner.ptest_driver: failed to process test result, command was "%s", output: "%s\n --> %s: %s' %
+                      (cmd,perf_costs,e.__class__.__name__,e))
+
 
         # check if the performance cost is already acquired
         if not perf_costs:
-            print 'error: performance testing failed: "%s"' % cmd
-            sys.exit(1)
+            err('main.tuner.ptest_driver:  performance testing failed: "%s"' % cmd)
 
         # return the performance costs dictionary
         return perf_costs
@@ -165,14 +157,13 @@ class PerfTestDriver:
     def __cleanup(self):
         '''Delete all the generated files'''
 
-        if self.keep_temps: return
+        if Globals().keep_temps: return
         for fname in [self.exe_name, self.src_name]:
             try:
                 if os.path.exists(fname):
                     os.unlink(fname)
             except:
-                print 'error: cannot delete file: %s' % fname
-                sys.exit(1)
+                err('main.tuner.ptest_driver:  cannot delete file: %s' % fname)
 
     #-----------------------------------------------------
 

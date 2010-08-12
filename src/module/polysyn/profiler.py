@@ -4,6 +4,7 @@
 #
 
 import os, re, sys
+from main.util.globals import *
 
 #---------------------------------------------------------
 
@@ -32,16 +33,14 @@ class Profiler:
             profiling_code = f.read()
             f.close()
         except:
-            print 'error: cannot open file for reading: %s' % self.profiling_code
-            sys.exit(1)
+            err('module.polysyn.profiler:  cannot open file for reading: %s' % self.profiling_code)
         
         # find the tag used to indicate the location of the code to be profiled
         match_obj = re.search(polysyn_re, profiling_code)
 
         # if no desired tag is found
         if match_obj == None:
-            print 'error: missing profiling tag in the profiling code: "%s"' % self.profiling_code
-            sys.exit(1)
+            err('module.polysyn.profiler:  missing profiling tag in the profiling code: "%s"' % self.profiling_code)
 
         # get the starting line number of the code to be profiled
         start_pos = match_obj.start()
@@ -52,8 +51,7 @@ class Profiler:
 
         # check the number of performed replacements
         if num > 1:
-            print 'error: there are more than one profiling tags in the profiling code'
-            sys.exit(1)
+            err('module.polysyn.profiler:  there are more than one profiling tags in the profiling code')
 
         # return the profiling code, and the starting line number of the profiled code
         return (profile_code, start_line_no)
@@ -71,8 +69,7 @@ class Profiler:
             try:
                 os.unlink('gmon.out')
             except:
-                print 'error: failed to delete file: %s' % 'gmon.out'
-                sys.exit(1)
+                err('module.polysyn.profiler:  failed to delete file: %s' % 'gmon.out')
 
         # used file names
         src_fname = '_polysyn_profiling.c'
@@ -84,8 +81,7 @@ class Profiler:
             f.write(profile_code)
             f.close()
         except:
-            print 'error: cannot open file for writing: %s' % src_fname
-            sys.exit(1)            
+            err('module.polysyn.profiler:  cannot open file for writing: %s' % src_fname)            
 
         # save the number of OpenMP threads and set it to one (i.e. single core)
         orig_num_threads = os.getenv('OMP_NUM_THREADS')
@@ -100,8 +96,7 @@ class Profiler:
         try:
             os.system(cmd)
         except:
-            print 'error: failed to compile the profiling code: "%s"' % cmd
-            sys.exit(1)
+            err('module.polysyn.profiler:  failed to compile the profiling code: "%s"' % cmd)
 
         # execute the executable to generate "gmon.out" file that contains the profiling information
         exec_cmd = './%s' % exe_fname
@@ -109,8 +104,7 @@ class Profiler:
         try:
             status = os.system(exec_cmd)
         except:
-            print 'error: failed to execute the profiling code: "%s"' % exec_cmd
-            sys.exit(1)
+            err('module.polysyn.profiler:  failed to execute the profiling code: "%s"' % exec_cmd)
 
         # run gprof to extract the profiling information
         gprof_cmd = 'gprof -lbQ %s' % exe_fname
@@ -120,9 +114,7 @@ class Profiler:
             profile_info = f.read()
             f.close()
         except Exception, e:
-            print 'error: failed to execute GProf: "%s"' % gprof_cmd
-            print ' --> %s: %s' % (e.__class__.__name__, e)
-            sys.exit(1)
+            err('module.polysyn.profiler:  failed to execute GProf: "%s"\n --> %s: %s' % (gprof_cmd,e.__class__.__name__, e))
 
         # delete unneeded files
         removed_files = [src_fname, exe_fname, 'gmon.out']
@@ -130,8 +122,7 @@ class Profiler:
             try:
                 os.unlink(f)
             except:
-                print 'error: failed to delete file: %s' % f
-                sys.exit(1)
+                err('module.polysyn.profiler:  failed to delete file: %s' % f)
         
         # set back the number of OpenMP threads to the original one
         if orig_num_threads == None:

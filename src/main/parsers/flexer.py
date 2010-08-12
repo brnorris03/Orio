@@ -29,6 +29,7 @@
 
 import sys, re
 import tool.ply.lex as lex
+from main.util.globals import *
 
 class FLexer:
     
@@ -444,11 +445,11 @@ class FLexer:
                 # Pretend this is a freeform comment and hand it over to the rest of the lexer
                 
                 eolmatch = self.eolre.search(t.lexer.lexdata[t.lexer.lexpos:])
-                #print >>sys.stderr, 'here\n', t.lexer.lexdata[t.lexer.lexpos-1:]
+                #debug('MISC_CHAR: %s\n' % str(t.lexer.lexdata[t.lexer.lexpos-1:]))
                 if eolmatch:
                     eol = t.lexer.lexpos + eolmatch.start()
                     t.value = '!' + t.lexer.lexdata[t.lexer.lexpos:eol]
-                    #print >>sys.stderr, 'tvalue=', t.value
+                    #debug('tvalue=%s' % t.value)
                     t.type = 'LINECOMMENT'
                     t.lexer.lexpos = eol
                     t.lexer.begin('INITIAL')
@@ -479,9 +480,9 @@ class FLexer:
     
     def raise_error(self,t):
         col = self.find_column(t.lexer.lexdata, t)
-        print '*** Fortran parse error in %s: illegal character (%s) at line %s, column %s' \
-                % (self.filename, t.value[0], self.lineno, col)
-        sys.exit(1)      # to make lexing errors fatal
+        err('main.parsers.flexer: *** Fortran parse error in %s: illegal character (%s) at line %s, column %s' \
+                % (self.filename, t.value[0], self.lineno, col))
+        # lexing errors are fatal
         #t.lexer.skip(1) # this makes lexing errors non-fatal
         
         
@@ -513,9 +514,9 @@ class FLexer:
     def test(self,data):
         self.lexer.input(data)
         while 1:
-             tok = self.lexer.token()
-             if not tok: break
-             print tok
+            tok = self.lexer.token()
+            if not tok: break
+            debug(tok,level=5)
     
     def determineFileFormat(self, filename):
         # Use the filename suffix to determine whether this is fixed form or free form (same as the Intel compiler):
@@ -546,7 +547,7 @@ if __name__ == "__main__":
     l = FLexer()
     l.build(debug=1)           # Build the lexer
     for i in range(1, len(sys.argv)):
-        print "About to lex %s" % sys.argv[i]
+        info("About to lex %s" % sys.argv[i])
         f = open(sys.argv[i],"r")
         # Use Intel compiler rules for Fortran file suffix to determine fixed vs free form
         l.reset()
@@ -554,10 +555,10 @@ if __name__ == "__main__":
         l.determineFileFormat(sys.argv[i])
         s = f.read()
         f.close()
-        # print "Contents of %s: %s" % (sys.argv[i], s)
+        # info("Contents of %s: %s" % (sys.argv[i], s))
         if s == '' or s.isspace(): sys.exit(0)
         l.test(s)
-        print 'Done processing %s.' % sys.argv[i]
+        info('Done processing %s.' % sys.argv[i])
 
 
     
