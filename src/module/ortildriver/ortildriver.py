@@ -1,21 +1,21 @@
 #
-# The main file (and class) for OrTil's optimization driver
+# The orio.main.file (and class) for OrTil's optimization driver
 #
 
 import re, sys
-import ann_parser, ast, code_parser, module.module, transformation
-from main.util.globals import *
+import ann_parser, ast, code_parser, orio.module.module, transformation
+from orio.main.util.globals import *
 
 #-----------------------------------------
 
-class OrTilDriver(module.module.Module):
+class OrTilDriver(orio.module.module.Module):
     '''The class definition for OrTil's optimization driver'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
         '''To instantiate an OrTil's optimization driver'''
         
-        module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
+        orio.module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       line_no, indent_size, language)
         
     #---------------------------------------------------------------------
@@ -50,7 +50,7 @@ class OrTilDriver(module.module.Module):
             # get the next trailer directive
             m = re.search(trailer_ann_re, code)
             if not m:
-                err('module.ortildriver.ortildriver: OrTilDriver: missing closing directive for full core tiles region')
+                err('orio.module.ortildriver.ortildriver: OrTilDriver: missing closing directive for full core tiles region')
             trailer_iters = m.group(1)
             body_code = code[:m.start()]
 
@@ -70,7 +70,7 @@ class OrTilDriver(module.module.Module):
             tile_size_vars = [('T1%s' % i) for i in iters]
             for v in tile_size_vars:
                 if v not in tile_size_table:
-                    err('module.ortildriver.ortildriver: OrTilDriver: undefined tile size variable: "%s"' % v)
+                    err('orio.module.ortildriver.ortildriver: OrTilDriver: undefined tile size variable: "%s"' % v)
 
             # get the tile size values
             tile_size_vals = [tile_size_table[v] for v in tile_size_vars]
@@ -86,7 +86,7 @@ class OrTilDriver(module.module.Module):
     def transform(self):
         '''To apply loop tiling on the annotated code'''
 
-        # parse the text in the annotation module body to extract variable value pairs
+        # parse the text in the annotation orio.module.body to extract variable value pairs
         var_val_pairs = ann_parser.AnnParser(self.perf_params).parse(self.module_body_code)
 
         # filter out some variables used for turning on/off the optimizations
@@ -123,7 +123,7 @@ class OrTilDriver(module.module.Module):
             i,v,c = cr
             stmts = code_parser.getParser().parse(c)
             if len(stmts) != 1 or not isinstance(stmts[0], ast.ForStmt):
-                err('module.ortildriver.ortildriver: OrTilDriver: invalid full core-tile code')
+                err('orio.module.ortildriver.ortildriver: OrTilDriver: invalid full core-tile code')
             n_code_regions.append((i,v,stmts[0]))
         code_regions = n_code_regions
         

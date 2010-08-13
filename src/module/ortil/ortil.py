@@ -1,21 +1,21 @@
 #
-# The main file (and class) for the tiling transformation module
+# The orio.main.file (and class) for the tiling transformation module
 # ORTIL = ORio TILing
 #
 
 import sys
-import ann_parser, code_parser, module.module, pprinter, semant, transformation
+import ann_parser, code_parser, orio.module.module, pprinter, semant, transformation
 
 #-----------------------------------------
 
-class OrTil(module.module.Module):
-    '''The class definition for OrTil tiling module'''
+class OrTil(orio.module.module.Module):
+    '''The class definition for OrTil tiling module.'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
-        '''To instantiate an OrTil tiling module'''
+        '''To instantiate an OrTil tiling module.'''
         
-        module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
+        orio.module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       line_no, indent_size, language)
         
     #---------------------------------------------------------------------
@@ -54,7 +54,7 @@ class OrTil(module.module.Module):
     def transform(self):
         '''To apply loop tiling on the annotated code'''
 
-        # parse the text in the annotation module body to extract tiling information
+        # parse the text in the annotation orio.module.body to extract tiling information
         tiling_info = ann_parser.AnnParser(self.perf_params).parse(self.module_body_code)
 
         # parse the code (in the annotation body) to extract the corresponding AST

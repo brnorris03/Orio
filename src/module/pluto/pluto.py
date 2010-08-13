@@ -1,21 +1,21 @@
 #
-# The main file (and class) for optimization using Pluto code
+# The orio.main.file (and class) for optimization using Pluto code
 #
 
 import sys, re, os, glob
-import ann_parser, module.module
-from main.util.globals import *
+import ann_parser, orio.module.module
+from orio.main.util.globals import *
 
 #-----------------------------------------
 
-class Pluto(module.module.Module):
-    '''The class definition for Pluto transformation module'''
+class Pluto(orio.module.module.Module):
+    '''The class definition for Pluto transformation module.'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
-        '''To instantiate a Pluto transformation module'''
+        '''To instantiate a Pluto transformation module.'''
         
-        module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
+        orio.module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       line_no, indent_size, language)
         
     #---------------------------------------------------------------------
@@ -29,13 +29,13 @@ class Pluto(module.module.Module):
         # get all needed performance parameters
         table = dict(var_val_pairs)
         if 'tile_sizes' not in table:
-            err('module.pluto.pluto: Pluto: missing "tile_sizes" parameter' )
+            err('orio.module.pluto.pluto: Pluto: missing "tile_sizes" parameter' )
         if 'tile_level' not in table:
-            err('module.pluto.pluto: Pluto: missing "tile_level" parameter' )
+            err('orio.module.pluto.pluto: Pluto: missing "tile_level" parameter' )
         if 'unroll_factor' not in table:
-            err('module.pluto.pluto: Pluto: missing "unroll_factor" parameter' )
+            err('orio.module.pluto.pluto: Pluto: missing "unroll_factor" parameter' )
         if 'vectorize' not in table:
-            err('module.pluto.pluto: Pluto: missing "vectorize" parameter' )
+            err('orio.module.pluto.pluto: Pluto: missing "vectorize" parameter' )
         tile_sizes = table['tile_sizes']
         tile_level = table['tile_level']
         unroll_factor = table['unroll_factor']
@@ -44,13 +44,13 @@ class Pluto(module.module.Module):
         # sanity check of the obtained performance parameters
         for t in tile_sizes:
             if not isinstance(t, int) or t<=0:
-                err('module.pluto.pluto: Pluto: tile size must be a positive integer' )
+                err('orio.module.pluto.pluto: Pluto: tile size must be a positive integer' )
         if not isinstance(tile_level, int) or not (0<=tile_level<=2) :
-            err('module.pluto.pluto: Pluto: number of tile levels must be either 0, 1, or 2' )
+            err('orio.module.pluto.pluto: Pluto: number of tile levels must be either 0, 1, or 2' )
         if not isinstance(unroll_factor, int) or unroll_factor<1:
-            err('module.pluto.pluto: Pluto: invalid unroll factor: %s'  % unroll_factor)
+            err('orio.module.pluto.pluto: Pluto: invalid unroll factor: %s'  % unroll_factor)
         if not isinstance(vectorize, int) or not (vectorize==0 or vectorize==1):
-            err('module.pluto.pluto: Pluto: vectorize value must be either 0 or 1')
+            err('orio.module.pluto.pluto: Pluto: vectorize value must be either 0 or 1')
         
         # initialize the code to be transformed
         code = self.annot_body_code
@@ -68,7 +68,7 @@ class Pluto(module.module.Module):
             
         # check if Pluto has been correctly installed  
         if os.popen('polycc').read() == '':
-            err('module.pluto.pluto:  Pluto is not installed. Cannot use "polycc" command.')
+            err('orio.module.pluto.pluto:  Pluto is not installed. Cannot use "polycc" command.')
 
         # write the tile.sizes file to set the used tile sizes
         ts_fname = 'tile.sizes'
@@ -80,7 +80,7 @@ class Pluto(module.module.Module):
             f.write(content)
             f.close()
         except:
-            err('module.pluto.pluto:  cannot write to file: %s' % ts_fname)
+            err('orio.module.pluto.pluto:  cannot write to file: %s' % ts_fname)
 
         # set command line arguments
         use_tiling = False
@@ -103,7 +103,7 @@ class Pluto(module.module.Module):
             f.write(code)
             f.close()
         except:
-            err('module.pluto.pluto:  cannot open file for writing: %s' % fname)
+            err('orio.module.pluto.pluto:  cannot open file for writing: %s' % fname)
 
         # run Pluto
         cmd = 'polycc %s %s' % (fname, cmd_args)
@@ -111,7 +111,7 @@ class Pluto(module.module.Module):
         try:
             os.system(cmd)
         except:
-            err('module.pluto.pluto:  failed to run command: %s' % cmd)
+            err('orio.module.pluto.pluto:  failed to run command: %s' % cmd)
         
         # delete unneeded files
         path_name, ext = os.path.splitext(fname)
@@ -122,25 +122,25 @@ class Pluto(module.module.Module):
             try:
                 os.unlink(f)
             except:
-                err('module.pluto.pluto:  failed to remove file: %s' % f)
+                err('orio.module.pluto.pluto:  failed to remove file: %s' % f)
 
         # get the Pluto-generated code
         plutogen_fnames = glob.glob(path_name + '.*' + ext)
         if len(plutogen_fnames) != 1:
-            err('module.pluto.pluto:  failed to generate Pluto-transformed code')
+            err('orio.module.pluto.pluto:  failed to generate Pluto-transformed code')
         plutogen_fname = plutogen_fnames[0]
         try:
             f = open(plutogen_fname, 'r')
             pluto_code = f.read()
             f.close()
         except:
-            err('module.pluto.pluto:  cannot open file for writing: %s' % fname)
+            err('orio.module.pluto.pluto:  cannot open file for writing: %s' % fname)
 
         # delete the Pluto-generated file
         try:
             os.unlink(plutogen_fname)
         except:
-            err('module.pluto.pluto:  failed to remove file: %s' % plutogen_fname)
+            err('orio.module.pluto.pluto:  failed to remove file: %s' % plutogen_fname)
 
         # remove some macro definitions
         line_pos = pluto_code.index('\n')

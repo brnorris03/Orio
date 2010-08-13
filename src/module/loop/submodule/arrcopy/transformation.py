@@ -3,9 +3,9 @@
 #
 
 import sets, sys
-import module.loop.ast, module.loop.ast_lib.common_lib, module.loop.ast_lib.constant_folder
-import module.loop.ast_lib.forloop_lib
-from main.util.globals import *
+import orio.module.loop.ast, orio.module.loop.ast_lib.common_lib, orio.module.loop.ast_lib.constant_folder
+import orio.module.loop.ast_lib.forloop_lib
+from orio.main.util.globals import *
 
 #-----------------------------------------
 
@@ -28,9 +28,9 @@ class Transformation:
         self.dimsizes = dimsizes
         self.stmt = stmt
         
-        self.flib = module.loop.ast_lib.forloop_lib.ForLoopLib()
-        self.clib = module.loop.ast_lib.common_lib.CommonLib()
-        self.cfolder = module.loop.ast_lib.constant_folder.ConstFolder()
+        self.flib = orio.module.loop.ast_lib.forloop_lib.ForLoopLib()
+        self.clib = orio.module.loop.ast_lib.common_lib.CommonLib()
+        self.cfolder = orio.module.loop.ast_lib.constant_folder.ConstFolder()
 
     #----------------------------------------------------------
 
@@ -44,11 +44,11 @@ class Transformation:
         aref, arr_name, ivar_names, dim_sizes, is_output = aref_info
         one_one = reduce(lambda x,y: x or y, map(lambda x: x==1, dim_sizes), False)
         if one_one:
-            decl = module.loop.ast.VarDecl(self.dtype, [arr_name + self.suffix])
-            if isinstance(self.stmt, module.loop.ast.CompStmt):
+            decl = orio.module.loop.ast.VarDecl(self.dtype, [arr_name + self.suffix])
+            if isinstance(self.stmt, orio.module.loop.ast.CompStmt):
                 self.stmt.stmts = [decl] + self.stmt.stmts
             else:
-                self.stmt = module.loop.ast.CompStmt([decl, self.stmt])
+                self.stmt = orio.module.loop.ast.CompStmt([decl, self.stmt])
             return self.stmt
 
         # perform array copy optimization
@@ -57,14 +57,14 @@ class Transformation:
         # if it is done
         if is_done:
             if decl == None:
-                err('module.loop.submodule.arrcopy.transformation:  array copy optimization was unsuccessful')
+                err('orio.module.loop.submodule.arrcopy.transformation:  array copy optimization was unsuccessful')
             else:
-                if isinstance(tstmt, module.loop.ast.CompStmt):
+                if isinstance(tstmt, orio.module.loop.ast.CompStmt):
                     tstmt.stmts = [decl] + tstmt.stmts
                 else:
-                    tstmt = module.loop.ast.CompStmt([decl, tstmt])
+                    tstmt = orio.module.loop.ast.CompStmt([decl, tstmt])
         else:
-            err('module.loop.submodule.arrcopy.transformation:  array copy optimization must be applied on a tiled perfect loop nest')
+            err('orio.module.loop.submodule.arrcopy.transformation:  array copy optimization must be applied on a tiled perfect loop nest')
         
         # return the transformed statement
         return tstmt
@@ -79,62 +79,62 @@ class Transformation:
         if tnode == None:
             return []
 
-        if isinstance(tnode, module.loop.ast.NumLitExp):
+        if isinstance(tnode, orio.module.loop.ast.NumLitExp):
             return []
 
-        elif isinstance(tnode, module.loop.ast.StringLitExp):
+        elif isinstance(tnode, orio.module.loop.ast.StringLitExp):
             return []
 
-        elif isinstance(tnode, module.loop.ast.IdentExp):
+        elif isinstance(tnode, orio.module.loop.ast.IdentExp):
             return []
 
-        elif isinstance(tnode, module.loop.ast.ArrayRefExp):
+        elif isinstance(tnode, orio.module.loop.ast.ArrayRefExp):
             cur_aref = str(tnode).replace(' ','')
             if cur_aref == self.aref:
                 return [(tnode, is_output)]
             else:
                 return []
 
-        elif isinstance(tnode, module.loop.ast.FunCallExp):
+        elif isinstance(tnode, orio.module.loop.ast.FunCallExp):
             result = self.__containARef(tnode.exp, is_output)
             return result + reduce(lambda x,y: x+y,
                                    [self.__containARef(a, is_output) for a in tnode.args],
                                    [])
         
-        elif isinstance(tnode, module.loop.ast.UnaryExp):
+        elif isinstance(tnode, orio.module.loop.ast.UnaryExp):
             return self.__containARef(tnode.exp, is_output)
 
-        elif isinstance(tnode, module.loop.ast.BinOpExp):
-            if tnode.op_type == module.loop.ast.BinOpExp.EQ_ASGN:
+        elif isinstance(tnode, orio.module.loop.ast.BinOpExp):
+            if tnode.op_type == orio.module.loop.ast.BinOpExp.EQ_ASGN:
                 result = self.__containARef(tnode.lhs, True)
             else:
                 result = self.__containARef(tnode.lhs, False)
             return result + self.__containARef(tnode.rhs, False)
 
-        elif isinstance(tnode, module.loop.ast.ParenthExp):
+        elif isinstance(tnode, orio.module.loop.ast.ParenthExp):
             return self.__containARef(tnode.exp, is_output)
 
-        elif isinstance(tnode, module.loop.ast.ExpStmt):
+        elif isinstance(tnode, orio.module.loop.ast.ExpStmt):
             return self.__containARef(tnode.exp, is_output)
     
-        elif isinstance(tnode, module.loop.ast.CompStmt):
+        elif isinstance(tnode, orio.module.loop.ast.CompStmt):
             return reduce(lambda x,y: x+y,
                           [self.__containARef(s, is_output) for s in tnode.stmts],
                           [])
 
-        elif isinstance(tnode, module.loop.ast.IfStmt):
+        elif isinstance(tnode, orio.module.loop.ast.IfStmt):
             return (self.__containARef(tnode.test, is_output) +
                     self.__containARef(tnode.true_stmt, is_output) +
                     self.__containARef(tnode.false_stmt, is_output))
         
-        elif isinstance(tnode, module.loop.ast.ForStmt):
+        elif isinstance(tnode, orio.module.loop.ast.ForStmt):
             return self.__containARef(tnode.stmt, is_output) 
     
-        elif isinstance(tnode, module.loop.ast.TransformStmt):
+        elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
             
-        elif isinstance(tnode, module.loop.ast.NewAST):
+        elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return []
 
         else:
@@ -149,62 +149,62 @@ class Transformation:
         if tnode == None:
             return None
 
-        if isinstance(tnode, module.loop.ast.NumLitExp):
+        if isinstance(tnode, orio.module.loop.ast.NumLitExp):
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.StringLitExp):
+        elif isinstance(tnode, orio.module.loop.ast.StringLitExp):
             return tnode
         
-        elif isinstance(tnode, module.loop.ast.IdentExp):
+        elif isinstance(tnode, orio.module.loop.ast.IdentExp):
             return tnode
         
-        elif isinstance(tnode, module.loop.ast.ArrayRefExp):
+        elif isinstance(tnode, orio.module.loop.ast.ArrayRefExp):
             if str(tnode) == aref_str:
                 return replacement.replicate()
             else:
                 return tnode
             
-        elif isinstance(tnode, module.loop.ast.FunCallExp):
+        elif isinstance(tnode, orio.module.loop.ast.FunCallExp):
             tnode.exp = self.__replaceARef(tnode.exp, aref_str, replacement)
             tnode.args = [self.__replaceARef(a, aref_str, replacement) for a in tnode.args]
             return tnode
         
-        elif isinstance(tnode, module.loop.ast.UnaryExp):
+        elif isinstance(tnode, orio.module.loop.ast.UnaryExp):
             tnode.exp = self.__replaceARef(tnode.exp, aref_str, replacement)
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.BinOpExp):
+        elif isinstance(tnode, orio.module.loop.ast.BinOpExp):
             tnode.lhs = self.__replaceARef(tnode.lhs, aref_str, replacement)
             tnode.rhs = self.__replaceARef(tnode.rhs, aref_str, replacement)
             return tnode
         
-        elif isinstance(tnode, module.loop.ast.ParenthExp):
+        elif isinstance(tnode, orio.module.loop.ast.ParenthExp):
             tnode.exp = self.__replaceARef(tnode.exp, aref_str, replacement)
             return tnode
         
-        elif isinstance(tnode, module.loop.ast.ExpStmt):
+        elif isinstance(tnode, orio.module.loop.ast.ExpStmt):
             tnode.exp = self.__replaceARef(tnode.exp, aref_str, replacement)
             return tnode
         
-        elif isinstance(tnode, module.loop.ast.CompStmt):
+        elif isinstance(tnode, orio.module.loop.ast.CompStmt):
             tnode.stmts = [self.__replaceARef(s, aref_str, replacement) for s in tnode.stmts]
             return tnode
         
-        elif isinstance(tnode, module.loop.ast.IfStmt):
+        elif isinstance(tnode, orio.module.loop.ast.IfStmt):
             tnode.test = self.__replaceARef(tnode.test, aref_str, replacement)
             tnode.true_stmt = self.__replaceARef(tnode.true_stmt, aref_str, replacement)
             tnode.false_stmt = self.__replaceARef(tnode.false_stmt, aref_str, replacement)
             return tnode
         
-        elif isinstance(tnode, module.loop.ast.ForStmt):
+        elif isinstance(tnode, orio.module.loop.ast.ForStmt):
             tnode.stmt = self.__replaceARef(tnode.stmt, aref_str, replacement)
             return tnode
         
-        elif isinstance(tnode, module.loop.ast.TransformStmt):
+        elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
             
-        elif isinstance(tnode, module.loop.ast.NewAST):
+        elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return tnode
         
         else:
@@ -226,42 +226,42 @@ class Transformation:
         arr_dname = intmd_name
         if len(buf_dsizes) > 0:
             arr_dname += '[' + ']['.join(map(str, buf_dsizes)) + ']'
-        decl = module.loop.ast.VarDecl(self.dtype, [arr_dname])
+        decl = orio.module.loop.ast.VarDecl(self.dtype, [arr_dname])
 
         # generate the reference to the array buffer: X_buffer[(i-LBi)/STi][...]
-        intmd_aref = module.loop.ast.IdentExp(intmd_name)
+        intmd_aref = orio.module.loop.ast.IdentExp(intmd_name)
         for index_id, lbound_exp, ubound_exp, stride_exp in loop_headers:
-            sub_exp = module.loop.ast.BinOpExp(index_id.replicate(),
+            sub_exp = orio.module.loop.ast.BinOpExp(index_id.replicate(),
                                                lbound_exp.replicate(),
-                                               module.loop.ast.BinOpExp.SUB)
-            sub_exp = module.loop.ast.ParenthExp(sub_exp)
-            sub_exp = module.loop.ast.BinOpExp(sub_exp,
+                                               orio.module.loop.ast.BinOpExp.SUB)
+            sub_exp = orio.module.loop.ast.ParenthExp(sub_exp)
+            sub_exp = orio.module.loop.ast.BinOpExp(sub_exp,
                                                stride_exp.replicate(),
-                                               module.loop.ast.BinOpExp.DIV)
+                                               orio.module.loop.ast.BinOpExp.DIV)
             sub_exp = self.cfolder.fold(sub_exp)
-            intmd_aref = module.loop.ast.ArrayRefExp(intmd_aref, sub_exp)
+            intmd_aref = orio.module.loop.ast.ArrayRefExp(intmd_aref, sub_exp)
 
         # generate the copying loop: <for-loops> X_buffer[(i-LBi)/STi][...] = X_orig[...][...];
         rev_loop_headers = loop_headers[:]
         rev_loop_headers.reverse()
-        copy_loop = module.loop.ast.BinOpExp(intmd_aref.replicate(),
+        copy_loop = orio.module.loop.ast.BinOpExp(intmd_aref.replicate(),
                                              aref.replicate(),
-                                             module.loop.ast.BinOpExp.EQ_ASGN)
-        copy_loop = module.loop.ast.ExpStmt(copy_loop)
+                                             orio.module.loop.ast.BinOpExp.EQ_ASGN)
+        copy_loop = orio.module.loop.ast.ExpStmt(copy_loop)
         for index_id, lbound_exp, ubound_exp, stride_exp in rev_loop_headers:
             copy_loop = self.flib.createForLoop(index_id, lbound_exp, ubound_exp,
                                                 stride_exp, copy_loop)
-        copy_loop = module.loop.ast.Container(copy_loop)
+        copy_loop = orio.module.loop.ast.Container(copy_loop)
         
         # generate the storing loop: <for-loops> X_orig[...][...] = X_buffer[(i-LBi)/STi][...];
-        store_loop = module.loop.ast.BinOpExp(aref.replicate(),
+        store_loop = orio.module.loop.ast.BinOpExp(aref.replicate(),
                                               intmd_aref.replicate(),
-                                              module.loop.ast.BinOpExp.EQ_ASGN)
-        store_loop = module.loop.ast.ExpStmt(store_loop)
+                                              orio.module.loop.ast.BinOpExp.EQ_ASGN)
+        store_loop = orio.module.loop.ast.ExpStmt(store_loop)
         for index_id, lbound_exp, ubound_exp, stride_exp in rev_loop_headers:
             store_loop = self.flib.createForLoop(index_id, lbound_exp, ubound_exp,
                                                  stride_exp, store_loop)
-        store_loop = module.loop.ast.Container(store_loop)
+        store_loop = orio.module.loop.ast.Container(store_loop)
 
         # return all resulting information
         return (decl, intmd_aref, copy_loop, store_loop)
@@ -274,10 +274,10 @@ class Transformation:
         if stmt == None:
             return (None, True, None, None)
 
-        if isinstance(stmt, module.loop.ast.ExpStmt):
+        if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             return (stmt, True, None, None)
 
-        elif isinstance(stmt, module.loop.ast.CompStmt):
+        elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             nstmts = []
             ndecl = None
             nrinfo = None
@@ -296,13 +296,13 @@ class Transformation:
                         pass
                 else:
                     if nrinfo != None:
-                        err('module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
+                        err('orio.module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
                     else:
                         nrinfo = rinfo
             stmt.stmts = nstmts
             if ndecl != None:
                 if nrinfo != None:
-                        err('module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
+                        err('orio.module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
                 return (stmt, True, ndecl, None)
             else:
                 if nrinfo != None:
@@ -310,7 +310,7 @@ class Transformation:
                 else:
                     return (stmt, True, None, None)
 
-        elif isinstance(stmt, module.loop.ast.IfStmt):
+        elif isinstance(stmt, orio.module.loop.ast.IfStmt):
             (stmt1, is_done1, decl1, rinfo1) = self.__optimizeCopy(stmt.true_stmt,
                                                                    aref_info, outer_lids)
             (stmt2, is_done2, decl2, rinfo2) = self.__optimizeCopy(stmt.false_stmt,
@@ -319,20 +319,20 @@ class Transformation:
             stmt.false_stmt = stmt2
             if is_done1 and is_done2:
                 if decl1 != None and decl2 != None:
-                    err('module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
+                    err('orio.module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
                 return (stmt, True, (decl1 or decl2), None)
             elif is_done1:
                 if decl1 != None:
-                    err('module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
+                    err('orio.module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
                 return (stmt, False, None, rinfo2)
             elif is_done2:
                 if decl2 != None:
-                    err('module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
+                    err('orio.module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
                 return (stmt, False, None, rinfo1)
             else:
-                err('module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
+                err('orio.module.loop.submodule.arrcopy.transformation:  array copy optimization cannot work for imperfect loop nests')
 
-        elif isinstance(stmt, module.loop.ast.ForStmt):
+        elif isinstance(stmt, orio.module.loop.ast.ForStmt):
 
             # unpack the array reference info
             aref, arr_name, ivar_names, dim_sizes, is_output = aref_info
@@ -387,10 +387,10 @@ class Transformation:
                     prologue = [copy_loop]
                     epilogue = [store_loop] if is_output else [] 
                     stmt.stmt = self.__replaceARef(stmt.stmt, str(aref), intmd_aref)
-                    if isinstance(stmt.stmt, module.loop.ast.CompStmt):
+                    if isinstance(stmt.stmt, orio.module.loop.ast.CompStmt):
                         stmt.stmt.stmts = prologue + stmt.stmt.stmts + epilogue
                     else:
-                        stmt.stmt = module.loop.ast.CompStmt(prologue + [stmt.stmt] + epilogue)
+                        stmt.stmt = orio.module.loop.ast.CompStmt(prologue + [stmt.stmt] + epilogue)
                     return (stmt, True, decl, None)
                 
                 # move to outside the loop
@@ -412,11 +412,11 @@ class Transformation:
                 # otherwise
                 return (stmt, False, None, rinfo)
                     
-        elif isinstance(stmt, module.loop.ast.TransformStmt):
+        elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
             
-        elif isinstance(stmt, module.loop.ast.NewAST):
+        elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return (stmt, True, None, None)
 
         else:
@@ -436,14 +436,14 @@ class Transformation:
             aref = a
             is_output = is_output or i
         if aref == None:
-            err('module.loop.submodule.arrcopy.transformation:  array-copy statement does not contain array reference: "%s"' % self.aref)
+            err('orio.module.loop.submodule.arrcopy.transformation:  array-copy statement does not contain array reference: "%s"' % self.aref)
 
         # get the array name and the array dimension expressions
         dexps = []
         exps = [aref]
         while len(exps) > 0:
             e = exps.pop(0)
-            if isinstance(e, module.loop.ast.ArrayRefExp):
+            if isinstance(e, orio.module.loop.ast.ArrayRefExp):
                 exps.insert(0, e.sub_exp)
                 exps.insert(0, e.exp)
             else:
@@ -469,7 +469,7 @@ class Transformation:
 
         # get the sizes of the dimensions of the array buffer
         if len(self.dimsizes) != len(dim_exps):
-            err('module.loop.submodule.arrcopy.transformation:  incorrect the number of array dimensions: %s' % self.dimsizes)
+            err('orio.module.loop.submodule.arrcopy.transformation:  incorrect the number of array dimensions: %s' % self.dimsizes)
         dim_sizes = self.dimsizes
         
         # create information about the array reference

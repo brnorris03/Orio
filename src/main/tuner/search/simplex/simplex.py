@@ -7,12 +7,12 @@
 #
 
 import random, sys, time
-import main.tuner.search.search
-from main.util.globals import *
+import orio.main.tuner.search.search
+from orio.main.util.globals import *
 
 #-----------------------------------------------------
 
-class Simplex(main.tuner.search.search.Search):
+class Simplex(orio.main.tuner.search.search.Search):
     '''
     The search engine that uses the Nelder-Mead Simplex algorithm, enhanced with a local search
     that finds the best neighboring coordinate.
@@ -38,7 +38,7 @@ class Simplex(main.tuner.search.search.Search):
     def __init__(self, params):
         '''To instantiate a Nelder-Mead simplex search engine'''
         
-        main.tuner.search.search.Search.__init__(self, params)
+        orio.main.tuner.search.search.Search.__init__(self, params)
 
         # other private class variables
         self.__simplex_size = self.total_dims + 1
@@ -55,7 +55,7 @@ class Simplex(main.tuner.search.search.Search):
 
         # complain if both the search time limit and the total number of search runs are undefined
         if self.time_limit <= 0 and self.total_runs <= 0:
-            err(('main.tuner.search.simplex.simplex:  %s search requires either (both) the search time limit or (and) the ' +
+            err(('orio.main.tuner.search.simplex.simplex:  %s search requires either (both) the search time limit or (and) the ' +
                     'total number of search runs to be defined') % self.__class__.__name__)
 
     #-----------------------------------------------------
@@ -72,7 +72,7 @@ class Simplex(main.tuner.search.search.Search):
 
         # check for parallel search
         if self.use_parallel_search:
-            err('main.tuner.search.simplex: simplex search does not support parallel search')
+            err('orio.main.tuner.search.simplex: simplex search does not support parallel search')
 
         # check if the size of the search space is valid for this search
         self.__checkSearchSpace()
@@ -295,7 +295,7 @@ class Simplex(main.tuner.search.search.Search):
             # local search distance
             if vname == self.__LOCAL_DIST:
                 if not isinstance(rhs, int) or rhs < 0:
-                    err('main.tuner.search.simplex.simplex: %s argument "%s" must be a positive integer or zero'
+                    err('orio.main.tuner.search.simplex.simplex: %s argument "%s" must be a positive integer or zero'
                            % (self.__class__.__name__, vname))
                     
                 self.local_distance = rhs
@@ -371,7 +371,7 @@ class Simplex(main.tuner.search.search.Search):
         # Nelder-Mead requires to initialize a simplex that has N+1 vertices, where N is the
         # number of dimensions
         if self.space_size < self.__simplex_size:
-            err(('main.tuner.search.simplex.simplex:  the search space is too small for %s algorithm. ' +
+            err(('orio.main.tuner.search.simplex.simplex:  the search space is too small for %s algorithm. ' +
                     'please use the exhaustive search.') % self.__class__.__name__)
 
     #-----------------------------------------------------

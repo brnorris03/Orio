@@ -3,7 +3,7 @@
 #
 
 import sys
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #-------------------------------------------
 
@@ -23,7 +23,7 @@ class CodeGen:
         elif language in ['f', 'f90', 'fortran']:
             self.generator = CodeGen_F(vars, annot_body_code, indent) # TODO
         else:
-            err('module.align.codegen: Unknown language specified for code generation: %s' % language)
+            err('orio.module.align.codegen: Unknown language specified for code generation: %s' % language)
 
         pass
         

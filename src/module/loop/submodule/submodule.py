@@ -3,11 +3,11 @@
 #
 
 class SubModule:
-    '''Transformation submodule'''
+    '''Transformation submodule.'''
 
     def __init__(self, perf_params, transf_args, stmt, language='C'):
         '''
-        To instantiate a transformation submodule used to transform the annotated code.
+        To instantiate a transformation submodule.used to transform the annotated code.
         
         The class variables consist of the following:
            perf_params        a table/mapping that maps each performance parameter to its value

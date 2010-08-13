@@ -1,22 +1,22 @@
 #
-# Loop transformation submodule that implements a general approach of register tiling (also
+# Loop transformation submodule.that implements a general approach of register tiling (also
 # called loop unrolling-and-jamming), which can handle loop transformation in non-rectangular
 # iteration spaces.
 #
 
 import sys
-import module.loop.submodule.submodule, transformation
-from main.util.globals import *
+import orio.module.loop.submodule.submodule, transformation
+from orio.main.util.globals import *
 
 #---------------------------------------------------------------------
 
-class RegTile(module.loop.submodule.submodule.SubModule):
-    '''The register tiling transformation submodule'''
+class RegTile(orio.module.loop.submodule.submodule.SubModule):
+    '''The register tiling transformation submodule.'''
     
     def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
-        '''Instantiate a register tiling transformation submodule'''
+        '''Instantiate a register tiling transformation submodule.'''
         
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
+        orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
     #-----------------------------------------------------------------
     
@@ -38,7 +38,7 @@ class RegTile(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                err('module.loop.submodule.regtile.regtile: %s: failed to evaluate the argument expression: %s\n --> %s: %s' 
+                err('orio.module.loop.submodule.regtile.regtile: %s: failed to evaluate the argument expression: %s\n --> %s: %s' 
                     % (line_no, rhs,e.__class__.__name__, e))
                 
             # unroll factors
@@ -51,13 +51,13 @@ class RegTile(module.loop.submodule.submodule.SubModule):
     
             # unknown argument name
             else:
-                err('module.loop.submodule.regtile.regtile: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
+                err('orio.module.loop.submodule.regtile.regtile: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check for undefined transformation arguments
         if loops == None:
-            err('module.loop.submodule.regtile.regtile: %s: missing loops argument' % self.__class__.__name__)
+            err('orio.module.loop.submodule.regtile.regtile: %s: missing loops argument' % self.__class__.__name__)
         if ufactors == None:
-            err('module.loop.submodule.regtile.regtile: %s: missing unroll factors argument' % self.__class__.__name__)
+            err('orio.module.loop.submodule.regtile.regtile: %s: missing unroll factors argument' % self.__class__.__name__)
 
         # check semantics of the transformation arguments
         loops, ufactors = self.checkTransfArgs(loops, ufactors)
@@ -73,27 +73,27 @@ class RegTile(module.loop.submodule.submodule.SubModule):
         # evaluate the unroll factors
         rhs, line_no = loops
         if not isinstance(rhs, list) and not isinstance(rhs, tuple):
-            err('module.loop.submodule.regtile.regtile: %s: loops value must be a list/tuple: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.regtile.regtile: %s: loops value must be a list/tuple: %s' % (line_no, rhs))
         for e in rhs:
             if not isinstance(e, str):
-                err('module.loop.submodule.regtile.regtile: %s: loops element must be a string, found: %s' % (line_no, e))
+                err('orio.module.loop.submodule.regtile.regtile: %s: loops element must be a string, found: %s' % (line_no, e))
         for e in rhs:
             if rhs.count(e) > 1:
-                err('module.loop.submodule.regtile.regtile: %s: loops value contains duplication: "%s"' % (line_no, e))
+                err('orio.module.loop.submodule.regtile.regtile: %s: loops value contains duplication: "%s"' % (line_no, e))
         loops = rhs
 
         # evaluate the unroll factors
         rhs, line_no = ufactors
         if not isinstance(rhs, list) and not isinstance(rhs, tuple):
-            err('module.loop.submodule.regtile.regtile: %s: unroll factors value must be a list/tuple: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.regtile.regtile: %s: unroll factors value must be a list/tuple: %s' % (line_no, rhs))
         for e in rhs:
             if not isinstance(e, int) or e <= 0:
-                err('module.loop.submodule.regtile.regtile: %s: unroll factor must be a positive integer, found: %s' % (line_no, e))
+                err('orio.module.loop.submodule.regtile.regtile: %s: unroll factor must be a positive integer, found: %s' % (line_no, e))
         ufactors = rhs
 
         # compare the loops and unroll factors
         if len(loops) != len(ufactors):
-            err('module.loop.submodule.regtile.regtile: %s: mismatch on the number of loops and unroll factors' % line_no)
+            err('orio.module.loop.submodule.regtile.regtile: %s: mismatch on the number of loops and unroll factors' % line_no)
 
         # return information about the transformation arguments
         return (loops, ufactors)

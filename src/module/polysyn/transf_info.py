@@ -3,7 +3,7 @@
 #
 
 import sys
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #--------------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ class TransfInfoGen:
         vnames = {}
         for _, (vname, line_no), (_, _) in assigns:
             if vname in vnames:
-                err('module.polysyn.transf_info: %s: argument name "%s" already defined' % (line_no, vname))
+                err('orio.module.polysyn.transf_info: %s: argument name "%s" already defined' % (line_no, vname))
             vnames[vname] = None
 
         # expected argument names
@@ -78,45 +78,45 @@ class TransfInfoGen:
             try:
                 rhs_val = eval(rhs, perf_params)
             except Exception, e:
-                err('module.polysyn.transf_info: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no,e.__class__.__name__, e))
+                err('orio.module.polysyn.transf_info: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no,e.__class__.__name__, e))
                 
             # tile sizes
             if vname == TILES:
                 if not isinstance(rhs_val, list) and not isinstance(rhs_val, tuple):
-                    err('module.polysyn.transf_info: %s: tile size value must be a tuple/list' % rhs_line_no)
+                    err('orio.module.polysyn.transf_info: %s: tile size value must be a tuple/list' % rhs_line_no)
                 for t in rhs_val:
                     if not isinstance(t, int) or t <= 0:
-                        err('module.polysyn.transf_info: %s: a tile size must be a positive integer. found: "%s"' % (rhs_line_no, t))
+                        err('orio.module.polysyn.transf_info: %s: a tile size must be a positive integer. found: "%s"' % (rhs_line_no, t))
                 tiles = rhs_val
                 
             # permutation
             elif vname == PERMUT:
                 if not isinstance(rhs_val, list) and not isinstance(rhs_val, tuple):
-                    err('module.polysyn.transf_info: %s: permutation value must be a tuple/list' % rhs_line_no)
+                    err('orio.module.polysyn.transf_info: %s: permutation value must be a tuple/list' % rhs_line_no)
                 for i in range(0,len(rhs_val)):
                     if i not in rhs_val:
-                        err('module.polysyn.transf_info: %s: not a valid permutation order. found: "%s"' % (rhs_line_no, rhs_val))
+                        err('orio.module.polysyn.transf_info: %s: not a valid permutation order. found: "%s"' % (rhs_line_no, rhs_val))
                 permut = rhs_val
 
             # unroll factors
             elif vname == UFACTORS:
                 if not isinstance(rhs_val, list) and not isinstance(rhs_val, tuple):
-                    err('module.polysyn.transf_info: %s: unroll factors value must be a tuple/list' % rhs_line_no)
+                    err('orio.module.polysyn.transf_info: %s: unroll factors value must be a tuple/list' % rhs_line_no)
                 for t in rhs_val:
                     if not isinstance(t, int) or t <= 0:
-                        err('module.polysyn.transf_info: %s: unroll factor must be a positive integer. found: "%s"' % (rhs_line_no, t))
+                        err('orio.module.polysyn.transf_info: %s: unroll factor must be a positive integer. found: "%s"' % (rhs_line_no, t))
                 unroll_factors = rhs_val
 
             # rectangular register tiling
             elif vname == RECTRTILE:
                 if not isinstance(rhs_val, bool):
-                    err('module.polysyn.transf_info: %s: rectangular register-tiling value must be a boolean' % rhs_line_no)
+                    err('orio.module.polysyn.transf_info: %s: rectangular register-tiling value must be a boolean' % rhs_line_no)
                 rect_regtile = rhs_val
 
             # parallelization
             elif vname == PARALLEL:
                 if not isinstance(rhs_val, bool):
-                    err('module.polysyn.transf_info: %s: parallelize value must be a boolean' % rhs_line_no)
+                    err('orio.module.polysyn.transf_info: %s: parallelize value must be a boolean' % rhs_line_no)
                 parallel = rhs_val
 
             # scalar replacement
@@ -135,30 +135,30 @@ class TransfInfoGen:
             # vectorization
             elif vname == VECTOR:
                 if not isinstance(rhs_val, bool):
-                    err('module.polysyn.transf_info: %s: vectorize value must be a boolean' % rhs_line_no)
+                    err('orio.module.polysyn.transf_info: %s: vectorize value must be a boolean' % rhs_line_no)
                 vectorize = rhs_val
 
             # profiling code
             elif vname == PCODE:
                 if not isinstance(rhs_val, str):
-                    err('module.polysyn.transf_info: %s: profiling code value must be a string' % rhs_line_no)
+                    err('orio.module.polysyn.transf_info: %s: profiling code value must be a string' % rhs_line_no)
                 profiling_code = rhs_val
 
             # compile command
             elif vname == CCMD:
                 if not isinstance(rhs_val, str):
-                    err('module.polysyn.transf_info: %s: compile command value must be a string' % rhs_line_no)
+                    err('orio.module.polysyn.transf_info: %s: compile command value must be a string' % rhs_line_no)
                 compile_cmd = rhs_val
                 
             # compile options
             elif vname == COPTS:
                 if not isinstance(rhs_val, str):
-                    err('module.polysyn.transf_info: %s: compile options value must be a string' % rhs_line_no)
+                    err('orio.module.polysyn.transf_info: %s: compile options value must be a string' % rhs_line_no)
                 compile_opts = rhs_val
                 
             # unrecognized argument name
             else:
-                err('module.polysyn.transf_info: %s: unrecognized argument name: "%s"' % (vname_line_no, vname))
+                err('orio.module.polysyn.transf_info: %s: unrecognized argument name: "%s"' % (vname_line_no, vname))
 
         # if an argument is undefined, set it to its default value
         if parallel == None:
@@ -176,7 +176,7 @@ class TransfInfoGen:
         if vectorize == None:
             vectorize = False
         if profiling_code == None:
-            err('module.polysyn.transf_info: PolySyn: missing profiling code')
+            err('orio.module.polysyn.transf_info: PolySyn: missing profiling code')
             
         # generate and return the transformation information
         return TransfInfo(parallel, tiles, permut, unroll_factors, scalar_replace, vectorize,

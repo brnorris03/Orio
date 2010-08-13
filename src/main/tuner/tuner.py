@@ -3,15 +3,15 @@
 #
 
 import re, sys
-import main.dyn_loader, main.tspec.tspec, ptest_codegen, ptest_driver
 
-from main.util.globals import *
+from orio.main.util.globals import *
+import orio.main.dyn_loader, orio.main.tspec.tspec, orio.main.tuner.ptest_codegen, orio.main.tuner.ptest_driver
 
 
 #--------------------------------------------------
 
 # the name of the module containing various search algorithms
-SEARCH_MOD_NAME = 'main.tuner.search'
+SEARCH_MOD_NAME = 'orio.main.tuner.search'
 
 #--------------------------------------------------
 
@@ -29,7 +29,7 @@ class PerfTuner:
 
         self.specs_map = specs_map
         self.odriver = odriver
-        self.dloader = main.dyn_loader.DynLoader()
+        self.dloader = orio.main.dyn_loader.DynLoader()
         
     
     #-------------------------------------------------
@@ -39,7 +39,7 @@ class PerfTuner:
         Perform empirical performance tuning on the given annotated code. And return the best
         optimized code variant.
         '''
-
+        
         # extract the tuning information specified from the given annotation
         tinfo = self.__extractTuningInfo(module_body_code, line_no)
         
@@ -49,15 +49,15 @@ class PerfTuner:
         # create a performance-testing code generator for each distinct problem size
         ptcodegens = []
         for prob_size in self.__getProblemSizes(tinfo.iparam_params, tinfo.iparam_constraints):
-            c = ptest_codegen.PerfTestCodeGen(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
-                                              tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
-                                              use_parallel_search)
+            c = orio.main.tuner.ptest_codegen.PerfTestCodeGen(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
+                                                              tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
+                                                              use_parallel_search)
             ptcodegens.append(c)
 
         # create the performance-testing driver
-        ptdriver = ptest_driver.PerfTestDriver(tinfo.build_cmd, tinfo.batch_cmd, tinfo.status_cmd,
-                                               tinfo.num_procs, tinfo.pcount_method,
-                                               tinfo.pcount_reps, use_parallel_search)
+        ptdriver = orio.main.tuner.ptest_driver.PerfTestDriver(tinfo.build_cmd, tinfo.batch_cmd, tinfo.status_cmd,
+                                                               tinfo.num_procs, tinfo.pcount_method,
+                                                               tinfo.pcount_reps, use_parallel_search)
 
         # get the axis names and axis value ranges to represent the search space
         axis_names, axis_val_ranges = self.__buildCoordSystem(tinfo.pparam_params)
@@ -107,6 +107,7 @@ class PerfTuner:
             best_perf_params, best_perf_cost = search_eng.search()
 
             # print the best performance parameters
+            
             if Globals().verbose:
                 info('----- the obtained best performance parameters -----')
                 pparams = best_perf_params.items()
@@ -119,7 +120,7 @@ class PerfTuner:
 
             # check the optimized code sequence
             if len(cur_optimized_code_seq) != 1:
-                err('main.tuner internal error: the empirically optimized code cannot contain multiple versions')
+                err('orio.main.tuner internal error: the empirically optimized code cannot contain multiple versions')
             
             # get the optimized code
             optimized_code, _ = cur_optimized_code_seq[0]
@@ -174,7 +175,7 @@ class PerfTuner:
             
             # if the tuning info is not defined
             if spec_name not in self.specs_map:
-                err('main.tuner.tuner: %s: undefined specification: "%s"' % (spec_name_line_no, spec_name))
+                err('orio.main.tuner.tuner: %s: undefined specification: "%s"' % (spec_name_line_no, spec_name))
 
             # get the tuning information from the specifications map
             tinfo = self.specs_map[spec_name]
@@ -186,7 +187,7 @@ class PerfTuner:
         else:
 
             # parse the specification code to get the tuning information
-            tinfo = main.tspec.tspec.TSpec().parseSpec(code, line_no)
+            tinfo = orio.main.tspec.tspec.TSpec().parseSpec(code, line_no)
 
             # return the tuning information
             return tinfo
@@ -237,14 +238,14 @@ class PerfTuner:
             try:
                 is_valid = eval(iparam_constraint, dict(p))
             except Exception, e:
-                err('main.tuner.tuner:%s: failed to evaluate the input parameter constraint expression\n --> %s: %s' %  (iparam_constraint,e.__class__.__name__, e))
+                err('orio.main.tuner.tuner:%s: failed to evaluate the input parameter constraint expression\n --> %s: %s' %  (iparam_constraint,e.__class__.__name__, e))
             if is_valid:
                 n_prob_sizes.append(p)
         prob_sizes = n_prob_sizes
 
         # check if the new problem sizes is empty
         if len(prob_sizes) == 0:
-            err ('main.tuner.tuner: no valid problem sizes exist. please check the input parameter ' +
+            err ('orio.main.tuner.tuner: no valid problem sizes exist. please check the input parameter ' +
                    'constraints')
         
         # return all possible combinations of problem sizes

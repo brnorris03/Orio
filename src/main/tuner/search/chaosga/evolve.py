@@ -1,6 +1,6 @@
 from random import choice
 from pdb import set_trace
-from main.util.globals import *
+from orio.main.util.globals import *
 
 class Problem:
     '''Just to show the necessary functions.  Do not use.'''
@@ -32,7 +32,7 @@ class OrganismData:
         return "OrganismData("+repr(self.name)+","+repr(self.genome)+","+repr(self.fitresult)+","+ repr(self.birth)+","+repr(self.parents)+")"
 
 
-#this is the main function to run an experiment
+#this is the orio.main.function to run an experiment
 def newSolution(filename, problem, numEvals, growthRate, popMax, popInit, opt=max):
     gensize = int(max(2,round(popMax*popInit)))
     organisms = [OrganismData(n, problem.generate(), 0, 0, []) for n in range(1,gensize+1)]
@@ -98,4 +98,4 @@ def parent_analysis(f):
         sc.append(eval(line))
     for line in sc:
         best = max(line, key = lambda x : x.fitresult)
-        info("main.tuner.search.chaosga.evolve: %s,%s,%s" % (best.name,str(best.fitresult), str(best.parents)))
+        info("orio.main.tuner.search.chaosga.evolve: %s,%s,%s" % (best.name,str(best.fitresult), str(best.parents)))

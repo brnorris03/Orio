@@ -3,7 +3,7 @@
 #
 
 import sys
-import module.loop.ast, module.loop.ast_lib.constant_folder, module.loop.ast_lib.forloop_lib
+import orio.module.loop.ast, orio.module.loop.ast_lib.constant_folder, orio.module.loop.ast_lib.forloop_lib
 
 #-----------------------------------------
 
@@ -18,8 +18,8 @@ class Transformation:
         self.language = language
         self.stmt = stmt
         
-        self.flib = module.loop.ast_lib.forloop_lib.ForLoopLib()
-        self.cfolder = module.loop.ast_lib.constant_folder.ConstFolder()
+        self.flib = orio.module.loop.ast_lib.forloop_lib.ForLoopLib()
+        self.cfolder = orio.module.loop.ast_lib.constant_folder.ConstFolder()
         
     #----------------------------------------------------------
 
@@ -37,7 +37,7 @@ class Transformation:
         '''
 
         # get rid of compound statement that contains only a single statement
-        while isinstance(self.stmt, module.loop.ast.CompStmt) and len(self.stmt.stmts) == 1:
+        while isinstance(self.stmt, orio.module.loop.ast.CompStmt) and len(self.stmt.stmts) == 1:
             self.stmt = self.stmt.stmts[0]
                                 
         # extract for-loop structure
@@ -75,7 +75,7 @@ class Transformation:
             sys.exit(1)
 
         # create the tile index name
-        tindex_id = module.loop.ast.IdentExp(self.tindex)
+        tindex_id = orio.module.loop.ast.IdentExp(self.tindex)
 
         # for the inter-tiling loop (i.e. outer loop)
         # compute lower bound --> LB' = LB
@@ -85,20 +85,20 @@ class Transformation:
         tile_ubound_exp = ubound_exp.replicate()
         
         # compute stride --> ST' = tsize
-        tile_stride_exp = module.loop.ast.NumLitExp(self.tsize, module.loop.ast.NumLitExp.INT) 
+        tile_stride_exp = orio.module.loop.ast.NumLitExp(self.tsize, orio.module.loop.ast.NumLitExp.INT) 
 
         # for the intra-tile loop (i.e. inner loop)
         # compute lower bound --> LB' = tindex
         itile_lbound_exp = tindex_id.replicate()
 
         # compute upper bound --> UB' = min(UB, tindex+tsize-ST)
-        it1 = module.loop.ast.BinOpExp(module.loop.ast.NumLitExp(self.tsize,
-                                                                 module.loop.ast.NumLitExp.INT),
+        it1 = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.NumLitExp(self.tsize,
+                                                                 orio.module.loop.ast.NumLitExp.INT),
                                        stride_exp.replicate(),
-                                       module.loop.ast.BinOpExp.SUB)
-        it2 = module.loop.ast.BinOpExp(tindex_id.replicate(), it1, module.loop.ast.BinOpExp.ADD)
+                                       orio.module.loop.ast.BinOpExp.SUB)
+        it2 = orio.module.loop.ast.BinOpExp(tindex_id.replicate(), it1, orio.module.loop.ast.BinOpExp.ADD)
         it2 = self.cfolder.fold(it2)
-        itile_ubound_exp = module.loop.ast.FunCallExp(module.loop.ast.IdentExp('min'),
+        itile_ubound_exp = orio.module.loop.ast.FunCallExp(orio.module.loop.ast.IdentExp('min'),
                                                       [ubound_exp.replicate(), it2])
 
         # compute stride --> ST' = ST

@@ -4,7 +4,7 @@
 
 import sys
 import ast, tool.ply.lex, tool.ply.yacc
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #------------------------------------------------
 
@@ -102,7 +102,7 @@ def t_NEWLINE(t):
     
 # syntactical error
 def t_error(t):
-    err('module.tilic.code_parser: Tilic: syntactical error: "%s"' % (t.value[0]))
+    err('orio.module.tilic.code_parser: Tilic: syntactical error: "%s"' % (t.value[0]))
     
 #------------------------------------------------
 
@@ -430,7 +430,7 @@ def p_argument_expression_list_2(p):
 
 # grammatical error
 def p_error(p):
-    err('module.tilic.code_parser: Tilic: grammatical error: "%s"' % p.value)
+    err('orio.module.tilic.code_parser: Tilic: grammatical error: "%s"' % p.value)
 
 #------------------------------------------------
 

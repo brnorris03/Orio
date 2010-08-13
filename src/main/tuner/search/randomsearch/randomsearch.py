@@ -3,12 +3,12 @@
 #
 
 import sys, time
-import main.tuner.search.search
-from main.util.globals import *
+import orio.main.tuner.search.search
+from orio.main.util.globals import *
 
 #-----------------------------------------------------
 
-class Randomsearch(main.tuner.search.search.Search):
+class Randomsearch(orio.main.tuner.search.search.Search):
     '''
     The search engine that uses a random search approach, enhanced with a local search that finds
     the best neighboring coordinate.
@@ -26,7 +26,7 @@ class Randomsearch(main.tuner.search.search.Search):
     def __init__(self, params):
         '''To instantiate a random search engine'''
 
-        main.tuner.search.search.Search.__init__(self, params)
+        orio.main.tuner.search.search.Search.__init__(self, params)
 
         # set all algorithm-specific arguments to their default values
         self.local_distance = 0
@@ -36,7 +36,7 @@ class Randomsearch(main.tuner.search.search.Search):
         
         # complain if both the search time limit and the total number of search runs are undefined
         if self.time_limit <= 0 and self.total_runs <= 0:
-            err(('main.tuner.search.randomsearch.randomsearch: %s search requires either (both) the search time limit or (and) the ' +
+            err(('orio.main.tuner.search.randomsearch.randomsearch: %s search requires either (both) the search time limit or (and) the ' +
                     'total number of search runs to be defined') % self.__class__.__name__)
      
     # Method required by the search interface
@@ -141,13 +141,13 @@ class Randomsearch(main.tuner.search.search.Search):
             # local search distance
             if vname == self.__LOCAL_DIST:
                 if not isinstance(rhs, int) or rhs < 0:
-                    err('main.tuner.search.randomsearch: %s argument "%s" must be a positive integer or zero'
+                    err('orio.main.tuner.search.randomsearch: %s argument "%s" must be a positive integer or zero'
                            % (self.__class__.__name__, vname))
                 self.local_distance = rhs
 
             # unrecognized algorithm-specific argument
             else:
-                err('main.tuner.search.randomsearch: unrecognized %s algorithm-specific argument: "%s"' %
+                err('orio.main.tuner.search.randomsearch: unrecognized %s algorithm-specific argument: "%s"' %
                        (self.__class__.__name__, vname))
 
     #--------------------------------------------------

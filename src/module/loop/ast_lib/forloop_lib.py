@@ -3,8 +3,8 @@
 #
 
 import sets, sys
-import module.loop.ast
-from main.util.globals import *
+import orio.module.loop.ast
+from orio.main.util.globals import *
 
 #-----------------------------------------
 
@@ -28,42 +28,41 @@ class ForLoopLib:
         '''
 
         # get rid of compound statement that contains only a single statement
-        while isinstance(stmt, module.loop.ast.CompStmt) and len(stmt.stmts) == 1:
+        while isinstance(stmt, orio.module.loop.ast.CompStmt) and len(stmt.stmts) == 1:
             stmt = stmt.stmts[0]
 
         # check if it is a for-loop statement
-        if not isinstance(stmt, module.loop.ast.ForStmt):
-            err('module.loop.ast_lib.forloop_lib: %s: not a for-loop statement' % stmt.line_no)
+        if not isinstance(stmt, orio.module.loop.ast.ForStmt):
+            err('orio.module.loop.ast_lib.forloop_lib: %s: not a for-loop statement' % stmt.line_no)
 
         # check initialization expression
         if stmt.init:
             while True:
-                while isinstance(stmt.init, module.loop.ast.ParenthExp):
+                while isinstance(stmt.init, orio.module.loop.ast.ParenthExp):
                     stmt.init = stmt.init.exp
-                if (isinstance(stmt.init, module.loop.ast.BinOpExp) and
-                    stmt.init.op_type == module.loop.ast.BinOpExp.EQ_ASGN):
-                    while isinstance(stmt.init.lhs, module.loop.ast.ParenthExp):
+                if (isinstance(stmt.init, orio.module.loop.ast.BinOpExp) and
+                    stmt.init.op_type == orio.module.loop.ast.BinOpExp.EQ_ASGN):
+                    while isinstance(stmt.init.lhs, orio.module.loop.ast.ParenthExp):
                         stmt.init.lhs = stmt.init.lhs.exp
-                    while isinstance(stmt.init.rhs, module.loop.ast.ParenthExp):
+                    while isinstance(stmt.init.rhs, orio.module.loop.ast.ParenthExp):
                         stmt.init.rhs = stmt.init.rhs.exp
-                    if isinstance(stmt.init.lhs, module.loop.ast.IdentExp): 
+                    if isinstance(stmt.init.lhs, orio.module.loop.ast.IdentExp): 
                         break
-                print ('error:%s: loop initialization expression not in "<id> = <exp>" form' %
+                err('orio.module.loop.ast_lib.forloop_lib:%s: loop initialization expression not in "<id> = <exp>" form' %
                        stmt.init.line_no)
-                sys.exit(1)
                 
         # check test expression
         if stmt.test:
             while True:
-                while isinstance(stmt.test, module.loop.ast.ParenthExp):
+                while isinstance(stmt.test, orio.module.loop.ast.ParenthExp):
                     stmt.test = stmt.test.exp
-                if (isinstance(stmt.test, module.loop.ast.BinOpExp) and
-                    stmt.test.op_type == module.loop.ast.BinOpExp.LE):
-                    while isinstance(stmt.test.lhs, module.loop.ast.ParenthExp):
+                if (isinstance(stmt.test, orio.module.loop.ast.BinOpExp) and
+                    stmt.test.op_type == orio.module.loop.ast.BinOpExp.LE):
+                    while isinstance(stmt.test.lhs, orio.module.loop.ast.ParenthExp):
                         stmt.test.lhs = stmt.test.lhs.exp
-                    while isinstance(stmt.test.rhs, module.loop.ast.ParenthExp):
+                    while isinstance(stmt.test.rhs, orio.module.loop.ast.ParenthExp):
                         stmt.test.rhs = stmt.test.rhs.exp
-                    if isinstance(stmt.test.lhs, module.loop.ast.IdentExp): 
+                    if isinstance(stmt.test.lhs, orio.module.loop.ast.IdentExp): 
                         break
                 print ('error:%s: loop test expression not in "<id> <= <exp>" form' %
                        stmt.test.line_no)
@@ -72,33 +71,33 @@ class ForLoopLib:
         # check iteration expression
         if stmt.iter:
             while True:
-                while isinstance(stmt.iter, module.loop.ast.ParenthExp):
+                while isinstance(stmt.iter, orio.module.loop.ast.ParenthExp):
                     stmt.iter = stmt.iter.exp
-                if (isinstance(stmt.iter, module.loop.ast.BinOpExp) and
-                    stmt.iter.op_type == module.loop.ast.BinOpExp.EQ_ASGN):
-                    while isinstance(stmt.iter.lhs, module.loop.ast.ParenthExp):
+                if (isinstance(stmt.iter, orio.module.loop.ast.BinOpExp) and
+                    stmt.iter.op_type == orio.module.loop.ast.BinOpExp.EQ_ASGN):
+                    while isinstance(stmt.iter.lhs, orio.module.loop.ast.ParenthExp):
                         stmt.iter.lhs = stmt.iter.lhs.exp
-                    while isinstance(stmt.iter.rhs, module.loop.ast.ParenthExp):
+                    while isinstance(stmt.iter.rhs, orio.module.loop.ast.ParenthExp):
                         stmt.iter.rhs = stmt.iter.rhs.exp
-                    if isinstance(stmt.iter.lhs, module.loop.ast.IdentExp):
-                        if (isinstance(stmt.iter.rhs, module.loop.ast.BinOpExp) and
-                            stmt.iter.rhs.op_type in (module.loop.ast.BinOpExp.ADD,
-                                                      module.loop.ast.BinOpExp.SUB)):
-                            while isinstance(stmt.iter.rhs.lhs, module.loop.ast.ParenthExp):
+                    if isinstance(stmt.iter.lhs, orio.module.loop.ast.IdentExp):
+                        if (isinstance(stmt.iter.rhs, orio.module.loop.ast.BinOpExp) and
+                            stmt.iter.rhs.op_type in (orio.module.loop.ast.BinOpExp.ADD,
+                                                      orio.module.loop.ast.BinOpExp.SUB)):
+                            while isinstance(stmt.iter.rhs.lhs, orio.module.loop.ast.ParenthExp):
                                 stmt.iter.rhs.lhs = stmt.iter.rhs.lhs.exp
-                            while isinstance(stmt.iter.rhs.rhs, module.loop.ast.ParenthExp):
+                            while isinstance(stmt.iter.rhs.rhs, orio.module.loop.ast.ParenthExp):
                                 stmt.iter.rhs.rhs = stmt.iter.rhs.rhs.exp
-                            if (isinstance(stmt.iter.rhs.lhs, module.loop.ast.IdentExp) and
+                            if (isinstance(stmt.iter.rhs.lhs, orio.module.loop.ast.IdentExp) and
                                 stmt.iter.lhs.name == stmt.iter.rhs.lhs.name):
                                 break
-                elif (isinstance(stmt.iter, module.loop.ast.UnaryExp) and
-                      stmt.iter.op_type in (module.loop.ast.UnaryExp.POST_INC,
-                                            module.loop.ast.UnaryExp.PRE_INC,
-                                            module.loop.ast.UnaryExp.POST_DEC,
-                                            module.loop.ast.UnaryExp.PRE_DEC)):
-                    while isinstance(stmt.iter.exp, module.loop.ast.ParenthExp):
+                elif (isinstance(stmt.iter, orio.module.loop.ast.UnaryExp) and
+                      stmt.iter.op_type in (orio.module.loop.ast.UnaryExp.POST_INC,
+                                            orio.module.loop.ast.UnaryExp.PRE_INC,
+                                            orio.module.loop.ast.UnaryExp.POST_DEC,
+                                            orio.module.loop.ast.UnaryExp.PRE_DEC)):
+                    while isinstance(stmt.iter.exp, orio.module.loop.ast.ParenthExp):
                         stmt.iter.exp = stmt.iter.exp.exp
-                    if isinstance(stmt.iter.exp, module.loop.ast.IdentExp):
+                    if isinstance(stmt.iter.exp, orio.module.loop.ast.IdentExp):
                         break
                 print (('error:%s: loop iteration expression not in "<id>++" or "<id>--" or ' +
                         '"<id> += <exp>" or "<id> = <id> + <exp>" form') % stmt.iter.line_no)
@@ -119,10 +118,10 @@ class ForLoopLib:
         if stmt.test:
             test_iname = stmt.test.lhs.name
         if stmt.iter:
-            if isinstance(stmt.iter, module.loop.ast.BinOpExp):
+            if isinstance(stmt.iter, orio.module.loop.ast.BinOpExp):
                 iter_iname = stmt.iter.lhs.name
             else:
-                assert(isinstance(stmt.iter, module.loop.ast.UnaryExp)), 'internal error: not unary'
+                assert(isinstance(stmt.iter, orio.module.loop.ast.UnaryExp)), 'internal error: not unary'
                 iter_iname = stmt.iter.exp.name
         inames = []
         if init_iname:
@@ -137,7 +136,7 @@ class ForLoopLib:
             sys.exit(1)
         
         # extract for-loop structure information
-        index_id = module.loop.ast.IdentExp(inames[0])
+        index_id = orio.module.loop.ast.IdentExp(inames[0])
         lbound_exp = None
         ubound_exp = None
         stride_exp = None
@@ -146,19 +145,19 @@ class ForLoopLib:
         if stmt.test:
             ubound_exp = stmt.test.rhs.replicate()
         if stmt.iter:
-            if isinstance(stmt.iter, module.loop.ast.BinOpExp):
+            if isinstance(stmt.iter, orio.module.loop.ast.BinOpExp):
                 stride_exp = stmt.iter.rhs.rhs.replicate()
-                if isinstance(stride_exp, module.loop.ast.BinOpExp):
-                    stride_exp = module.loop.ast.ParenthExp(stride_exp)
-                if stmt.iter.rhs.op_type == module.loop.ast.BinOpExp.SUB:
-                    stride_exp = module.loop.ast.UnaryExp(stride_exp, module.loop.ast.UnaryExp.MINUS)
-            elif isinstance(stmt.iter, module.loop.ast.UnaryExp):
-                if stmt.iter.op_type in (module.loop.ast.UnaryExp.POST_INC,
-                                         module.loop.ast.UnaryExp.PRE_INC):
-                    stride_exp = module.loop.ast.NumLitExp(1, module.loop.ast.NumLitExp.INT)
-                elif stmt.iter.op_type in (module.loop.ast.UnaryExp.POST_DEC,
-                                           module.loop.ast.UnaryExp.PRE_DEC):
-                    stride_exp = module.loop.ast.NumLitExp(-1, module.loop.ast.NumLitExp.INT)
+                if isinstance(stride_exp, orio.module.loop.ast.BinOpExp):
+                    stride_exp = orio.module.loop.ast.ParenthExp(stride_exp)
+                if stmt.iter.rhs.op_type == orio.module.loop.ast.BinOpExp.SUB:
+                    stride_exp = orio.module.loop.ast.UnaryExp(stride_exp, orio.module.loop.ast.UnaryExp.MINUS)
+            elif isinstance(stmt.iter, orio.module.loop.ast.UnaryExp):
+                if stmt.iter.op_type in (orio.module.loop.ast.UnaryExp.POST_INC,
+                                         orio.module.loop.ast.UnaryExp.PRE_INC):
+                    stride_exp = orio.module.loop.ast.NumLitExp(1, orio.module.loop.ast.NumLitExp.INT)
+                elif stmt.iter.op_type in (orio.module.loop.ast.UnaryExp.POST_DEC,
+                                           orio.module.loop.ast.UnaryExp.PRE_DEC):
+                    stride_exp = orio.module.loop.ast.NumLitExp(-1, orio.module.loop.ast.NumLitExp.INT)
                 else:
                     print 'internal error: unexpected unary operation type'
                     sys.exit(1)
@@ -184,46 +183,46 @@ class ForLoopLib:
         test_exp = None
         iter_exp = None
         if lbound_exp:
-            init_exp = module.loop.ast.BinOpExp(index_id.replicate(),
+            init_exp = orio.module.loop.ast.BinOpExp(index_id.replicate(),
                                                 lbound_exp.replicate(),
-                                                module.loop.ast.BinOpExp.EQ_ASGN)
+                                                orio.module.loop.ast.BinOpExp.EQ_ASGN)
         if ubound_exp:
-            test_exp = module.loop.ast.BinOpExp(index_id.replicate(),
+            test_exp = orio.module.loop.ast.BinOpExp(index_id.replicate(),
                                                 ubound_exp.replicate(),
-                                                module.loop.ast.BinOpExp.LE)
+                                                orio.module.loop.ast.BinOpExp.LE)
         if stride_exp:
-            while isinstance(stride_exp, module.loop.ast.ParenthExp):
+            while isinstance(stride_exp, orio.module.loop.ast.ParenthExp):
                 stride_exp = stride_exp.exp
-            it = module.loop.ast.BinOpExp(index_id.replicate(),
+            it = orio.module.loop.ast.BinOpExp(index_id.replicate(),
                                           stride_exp.replicate(),
-                                          module.loop.ast.BinOpExp.ADD)
-            iter_exp = module.loop.ast.BinOpExp(index_id.replicate(),
+                                          orio.module.loop.ast.BinOpExp.ADD)
+            iter_exp = orio.module.loop.ast.BinOpExp(index_id.replicate(),
                                                 it,
-                                                module.loop.ast.BinOpExp.EQ_ASGN)
-        return module.loop.ast.ForStmt(init_exp, test_exp, iter_exp, loop_body.replicate())
+                                                orio.module.loop.ast.BinOpExp.EQ_ASGN)
+        return orio.module.loop.ast.ForStmt(init_exp, test_exp, iter_exp, loop_body.replicate())
     
     #-------------------------------------------------
 
     def getLoopIndexNames(self, stmt):
         '''Return a list of all loop index names'''
 
-        if isinstance(stmt, module.loop.ast.ExpStmt):
+        if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             return []
 
-        elif isinstance(stmt, module.loop.ast.CompStmt):
+        elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             inames = []
             for s in stmt.stmts:
                 inames.extend(self.getLoopIndexNames(s))
             return list(sets.Set(inames))
 
-        elif isinstance(stmt, module.loop.ast.IfStmt):
+        elif isinstance(stmt, orio.module.loop.ast.IfStmt):
             inames = []
             inames.extend(self.getLoopIndexNames(stmt.true_stmt))
             if stmt.false_stmt:
                 inames.extend(self.getLoopIndexNames(stmt.false_stmt))
             return list(sets.Set(inames))
 
-        elif isinstance(stmt, module.loop.ast.ForStmt):
+        elif isinstance(stmt, orio.module.loop.ast.ForStmt):
             inames = []
             inames.extend(self.getLoopIndexNames(stmt.stmt))
             index_id, lbound_exp, ubound_exp, stride_exp, loop_body = self.extractForLoopInfo(stmt)
@@ -231,11 +230,11 @@ class ForLoopLib:
                 inames.append(index_id.name)
             return inames
 
-        elif isinstance(stmt, module.loop.ast.TransformStmt):
+        elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
                         
-        elif isinstance(stmt, module.loop.ast.NewAST):
+        elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return []
 
         else:
@@ -250,29 +249,29 @@ class ForLoopLib:
         if stmt == None:
             return False
         
-        if isinstance(stmt, module.loop.ast.ExpStmt):
+        if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             return False
 
-        elif isinstance(stmt, module.loop.ast.CompStmt):
+        elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             for s in stmt.stmts:
                 if self.hasInnerLoop(s):
                     return True
             return False
 
-        elif isinstance(stmt, module.loop.ast.IfStmt):
+        elif isinstance(stmt, orio.module.loop.ast.IfStmt):
             if self.hasInnerLoop(stmt.true_stmt):
                 return True
             else:
                 return self.hasInnerLoop(stmt.false_stmt)
 
-        elif isinstance(stmt, module.loop.ast.ForStmt):
+        elif isinstance(stmt, orio.module.loop.ast.ForStmt):
             return True
 
-        elif isinstance(stmt, module.loop.ast.TransformStmt):
+        elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
                         
-        elif isinstance(stmt, module.loop.ast.NewAST):
+        elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return False
 
         else:

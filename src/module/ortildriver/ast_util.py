@@ -4,7 +4,7 @@
 
 import sys
 import ast
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #-------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ class ASTUtil:
 
         # check if it is a for-loop statement
         if not isinstance(stmt, ast.ForStmt):
-            err('module.ortildriver.ast_util: OrTilDriver:%s: not a for-loop statement' % stmt.line_no)
+            err('orio.module.ortildriver.ast_util: OrTilDriver:%s: not a for-loop statement' % stmt.line_no)
 
         # check initialization expression
         if stmt.init:

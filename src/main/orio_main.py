@@ -1,8 +1,9 @@
 #
-# The main file of the Orio tool
+# The orio.main.file of the Orio tool
 #
 
 import os, sys
+from orio.main.util.globals import *
 
 #----------------------------------------------
 
@@ -11,13 +12,11 @@ C_CPP = 1
 FORTRAN = 2
 
 #----------------------------------------------
-g = None
 
 def start(argv, lang):
-    '''The main starting procedure'''
-#    import util.globals as gl
+    '''The orio.main.starting procedure'''
+#    import orio.main.util.globals as gl
 
-    global g
     retcode = 0 
     # check for Fortran source, which is not supported yet now
     if lang == FORTRAN:
@@ -26,7 +25,7 @@ def start(argv, lang):
     elif lang == C_CPP:
         language = 'c'
     else:
-        sys.stderr.write('main.main:  Language not supported at this time.')
+        sys.stderr.write('orio.main.main:  Language not supported at this time.')
         sys.exit(1)
 
     
@@ -37,11 +36,12 @@ def start(argv, lang):
     # process the command line
     cmdline = cmd_line_opts.CmdParser().parse(argv)
     
-    from util.globals import *
+
     g = Globals(cmdline)
     
-
-
+    for key,val in sys.modules.items():
+        print key, ":", val
+    
     # Simply pass through command  (Orio won't do anything)
     if g.disable_orio and g.external_command:
         cmd = ' '.join(g.external_command)
@@ -62,7 +62,7 @@ def start(argv, lang):
                 src_code = f.read()
                 f.close()
             except:
-                err('main.main: cannot open file for reading: %s' % srcfile)
+                err('orio.main.main: cannot open file for reading: %s' % srcfile)
             info('----- finished reading the source file -----')
     
             # obtain the mapping for performance tuning specifications
@@ -74,7 +74,7 @@ def start(argv, lang):
                     tspec_prog = f.read()
                     f.close()
                 except:
-                    err('main.main: cannot open file for reading: %s' % g.spec_filename)
+                    err('orio.main.main: cannot open file for reading: %s' % g.spec_filename)
                 specs_map = tspec.tspec.TSpec().parseProgram(tspec_prog)
                 info('----- finish reading the tuning specification -----')
     
@@ -117,7 +117,7 @@ def start(argv, lang):
                         f.write(optimized_code)
                         f.close()
                     except:
-                        err('main.main:  cannot open file for writing: %s' % g.out_filename)
+                        err('orio.main.main:  cannot open file for writing: %s' % g.out_filename)
                 info('----- finished writing the output file(s) -----')
 
         # ----- end of "if not g.disable_orio:" -----
@@ -129,7 +129,7 @@ def start(argv, lang):
             cmd = ' '.join(g.external_command + [fname])
             info('[orio] %s'% cmd)
             retcode = os.system(cmd)
-            if retcode != 0: err('main.main: external command returned with error %s: %s' %(retcode, cmd),doexit=False)
+            if retcode != 0: err('orio.main.main: external command returned with error %s: %s' %(retcode, cmd),doexit=False)
 
     if not g.disable_orio and g.rename_objects:
         for srcfile, genfile in g.src_filenames.items():

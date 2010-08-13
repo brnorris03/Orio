@@ -3,7 +3,7 @@
 #
 
 import sys
-import module.loop.ast, module.loop.ast_lib.common_lib, module.loop.ast_lib.forloop_lib
+import orio.module.loop.ast, orio.module.loop.ast_lib.common_lib, orio.module.loop.ast_lib.forloop_lib
 
 #-----------------------------------------
 
@@ -22,8 +22,8 @@ class Transformation:
         self.stmt = stmt
 
         self.counter = 1
-        self.flib = module.loop.ast_lib.forloop_lib.ForLoopLib()
-        self.clib = module.loop.ast_lib.common_lib.CommonLib()
+        self.flib = orio.module.loop.ast_lib.forloop_lib.ForLoopLib()
+        self.clib = orio.module.loop.ast_lib.common_lib.CommonLib()
         
     #----------------------------------------------------------
 
@@ -33,16 +33,16 @@ class Transformation:
         if exp == None:
             return
         
-        if isinstance(exp, module.loop.ast.NumLitExp):
+        if isinstance(exp, orio.module.loop.ast.NumLitExp):
             return
         
-        elif isinstance(exp, module.loop.ast.StringLitExp):
+        elif isinstance(exp, orio.module.loop.ast.StringLitExp):
             return
         
-        elif isinstance(exp, module.loop.ast.IdentExp):
+        elif isinstance(exp, orio.module.loop.ast.IdentExp):
             return
 
-        elif isinstance(exp, module.loop.ast.ArrayRefExp):
+        elif isinstance(exp, orio.module.loop.ast.ArrayRefExp):
             rkey = str(exp)
             if rkey in refs_map:
                 ifreq, iisoutput, iexp = refs_map[rkey]
@@ -50,25 +50,25 @@ class Transformation:
             else:
                 refs_map[rkey] = (1, is_output, exp.replicate())
 
-        elif isinstance(exp, module.loop.ast.FunCallExp):
+        elif isinstance(exp, orio.module.loop.ast.FunCallExp):
             self.__collectRefs(exp.exp, refs_map, is_output)
             for a in exp.args:
                 self.__collectRefs(a, refs_map, is_output)
             
-        elif isinstance(exp, module.loop.ast.UnaryExp):
+        elif isinstance(exp, orio.module.loop.ast.UnaryExp):
             self.__collectRefs(exp.exp, refs_map, is_output)
             
-        elif isinstance(exp, module.loop.ast.BinOpExp):
-            if exp.op_type == module.loop.ast.BinOpExp.EQ_ASGN:
+        elif isinstance(exp, orio.module.loop.ast.BinOpExp):
+            if exp.op_type == orio.module.loop.ast.BinOpExp.EQ_ASGN:
                 self.__collectRefs(exp.lhs, refs_map, True)
             else:
                 self.__collectRefs(exp.lhs, refs_map, is_output)
             self.__collectRefs(exp.rhs, refs_map, is_output)
 
-        elif isinstance(exp, module.loop.ast.ParenthExp):
+        elif isinstance(exp, orio.module.loop.ast.ParenthExp):
             self.__collectRefs(exp.exp, refs_map, is_output)
 
-        elif isinstance(exp, module.loop.ast.NewAST):
+        elif isinstance(exp, orio.module.loop.ast.NewAST):
             return
         
         else:
@@ -94,28 +94,28 @@ class Transformation:
 
             # create declaration
             if last_decl == None:
-                last_decl = module.loop.ast.VarDecl(self.dtype, [vname])
+                last_decl = orio.module.loop.ast.VarDecl(self.dtype, [vname])
             elif len(last_decl.var_names) >= 8:
                 decls.append(last_decl)
-                last_decl = module.loop.ast.VarDecl(self.dtype, [vname])
+                last_decl = orio.module.loop.ast.VarDecl(self.dtype, [vname])
             else:
                 last_decl.var_names.append(vname)
 
             # create initialization
-            iexp = module.loop.ast.BinOpExp(module.loop.ast.IdentExp(vname),
+            iexp = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.IdentExp(vname),
                                             exp.replicate(),
-                                            module.loop.ast.BinOpExp.EQ_ASGN)
-            inits.append(module.loop.ast.ExpStmt(iexp))
+                                            orio.module.loop.ast.BinOpExp.EQ_ASGN)
+            inits.append(orio.module.loop.ast.ExpStmt(iexp))
             
             # create updates, if needed
             if isoutput:
-                iexp = module.loop.ast.BinOpExp(exp.replicate(),
-                                                module.loop.ast.IdentExp(vname),
-                                                module.loop.ast.BinOpExp.EQ_ASGN)
-                updates.append(module.loop.ast.ExpStmt(iexp))
+                iexp = orio.module.loop.ast.BinOpExp(exp.replicate(),
+                                                orio.module.loop.ast.IdentExp(vname),
+                                                orio.module.loop.ast.BinOpExp.EQ_ASGN)
+                updates.append(orio.module.loop.ast.ExpStmt(iexp))
 
             # update the scalars mapping
-            scalars_map[str(exp)] = module.loop.ast.IdentExp(vname)
+            scalars_map[str(exp)] = orio.module.loop.ast.IdentExp(vname)
                 
             # increment the counter
             self.counter += 1
@@ -141,63 +141,63 @@ class Transformation:
         if tnode == None:
             return None
 
-        if isinstance(tnode, module.loop.ast.NumLitExp):
+        if isinstance(tnode, orio.module.loop.ast.NumLitExp):
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.StringLitExp):
+        elif isinstance(tnode, orio.module.loop.ast.StringLitExp):
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.IdentExp):
+        elif isinstance(tnode, orio.module.loop.ast.IdentExp):
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.ArrayRefExp):
+        elif isinstance(tnode, orio.module.loop.ast.ArrayRefExp):
             rkey = str(tnode)
             if rkey in scalars_map:
                 return scalars_map[rkey].replicate()
             else:
                 return tnode
 
-        elif isinstance(tnode, module.loop.ast.FunCallExp):
+        elif isinstance(tnode, orio.module.loop.ast.FunCallExp):
             tnode.exp = self.__replaceRefs(tnode.exp, scalars_map)
             tnode.args = [self.__replaceRefs(a, scalars_map) for a in tnode.args]
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.UnaryExp):
+        elif isinstance(tnode, orio.module.loop.ast.UnaryExp):
             tnode.exp = self.__replaceRefs(tnode.exp, scalars_map)
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.BinOpExp):
+        elif isinstance(tnode, orio.module.loop.ast.BinOpExp):
             tnode.lhs = self.__replaceRefs(tnode.lhs, scalars_map)
             tnode.rhs = self.__replaceRefs(tnode.rhs, scalars_map)
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.ParenthExp):
+        elif isinstance(tnode, orio.module.loop.ast.ParenthExp):
             tnode.exp = self.__replaceRefs(tnode.exp, scalars_map)
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.ExpStmt):
+        elif isinstance(tnode, orio.module.loop.ast.ExpStmt):
             tnode.exp = self.__replaceRefs(tnode.exp, scalars_map)
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.CompStmt):
+        elif isinstance(tnode, orio.module.loop.ast.CompStmt):
             tnode.stmts = [self.__replaceRefs(s, scalars_map) for s in tnode.stmts]
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.IfStmt):
+        elif isinstance(tnode, orio.module.loop.ast.IfStmt):
             tnode.test = self.__replaceRefs(tnode.test, scalars_map)
             tnode.true_stmt = self.__replaceRefs(tnode.true_stmt, scalars_map)
             tnode.false_stmt = self.__replaceRefs(tnode.false_stmt, scalars_map)
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.ForStmt):
+        elif isinstance(tnode, orio.module.loop.ast.ForStmt):
             tnode.stmt = self.__replaceRefs(tnode.stmt, scalars_map)
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.TransformStmt):
+        elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
 
-        elif isinstance(tnode, module.loop.ast.NewAST):
+        elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return tnode
 
         else:
@@ -212,19 +212,19 @@ class Transformation:
         if stmt == None:
             return
 
-        if isinstance(stmt, module.loop.ast.ExpStmt):
+        if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             self.__collectRefs(stmt.exp, refs_map)
 
-        elif isinstance(stmt, module.loop.ast.CompStmt):
+        elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             for s in stmt.stmts:
                 self.__replaceScalars(s, refs_map)
                 
-        elif isinstance(stmt, module.loop.ast.IfStmt):
+        elif isinstance(stmt, orio.module.loop.ast.IfStmt):
             self.__collectRefs(stmt.test, refs_map)
             self.__replaceScalars(stmt.true_stmt, refs_map)
             self.__replaceScalars(stmt.false_stmt, refs_map)
             
-        elif isinstance(stmt, module.loop.ast.ForStmt):
+        elif isinstance(stmt, orio.module.loop.ast.ForStmt):
 
             # collect array references from the loop body
             self.__replaceScalars(stmt.stmt, refs_map)
@@ -254,16 +254,16 @@ class Transformation:
             stmt.stmt = self.__replaceRefs(stmt.stmt, scalars_map)
 
             # insert prologue and epilogue to the loop body
-            if isinstance(stmt.stmt, module.loop.ast.CompStmt):
+            if isinstance(stmt.stmt, orio.module.loop.ast.CompStmt):
                 stmt.stmt.stmts = prologue + stmt.stmt.stmts + epilogue
             else:
-                stmt.stmt = module.loop.ast.CompStmt(prologue + [stmt.stmt] + epilogue)
+                stmt.stmt = orio.module.loop.ast.CompStmt(prologue + [stmt.stmt] + epilogue)
             
-        elif isinstance(stmt, module.loop.ast.TransformStmt):
+        elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
             
-        elif isinstance(stmt, module.loop.ast.NewAST):
+        elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return
         
         else:
@@ -285,7 +285,7 @@ class Transformation:
         refs_map = {}
         self.__replaceScalars(transformed_stmt, refs_map)
 
-        # find all the remaining scalars
+        # find all the reorio.main.ng scalars
         scalars = []
         for rkey, (freq, isoutput, exp) in refs_map.iteritems():
             if freq > 1:
@@ -299,10 +299,10 @@ class Transformation:
         transformed_stmt = self.__replaceRefs(transformed_stmt, scalars_map)
 
         # insert prologue and epilogue to the loop body
-        if isinstance(transformed_stmt, module.loop.ast.CompStmt):
+        if isinstance(transformed_stmt, orio.module.loop.ast.CompStmt):
             transformed_stmt.stmts = prologue + transformed_stmt.stmts + epilogue
         else:
-            transformed_stmt = module.loop.ast.CompStmt(prologue + [transformed_stmt] + epilogue)
+            transformed_stmt = orio.module.loop.ast.CompStmt(prologue + [transformed_stmt] + epilogue)
 
         # return the transformed statement
         return transformed_stmt

@@ -3,7 +3,7 @@
 #
 
 import re, sys
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #----------------------------------------------------------------
 
@@ -55,18 +55,18 @@ class AnnParser:
                 break
             m = re.match(__var_re, text)
             if not m:
-                err('module.ortildriver.ann_parser: OrTilDriver: annotation syntax error: "%s"' % orig_text)
+                err('orio.module.ortildriver.ann_parser: OrTilDriver: annotation syntax error: "%s"' % orig_text)
             text = text[m.end():]
             var = m.group(1)
             m = re.match(__equal_re, text)
             if not m:
-                err('module.ortildriver.ann_parser: OrTilDriver: annotation syntax error: "%s"' % orig_text)
+                err('orio.module.ortildriver.ann_parser: OrTilDriver: annotation syntax error: "%s"' % orig_text)
             text = text[m.end():]
             m = re.match(__var_re, text)
             if not m:
                 m = re.match(__num_re, text)
             if not m:
-                err('module.ortildriver.ann_parser: OrTilDriver: annotation syntax error: "%s"' % orig_text)
+                err('orio.module.ortildriver.ann_parser: OrTilDriver: annotation syntax error: "%s"' % orig_text)
             text = text[m.end():]
             val = m.group(1)
             var_val_pairs.append((var, val))

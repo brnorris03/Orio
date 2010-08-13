@@ -29,7 +29,7 @@
 
 import sys, re
 import tool.ply.lex as lex
-from main.util.globals import *
+from orio.main.util.globals import *
 
 class FLexer:
     
@@ -480,7 +480,7 @@ class FLexer:
     
     def raise_error(self,t):
         col = self.find_column(t.lexer.lexdata, t)
-        err('main.parsers.flexer: *** Fortran parse error in %s: illegal character (%s) at line %s, column %s' \
+        err('orio.main.parsers.flexer: *** Fortran parse error in %s: illegal character (%s) at line %s, column %s' \
                 % (self.filename, t.value[0], self.lineno, col))
         # lexing errors are fatal
         #t.lexer.skip(1) # this makes lexing errors non-fatal
@@ -541,7 +541,7 @@ class FLexer:
         
 #lexer = parse.ply.lex.lex(optimize = 0)
 # Main for debugging the lexer:
-if __name__ == "__main__":
+if __name__ == "__orio.main._":
     import sys
     # Build the lexer and try it out
     l = FLexer()

@@ -3,7 +3,7 @@
 #
 
 import re, sys
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #----------------------------------------------------------------------
 
@@ -588,7 +588,7 @@ class CLoopParser:
 
         # check the hotspots information
         if len(hotspots_info) == 0:
-            err('module.polysyn.cloop_parser: polysyn: cannot find any hotspots in the Cloog code')
+            err('orio.module.polysyn.cloop_parser: polysyn: cannot find any hotspots in the Cloog code')
 
         # prune out some hotspot information
         best_hotspot = hotspots_info[0]
@@ -639,7 +639,7 @@ class CLoopParser:
 
         # check the hotspot loop nests
         if len(hotspot_lnests) == 0:
-            err('module.polysyn.cloop_parser: polysyn: hotspot has no loops to be optimized')
+            err('orio.module.polysyn.cloop_parser: polysyn: hotspot has no loops to be optimized')
 
         # insert header and trailer annotations into each hotspot loop nest
         original_clines = self.__markHotspots(original_clines, hotspot_lnests)

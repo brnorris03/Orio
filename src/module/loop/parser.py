@@ -4,7 +4,7 @@
 
 import sys
 import ast, tool.ply.lex, tool.ply.yacc
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #------------------------------------------------
 
@@ -111,7 +111,7 @@ def t_NEWLINE(t):
     
 # syntactical error
 def t_error(t):
-    err('module.loop.parser: %s: syntactical error: "%s"' % ((t.lineno + __start_line_no - 1), t.value[0]))
+    err('orio.module.loop.parser: %s: syntactical error: "%s"' % ((t.lineno + __start_line_no - 1), t.value[0]))
     
 #------------------------------------------------
 
@@ -468,7 +468,7 @@ def p_argument_expression_list_2(p):
 
 # grammatical error
 def p_error(p):
-    err('module.loop.parser: %s: grammatical error: "%s"' % ((p.lineno + __start_line_no - 1), p.value))
+    err('orio.module.loop.parser: %s: grammatical error: "%s"' % ((p.lineno + __start_line_no - 1), p.value))
 
 #------------------------------------------------
 

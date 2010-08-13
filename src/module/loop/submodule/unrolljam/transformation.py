@@ -3,7 +3,7 @@
 #
 
 import sys
-import module.loop.ast, module.loop.ast_lib.constant_folder, module.loop.ast_lib.forloop_lib
+import orio.module.loop.ast, orio.module.loop.ast_lib.constant_folder, orio.module.loop.ast_lib.forloop_lib
 
 #-----------------------------------------
 
@@ -17,34 +17,34 @@ class Transformation:
         self.do_jamming = do_jamming
         self.stmt = stmt
         self.parallelize = parallelize
-        self.flib = module.loop.ast_lib.forloop_lib.ForLoopLib()
-        self.cfolder = module.loop.ast_lib.constant_folder.ConstFolder()
+        self.flib = orio.module.loop.ast_lib.forloop_lib.ForLoopLib()
+        self.cfolder = orio.module.loop.ast_lib.constant_folder.ConstFolder()
         
     #----------------------------------------------------------
 
     def __addIdentWithExp(self, tnode, index_name, exp):
         '''Traverse the tree node and add any matching identifier with the provided expression'''
 
-        if isinstance(exp, module.loop.ast.NumLitExp) and exp.val == 0:
+        if isinstance(exp, orio.module.loop.ast.NumLitExp) and exp.val == 0:
             return tnode
         
-        if isinstance(tnode, module.loop.ast.ExpStmt):
+        if isinstance(tnode, orio.module.loop.ast.ExpStmt):
             if tnode.exp:
                 tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
             return tnode
     
-        elif isinstance(tnode, module.loop.ast.CompStmt):
+        elif isinstance(tnode, orio.module.loop.ast.CompStmt):
             tnode.stmts = [self.__addIdentWithExp(s, index_name, exp) for s in tnode.stmts]
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.IfStmt):
+        elif isinstance(tnode, orio.module.loop.ast.IfStmt):
             tnode.test = self.__addIdentWithExp(tnode.test, index_name, exp)
             tnode.true_stmt = self.__addIdentWithExp(tnode.true_stmt, index_name, exp)
             if tnode.false_stmt:
                 tnode.false_stmt = self.__addIdentWithExp(tnode.false_stmt, index_name, exp)
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.ForStmt):
+        elif isinstance(tnode, orio.module.loop.ast.ForStmt):
             if tnode.init:
                 tnode.init = self.__addIdentWithExp(tnode.init, index_name, exp)
             if tnode.test:
@@ -54,49 +54,49 @@ class Transformation:
             tnode.stmt = self.__addIdentWithExp(tnode.stmt, index_name, exp)
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.TransformStmt):
+        elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
 
-        elif isinstance(tnode, module.loop.ast.NumLitExp):
+        elif isinstance(tnode, orio.module.loop.ast.NumLitExp):
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.StringLitExp):
+        elif isinstance(tnode, orio.module.loop.ast.StringLitExp):
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.IdentExp):
+        elif isinstance(tnode, orio.module.loop.ast.IdentExp):
             if tnode.name != index_name:
                 return tnode
             else:
-                add_exp = module.loop.ast.BinOpExp(tnode,
+                add_exp = orio.module.loop.ast.BinOpExp(tnode,
                                                    exp.replicate(),
-                                                   module.loop.ast.BinOpExp.ADD)
-                return module.loop.ast.ParenthExp(add_exp)
+                                                   orio.module.loop.ast.BinOpExp.ADD)
+                return orio.module.loop.ast.ParenthExp(add_exp)
 
-        elif isinstance(tnode, module.loop.ast.ArrayRefExp):
+        elif isinstance(tnode, orio.module.loop.ast.ArrayRefExp):
             tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
             tnode.sub_exp = self.__addIdentWithExp(tnode.sub_exp, index_name, exp)
             return tnode
         
-        elif isinstance(tnode, module.loop.ast.FunCallExp):
+        elif isinstance(tnode, orio.module.loop.ast.FunCallExp):
             tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
             tnode.args = [self.__addIdentWithExp(a, index_name, exp) for a in tnode.args]
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.UnaryExp):
+        elif isinstance(tnode, orio.module.loop.ast.UnaryExp):
             tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
             return tnode
         
-        elif isinstance(tnode, module.loop.ast.BinOpExp):
+        elif isinstance(tnode, orio.module.loop.ast.BinOpExp):
             tnode.lhs = self.__addIdentWithExp(tnode.lhs, index_name, exp)
             tnode.rhs = self.__addIdentWithExp(tnode.rhs, index_name, exp)
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.ParenthExp):
+        elif isinstance(tnode, orio.module.loop.ast.ParenthExp):
             tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
             return tnode        
         
-        elif isinstance(tnode, module.loop.ast.NewAST):
+        elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return tnode
         
         else:
@@ -109,9 +109,9 @@ class Transformation:
         '''Jam/fuse statements whenever possible'''
 
         if len(stmtss) == 0:
-            return module.loop.ast.CompStmt([])
+            return orio.module.loop.ast.CompStmt([])
         if len(stmtss) == 1:
-            return module.loop.ast.CompStmt(stmtss[0])
+            return orio.module.loop.ast.CompStmt(stmtss[0])
 
         num = len(stmtss[0])
         for stmts in stmtss:
@@ -124,11 +124,11 @@ class Transformation:
             for stmts in stmtss:
                 if s1 == None:
                     s1 = stmts[i]
-                    if isinstance(s1, module.loop.ast.ForStmt):
+                    if isinstance(s1, orio.module.loop.ast.ForStmt):
                         contain_loop = True
-                elif isinstance(s1, module.loop.ast.ForStmt):
+                elif isinstance(s1, orio.module.loop.ast.ForStmt):
                     s2 = stmts[i]
-                    assert(isinstance(s2, module.loop.ast.ForStmt)), 'internal error: not a loop statement'
+                    assert(isinstance(s2, orio.module.loop.ast.ForStmt)), 'internal error: not a loop statement'
                     if not (str(s1.init) == str(s2.init) and str(s1.test) == str(s2.test) and str(s1.iter) == str(s2.iter)):
                         is_jam_valid = False
         if is_jam_valid:
@@ -139,14 +139,14 @@ class Transformation:
             n_stmts = []
             for stmts in stmtss:
                 n_stmts.extend(stmts)
-            return module.loop.ast.CompStmt(n_stmts)
+            return orio.module.loop.ast.CompStmt(n_stmts)
 
         n_stmts = []
         for stmts in zip(*stmtss):
-            if isinstance(stmts[0], module.loop.ast.ForStmt):
+            if isinstance(stmts[0], orio.module.loop.ast.ForStmt):
                 l_stmtss = []
                 for s in stmts:
-                    if isinstance(s.stmt, module.loop.ast.CompStmt):
+                    if isinstance(s.stmt, orio.module.loop.ast.CompStmt):
                         l_stmtss.append(s.stmt.stmts)
                     else:
                         l_stmtss.append([s.stmt])
@@ -155,7 +155,7 @@ class Transformation:
                 n_stmts.append(loop)
             else:
                 n_stmts.extend(stmts)
-        return module.loop.ast.CompStmt(n_stmts)
+        return orio.module.loop.ast.CompStmt(n_stmts)
         
     #-----------------------------------------
 
@@ -163,7 +163,7 @@ class Transformation:
         '''To unroll-and-jam the enclosed for-loop'''
 
         # get rid of compound statement that contains only a single statement
-        while isinstance(self.stmt.stmt, module.loop.ast.CompStmt) and len(self.stmt.stmt.stmts) == 1:
+        while isinstance(self.stmt.stmt, orio.module.loop.ast.CompStmt) and len(self.stmt.stmt.stmts) == 1:
             self.stmt.stmt = self.stmt.stmt.stmts[0]
         
         # extract for-loop structure
@@ -178,46 +178,46 @@ class Transformation:
                 inames = self.flib.getLoopIndexNames(orig_loop)
                 inames_str = ','.join(inames)
                 if inames:
-                    omp_pragma = module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
+                    omp_pragma = orio.module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
                 else:
-                    omp_pragma = module.loop.ast.Pragma('omp parallel for')
-                return module.loop.ast.CompStmt([omp_pragma, orig_loop])
+                    omp_pragma = orio.module.loop.ast.Pragma('omp parallel for')
+                return orio.module.loop.ast.CompStmt([omp_pragma, orig_loop])
             else:
                 return orig_loop
         
-        # start generating the main unrolled loop
+        # start generating the orio.main.unrolled loop
         # compute lower bound --> new_LB = LB
         new_lbound_exp = lbound_exp.replicate()
     
         # compute upper bound --> new_UB = UB-ST*(UF-1)
-        it = module.loop.ast.BinOpExp(stride_exp.replicate(),
-                                      module.loop.ast.NumLitExp(self.ufactor - 1,
-                                                                module.loop.ast.NumLitExp.INT),
-                                      module.loop.ast.BinOpExp.MUL)
-        new_ubound_exp = module.loop.ast.BinOpExp(ubound_exp.replicate(),
+        it = orio.module.loop.ast.BinOpExp(stride_exp.replicate(),
+                                      orio.module.loop.ast.NumLitExp(self.ufactor - 1,
+                                                                orio.module.loop.ast.NumLitExp.INT),
+                                      orio.module.loop.ast.BinOpExp.MUL)
+        new_ubound_exp = orio.module.loop.ast.BinOpExp(ubound_exp.replicate(),
                                                   it,
-                                                  module.loop.ast.BinOpExp.SUB)
+                                                  orio.module.loop.ast.BinOpExp.SUB)
         new_ubound_exp = self.cfolder.fold(new_ubound_exp)
     
         # compute stride --> new_ST = UF*ST
-        it = module.loop.ast.NumLitExp(self.ufactor, module.loop.ast.NumLitExp.INT)
-        new_stride_exp = module.loop.ast.BinOpExp(it,
+        it = orio.module.loop.ast.NumLitExp(self.ufactor, orio.module.loop.ast.NumLitExp.INT)
+        new_stride_exp = orio.module.loop.ast.BinOpExp(it,
                                                   stride_exp.replicate(),
-                                                  module.loop.ast.BinOpExp.MUL)
+                                                  orio.module.loop.ast.BinOpExp.MUL)
         new_stride_exp = self.cfolder.fold(new_stride_exp)
     
         # compute unrolled statements
         unrolled_stmt_seqs = []
         for i in range(0, self.ufactor):
             s = loop_body.replicate()
-            it = module.loop.ast.NumLitExp(i, module.loop.ast.NumLitExp.INT)
-            increment_exp = module.loop.ast.BinOpExp(it,
+            it = orio.module.loop.ast.NumLitExp(i, orio.module.loop.ast.NumLitExp.INT)
+            increment_exp = orio.module.loop.ast.BinOpExp(it,
                                                      stride_exp.replicate(),
-                                                     module.loop.ast.BinOpExp.MUL)
+                                                     orio.module.loop.ast.BinOpExp.MUL)
             increment_exp = self.cfolder.fold(increment_exp)
             ns = self.__addIdentWithExp(s, index_id.name, increment_exp)
             ns = self.cfolder.fold(ns)
-            if isinstance(ns, module.loop.ast.CompStmt):
+            if isinstance(ns, orio.module.loop.ast.CompStmt):
                 unrolled_stmt_seqs.append(ns.stmts)
             else:
                 unrolled_stmt_seqs.append([ns])
@@ -227,22 +227,22 @@ class Transformation:
             unrolled_loop_body = self.__jamStmts(unrolled_stmt_seqs)
         else:
             unrolled_stmts = reduce(lambda x,y: x+y, unrolled_stmt_seqs, [])
-            unrolled_loop_body = module.loop.ast.CompStmt(unrolled_stmts)
+            unrolled_loop_body = orio.module.loop.ast.CompStmt(unrolled_stmts)
             
-        # generate the main unrolled loop
-        main_loop = self.flib.createForLoop(index_id, new_lbound_exp, new_ubound_exp,
+        # generate the orio.main.unrolled loop
+        orio.main.loop = self.flib.createForLoop(index_id, new_lbound_exp, new_ubound_exp,
                                             new_stride_exp, unrolled_loop_body)
         
         # generate the cleanup-loop lower-bound expression
         if self.parallelize:
-            t = module.loop.ast.BinOpExp(module.loop.ast.ParenthExp(ubound_exp.replicate()),
-                                         module.loop.ast.NumLitExp(self.ufactor,
-                                                                   module.loop.ast.NumLitExp.INT),
-                                         module.loop.ast.BinOpExp.MOD)
-            cleanup_lbound_exp = module.loop.ast.BinOpExp(
-                module.loop.ast.ParenthExp(ubound_exp.replicate()),
-                module.loop.ast.ParenthExp(t),
-                module.loop.ast.BinOpExp.SUB)
+            t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
+                                         orio.module.loop.ast.NumLitExp(self.ufactor,
+                                                                   orio.module.loop.ast.NumLitExp.INT),
+                                         orio.module.loop.ast.BinOpExp.MOD)
+            cleanup_lbound_exp = orio.module.loop.ast.BinOpExp(
+                orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
+                orio.module.loop.ast.ParenthExp(t),
+                orio.module.loop.ast.BinOpExp.SUB)
             cleanup_lbound_exp = self.cfolder.fold(cleanup_lbound_exp)
         else:
             cleanup_lbound_exp = None
@@ -253,16 +253,16 @@ class Transformation:
         
         # generate the transformed statement
         if self.parallelize:
-            inames = self.flib.getLoopIndexNames(main_loop)
+            inames = self.flib.getLoopIndexNames(orio.main.loop)
             inames_str = ','.join(inames)
             if inames:
-                omp_pragma = module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
+                omp_pragma = orio.module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
             else:
-                omp_pragma = module.loop.ast.Pragma('omp parallel for')     
-            stmts = [omp_pragma, main_loop, cleanup_loop]
+                omp_pragma = orio.module.loop.ast.Pragma('omp parallel for')     
+            stmts = [omp_pragma, orio.main.loop, cleanup_loop]
         else:
-            stmts = [main_loop, cleanup_loop]
-        transformed_stmt = module.loop.ast.CompStmt(stmts)
+            stmts = [orio.main.loop, cleanup_loop]
+        transformed_stmt = orio.module.loop.ast.CompStmt(stmts)
 
         # return the transformed statement
         return transformed_stmt

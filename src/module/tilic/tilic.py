@@ -1,20 +1,20 @@
 #
-# The main file for the parametric multilevel tiling for imperfectly nested loops
+# The orio.main.file for the parametric multilevel tiling for imperfectly nested loops
 #
 
 import sys
-import ann_parser, code_parser, module.module, pprinter, semant, transformation
+import ann_parser, code_parser, orio.module.module, pprinter, semant, transformation
 
 #-----------------------------------------
 
-class Tilic(module.module.Module):
-    '''The class definition for Tilic module'''
+class Tilic(orio.module.module.Module):
+    '''The class definition for Tilic module.'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
-        '''To instantiate the Tilic tiling module'''
+        '''To instantiate the Tilic tiling module.'''
         
-        module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
+        orio.module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       line_no, indent_size, language)
 
     #---------------------------------------------------------------------
@@ -54,7 +54,7 @@ class Tilic(module.module.Module):
     def transform(self):
         '''To perform loop tiling'''
 
-        # parse the text in the annotation module body to extract the tiling information
+        # parse the text in the annotation orio.module.body to extract the tiling information
         tiling_params = ann_parser.AnnParser(self.perf_params).parse(self.module_body_code)
 
         # parse the code (in the annotation body) to extract the corresponding AST

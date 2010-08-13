@@ -1,20 +1,20 @@
 #
-# This module does not perform any significant code transformations at all.
-# The purpose of this module is merely to provide a simple example to application developers
-# for how to extend Orio with a new program transformation module.
+# This orio.module.does not perform any significant code transformations at all.
+# The purpose of this orio.module.is merely to provide a simple example to application developers
+# for how to extend Orio with a new program transformation orio.module.
 #
 
-import module.module
+import orio.module.module
 
 #-----------------------------------------
 
-class SimplyRewrite(module.module.Module):
-    '''A simple rewriting module'''
+class SimplyRewrite(orio.module.module.Module):
+    '''A simple rewriting module.'''
 
     def __init__(self, perf_params, module_body_code, annot_body_code, line_no, indent_size, language='C'):
-        '''To instantiate a simple rewriting module'''
+        '''To instantiate a simple rewriting module.'''
 
-        module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
+        orio.module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       line_no, indent_size, language)
 
     #---------------------------------------------------------------------

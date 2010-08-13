@@ -2,7 +2,7 @@
 # The search engine used for search space exploration
 #
 import sys, math
-from main.util.globals import *
+from orio.main.util.globals import *
 
 
 class Search:
@@ -216,7 +216,7 @@ class Search:
         from random import randint
 
         if lbound > ubound:
-            err('main.tuner.search.search internal error: the lower bound of genRandomInt must not be ' +
+            err('orio.main.tuner.search.search internal error: the lower bound of genRandomInt must not be ' +
                    'greater than the upper bound')
         return randint(lbound, ubound)
 
@@ -225,7 +225,7 @@ class Search:
         from random import uniform
 
         if lbound > ubound:
-            err('main.tuner.search.search internal error: the lower bound of genRandomReal must not be ' +
+            err('orio.main.tuner.search.search internal error: the lower bound of genRandomReal must not be ' +
                    'greater than the upper bound')
         return uniform(lbound, ubound)
 

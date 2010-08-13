@@ -1,38 +1,38 @@
 #
-# Loop transformation submodule that implements a combination of various loop transformations.
+# Loop transformation submodule.that implements a combination of various loop transformations.
 #
 
 import sys
-import module.loop.submodule.submodule, transformation
-import module.loop.submodule.tile.tile
-import module.loop.submodule.permut.permut
-import module.loop.submodule.regtile.regtile
-import module.loop.submodule.unrolljam.unrolljam
-import module.loop.submodule.scalarreplace.scalarreplace
-import module.loop.submodule.boundreplace.boundreplace
-import module.loop.submodule.pragma.pragma
-import module.loop.submodule.arrcopy.arrcopy
-from main.util.globals import *
+import orio.module.loop.submodule.submodule, transformation
+import orio.module.loop.submodule.tile.tile
+import orio.module.loop.submodule.permut.permut
+import orio.module.loop.submodule.regtile.regtile
+import orio.module.loop.submodule.unrolljam.unrolljam
+import orio.module.loop.submodule.scalarreplace.scalarreplace
+import orio.module.loop.submodule.boundreplace.boundreplace
+import orio.module.loop.submodule.pragma.pragma
+import orio.module.loop.submodule.arrcopy.arrcopy
+from orio.main.util.globals import *
 
 #---------------------------------------------------------------------
 
-class Composite(module.loop.submodule.submodule.SubModule):
-    '''The composite loop transformation submodule'''
+class Composite(orio.module.loop.submodule.submodule.SubModule):
+    '''The composite loop transformation submodule.'''
     
     def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
-        '''To instantiate a composite loop transformation submodule'''
+        '''To instantiate a composite loop transformation submodule.'''
         
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
+        orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
-        # transformation submodules
-        self.tile_smod = module.loop.submodule.tile.tile.Tile()
-        self.perm_smod = module.loop.submodule.permut.permut.Permut()
-        self.regt_smod = module.loop.submodule.regtile.regtile.RegTile()
-        self.ujam_smod = module.loop.submodule.unrolljam.unrolljam.UnrollJam()
-        self.srep_smod = module.loop.submodule.scalarreplace.scalarreplace.ScalarReplace()
-        self.brep_smod = module.loop.submodule.boundreplace.boundreplace.BoundReplace()
-        self.prag_smod = module.loop.submodule.pragma.pragma.Pragma()
-        self.acop_smod = module.loop.submodule.arrcopy.arrcopy.ArrCopy()
+        # transformation submodule.
+        self.tile_smod = orio.module.loop.submodule.tile.tile.Tile()
+        self.perm_smod = orio.module.loop.submodule.permut.permut.Permut()
+        self.regt_smod = orio.module.loop.submodule.regtile.regtile.RegTile()
+        self.ujam_smod = orio.module.loop.submodule.unrolljam.unrolljam.UnrollJam()
+        self.srep_smod = orio.module.loop.submodule.scalarreplace.scalarreplace.ScalarReplace()
+        self.brep_smod = orio.module.loop.submodule.boundreplace.boundreplace.BoundReplace()
+        self.prag_smod = orio.module.loop.submodule.pragma.pragma.Pragma()
+        self.acop_smod = orio.module.loop.submodule.arrcopy.arrcopy.ArrCopy()
 
     #-----------------------------------------------------------------
 
@@ -70,7 +70,7 @@ class Composite(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                err('module.loop.submodule.composite.composite: %s: failed to evaluate the argument expression: %s\n --> %s: %s' %
+                err('orio.module.loop.submodule.composite.composite: %s: failed to evaluate the argument expression: %s\n --> %s: %s' %
                      (line_no, rhs,e.__class__.__name__, e))
 
             # update transformation arguments
@@ -97,7 +97,7 @@ class Composite(module.loop.submodule.submodule.SubModule):
 
             # unknown argument name
             else:
-                err('module.loop.submodule.composite.composite: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
+                err('orio.module.loop.submodule.composite.composite: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check semantics of the transformation arguments
         (tiles, permuts, regtiles, ujams, scalarrep, boundrep,
@@ -117,7 +117,7 @@ class Composite(module.loop.submodule.submodule.SubModule):
         # evaluate arguments for loop tiling
         rhs, line_no = tiles
         if not isinstance(rhs, list) and not isinstance(rhs, tuple):
-            err('module.loop.submodule.composite.composite: %s: tile argument must be a list/tuple: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.composite.composite: %s: tile argument must be a list/tuple: %s' % (line_no, rhs))
         targs = []
         for e in rhs:
             if (not isinstance(e, list) and not isinstance(e, tuple)) or len(e) != 3:
@@ -133,7 +133,7 @@ class Composite(module.loop.submodule.submodule.SubModule):
         # evaluate arguments for loop permutation/interchange
         rhs, line_no = permuts
         if not isinstance(rhs, list) and not isinstance(rhs, tuple):
-            err('module.loop.submodule.composite.composite: %s: permutation argument must be a list/tuple: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.composite.composite: %s: permutation argument must be a list/tuple: %s' % (line_no, rhs))
         for e in rhs:
             seq, = self.perm_smod.checkTransfArgs((e, line_no))
         permuts = rhs
@@ -141,7 +141,7 @@ class Composite(module.loop.submodule.submodule.SubModule):
         # evaluate arguments for register tiling
         rhs, line_no = regtiles
         if not isinstance(rhs, list) and not isinstance(rhs, tuple):
-            err('module.loop.submodule.composite.composite: %s: register-tiling argument must be a list/tuple: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.composite.composite: %s: register-tiling argument must be a list/tuple: %s' % (line_no, rhs))
         if len(rhs) != 2:
             print (('error:%s: register-tiling argument must be in the form of ' +
                     '(<loop-ids>,<ufactors>): %s') % (line_no, rhs))
@@ -153,7 +153,7 @@ class Composite(module.loop.submodule.submodule.SubModule):
         # evaluate arguments for unroll/jamming
         rhs, line_no = ujams
         if not isinstance(rhs, list) and not isinstance(rhs, tuple):
-            err('module.loop.submodule.composite.composite: %s: unroll/jam argument must be a list/tuple: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.composite.composite: %s: unroll/jam argument must be a list/tuple: %s' % (line_no, rhs))
         if len(rhs) != 2:
             print (('error:%s: unroll/jam argument must be in the form of ' +
                     '(<loop-ids>,<ufactors>): %s') % (line_no, rhs))
@@ -206,7 +206,7 @@ class Composite(module.loop.submodule.submodule.SubModule):
         # evaluate arguments for pragma directives
         rhs, line_no = pragma
         if not isinstance(rhs, list) and not isinstance(rhs, tuple):
-            err('module.loop.submodule.composite.composite: %s: pragma argument must be a list/tuple: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.composite.composite: %s: pragma argument must be a list/tuple: %s' % (line_no, rhs))
         targs = []
         for e in rhs:
             if (not isinstance(e, list) and not isinstance(e, tuple)) or len(e) != 2:
@@ -244,7 +244,7 @@ class Composite(module.loop.submodule.submodule.SubModule):
         # evaluate arguments for array-copy optimization
         rhs, line_no = arrcopy
         if not isinstance(rhs, list) and not isinstance(rhs, tuple):
-            err('module.loop.submodule.composite.composite: %s: array-copy argument must be a list/tuple: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.composite.composite: %s: array-copy argument must be a list/tuple: %s' % (line_no, rhs))
         targs = []
         for e in rhs:
             if ((not isinstance(e, list) and not isinstance(e, tuple)) or len(e) > 5 or
@@ -302,9 +302,9 @@ class Composite(module.loop.submodule.submodule.SubModule):
         elif (isinstance(lid, tuple) or isinstance(lid, list)) and len(lid) > 0:
             for i in lid:
                 if not isinstance(i, str):
-                    err('module.loop.submodule.composite.composite: %s: loop ID must be a string: %s' % (line_no, i))
+                    err('orio.module.loop.submodule.composite.composite: %s: loop ID must be a string: %s' % (line_no, i))
         else:
-            err('module.loop.submodule.composite.composite: %s: invalid loop ID representation: %s' % (line_no, lid))            
+            err('orio.module.loop.submodule.composite.composite: %s: invalid loop ID representation: %s' % (line_no, lid))            
 
         # create the loop ID abstraction
         lids = []

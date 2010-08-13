@@ -18,9 +18,9 @@
 
 import sys, os
 import ast, tool.ply.yacc
-import main.parsers.flexer as lexer
-from main.parsers.fAST import *
-from main.util.globals import *
+import orio.main.parsers.flexer as lexer
+from orio.main.parsers.fAST import *
+from orio.main.util.globals import *
 
 
 # Get the token map
@@ -44,15 +44,15 @@ def p_program_unit_list_2(p):
 
 # R202
 def p_program_unit(p):
-    '''program_unit : main_program
+    '''program_unit : orio.main.program
                     | external_subprogram
                     | module
                     '''
     p[0] = p[1]
 
 # R1101
-def p_main_program(p):
-    'main_program : program_stmt specification_part execution_part internal_subprogram_part_opt end_program_stmt'
+def p_orio.main.program(p):
+    'orio.main.program : program_stmt specification_part execution_part internal_subprogram_part_opt end_program_stmt'
     if p[1]: lineno = p.linespan(1)[0]
     elif p[2]: lineno = p.linespan(2)[0]
     elif p[3]: lineno = p.linespan(3)[0]
@@ -2171,10 +2171,10 @@ def p_assignment_expression_2(p):
         elif (p[2] == '-='):
             rhs = ast.BinOpExp(p[1], p[3], ast.BinOpExp.SUB, p.lineno(1) + __start_line_no - 1)
         else:
-            err('main.parsers.fparser internal error:  missing case for assignment operator')
+            err('orio.main.parsers.fparser internal error:  missing case for assignment operator')
         p[0] = ast.BinOpExp(lhs, rhs, ast.BinOpExp.EQ_ASGN, p.lineno(1) + __start_line_no - 1)
     else:
-        err('main.parsers.fparser internal error:  unknown assignment operator')
+        err('orio.main.parsers.fparser internal error:  unknown assignment operator')
 
 # assignment-operator:
 def p_assignment_operator(p):
@@ -2217,7 +2217,7 @@ def p_equality_expression_2(p):
     elif p[2] == '!=':
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.NE, p.lineno(1) + __start_line_no - 1)
     else:
-        err('main.parsers.fparser internal error:  unknown equality operator')
+        err('orio.main.parsers.fparser internal error:  unknown equality operator')
 
 # equality-operator:
 def p_equality_operator(p):
@@ -2241,7 +2241,7 @@ def p_relational_expression_2(p):
     elif (p[2] == '>='):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.GE, p.lineno(1) + __start_line_no - 1)
     else:
-        err('main.parsers.fparser internal error:  unknown relational operator')
+        err('orio.main.parsers.fparser internal error:  unknown relational operator')
         
 # relational-operator
 def p_relational_operator(p):
@@ -2263,7 +2263,7 @@ def p_additive_expression_2(p):
     elif (p[2] == '-'):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.SUB, p.lineno(1) + __start_line_no - 1)
     else:
-        err('main.parsers.fparser internal error:  unknown additive operator' )
+        err('orio.main.parsers.fparser internal error:  unknown additive operator' )
 
 # additive-operator:
 def p_additive_operator(p):
@@ -2285,7 +2285,7 @@ def p_multiplicative_expression_2(p):
     elif (p[2] == '%'):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.MOD, p.lineno(1) + __start_line_no - 1)
     else:
-        err('main.parsers.fparser internal error:  unknown multiplicative operator')
+        err('orio.main.parsers.fparser internal error:  unknown multiplicative operator')
 
 # multiplicative-operator
 def p_multiplicative_operator(p):
@@ -2316,7 +2316,7 @@ def p_unary_expression_4(p):
     elif p[1] == '!':
         p[0] = ast.UnaryExp(p[2], ast.UnaryExp.LNOT, p.lineno(1) + __start_line_no - 1)
     else:
-        err('main.parsers.fparser internal error:  unknown unary operator')
+        err('orio.main.parsers.fparser internal error:  unknown unary operator')
 
 # unary-operator
 def p_unary_operator(p):
@@ -2389,7 +2389,7 @@ def p_argument_expression_list_2(p):
 
 # grammatical error
 def p_error(p):
-    err('main.parsers.fparser:%s: grammatical error: "%s"' % ((p.lineno + __start_line_no - 1), p.value))
+    err('orio.main.parsers.fparser:%s: grammatical error: "%s"' % ((p.lineno + __start_line_no - 1), p.value))
     sys.exit(1)
 
 #------------------------------------------------
@@ -2578,7 +2578,7 @@ def setup_regen(debug = 1, outputdir='.'):
     return parser
 
 
-if __name__ == '__main__':
+if __name__ == '__orio.main._':
     '''To regenerate the parse tables, invoke iparse.py with --regen as the last command-line
         option, for example:
             iparse.py somefile.sidl --regen
@@ -2599,19 +2599,19 @@ if __name__ == '__main__':
 
     for i in range(1, len(sys.argv)):
         fname = sys.argv[i]
-        debug("main.parsers.fparser: About to parse %s" % fname, level=1)
+        debug("orio.main.parsers.fparser: About to parse %s" % fname, level=1)
         f = open(fname,"r")
         s = f.read()
         f.close()
-        # debug("main.parsers.fparser: Contents of %s: %s" % (fname, s))
+        # debug("orio.main.parsers.fparser: Contents of %s: %s" % (fname, s))
         if s == '' or s.isspace(): sys.exit(0)
         if not s.endswith('\n'): 
-            warn('main.parser.fparser: file does not end with newline.')
+            warn('orio.main.parser.fparser: file does not end with newline.')
             s += '\n'
         
         lex.reset(fname)
         ast = parser.parse(s, lexer=lex.lexer, debug=0)
-        debug('main.parsers.fparser: Successfully parsed %s' % fname, level=1)
+        debug('orio.main.parsers.fparser: Successfully parsed %s' % fname, level=1)
 
         
         #printer = visitor.printer.Printer()

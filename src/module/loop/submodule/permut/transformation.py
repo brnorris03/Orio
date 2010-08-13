@@ -3,8 +3,8 @@
 #
 
 import sys
-import module.loop.ast, module.loop.ast_lib.forloop_lib
-from main.util.globals import *
+import orio.module.loop.ast, orio.module.loop.ast_lib.forloop_lib
+from orio.main.util.globals import *
 
 #-----------------------------------------
 
@@ -17,7 +17,7 @@ class Transformation:
         self.seq = seq
         self.stmt = stmt
 
-        self.flib = module.loop.ast_lib.forloop_lib.ForLoopLib()
+        self.flib = orio.module.loop.ast_lib.forloop_lib.ForLoopLib()
         
     #----------------------------------------------------------
 
@@ -27,7 +27,7 @@ class Transformation:
         inames = self.flib.getLoopIndexNames(stmt)
         for i in self.seq:
             if isinstance(i, str) and i not in inames:
-                err('module.loop.submodule.permut.transformation:  loop permutation with index name "%s" does not exist' % i)
+                err('orio.module.loop.submodule.permut.transformation:  loop permutation with index name "%s" does not exist' % i)
 
     #----------------------------------------------------------
 
@@ -58,23 +58,23 @@ class Transformation:
     def __collectPermutNests(self, stmt, pnests):
         '''To collect all permutable loop nests'''
 
-        if isinstance(stmt, module.loop.ast.ExpStmt):
+        if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             return []
 
-        elif isinstance(stmt, module.loop.ast.CompStmt):
+        elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             nests = []
             for s in stmt.stmts:
                 nests.extend(self.__collectPermutNests(s, pnests))
             return nests
 
-        elif isinstance(stmt, module.loop.ast.IfStmt):
+        elif isinstance(stmt, orio.module.loop.ast.IfStmt):
             nests = []
             nests.extend(self.__collectPermutNests(stmt.true_stmt, pnests))
             if stmt.false_stmt:
                 nests.extend(self.__collectPermutNests(stmt.false_stmt, pnests))
             return nests
 
-        elif isinstance(stmt, module.loop.ast.ForStmt):
+        elif isinstance(stmt, orio.module.loop.ast.ForStmt):
             nests = []
             nests.extend(self.__collectPermutNests(stmt.stmt, pnests))
             if len(nests) == 0:
@@ -88,11 +88,11 @@ class Transformation:
                         pnests.append(n)
                 return [[stmt]]
 
-        elif isinstance(stmt, module.loop.ast.TransformStmt):
+        elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
                         
-        elif isinstance(stmt, module.loop.ast.NewAST):
+        elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return []
 
         else:
@@ -172,7 +172,7 @@ class Transformation:
 
         # check if no permutation was done
         if not permut_executed:
-            err('module.loop.submodule.permut.transformation:  permutation cannot be executed. please check the sequence: %s' % self.seq)
+            err('orio.module.loop.submodule.permut.transformation:  permutation cannot be executed. please check the sequence: %s' % self.seq)
         
         # return the transformed statement
         return transformed_stmt

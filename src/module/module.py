@@ -1,22 +1,22 @@
 #
-# File: src/module/module.py
+# File: src/orio.module.module.py
 #
 
-from main.util.globals import *
+from orio.main.util.globals import *
 
 class Module:
-    '''The abstract class of Orio's code transformation module'''
+    '''The abstract class of Orio's code transformation module.'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='c'):
         '''
-        The class constructor used to instantiate a program transformation module.
+        The class constructor used to instantiate a program transformation orio.module.
         
         The following are the class attributes:
           perf_params         a table that maps each performance parameter to its value
-          module_body_code    the code inside the module body block
+          module_body_code    the code inside the orio.module.body block
           annot_body_code     the code contained in the annotation body block
-          line_no             the starting line position of the module code in the source code
+          line_no             the starting line position of the orio.module.code in the source code
           indent_size         an integer representing the number of whitespace characters that
                               preceed the leader annotation
           language            the language of the input code (C or Fortran)
@@ -36,7 +36,7 @@ class Module:
 
     def transform(self):
         '''
-        The main code transformation procedure. The returned value is a string value that
+        The orio.main.code transformation procedure. The returned value is a string value that
         represents the transformed/optimized code.
         '''
 

@@ -3,9 +3,8 @@
 #
 
 import re, sys
-import code_frag
-from util.globals import Globals
-from util.globals import *
+from orio.main.util.globals import *
+import orio.main.code_frag
 
 
 #----------------------------------------
@@ -107,7 +106,7 @@ class AnnParser:
 
                     # if no matching trailer annotations
                     if trailer_ipos == -1:
-                        err('main.ann_parser: %s: no matching trailer annotation exists' % code_line_no)
+                        err('orio.main.ann_parser: %s: no matching trailer annotation exists' % code_line_no)
 
                     # apply recursions on the annotation body and the trailing code sequence
                     body_code_seq = self.__markAnnCodeRegions(code_seq[i+1:trailer_ipos])
@@ -119,7 +118,7 @@ class AnnParser:
 
                 # if a trailer annotation
                 else:
-                    err('main.ann_parser: %s: no matching leader annotation exists' % code_line_no)
+                    err('orio.main.ann_parser: %s: no matching leader annotation exists' % code_line_no)
 
             # if a non-annotation
             else:
@@ -181,7 +180,7 @@ class AnnParser:
             skip = False
             # an unrecognized form of annotation
             if not self.__leader_ann_re.match(ann) and not self.__trailer_ann_re.match(ann):
-                warn('main.ann_parser warning:%s: unrecognized form of annotation, skipping...' % ann_line_no)
+                warn('orio.main.ann_parser warning:%s: unrecognized form of annotation, skipping...' % ann_line_no)
                 skip = True
                 #sys.exit(1)
                     
@@ -208,7 +207,7 @@ class AnnParser:
 
         # if not a match
         if not match_obj:
-            err('main.ann_parser: %s: not a leader annotation code' % line_no)
+            err('orio.main.ann_parser: %s: not a leader annotation code' % line_no)
 
         # create the module info
         mname = match_obj.group(1)
@@ -230,7 +229,7 @@ class AnnParser:
 
             # assert that the code list has exactly three elements
             if len(code) != 3:
-                err('main.ann_parser internal error:  the code list must have a length of three ')
+                err('orio.main.ann_parser internal error:  the code list must have a length of three ')
 
             # get all three elements
             leader, leader_line_no, leader_indent_size, leader_is_ann = code[0]
@@ -239,28 +238,28 @@ class AnnParser:
 
             # create a leader-annotation code-fragment
             mname, mname_line_no, mcode, mcode_line_no = self.__getModuleInfo(leader, leader_line_no)
-            leader_cfrag = code_frag.LeaderAnn(leader, leader_line_no, leader_indent_size,
+            leader_cfrag = orio.main.code_frag.LeaderAnn(leader, leader_line_no, leader_indent_size,
                                                mname, mname_line_no, mcode, mcode_line_no)
 
             # apply recursions on the annotation's body code sequence
             cfrags = map(self.__convertToCodeFragment, body_code_seq)
             
             # create a trailer-annotation code-fragment
-            trailer_cfrag = code_frag.TrailerAnn(trailer, trailer_line_no, trailer_indent_size)
+            trailer_cfrag = orio.main.code_frag.TrailerAnn(trailer, trailer_line_no, trailer_indent_size)
 
             # create a code-region code-fragment
-            return code_frag.AnnCodeRegion(leader_cfrag, cfrags, trailer_cfrag)
+            return orio.main.code_frag.AnnCodeRegion(leader_cfrag, cfrags, trailer_cfrag)
 
         # a non-annotation
         else:
 
             # create a non-annotation code fragment
             code, line_no, indent_size, is_ann = code
-            cfrag = code_frag.NonAnn(code, line_no, indent_size)
+            cfrag = orio.main.code_frag.NonAnn(code, line_no, indent_size)
 
             # check if the given code is an annotation
             if is_ann:
-                err('main.ann_parser internal error: %s: unexpected annotation' % line_no)
+                err('orio.main.ann_parser internal error: %s: unexpected annotation' % line_no)
             
             # return the code fragment
             return cfrag
