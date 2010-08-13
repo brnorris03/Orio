@@ -1,9 +1,9 @@
 import evolve
 from random import uniform, choice, randint
-import main.tuner.search.search
-class ChaosGA(main.tuner.search.search.Search):
+import orio.main.tuner.search.search
+class ChaosGA(orio.main.tuner.search.search.Search):
     def __init__(self, params):
-        main.tuner.search.search.Search.__init__(self, params)
+        orio.main.tuner.search.search.Search.__init__(self, params)
 
         # Method required by the search interface
     def searchBestCoord(self):

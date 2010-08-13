@@ -4,7 +4,7 @@
 
 import sys
 import ast
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #-------------------------------------------------
 
@@ -341,10 +341,10 @@ class CodeGen_F(CodeGen):
             if tnode.init:
                 s += self.generate(tnode.init, indent, extra_indent)
             if not tnode.test:
-                err('module.loop.codegen:  missing loop test expression. Fortran code generation requires a loop test expression.')
+                err('orio.module.loop.codegen:  missing loop test expression. Fortran code generation requires a loop test expression.')
                 
             if not tnode.iter:
-                err('module.loop.codegen:  missing loop increment expression. Fortran code generation requires a loop increment expression.')
+                err('orio.module.loop.codegen:  missing loop increment expression. Fortran code generation requires a loop increment expression.')
             s += ', '
             if not isinstance(tnode.test, ast.BinOpExp):
                 print 'internal error: cannot handle code generation for loop test expression'

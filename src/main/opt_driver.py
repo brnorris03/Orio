@@ -3,8 +3,8 @@
 #
 
 import sys, traceback, os
-import code_frag, dyn_loader, tuner.tuner
-from util.globals import *
+from orio.main.util.globals import *
+import orio.main.code_frag, orio.main.dyn_loader, orio.main.tuner.tuner
 
 #----------------------------------------------------------------
 
@@ -12,7 +12,7 @@ from util.globals import *
 PTUNE_NAME = 'PerfTuning'
 
 # the name of the module containing various code transformations
-TMOD_NAME = 'module'
+TMOD_NAME = 'orio.module'
 
 #----------------------------------------------------------------
 
@@ -23,8 +23,8 @@ class OptDriver:
         '''To instantiate an optimization driver'''
         self.specs_map = specs_map
         self.lang = language
-        self.ptuner = tuner.tuner.PerfTuner(specs_map, self)
-        self.dloader = dyn_loader.DynLoader()
+        self.ptuner = orio.main.tuner.tuner.PerfTuner(specs_map, self)
+        self.dloader = orio.main.dyn_loader.DynLoader()
 
     #-------------------------------------------------------------
 
@@ -40,14 +40,14 @@ class OptDriver:
         for cf in cfrags:
 
             # if a top-level annotation code region
-            if isinstance(cf, code_frag.AnnCodeRegion) and cf.leader_ann.mod_name == PTUNE_NAME:
+            if isinstance(cf, orio.main.code_frag.AnnCodeRegion) and cf.leader_ann.mod_name == PTUNE_NAME:
 
                 # increment the total number of performance-tuning annotations
                 num_ptune_anns += 1
 
                 # if the total number of top-level performance-tuning annotations is more than one
                 if num_ptune_anns > 1:
-                    err(('main.opt_driver: %s: the total number of performance-tuning annotations cannot ' +
+                    err(('orio.main.opt_driver: %s: the total number of performance-tuning annotations cannot ' +
                          'be more than one') % cf.leader_ann.mod_name_line_no)
 
                 # iterate over all nested code fragments
@@ -56,14 +56,14 @@ class OptDriver:
                     nested_cf = nested_cfrags.pop(0)
 
                     # if the nested code fragment is a performance-tuning annotation
-                    if (isinstance(nested_cf, code_frag.LeaderAnn) and
+                    if (isinstance(nested_cf, orio.main.code_frag.LeaderAnn) and
                         nested_cf.mod_name == PTUNE_NAME):
-                        err(('main.opt_driver: %s: performance-tuning annotations must be defined at ' +
+                        err(('orio.main.opt_driver: %s: performance-tuning annotations must be defined at ' +
                                 'top level and cannot be nested') % nested_cf.line_no)
                         sys.exit(1)
                                                 
                     # if the nested code fragment is an annotation code region
-                    if isinstance(nested_cf, code_frag.AnnCodeRegion):
+                    if isinstance(nested_cf, orio.main.code_frag.AnnCodeRegion):
                         nested_cfrags.append(nested_cf.leader_ann)
                         nested_cfrags.extend(nested_cf.cfrags)
                         nested_cfrags.append(nested_cf.trailer_ann)
@@ -74,11 +74,11 @@ class OptDriver:
         '''Apply optimization described in the annotations to the given code fragment'''
 
         # apply no optimizations to non-annotation code fragment
-        if isinstance(cfrag, code_frag.NonAnn):
+        if isinstance(cfrag, orio.main.code_frag.NonAnn):
             return [(cfrag.code, [])]
 
         # optimize annotated code region
-        elif isinstance(cfrag, code_frag.AnnCodeRegion):
+        elif isinstance(cfrag, orio.main.code_frag.AnnCodeRegion):
 
             # initiate empirical performance tuning
             if cfrag.leader_ann.mod_name == PTUNE_NAME:
@@ -96,7 +96,7 @@ class OptDriver:
 
                 # check the optimized body code sequence
                 if len(optimized_body_code_seq) != 1:
-                    err('main.opt_driver internal error:  the optimized annotation body code cannot ' +
+                    err('orio.main.opt_driver internal error:  the optimized annotation body code cannot ' +
                            'be multiple versions')
                     sys.exit(1)
 
@@ -106,7 +106,13 @@ class OptDriver:
                 # dynamically load the transformation module class
                 class_name = cfrag.leader_ann.mod_name
                 mod_name = '.'.join([TMOD_NAME, class_name.lower(), class_name.lower()])
-                mod_class = self.dloader.loadClass(mod_name, class_name)
+                
+                debug('about to load module.class %s.%s corresponding to annoation %s' % (mod_name,class_name,class_name))
+                try:
+                    mod_class = self.dloader.loadClass(mod_name, class_name)
+                except Exception, e:
+                    err('orio.main.opt_driver: %s: unable to load class %s.%s' % (cfrag.leader_ann.mod_name_line_no,mod_name,class_name))
+                    
                 debug("about to instantiate transformation class: %s.%s" %(mod_name,class_name))
 
                 # apply code transformations
@@ -118,10 +124,10 @@ class OptDriver:
                                               cfrag.leader_ann.indent_size,
                                               language=self.lang)
                 except Exception, e:
-                    err('main.opt_driver: %s: encountered an error when transforming annotation "%s"\n --> %s: %s' %
+                    err('orio.main.opt_driver: %s: encountered an error when transforming annotation "%s"\n --> %s: %s' %
                            (cfrag.leader_ann.mod_name_line_no, cfrag.leader_ann.mod_name,e.__class__.__name__, e))
                     
-                debug("successfully loaded transformation class: %s.%s" %(mod_name,class_name))
+                debug("successfully instantiated transformation class: %s.%s" %(mod_name,class_name))
                 
                 optimized_code = transformation.transform()
 
@@ -140,7 +146,7 @@ class OptDriver:
         
         # unexpected type of code fragment
         else:
-            err('main.opt_driver internal error:  unexpected type of code fragment')
+            err('orio.main.opt_driver internal error:  unexpected type of code fragment')
             sys.exit(1)
         
     #-------------------------------------------------------------

@@ -3,7 +3,7 @@
 #
 
 import sys, traceback, os
-from util.globals import *
+from orio.main.util.globals import *
 
 #----------------------------------------------
 
@@ -32,7 +32,7 @@ class DynLoader:
             for c in components[1:]:
                 module = getattr(module, c)
         except Exception, e:
-            err('main.dyn_loader: failed to load module "%s"\n --> %s: %s' % (mod_name,e.__class__.__name__, e))
+            err('orio.main.dyn_loader: failed to load module "%s"\n --> %s: %s' % (mod_name,e.__class__.__name__, e))
 
         # remember the currently loaded module
         self.__loaded_modules[key_name] = module
@@ -57,7 +57,7 @@ class DynLoader:
         try: 
             mod_class = getattr(module, class_name)
         except:
-            err('main.dyn_loader:  no class "%s" defined in "%s"' % (class_name, mod_name))
+            err('orio.main.dyn_loader:  no class "%s" defined in "%s"' % (class_name, mod_name))
 
         # remember the currently loaded class
         self.__loaded_classes[key_name] = mod_class

@@ -4,7 +4,7 @@
 
 import re, sys
 from tool.ZestyParser import *
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #--------------------------------------------------------------------------------
 
@@ -196,7 +196,7 @@ class TSpecParser:
         try:
             stmt_seq = p.scan(token)
         except ParseError, e:
-            err('main.tspec.parser: %s' % e)
+            err('orio.main.tspec.parser: %s' % e)
 
         # return the statement sequence
         return stmt_seq

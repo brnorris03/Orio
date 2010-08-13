@@ -3,8 +3,8 @@
 #
 
 import sys
-import module.loop.ast
-from main.util.globals import *
+import orio.module.loop.ast
+from orio.main.util.globals import *
 
 #-----------------------------------------------------------
  
@@ -20,57 +20,57 @@ class CommonLib:
     def replaceIdent(self, tnode, iname_from, iname_to):
         '''Replace the names of all matching identifiers with the given name'''
 
-        if isinstance(tnode, module.loop.ast.NumLitExp):
+        if isinstance(tnode, orio.module.loop.ast.NumLitExp):
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.StringLitExp):
+        elif isinstance(tnode, orio.module.loop.ast.StringLitExp):
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.IdentExp):
+        elif isinstance(tnode, orio.module.loop.ast.IdentExp):
             if tnode.name == iname_from:
                 tnode.name = iname_to
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.ArrayRefExp):
+        elif isinstance(tnode, orio.module.loop.ast.ArrayRefExp):
             tnode.exp = self.replaceIdent(tnode.exp, iname_from, iname_to)
             tnode.sub_exp = self.replaceIdent(tnode.sub_exp, iname_from, iname_to)
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.FunCallExp):
+        elif isinstance(tnode, orio.module.loop.ast.FunCallExp):
             tnode.exp = self.replaceIdent(tnode.exp, iname_from, iname_to)
             tnode.args = [self.replaceIdent(a, iname_from, iname_to) for a in tnode.args]
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.UnaryExp):
+        elif isinstance(tnode, orio.module.loop.ast.UnaryExp):
             tnode.exp = self.replaceIdent(tnode.exp, iname_from, iname_to)
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.BinOpExp):
+        elif isinstance(tnode, orio.module.loop.ast.BinOpExp):
             tnode.lhs = self.replaceIdent(tnode.lhs, iname_from, iname_to)
             tnode.rhs = self.replaceIdent(tnode.rhs, iname_from, iname_to)
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.ParenthExp):
+        elif isinstance(tnode, orio.module.loop.ast.ParenthExp):
             tnode.exp = self.replaceIdent(tnode.exp, iname_from, iname_to)
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.ExpStmt):
+        elif isinstance(tnode, orio.module.loop.ast.ExpStmt):
             if tnode.exp:
                 tnode.exp = self.replaceIdent(tnode.exp, iname_from, iname_to)
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.CompStmt):
+        elif isinstance(tnode, orio.module.loop.ast.CompStmt):
             tnode.stmts = [self.replaceIdent(s, iname_from, iname_to) for s in tnode.stmts]
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.IfStmt):
+        elif isinstance(tnode, orio.module.loop.ast.IfStmt):
             tnode.test = self.replaceIdent(tnode.test, iname_from, iname_to)
             tnode.true_stmt = self.replaceIdent(tnode.true_stmt, iname_from, iname_to)
             if tnode.false_stmt:
                 tnode.false_stmt = self.replaceIdent(tnode.false_stmt, iname_from, iname_to)
             return tnode
             
-        elif isinstance(tnode, module.loop.ast.ForStmt):
+        elif isinstance(tnode, orio.module.loop.ast.ForStmt):
             if tnode.init:
                 tnode.init = self.replaceIdent(tnode.init, iname_from, iname_to)
             if tnode.test:
@@ -80,14 +80,14 @@ class CommonLib:
             tnode.stmt = self.replaceIdent(tnode.stmt, iname_from, iname_to)
             return tnode
 
-        elif isinstance(tnode, module.loop.ast.TransformStmt):
-            err('module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
+        elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
+            err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
         
-        elif isinstance(tnode, module.loop.ast.NewAST):
+        elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return tnode
         
         else:
-            err('module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
+            err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
         
     #-------------------------------------------------------
 
@@ -99,38 +99,38 @@ class CommonLib:
         if exp == None:
             return False
         
-        if isinstance(exp, module.loop.ast.NumLitExp):
+        if isinstance(exp, orio.module.loop.ast.NumLitExp):
             return False
         
-        elif isinstance(exp, module.loop.ast.StringLitExp):
+        elif isinstance(exp, orio.module.loop.ast.StringLitExp):
             return False
         
-        elif isinstance(exp, module.loop.ast.IdentExp):
+        elif isinstance(exp, orio.module.loop.ast.IdentExp):
             return exp.name == iname
         
-        elif isinstance(exp, module.loop.ast.ArrayRefExp):
+        elif isinstance(exp, orio.module.loop.ast.ArrayRefExp):
             return self.containIdentName(exp.exp, iname) or self.containIdentName(exp.sub_exp, iname)
         
-        elif isinstance(exp, module.loop.ast.FunCallExp):
+        elif isinstance(exp, orio.module.loop.ast.FunCallExp):
             has_match = reduce(lambda x,y: x or y,
                                [self.containIdentName(a, iname) for a in exp.args],
                                False)
             return self.containIdentName(exp.exp, iname) or has_match
         
-        elif isinstance(exp, module.loop.ast.UnaryExp):
+        elif isinstance(exp, orio.module.loop.ast.UnaryExp):
             return self.containIdentName(exp.exp, iname)
         
-        elif isinstance(exp, module.loop.ast.BinOpExp):
+        elif isinstance(exp, orio.module.loop.ast.BinOpExp):
             return self.containIdentName(exp.lhs, iname) or self.containIdentName(exp.rhs, iname)
         
-        elif isinstance(exp, module.loop.ast.ParenthExp):
+        elif isinstance(exp, orio.module.loop.ast.ParenthExp):
             return self.containIdentName(exp.exp, iname)
         
-        elif isinstance(exp, module.loop.ast.NewAST):
+        elif isinstance(exp, orio.module.loop.ast.NewAST):
             return False
         
         else:
-            err('module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % exp.__class__.__name__)
+            err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % exp.__class__.__name__)
             
     #-------------------------------------------------------
 
@@ -140,38 +140,38 @@ class CommonLib:
         or a number or a string.
         '''
         
-        if isinstance(exp, module.loop.ast.NumLitExp):
+        if isinstance(exp, orio.module.loop.ast.NumLitExp):
             return False
         
         # a rare case
-        elif isinstance(exp, module.loop.ast.StringLitExp):
+        elif isinstance(exp, orio.module.loop.ast.StringLitExp):
             return False
         
-        elif isinstance(exp, module.loop.ast.IdentExp):
+        elif isinstance(exp, orio.module.loop.ast.IdentExp):
             return False
         
         # a rare case
-        elif isinstance(exp, module.loop.ast.ArrayRefExp):
+        elif isinstance(exp, orio.module.loop.ast.ArrayRefExp):
             return True
         
-        elif isinstance(exp, module.loop.ast.FunCallExp):
+        elif isinstance(exp, orio.module.loop.ast.FunCallExp):
             return True
         
-        elif isinstance(exp, module.loop.ast.UnaryExp):
+        elif isinstance(exp, orio.module.loop.ast.UnaryExp):
             return self.isComplexExp(exp.exp)
         
-        elif isinstance(exp, module.loop.ast.BinOpExp):
+        elif isinstance(exp, orio.module.loop.ast.BinOpExp):
             return True
         
-        elif isinstance(exp, module.loop.ast.ParenthExp):
+        elif isinstance(exp, orio.module.loop.ast.ParenthExp):
             return self.isComplexExp(exp.exp)
         
         # a rare case
-        elif isinstance(exp, module.loop.ast.NewAST):
+        elif isinstance(exp, orio.module.loop.ast.NewAST):
             return True
         
         else:
-            err('module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
+            err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
             
             
             

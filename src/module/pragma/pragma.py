@@ -1,20 +1,20 @@
 #
-# The transformation module for generating a pragma directive
+# The transformation orio.module.for generating a pragma directive
 #
 
 import sys
-import module.module
+import orio.module.module
 
 #-----------------------------------------
 
-class Pragma(module.module.Module):
-    '''Pragma transformation module'''
+class Pragma(orio.module.module.Module):
+    '''Pragma transformation module.'''
 
     def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
-        '''To instantiate a pragma transformation module'''
+        '''To instantiate a pragma transformation module.'''
         
-        module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
+        orio.module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       line_no, indent_size, language)
 
     #---------------------------------------------------------------------
@@ -33,11 +33,11 @@ class Pragma(module.module.Module):
     def transform(self):
         '''To generate a pragma directive'''
 
-        # evaluate the module body code to get the pragma string
+        # evaluate the orio.module.body code to get the pragma string
         try:
             pragma_str = eval(self.module_body_code, self.perf_params)
         except Exception, e:
-            print ('error:%s: failed to evaluate the Pragma module body code expression: "%s"' %
+            print ('error:%s: failed to evaluate the Pragma orio.module.body code expression: "%s"' %
                    self.module_body_code)
             print ' --> %s: %s' % (e.__class__.__name__, e)
             sys.exit(1)

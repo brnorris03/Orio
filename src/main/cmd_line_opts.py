@@ -33,7 +33,7 @@ Options:
 environment variables: 
   ORIO_FLAGS                     the string value is used to augment the list of Orio command-lin
                                  options
-  ORIO_DEBUG                     when set, print debugging information (mainly for developer use)
+  ORIO_DEBUG                     when set, print debugging information (orio.main.y for developer use)
                                  
 For more details, please refer to the documentation at https://trac.mcs.anl.gov/projects/performance/wiki/OrioUserGuide
 ''' % os.path.basename(sys.argv[0])
@@ -98,7 +98,7 @@ class CmdParser:
             else:
                 externalargs.append(arg)
                 index += 1
-        #debug('main.cmd_line_opts: new args: %s' % str(externalargs))
+        #debug('orio.main.cmd_line_opts: new args: %s' % str(externalargs))
 
         # check the ORIO_FLAGS env. variable for more options
         if 'ORIO_FLAGS' in os.environ.keys():
@@ -153,7 +153,7 @@ class CmdParser:
                 f = open(src_filename, 'r')
                 f.close()
             except:
-                sys.stderr.write('main.cmd_line_opts: cannot open source file for reading: %s' % src_filename)
+                sys.stderr.write('orio.main.cmd_line_opts: cannot open source file for reading: %s' % src_filename)
                 sys.exit(1)
 
         if 'spec_filename' in cmdline.keys(): spec_filename = cmdline['spec_filename']
@@ -164,7 +164,7 @@ class CmdParser:
                 f = open(spec_filename, 'r')
                 f.close()
             except:
-                sys.stderr.write('main.cmd_line_opts: cannot open file for reading: %s' % spec_filename)
+                sys.stderr.write('orio.main.cmd_line_opts: cannot open file for reading: %s' % spec_filename)
                 sys.exit(1)
 
         # create the output filenames

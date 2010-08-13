@@ -3,7 +3,7 @@
 #
 
 import os, re, sys
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #-----------------------------------------------------
 

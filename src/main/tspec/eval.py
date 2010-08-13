@@ -3,7 +3,7 @@
 #
 
 import StringIO, sys, tokenize
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #--------------------------------------------------------------------------------
 
@@ -72,14 +72,14 @@ class TSpecEvaluator:
             try:
                 eval(vname, env)
             except:
-                err('main.tspec.eval: %s: invalid reference: "%s"' % (rhs_line_no, vname))
+                err('orio.main.tspec.eval: %s: invalid reference: "%s"' % (rhs_line_no, vname))
                 sys.exit(1)
 
         # evaluate the RHS expression
         try:
             rhs_val = eval(rhs, env)
         except Exception, e:
-            err('main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
+            err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
 
         # return the evaluated statement
         return (keyw, line_no, (id_name, id_line_no), (rhs_val, rhs_line_no))
@@ -110,7 +110,7 @@ class TSpecEvaluator:
         type_names = []
         for t, l in type_seq:
             if t in type_names:
-                err('main.tspec.eval: %s: repeated type name: "%s"' % (l, t))
+                err('orio.main.tspec.eval: %s: repeated type name: "%s"' % (l, t))
             type_names.append(t)
 
         # substitute all environment variables in each dimension expression
@@ -158,13 +158,13 @@ class TSpecEvaluator:
             try:
                 eval(vname, env)
             except:
-                err('main.tspec.eval: %s: invalid reference: "%s"' % (rhs_line_no, vname))
+                err('orio.main.tspec.eval: %s: invalid reference: "%s"' % (rhs_line_no, vname))
 
         # evaluate the RHS expression
         try:
             rhs_val = eval(rhs, env)
         except Exception, e:
-            err('main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
+            err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
 
         # update the environment
         env[id_name] = rhs_val
@@ -185,24 +185,24 @@ class TSpecEvaluator:
             try:
                 eval(vname, env)
             except:
-                err('main.tspec.eval: %s: invalid reference: "%s"' % (rhs_line_no, vname))
+                err('orio.main.tspec.eval: %s: invalid reference: "%s"' % (rhs_line_no, vname))
 
         # evaluate the RHS expression
         try:
             rhs_val = eval(rhs, env)
         except Exception, e:
-            err('main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
+            err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
 
         # check the RHS value
         if is_range:
             if not isinstance(rhs_val, list) and not isinstance(rhs_val, tuple):
-                err('main.tspec.eval: %s: RHS must be a list/tuple' % rhs_line_no)
+                err('orio.main.tspec.eval: %s: RHS must be a list/tuple' % rhs_line_no)
             if len(rhs_val) == 0:
-                err('main.tspec.eval: %s: RHS must not be an empty list' % rhs_line_no)
+                err('orio.main.tspec.eval: %s: RHS must not be an empty list' % rhs_line_no)
             etype = type(rhs_val[0])
             for e in rhs_val:
                 if not isinstance(e, etype):
-                    err('main.tspec.eval: %s: RHS must be a list of equal-typed elements' % rhs_line_no)
+                    err('orio.main.tspec.eval: %s: RHS must be a list of equal-typed elements' % rhs_line_no)
         
         # return the evaluated statement
         return (keyw, line_no, (id_name, id_line_no), is_range, (rhs_val, rhs_line_no))
@@ -242,7 +242,7 @@ class TSpecEvaluator:
 
             # check for any predefined name
             if id_name in name_space:
-                err('main.tspec.eval: %s: name "%s" already defined' % (id_line_no, id_name))
+                err('orio.main.tspec.eval: %s: name "%s" already defined' % (id_line_no, id_name))
 
             # first update the name space before evaluation (if necessary)
             if keyw in ('def', 'spec'):
@@ -264,7 +264,7 @@ class TSpecEvaluator:
             elif keyw == 'spec':
                 e = self.__evalSpec(stmt, env, name_space)
             else:
-                err('main.tspec.eval internal error: %s: unrecognized TSpec statement' % line_no)
+                err('orio.main.tspec.eval internal error: %s: unrecognized TSpec statement' % line_no)
 
             # update the name_space
             name_space[id_name] = keyw
@@ -283,7 +283,7 @@ class TSpecEvaluator:
 
         # unexpected input
         else:
-            err('main.tspec.eval internal error:  unexpected type of TSpec statement')
+            err('orio.main.tspec.eval internal error:  unexpected type of TSpec statement')
             
     #----------------------------------------------------------------------------
 

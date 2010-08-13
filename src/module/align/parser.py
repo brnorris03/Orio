@@ -4,7 +4,7 @@
 
 import sys
 import variable, tool.ply.lex, tool.ply.yacc
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #------------------------------------------------
 
@@ -52,7 +52,7 @@ t_ICONST = r'\d+'
 
 # syntactical error
 def t_error(t):
-    err('module.align.parser:%s: syntactical error: "%s"' % ((t.lineno + __start_line_no - 1),
+    err('orio.module.align.parser:%s: syntactical error: "%s"' % ((t.lineno + __start_line_no - 1),
                                                  t.value[0]))
     
 #------------------------------------------------
@@ -111,7 +111,7 @@ def p_index_2(p):
 
 # grammatical error
 def p_error(p):
-    err('module.align.parser: %s: grammatical error: "%s"' % ((p.lineno + __start_line_no - 1), p.value))
+    err('orio.module.align.parser: %s: grammatical error: "%s"' % ((p.lineno + __start_line_no - 1), p.value))
 
 #------------------------------------------------
 

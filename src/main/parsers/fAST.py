@@ -2,12 +2,12 @@
 # The Fortran-specific classes for the abstract syntax tree (ASTNode)
 
 import os
-from main.parsers.AST import *
+from orio.main.parsers.AST import *
 
 class MainProgram(ASTNode):
 
     def __init__(self, line_no='', spec_part=None, internal_part=None):
-        '''Create a main program node'''
+        '''Create a orio.main.program node'''
         ASTNode.__init__(self,line_no)
         self.specificationPart = spec_part
         self.internalSubprogramPart = internal_part

@@ -4,7 +4,7 @@
 
 import re, sys
 from tool.ZestyParser import *
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #--------------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ p_program = ((TokenSeries(p_assign, skip=SPACE,
 #--------------------------------------------------------------------------------
 
 class Parser:
-    '''The parser of the PolySyn module'''
+    '''The parser of the PolySyn module.'''
 
     def __init__(self):
         '''To instantiate a parser instance'''
@@ -83,7 +83,7 @@ class Parser:
         try:
             assigns = p.scan(p_program)
         except ParseError, e:
-            err('module.polysyn.parser:  %s' % e)
+            err('orio.module.polysyn.parser:  %s' % e)
 
         # return the assignment sequence
         return assigns

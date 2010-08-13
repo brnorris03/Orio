@@ -3,20 +3,20 @@
 #
 
 import re, os, sys
-import cloop_parser, macro_expander, module.module, parser, poly_transformation, profiler
+import cloop_parser, macro_expander, orio.module.module, parser, poly_transformation, profiler
 import syn_transformation, transf_info
 
 
 #-----------------------------------------
 
-class PolySyn(module.module.Module):
-    '''Polyhedral-syntactic combined transformation module'''
+class PolySyn(orio.module.module.Module):
+    '''Polyhedral-syntactic combined transformation module.'''
 
     def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
-        '''To instantiate a polyhedral-syntactic combined transformation module'''
+        '''To instantiate a polyhedral-syntactic combined transformation module.'''
 
-        module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
+        orio.module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       line_no, indent_size, language)
 
     #---------------------------------------------------------------------
@@ -58,7 +58,7 @@ class PolySyn(module.module.Module):
         # insert polysyn tags
         self.annot_body_code = self.__insertPolysynTags(self.annot_body_code)
 
-        # parse the module body code
+        # parse the orio.module.body code
         assigns = parser.Parser().parse(self.module_body_code, self.line_no)
 
         # extract transformation information from the specified assignments
