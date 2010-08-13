@@ -20,7 +20,7 @@ sys.path.extend(dirs)
 
 
 # dispatch to Orio's main
-import orio.main.main
-orio.main.main.start(sys.argv, orio.main.main.C_CPP)
+import orio.main.orio_main
+orio.main.orio_main.start(sys.argv, orio.main.orio_main.C_CPP)
 
 

@@ -3,7 +3,7 @@
 #
 
 import sys
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #---------------------------------------------------------------------
 
@@ -48,11 +48,11 @@ class ArgInfo:
         
         # check for unknown SpMV option
         if self.simd not in (self.SIMD_NONE, self.SIMD_GCC, self.SIMD_XLC, self.SIMD_SSE):
-            err('module.spmv.arg_info: SpMV: unrecognized SIMD type. got: "%s"' % self.simd)
+            err('orio.module.spmv.arg_info: SpMV: unrecognized SIMD type. got: "%s"' % self.simd)
 
         # check for unknown block-structure option
         if self.block_structure not in (self.BSTRUC_NONE, self.BSTRUC_INODE, self.BSTRUC_BCSR):
-            err('module.spmv.arg_info: SpMV: unrecognized block-structure type. got: "%s"' % self.block_structure)
+            err('orio.module.spmv.arg_info: SpMV: unrecognized block-structure type. got: "%s"' % self.block_structure)
 
         # check for validity of the simdization requirement
         if self.simd != self.SIMD_NONE and self.in_unroll_factor % 2 != 0:
@@ -114,7 +114,7 @@ class ArgInfoGen:
         vnames = {}
         for _, (vname, line_no), (_, _) in args:
             if vname in vnames:
-                err('module.spmv.arg_info: SpMV:%s: argument name "%s" already defined' % (line_no, vname))
+                err('orio.module.spmv.arg_info: SpMV:%s: argument name "%s" already defined' % (line_no, vname))
             vnames[vname] = None
                                                                     
         # iterate over each argument
@@ -156,7 +156,7 @@ class ArgInfoGen:
 
             # unrecognized argument names
             else:
-                err('module.spmv.arg_info: SpMV:%s: unrecognized argument name: "%s"' % (vname_line_no, vname))
+                err('orio.module.spmv.arg_info: SpMV:%s: unrecognized argument name: "%s"' % (vname_line_no, vname))
 
         # evaluate the unroll factor values
         for name, rhs in (('unroll factor of the outer loop', out_unroll_factor),
@@ -165,9 +165,9 @@ class ArgInfoGen:
             try:
                 rhs_val = eval(rhs, perf_params)
             except Exception, e:
-                err('module.spmv.arg_info: SpMV: failed to evaluate the RHS expression: %s\n --> %s: %s' % (rhs,e.__class__.__name__, e))
+                err('orio.module.spmv.arg_info: SpMV: failed to evaluate the RHS expression: %s\n --> %s: %s' % (rhs,e.__class__.__name__, e))
             if not isinstance(rhs_val, int) or rhs_val <= 0:
-                err('module.spmv.arg_info: SpMV: %s must be a positive integer. got: %s' % (name, rhs_val))
+                err('orio.module.spmv.arg_info: SpMV: %s must be a positive integer. got: %s' % (name, rhs_val))
         out_unroll_factor = eval(out_unroll_factor, perf_params)
         in_unroll_factor = eval(in_unroll_factor, perf_params)
         num_threads = eval(num_threads, perf_params)
@@ -178,9 +178,9 @@ class ArgInfoGen:
             try:
                 rhs_val = eval(rhs, perf_params)
             except Exception, e:
-                err('module.spmv.arg_info: SpMV: failed to evaluate the RHS expression: %s\n --> %s: %s' % (rhs,e.__class__.__name__, e))
+                err('orio.module.spmv.arg_info: SpMV: failed to evaluate the RHS expression: %s\n --> %s: %s' % (rhs,e.__class__.__name__, e))
             if not isinstance(rhs_val, str):
-                err('module.spmv.arg_info: SpMV: value of %s must be a string. got: %s' % (name, rhs_val))
+                err('orio.module.spmv.arg_info: SpMV: value of %s must be a string. got: %s' % (name, rhs_val))
         simd = eval(simd, perf_params)
         block_structure = eval(block_structure, perf_params)
 

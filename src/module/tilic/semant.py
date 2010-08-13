@@ -4,7 +4,7 @@
 
 import sys
 import ast, ast_util
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #---------------------------------------------------------
 
@@ -83,7 +83,7 @@ class SemanticChecker:
                 self.__checkStmt(s, oloop_inames)
             for s in stmt.stmts:
                 if isinstance(s, ast.CompStmt):
-                    err('module.tilic.semant: Tilic: a compound statement cannot be directly nested in another compound statement')
+                    err('orio.module.tilic.semant: Tilic: a compound statement cannot be directly nested in another compound statement')
         
         elif isinstance(stmt, ast.IfStmt):
             self.__checkStmt(stmt.true_stmt, oloop_inames)
@@ -93,7 +93,7 @@ class SemanticChecker:
         elif isinstance(stmt, ast.ForStmt):
             (id, lb, ub, st, bod) = self.ast_util.getForLoopInfo(stmt)
             if id.name in oloop_inames:
-                err('module.tilic.semant: Tilic: illegal loop nest where an inner loop has the same iterator name as the outer loop')
+                err('orio.module.tilic.semant: Tilic: illegal loop nest where an inner loop has the same iterator name as the outer loop')
             self.__checkStmt(stmt.stmt, oloop_inames + [id.name])
             
         else:

@@ -3,13 +3,13 @@
 #
 
 import sys
-import ast, main.dyn_loader, module.loop.codegen
-from main.util.globals import *
+import ast, main.dyn_loader, orio.module.loop.codegen
+from orio.main.util.globals import *
 
 #-----------------------------------------
 
 # the name of the transformation submodule
-TSUBMOD_NAME = 'module.loop.submodule'
+TSUBMOD_NAME = 'orio.module.loop.submodule'
 
 #-----------------------------------------
 

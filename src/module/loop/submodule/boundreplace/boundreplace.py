@@ -3,18 +3,18 @@
 #
 
 import sys
-import module.loop.submodule.submodule, transformation
-from main.util.globals import *
+import orio.module.loop.submodule.submodule, transformation
+from orio.main.util.globals import *
 
 #---------------------------------------------------------------------
 
-class BoundReplace(module.loop.submodule.submodule.SubModule):
-    '''The bound replacement transformation submodule'''
+class BoundReplace(orio.module.loop.submodule.submodule.SubModule):
+    '''The bound replacement transformation submodule.'''
     
     def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
-        '''To instantiate a bound replacement transformation submodule'''
+        '''To instantiate a bound replacement transformation submodule.'''
         
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
+        orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
     #-----------------------------------------------------------------
     
@@ -36,7 +36,7 @@ class BoundReplace(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                err('module.loop.boundreplace.boundreplace: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
+                err('orio.module.loop.boundreplace.boundreplace: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
                 
             # prefix name for lower bound
             if aname == LPREFIX:
@@ -48,7 +48,7 @@ class BoundReplace(module.loop.submodule.submodule.SubModule):
 
             # unknown argument name
             else:
-                err('module.loop.boundreplace.boundreplace: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
+                err('orio.module.loop.boundreplace.boundreplace: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check semantics of the transformation arguments
         lprefix, uprefix = self.checkTransfArgs(lprefix, uprefix)

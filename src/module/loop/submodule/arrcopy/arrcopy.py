@@ -3,18 +3,18 @@
 #
 
 import sys
-import module.loop.submodule.submodule, transformation
-from main.util.globals import *
+import orio.module.loop.submodule.submodule, transformation
+from orio.main.util.globals import *
 
 #---------------------------------------------------------------------
 
-class ArrCopy(module.loop.submodule.submodule.SubModule):
-    '''The array copy transformation submodule'''
+class ArrCopy(orio.module.loop.submodule.submodule.SubModule):
+    '''The array copy transformation submodule.'''
     
     def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
-        '''To instantiate an array copy transformation submodule'''
+        '''To instantiate an array copy transformation submodule.'''
         
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
+        orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
     #-----------------------------------------------------------------
     
@@ -40,7 +40,7 @@ class ArrCopy(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                err('module.loop.submodule.arrcopy.arrcopy: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
+                err('orio.module.loop.submodule.arrcopy.arrcopy: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
 
             # array reference
             if aname == AREF:
@@ -60,13 +60,13 @@ class ArrCopy(module.loop.submodule.submodule.SubModule):
 
             # unknown argument name
             else:
-                err('module.loop.submodule.arrcopy.arrcopy: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
+                err('orio.module.loop.submodule.arrcopy.arrcopy: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check for undefined transformation arguments
         if aref == None:
-            err('module.loop.submodule.arrcopy.arrcopy: %s: missing array reference argument' % self.__class__.__name__)
+            err('orio.module.loop.submodule.arrcopy.arrcopy: %s: missing array reference argument' % self.__class__.__name__)
         if dimsizes == None:
-            err('module.loop.submodule.arrcopy.arrcopy: %s: missing array dimension sizes argument' % self.__class__.__name__)
+            err('orio.module.loop.submodule.arrcopy.arrcopy: %s: missing array dimension sizes argument' % self.__class__.__name__)
 
         # check semantics of the transformation arguments
         (aref, suffix, dtype, dimsizes) = self.checkTransfArgs(aref, suffix, dtype, dimsizes)
@@ -82,21 +82,21 @@ class ArrCopy(module.loop.submodule.submodule.SubModule):
         # evaluate the array reference
         rhs, line_no = aref
         if not isinstance(rhs, str):
-            err('module.loop.submodule.arrcopy.arrcopy: %s: array reference argument must be a string: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.arrcopy.arrcopy: %s: array reference argument must be a string: %s' % (line_no, rhs))
         aref = rhs
 
         # evaluate the suffix of the array buffer name
         if suffix != None:
             rhs, line_no = suffix
             if rhs != None and not isinstance(rhs, str):
-                err('module.loop.submodule.arrcopy.arrcopy: %s: suffix argument must be a string: %s' % (line_no, rhs))
+                err('orio.module.loop.submodule.arrcopy.arrcopy: %s: suffix argument must be a string: %s' % (line_no, rhs))
             suffix = rhs
 
         # evaluate the data type of the array elements
         if dtype != None:
             rhs, line_no = dtype
             if rhs != None and not isinstance(rhs, str):
-                err('module.loop.submodule.arrcopy.arrcopy: %s: data type argument must be a string: %s' % (line_no, rhs))
+                err('orio.module.loop.submodule.arrcopy.arrcopy: %s: data type argument must be a string: %s' % (line_no, rhs))
             dtype = rhs
 
         # evaluate the data type of the array elements

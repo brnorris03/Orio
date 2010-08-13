@@ -4,7 +4,7 @@
 
 import sys
 import ast, ast_util
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #---------------------------------------------------------
 
@@ -105,7 +105,7 @@ class SemanticAnalyzer:
                        'name as the outer loop')
                 sys.exit(1)
             if id.name not in self.iter_names:
-                err('module.ortil.semant: OrTil: missing tiled-loop iterator name: "%s"' % id.name)
+                err('orio.module.ortil.semant: OrTil: missing tiled-loop iterator name: "%s"' % id.name)
             self.__checkStmt(stmt.stmt, oloop_inames + [id.name])
             
         else:

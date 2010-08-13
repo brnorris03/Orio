@@ -4,7 +4,7 @@
 
 import sys
 import ast, ast_util
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #-------------------------------------------------
 
@@ -132,7 +132,7 @@ class Transformation:
         
         # string expression
         elif isinstance(exp, ast.StringLitExp):
-            err('module.ortil.transformation: OrTil: invalid string expression found in loop bound expression: %s' % exp)
+            err('orio.module.ortil.transformation: OrTil: invalid string expression found in loop bound expression: %s' % exp)
         
         # identifier expression
         elif isinstance(exp, ast.IdentExp):
@@ -288,18 +288,18 @@ class Transformation:
             # check if this loop runs only once
             is_one_time_loop = str(lb_exp) == str(ub_exp)
 
-            # generate booleans to indicate the needs of prolog, epilog, and main tiled loop
+            # generate booleans to indicate the needs of prolog, epilog, and orio.main.tiled loop
             if is_one_time_loop:
-                need_main_tiled_loop = False
+                need_orio.main.tiled_loop = False
                 need_prolog = False
                 need_epilog = False
             else:
-                need_main_tiled_loop = True
+                need_orio.main.tiled_loop = True
                 need_prolog = len(lb_inames) > 0
                 need_epilog = len(ub_inames) > 0
 
             # generate new variable names for both the new lower and upper loop bounds
-            if need_main_tiled_loop:
+            if need_orio.main.tiled_loop:
                 lb_name, ub_name = self.__getLoopBoundNames()
                 int_vars.extend([lb_name, ub_name])
             else:
@@ -307,11 +307,11 @@ class Transformation:
                 ub_name = ''
 
             # append information about the new loop bounds
-            lbinfo = (lb_name, ub_name, need_prolog, need_epilog, need_main_tiled_loop)
+            lbinfo = (lb_name, ub_name, need_prolog, need_epilog, need_orio.main.tiled_loop)
             lbound_info_seq.append(lbinfo)
 
             # skip generating loop-bound scanning code (if it's a one-time loop)
-            if not need_main_tiled_loop:
+            if not need_orio.main.tiled_loop:
                 continue
 
             # determine the value of the new lower loop bound
@@ -391,18 +391,18 @@ class Transformation:
             # check if this loop runs only once
             is_one_time_loop = str(lb_exp) == str(ub_exp)
 
-            # generate booleans to indicate the needs of prolog, epilog, and main tiled loop
+            # generate booleans to indicate the needs of prolog, epilog, and orio.main.tiled loop
             if is_one_time_loop:
-                need_main_tiled_loop = False
+                need_orio.main.tiled_loop = False
                 need_prolog = False
                 need_epilog = False
             else:
-                need_main_tiled_loop = True
+                need_orio.main.tiled_loop = True
                 need_prolog = len(lb_inames) > 0
                 need_epilog = len(ub_inames) > 0
 
             # generate new variable names for both the new lower and upper loop bounds
-            if need_main_tiled_loop:
+            if need_orio.main.tiled_loop:
                 lb_name, ub_name = self.__getLoopBoundNames()
                 int_vars.extend([lb_name, ub_name])
             else:
@@ -410,11 +410,11 @@ class Transformation:
                 ub_name = ''
 
             # append information about the new loop bounds
-            lbinfo = (lb_name, ub_name, need_prolog, need_epilog, need_main_tiled_loop)
+            lbinfo = (lb_name, ub_name, need_prolog, need_epilog, need_orio.main.tiled_loop)
             lbound_info_seq.append(lbinfo)
 
             # skip generating loop-bound scanning code (if it's a one-time loop)
-            if not need_main_tiled_loop:
+            if not need_orio.main.tiled_loop:
                 continue
 
             # generate loop-bound scanning code for the prolog
@@ -648,11 +648,11 @@ class Transformation:
             rect_lb_exp = this_lb_exp
             rect_ub_exp = this_ub_exp
             if lbound_info:
-                lb_name, ub_name, need_prolog, need_epilog, need_main_tiled_loop = lbound_info
+                lb_name, ub_name, need_prolog, need_epilog, need_orio.main.tiled_loop = lbound_info
                 rect_lb_exp = ast.IdentExp(lb_name)
                 rect_ub_exp = ast.IdentExp(ub_name)
-                if not need_main_tiled_loop:
-                    print ('internal error:OrTil: unexpected case where generation of the main ' +
+                if not need_orio.main.tiled_loop:
+                    print ('internal error:OrTil: unexpected case where generation of the orio.main.' +
                            'rectangular tiled loop is needed')
                     sys.exit(1)
 
@@ -682,7 +682,7 @@ class Transformation:
                 else:
                     res_stmts.append((False, [prolog_code]))
                 
-            # start generating the main rectangularly tiled code 
+            # start generating the orio.main.rectangularly tiled code 
             # (note: the body of the tiled code may contain if-statement branches, 
             # each needed to be recursively transformed)
             # example of the resulting processed statements:
@@ -718,8 +718,8 @@ class Transformation:
 
                     # (optimization) special handling for one-time loop --> remove the if's true
                     # condition (i.e., lb<ub) since it will never be executed.
-                    _,_,_,_,need_main_tiled_loop = binfo
-                    if not need_main_tiled_loop:
+                    _,_,_,_,need_orio.main.tiled_loop = binfo
+                    if not need_orio.main.tiled_loop:
                         if p_stmts:
                             is_tiled, last_stmts = p_stmts.pop()
                             if is_tiled:
@@ -777,16 +777,16 @@ class Transformation:
             lbody_stmts.extend(self.__convertToASTs(processed_stmts, tile_level, contain_loop,
                                                     n_outer_loop_inames, n_loop_info_table, int_vars))
 
-            # generate the main rectangularly tiled code
+            # generate the orio.main.rectangularly tiled code
             lbody = ast.CompStmt(lbody_stmts)
             iname = self.__getTileIterName(this_iname, tile_level)
             tname = self.__getTileSizeName(this_iname, tile_level)
-            main_tiled_code = self.__getInterTileLoop(iname, tname, rect_lb_exp, rect_ub_exp,
+            orio.main.tiled_code = self.__getInterTileLoop(iname, tname, rect_lb_exp, rect_ub_exp,
                                                       this_st_exp, lbody)
-            res_stmts.append((True, [main_tiled_code]))
+            res_stmts.append((True, [orio.main.tiled_code]))
             
             # mark the loop if it's a loop iterating the full rectangular tiles
-            self.__labelFullCoreTiledLoop(main_tiled_code, n_outer_loop_inames)
+            self.__labelFullCoreTiledLoop(orio.main.tiled_code, n_outer_loop_inames)
             
             # generate the cleanup code (the epilog is already fused)
             if not this_fully_tiled:

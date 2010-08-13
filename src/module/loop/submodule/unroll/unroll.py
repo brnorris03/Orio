@@ -1,21 +1,21 @@
 #
-# Loop transformation submodule that implements a pure loop unrolling
+# Loop transformation submodule.that implements a pure loop unrolling
 #
 
 import sys
-import module.loop.submodule.submodule, module.loop.submodule.unrolljam.unrolljam
+import orio.module.loop.submodule.submodule, orio.module.loop.submodule.unrolljam.unrolljam
 
 #---------------------------------------------------------------------
 
-class Unroll(module.loop.submodule.submodule.SubModule):
-    '''The unrolling transformation submodule'''
+class Unroll(orio.module.loop.submodule.submodule.SubModule):
+    '''The unrolling transformation submodule.'''
     
     def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
-        '''To instantiate an unrolling transformation submodule'''
+        '''To instantiate an unrolling transformation submodule.'''
         
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
+        orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
-        self.ujam_smod = module.loop.submodule.unrolljam.unrolljam.UnrollJam()
+        self.ujam_smod = orio.module.loop.submodule.unrolljam.unrolljam.UnrollJam()
         
     #-----------------------------------------------------------------
 

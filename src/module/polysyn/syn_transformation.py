@@ -3,7 +3,7 @@
 #
 
 import os, re, shlex, sys
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #---------------------------------------------------------
 
@@ -35,7 +35,7 @@ class SynTransformation:
             f.write(code)
             f.close()
         except:
-            err('module.polysyn.syn_transformation:  cannot write to file: %s' % ifname)
+            err('orio.module.polysyn.syn_transformation:  cannot write to file: %s' % ifname)
             
         # execute Orio
         cmd = 'orcc -o %s %s' % (ofname, ifname)
@@ -43,7 +43,7 @@ class SynTransformation:
         try:
             os.system(cmd)
         except:
-            err('module.polysyn.syn_transformation:  failed to execute command: "%s"' % cmd)
+            err('orio.module.polysyn.syn_transformation:  failed to execute command: "%s"' % cmd)
             
         # read the generated code
         try:
@@ -51,14 +51,14 @@ class SynTransformation:
             transformed_code = f.read()
             f.close()
         except:
-            err('module.polysyn.syn_transformation:  cannot read file: %s' % ofname)
+            err('orio.module.polysyn.syn_transformation:  cannot read file: %s' % ofname)
             
         # delete the used files
         for fname in [ifname, ofname]:
             try:
                 os.unlink(fname)
             except:
-                err('module.polysyn.syn_transformation:  cannot delete files: %s' % fname)
+                err('orio.module.polysyn.syn_transformation:  cannot delete files: %s' % fname)
                 
         # return the transformed code
         return transformed_code

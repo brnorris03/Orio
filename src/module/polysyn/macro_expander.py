@@ -6,7 +6,7 @@
 #
 
 import os, re, sys
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #---------------------------------------------------------
 
@@ -87,7 +87,7 @@ class MacroExpander:
                         match_pos = i
                         break
             if match_pos == None:
-                err('module.polysyn.macro_expander:  no matching ")" exists for "%s"' % match_obj.group(1))
+                err('orio.module.polysyn.macro_expander:  no matching ")" exists for "%s"' % match_obj.group(1))
 
             # get the macro reference and its position
             ref = match_obj.group(1) + sub_code[:match_pos+1]
@@ -131,14 +131,14 @@ class MacroExpander:
             f.write(code)
             f.close()
         except:
-            err('module.polysyn.macro_expander:  failed to write code into file: %s' % src_fname)
+            err('orio.module.polysyn.macro_expander:  failed to write code into file: %s' % src_fname)
 
         # execute 'gcc -E' to perform the substitution
         cmd  = 'gcc -E %s -o %s' % (src_fname, out_fname)
         try:
             os.system(cmd)
         except Exception, e:
-            err('module.polysyn.macro_expander:  failed to execute the testing code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
+            err('orio.module.polysyn.macro_expander:  failed to execute the testing code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
 
         # read the output file
         try:
@@ -146,14 +146,14 @@ class MacroExpander:
             out_code = f.read()
             f.close()
         except:
-            err('module.polysyn.macro_expander:  failed to read from file: %s' % out_fname)
+            err('orio.module.polysyn.macro_expander:  failed to read from file: %s' % out_fname)
 
         # delete all the generated files
         try:
             os.unlink(src_fname)
             os.unlink(out_fname)
         except:
-            err('module.polysyn.macro_expander:  failed to delete files: %s and %s' % (src_fname, out_fname))
+            err('orio.module.polysyn.macro_expander:  failed to delete files: %s and %s' % (src_fname, out_fname))
 
         # get the substitution code
         subs_code = re.sub(directive_re, '', out_code).strip()

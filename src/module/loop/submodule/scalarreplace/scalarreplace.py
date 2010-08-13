@@ -3,19 +3,19 @@
 #
 
 import sys
-import module.loop.submodule.submodule, transformation
-from main.util.globals import *
+from orio.main.util.globals import *
+import orio.module.loop.submodule.submodule, transformation
 
 #---------------------------------------------------------------------
 
-class ScalarReplace(module.loop.submodule.submodule.SubModule):
-    '''The scalar replacement transformation submodule'''
+class ScalarReplace(orio.module.loop.submodule.submodule.SubModule):
+    '''The scalar replacement transformation submodule.'''
     
     def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
-        'To instantiate a scalar replacement transformation submodule'
+        '''Instantiate a scalar replacement transformation submodule.'''
         
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
-        
+        orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
+    
     #-----------------------------------------------------------------
     
     def readTransfArgs(self, perf_params, transf_args):
@@ -36,7 +36,7 @@ class ScalarReplace(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                err('module.loop.submodule.scalarreplace.scalarreplace: %s: failed to evaluate the argument expression: %s\n --> %s: %s' 
+                err('orio.module.loop.submodule.scalarreplace.scalarreplace: %s: failed to evaluate the argument expression: %s\n --> %s: %s' 
                     % (line_no, rhs,e.__class__.__name__, e))
                 
             # data type
@@ -49,7 +49,7 @@ class ScalarReplace(module.loop.submodule.submodule.SubModule):
 
             # unknown argument name
             else:
-                err('module.loop.submodule.scalarreplace.scalarreplace: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
+                err('orio.module.loop.submodule.scalarreplace.scalarreplace: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check semantics of the transformation arguments
         dtype, prefix = self.checkTransfArgs(dtype, prefix) 
@@ -66,14 +66,14 @@ class ScalarReplace(module.loop.submodule.submodule.SubModule):
         if dtype != None:
             rhs, line_no = dtype
             if dtype != None and not isinstance(rhs, str):
-                err('module.loop.submodule.scalarreplace.scalarreplace: %s: data type argument must be a string: %s' % (line_no, rhs))
+                err('orio.module.loop.submodule.scalarreplace.scalarreplace: %s: data type argument must be a string: %s' % (line_no, rhs))
             dtype = rhs
         
         # evaluate the prefix name for scalars variables
         if prefix != None:
             rhs, line_no = prefix
             if rhs != None and not isinstance(rhs, str):
-                err('module.loop.submodule.scalarreplace.scalarreplace: %s: the prefix name of scalars must be a string: %s' % (line_no, rhs))
+                err('orio.module.loop.submodule.scalarreplace.scalarreplace: %s: the prefix name of scalars must be a string: %s' % (line_no, rhs))
             prefix = rhs
             
         # return information about the transformation arguments

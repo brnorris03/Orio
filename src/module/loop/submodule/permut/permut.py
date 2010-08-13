@@ -1,20 +1,20 @@
 #
-# Loop transformation submodule that implements loop permutation/interchange
+# Loop transformation submodule.that implements loop permutation/interchange
 #
 
 import sys
-import module.loop.submodule.submodule, transformation
-from main.util.globals import *
+import orio.module.loop.submodule.submodule, transformation
+from orio.main.util.globals import *
 
 #---------------------------------------------------------------------
 
-class Permut(module.loop.submodule.submodule.SubModule):
-    '''The loop permutation transformation submodule'''
+class Permut(orio.module.loop.submodule.submodule.SubModule):
+    '''The loop permutation transformation submodule.'''
     
     def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
-        '''To instantiate a loop permutation transformation submodule'''
+        '''To instantiate a loop permutation transformation submodule.'''
         
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
+        orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
     #-----------------------------------------------------------------
 
@@ -34,7 +34,7 @@ class Permut(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                err('module.loop.submodule.permut.permut: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
+                err('orio.module.loop.submodule.permut.permut: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
                 
             # permutation sequence
             if aname == SEQ:
@@ -42,11 +42,11 @@ class Permut(module.loop.submodule.submodule.SubModule):
                 
             # unknown argument name
             else:
-                err('module.loop.submodule.permut.permut: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
+                err('orio.module.loop.submodule.permut.permut: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check for undefined transformation arguments
         if seq == None:
-            err('module.loop.submodule.permut.permut: %s: missing permutation sequence argument' % self.__class__.__name__)
+            err('orio.module.loop.submodule.permut.permut: %s: missing permutation sequence argument' % self.__class__.__name__)
 
         # check semantics of the transformation arguments
         seq, = self.checkTransfArgs(seq)

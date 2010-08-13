@@ -3,18 +3,18 @@
 #
 
 import sys
-import module.loop.submodule.submodule, transformation
-from main.util.globals import *
+import orio.module.loop.submodule.submodule, transformation
+from orio.main.util.globals import *
 
 #---------------------------------------------------------------------
 
-class Tile(module.loop.submodule.submodule.SubModule):
-    '''The loop tiling transformation submodule'''
+class Tile(orio.module.loop.submodule.submodule.SubModule):
+    '''The loop tiling transformation submodule.'''
     
     def __init__(self, perf_params = None, transf_args = None, stmt = None):
-        '''To instantiate a loop tiling transformation submodule'''
+        '''To instantiate a loop tiling transformation submodule.'''
         
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt)
+        orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt)
         
     #-----------------------------------------------------------------
     
@@ -36,7 +36,7 @@ class Tile(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                err('module.loop.submodule.tile.tile: %s: failed to evaluate the argument expression: %s\n --> %s: %s' 
+                err('orio.module.loop.submodule.tile.tile: %s: failed to evaluate the argument expression: %s\n --> %s: %s' 
                     % (line_no, rhs,e.__class__.__name__, e))
 
             # tile size
@@ -49,13 +49,13 @@ class Tile(module.loop.submodule.submodule.SubModule):
 
             # unknown argument name
             else:
-                err('module.loop.submodule.tile.tile: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
+                err('orio.module.loop.submodule.tile.tile: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check for undefined transformation arguments
         if tsize == None:
-            err('module.loop.submodule.tile.tile: %s: missing tile size argument' % self.__class__.__name__)
+            err('orio.module.loop.submodule.tile.tile: %s: missing tile size argument' % self.__class__.__name__)
         if tindex == None:
-            err('module.loop.submodule.tile.tile: %s: missing tile loop index name argument' % self.__class__.__name__)
+            err('orio.module.loop.submodule.tile.tile: %s: missing tile loop index name argument' % self.__class__.__name__)
 
         # check semantics of the transformation arguments
         tsize, tindex = self.checkTransfArgs(tsize, tindex)
@@ -71,13 +71,13 @@ class Tile(module.loop.submodule.submodule.SubModule):
         # evaluate the tile size
         rhs, line_no = tsize
         if not isinstance(rhs, int) or rhs <= 0:
-            err('module.loop.submodule.tile.tile: %s: tile size must be a positive integer: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.tile.tile: %s: tile size must be a positive integer: %s' % (line_no, rhs))
         tsize = rhs
             
         # evaluate the tile loop index name
         rhs, line_no = tindex
         if not isinstance(rhs, str):
-            err('module.loop.submodule.tile.tile: %s: tile loop index name must be a string: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.tile.tile: %s: tile loop index name must be a string: %s' % (line_no, rhs))
         tindex = rhs
 
         # return information about the transformation arguments

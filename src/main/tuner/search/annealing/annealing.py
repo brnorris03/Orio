@@ -3,12 +3,12 @@
 #
 
 import math, sys, time
-import main.tuner.search.search
-from main.util.globals import *
+import orio.main.tuner.search.search
+from orio.main.util.globals import *
 
 #-----------------------------------------------------
 
-class Annealing(main.tuner.search.search.Search):
+class Annealing(orio.main.tuner.search.search.Search):
     '''
     The search engine that uses a simulated-annealing search approach, enhanced with a local search
     that finds the best neighboring coordinate.
@@ -34,7 +34,7 @@ class Annealing(main.tuner.search.search.Search):
     def __init__(self, params):
         '''To instantiate a simulated-annealing search engine'''
 
-        main.tuner.search.search.Search.__init__(self, params)
+        orio.main.tuner.search.search.Search.__init__(self, params)
 
         # set all algorithm-specific arguments to their default values
         self.local_distance = 0
@@ -61,7 +61,7 @@ class Annealing(main.tuner.search.search.Search):
 
         # check for parallel search
         if self.use_parallel_search:
-            err('main.tuner.search.annealing.annealing: simulated annealing search does not support parallel search')
+            err('orio.main.tuner.search.annealing.annealing: simulated annealing search does not support parallel search')
 
         # initialize a storage to remember all initial coordinates that have been explored
         coord_records = {}
@@ -234,41 +234,41 @@ class Annealing(main.tuner.search.search.Search):
             # local search distance
             if vname == self.__LOCAL_DIST:
                 if not isinstance(rhs, int) or rhs < 0:
-                    err('main.tuner.search.annealing: %s argument "%s" must be a positive integer or zero'
+                    err('orio.main.tuner.search.annealing: %s argument "%s" must be a positive integer or zero'
                         % (self.__class__.__name__, vname))
                 self.local_distance = rhs
 
             # the temperature reduction factor
             elif vname == self.__COOL_FACT:
                 if not isinstance(rhs, float) or rhs <= 0 or rhs >= 1:
-                    err('main.tuner.search.annealing: %s argument "%s" must be a real number between zero and one'
+                    err('orio.main.tuner.search.annealing: %s argument "%s" must be a real number between zero and one'
                            % (self.__class__.__name__, vname))
                 self.cooling_factor = rhs
 
             # the final temperature ratio
             elif vname == self.__FTEMP_RATIO:
                 if not isinstance(rhs, float) or rhs <= 0 or rhs >= 1:
-                    err('main.tuner.search.annealing: %s argument "%s" must be a real number between zero and one'
+                    err('orio.main.tuner.search.annealing: %s argument "%s" must be a real number between zero and one'
                            % (self.__class__.__name__, vname))
                 self.final_temp_ratio = rhs
 
             # the maximum limit of numbers of trials at each temperature 
             elif vname == self.__TR_LIMIT:
                 if not isinstance(rhs, int) or rhs <= 0:
-                    err('main.tuner.search.annealing: %s argument "%s" must be a positive integer'
+                    err('orio.main.tuner.search.annealing: %s argument "%s" must be a positive integer'
                            % (self.__class__.__name__, vname))
                 self.trials_limit = rhs
 
             # the maximum limit of numbers of successful moves at each temperature
             elif vname == self.__MV_LIMIT:
                 if not isinstance(rhs, int) or rhs <= 0:
-                    err('main.tuner.search.annealing: %s argument "%s" must be a positive integer'
+                    err('orio.main.tuner.search.annealing: %s argument "%s" must be a positive integer'
                            % (self.__class__.__name__, vname))
                 self.moves_limit = rhs
 
             # unrecognized algorithm-specific argument
             else:
-                err('main.tuner.search.annealing: unrecognized %s algorithm-specific argument: "%s"' %
+                err('orio.main.tuner.search.annealing: unrecognized %s algorithm-specific argument: "%s"' %
                        (self.__class__.__name__, vname))
 
     # Private methods
@@ -303,7 +303,7 @@ class Annealing(main.tuner.search.search.Search):
 
         # check if not enough random coordinates are found
         if len(random_coords) == 0:
-            err('main.tuner.search.annealing: initialization of Simulated Annealing failed: no valid values of ' +
+            err('orio.main.tuner.search.annealing: initialization of Simulated Annealing failed: no valid values of ' +
                    'performance parameters can be found. the performance parameter constraints ' +
                    'might prune out the entire search space.')
         

@@ -4,12 +4,12 @@
 
 import re, sys
 import arg_info
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #-------------------------------------------
 
 class CodeGen:
-    '''The code generator for the SpMV transformation module'''
+    '''The code generator for the SpMV transformation module.'''
 
     def __init__(self, ainfo):
         '''To instantiate a code generator instance'''
@@ -79,14 +79,14 @@ class CodeGen:
         ivec_refs = ['%s[%s[%s]]' % (ainfo.in_vector, col_inds, i)
                      for i in range(0, ainfo.in_unroll_factor)]
 
-        # the outer main loop
+        # the outer orio.main.loop
         code += '  register int i=0;\n'
         code += '  while (i<=rlength-%s) {\n' % ainfo.out_unroll_factor
         if len(iarr_inits) > 0:
             code += '    %s %s;\n' % (ainfo.data_type, ','.join(map(lambda x:'*'+x, iarr_inits)))
         code += '    %s %s;\n' % (ainfo.data_type, ','.join(ovec_inits))
 
-        # the inner main-main loop
+        # the inner orio.main.main loop
         code += '    register int j=0;\n'
         code += '    while (j<=clength-%s) {\n' % ainfo.in_unroll_factor
         used_ivecs = ivec_refs
@@ -105,7 +105,7 @@ class CodeGen:
         code += '      j+=%s;\n' % ainfo.in_unroll_factor
         code += '    }\n'
 
-        # the inner main-cleanup loop
+        # the inner orio.main.cleanup loop
         if ainfo.in_unroll_factor > 1:
             code += '    while (j<=clength-1) {\n'
             used_ivecs = ivec_refs[:1]
@@ -123,7 +123,7 @@ class CodeGen:
             code += '      j+=1;\n'
             code += '    }\n'
 
-        # the epiloque of the outer main loop
+        # the epiloque of the outer orio.main.loop
         code += '    %s;\n' % '; '.join(ovec_stores)
         code += '    %s+=%s;\n' % (ovec, ainfo.out_unroll_factor)
         if ainfo.out_unroll_factor > 1:
@@ -140,7 +140,7 @@ class CodeGen:
             code += '  while (i<=rlength-1) {\n'
             code += '    %s %s;\n' % (ainfo.data_type, ovec_inits[0])
 
-            # the inner cleanup-main loop
+            # the inner cleanup-orio.main.loop
             code += '    register int j=0;\n'
             code += '    while (j<=clength-%s) {\n' % ainfo.in_unroll_factor
             for ov,ia in zip(ovecs[:1], iarrs[:1]):
@@ -256,7 +256,7 @@ class CodeGen:
         vovec_stores = ['%s=%s[0]+%s[1]' % (r, t, t) for r,t in zip(ovecs, vtovecs)]
         vivecs = ['%s%sv' % (ainfo.in_vector, i) for i in range(0, ainfo.in_unroll_factor/2)]
         
-        # the outer main loop
+        # the outer orio.main.loop
         code += '  register int i=0;\n'
         code += '  while (i<=rlength-%s) {\n' % ainfo.out_unroll_factor
         if len(iarr_inits) > 0:
@@ -264,7 +264,7 @@ class CodeGen:
         code += '    v2df %s;\n' % ','.join([('*'+i) for i in viarr_inits])
         code += '    v2df %s;\n' % ','.join(vovec_inits)
 
-        # the inner main-main loop
+        # the inner orio.main.main loop
         code += '    register int j=0;\n'
         code += '    while (j<=clength-%s) {\n' % ainfo.in_unroll_factor
         code += '      v2df %s;\n' % ','.join('%s={%s,%s}' % (vivecs[i], ivec_refs[2*i],
@@ -286,7 +286,7 @@ class CodeGen:
         code += '    %s %s;\n' % (ainfo.data_type, ','.join(vtovec_decls))
         code += '    %s %s;\n' % (ainfo.data_type, ','.join(vovec_stores))
 
-        # the inner main-cleanup loop
+        # the inner orio.main.cleanup loop
         if ainfo.in_unroll_factor > 1:
             code += '    while (j<=clength-1) {\n'
             used_ivecs = ivec_refs[:1]
@@ -304,7 +304,7 @@ class CodeGen:
             code += '      j+=1;\n'
             code += '    }\n'
 
-        # the epiloque of the outer main loop
+        # the epiloque of the outer orio.main.loop
         code += '    %s;\n' % '; '.join(ovec_stores)
         code += '    %s+=%s;\n' % (ovec, ainfo.out_unroll_factor)
         if ainfo.out_unroll_factor > 1:
@@ -322,7 +322,7 @@ class CodeGen:
             code += '    v2df *%sv=(v2df *)%s;\n' % (iarr, iarr)
             code += '    v2df %s;\n' % vovec_inits[0]
 
-            # the inner cleanup-main loop
+            # the inner cleanup-orio.main.loop
             code += '    register int j=0;\n'
             code += '    while (j<=clength-%s) {\n' % ainfo.in_unroll_factor
             code += '      v2df %s;\n' % ','.join('%s={%s,%s}' % (vivecs[i], ivec_refs[2*i],
@@ -445,14 +445,14 @@ class CodeGen:
                        for rs,a in zip(viarrs, iarrs)]
         vivecs = ['%s%sv' % (ainfo.in_vector, i) for i in range(0, ainfo.in_unroll_factor/2)]
         
-        # the outer main loop
+        # the outer orio.main.loop
         code += '  register int i=0;\n'
         code += '  while (i<=rlength-%s) {\n' % ainfo.out_unroll_factor
         if len(iarr_inits) > 0:
             code += '    %s %s;\n' % (ainfo.data_type, ','.join(map(lambda x:'*'+x, iarr_inits)))
         code += '    __m128d %s;\n' % ','.join(vovec_inits)
 
-        # the inner main-main loop
+        # the inner orio.main.main loop
         code += '    register int j=0;\n'
         code += '    while (j<=clength-%s) {\n' % ainfo.in_unroll_factor
         code += '      __m128d %s;\n' % ','.join(['%s=_mm_setr_pd(%s,%s)' % (vivecs[i],
@@ -473,7 +473,7 @@ class CodeGen:
         code += '    %s;\n' % '; '.join(vovec_assgs)
         code += '    %s %s;\n' % (ainfo.data_type, ','.join(vovec_stores))
 
-        # the inner main-cleanup loop
+        # the inner orio.main.cleanup loop
         if ainfo.in_unroll_factor > 1:
             code += '    while (j<=clength-1) {\n'
             used_ivecs = ivec_refs[:1]
@@ -491,7 +491,7 @@ class CodeGen:
             code += '      j+=1;\n'
             code += '    }\n'
 
-        # the epiloque of the outer main loop
+        # the epiloque of the outer orio.main.loop
         code += '    %s;\n' % '; '.join(ovec_stores)
         code += '    %s+=%s;\n' % (ovec, ainfo.out_unroll_factor)
         if ainfo.out_unroll_factor > 1:
@@ -508,7 +508,7 @@ class CodeGen:
             code += '  while (i<=rlength-1) {\n'
             code += '    __m128d %s;\n' % vovec_inits[0]
 
-            # the inner cleanup-main loop
+            # the inner cleanup-orio.main.loop
             code += '    register int j=0;\n'
             code += '    while (j<=clength-%s) {\n' % ainfo.in_unroll_factor
             code += '      __m128d %s;\n' % ','.join(['%s=_mm_setr_pd(%s,%s)' % (vivecs[i],
@@ -631,14 +631,14 @@ class CodeGen:
                        for rs,a in zip(viarrs, iarrs)]
         vivecs = ['%s%sv' % (ainfo.in_vector, i) for i in range(0, ainfo.in_unroll_factor/2)]
         
-        # the outer main loop
+        # the outer orio.main.loop
         code += '  register int i=0;\n'
         code += '  while (i<=rlength-%s) {\n' % ainfo.out_unroll_factor
         if len(iarr_inits) > 0:
             code += '    %s %s;\n' % (ainfo.data_type, ','.join(map(lambda x:'*'+x, iarr_inits)))
         code += '    double _Complex %s;\n' % ','.join(vovec_inits)
 
-        # the inner main-main loop
+        # the inner orio.main.main loop
         code += '    register int j=0;\n'
         code += '    while (j<=clength-%s) {\n' % ainfo.in_unroll_factor
         code += '      %s;\n' % '; '.join('xbuf[%s]=%s' % (i,ivec_refs[i])
@@ -659,7 +659,7 @@ class CodeGen:
         code += '    %s;\n' % '; '.join(vovec_assgs)
         code += '    %s %s;\n' % (ainfo.data_type, ','.join(vovec_stores))
 
-        # the inner main-cleanup loop
+        # the inner orio.main.cleanup loop
         if ainfo.in_unroll_factor > 1:
             code += '    while (j<=clength-1) {\n'
             used_ivecs = ivec_refs[:1]
@@ -677,7 +677,7 @@ class CodeGen:
             code += '      j+=1;\n'
             code += '    }\n'
 
-        # the epiloque of the outer main loop
+        # the epiloque of the outer orio.main.loop
         code += '    %s;\n' % '; '.join(ovec_stores)
         code += '    %s+=%s;\n' % (ovec, ainfo.out_unroll_factor)
         if ainfo.out_unroll_factor > 1:
@@ -694,7 +694,7 @@ class CodeGen:
             code += '  while (i<=rlength-1) {\n'
             code += '    double _Complex %s;\n' % vovec_inits[0]
 
-            # the inner cleanup-main loop
+            # the inner cleanup-orio.main.loop
             code += '    register int j=0;\n'
             code += '    while (j<=clength-%s) {\n' % ainfo.in_unroll_factor
             code += '      %s;\n' % '; '.join('xbuf[%s]=%s' % (i,ivec_refs[i])
@@ -758,7 +758,7 @@ class CodeGen:
         # generate the optimized code
         code = ''
 
-        # the outer main loop
+        # the outer orio.main.loop
         if parallelize:
             code += 'register int i;\n'
             if ainfo.out_unroll_factor==1:
@@ -786,7 +786,7 @@ class CodeGen:
                                        ainfo.init_val)
             code += '  %sj=lb%s;\n' % ('' if i else 'register int ', i)
 
-            # the inner main-main loop
+            # the inner orio.main.main loop
             code += '  while (j<=lb%s-%s) {\n' % (i+1, ainfo.in_unroll_factor)
             code += '    %s0 += ' % ainfo.out_vector
             for j in range(0, ainfo.in_unroll_factor):
@@ -798,7 +798,7 @@ class CodeGen:
             code += '    j+=%s;\n' % ainfo.in_unroll_factor
             code += '  }\n'
 
-            # the inner main-cleanup loop
+            # the inner orio.main.cleanup loop
             if ainfo.in_unroll_factor > 1:
                 code += '  while (j<=lb%s-1) {\n' % (i+1)
                 code += '    %s0 += %s[j]*%s[%s[j]];\n' % (ainfo.out_vector, ainfo.in_matrix,
@@ -807,7 +807,7 @@ class CodeGen:
                 code += '  }\n'
             code += '  %s[i%s]=%s0;\n' % (ainfo.out_vector, '+%s'%i if i else '', ainfo.out_vector)
 
-        # to close the outer main loop
+        # to close the outer orio.main.loop
         if not parallelize:
             code += '  i+=%s;\n' % ainfo.out_unroll_factor
         code += '} \n'
@@ -817,7 +817,7 @@ class CodeGen:
             if parallelize:
                 code += 'i=lbound;\n'
 
-            # the inner cleanup-main loop
+            # the inner cleanup-orio.main.loop
             code += 'while (i<=%s-1) {\n' % ainfo.total_rows
             code += '  %s %s0=%s;\n' % (ainfo.data_type, ainfo.out_vector, ainfo.init_val)
             code += '  register int j=%s[i], ub=%s[i+1];\n' % (ainfo.row_inds, ainfo.row_inds)
@@ -864,7 +864,7 @@ class CodeGen:
         # generate the optimized code
         code = ''
 
-        # the outer main loop
+        # the outer orio.main.loop
         code += 'typedef double v2df __attribute__ ((vector_size(16)));\n'
         if parallelize:
             code += 'register int i;\n'
@@ -891,7 +891,7 @@ class CodeGen:
             code += '  %s%s0v=(v2df){%s,%s};\n' % ('' if i else 'v2df ', ainfo.out_vector,
                                                    ainfo.init_val, ainfo.init_val)
 
-            # the inner main-main loop
+            # the inner orio.main.main loop
             code += '  %sj=lb%s;\n' % ('' if i else 'register int ', i)
             code += '  %s%s0v=(v2df *)(%s+j);\n' % ('' if i else 'v2df *',
                                                     ainfo.in_matrix, ainfo.in_matrix) 
@@ -918,7 +918,7 @@ class CodeGen:
                                                     ainfo.out_vector, ainfo.out_vector,
                                                     ainfo.out_vector)
 
-            # the inner main-cleanup loop
+            # the inner orio.main.cleanup loop
             if ainfo.in_unroll_factor > 1:
                 code += '  while (j<=lb%s-1) {\n' % (i+1)
                 code += '    %s0 += %s[j]*%s[%s[j]];\n' % (ainfo.out_vector, ainfo.in_matrix,
@@ -927,7 +927,7 @@ class CodeGen:
                 code += '  }\n'
             code += '  %s[i%s]=%s0;\n' % (ainfo.out_vector, '+%s'%i if i else '', ainfo.out_vector)
 
-        # to close the outer main loop
+        # to close the outer orio.main.loop
         if not parallelize:
             code += '  i+=%s;\n' % ainfo.out_unroll_factor
         code += '} \n'
@@ -942,7 +942,7 @@ class CodeGen:
             code += '  register int j=%s[i], ub=%s[i+1];\n' % (ainfo.row_inds, ainfo.row_inds)
             code += '  v2df *%s0v=(v2df *)(%s+j);\n' % (ainfo.in_matrix, ainfo.in_matrix)
 
-            # the inner cleanup-main loop
+            # the inner cleanup-orio.main.loop
             code += '  while (j<=ub-%s) {\n' % ainfo.in_unroll_factor
             for j in range(0, ainfo.in_unroll_factor/2):
                 if not j: code += '    v2df '
@@ -997,7 +997,7 @@ class CodeGen:
         # generate the optimized code
         code = ''
 
-        # the outer main loop
+        # the outer orio.main.loop
         if parallelize:
             code += 'register int i;\n'
             if ainfo.out_unroll_factor==1:
@@ -1024,7 +1024,7 @@ class CodeGen:
             code += '  %s%s0v=_mm_set1_pd(%s);\n' % ('' if i else '__m128d ', ainfo.out_vector,
                                                      ainfo.init_val)
 
-            # the inner main-main loop
+            # the inner orio.main.main loop
             code += '  %sj=lb%s;\n' % ('' if i else 'register int ', i)
             code += '  while (j<=lb%s-%s) {\n' % (i+1, ainfo.in_unroll_factor)
             for j in range(0, ainfo.in_unroll_factor/2):
@@ -1054,7 +1054,7 @@ class CodeGen:
             code += '  %s%s0=tbuf[0]+tbuf[1];\n' % ('' if i else '%s '%ainfo.data_type,
                                                     ainfo.out_vector)
             
-            # the inner main-cleanup loop
+            # the inner orio.main.cleanup loop
             if ainfo.in_unroll_factor > 1:
                 code += '  while (j<=lb%s-1) {\n' % (i+1)
                 code += '    %s0 += %s[j]*%s[%s[j]];\n' % (ainfo.out_vector, ainfo.in_matrix,
@@ -1063,7 +1063,7 @@ class CodeGen:
                 code += '  }\n'
             code += '  %s[i%s]=%s0;\n' % (ainfo.out_vector, '+%s'%i if i else '', ainfo.out_vector)
 
-        # to close the outer main loop
+        # to close the outer orio.main.loop
         if not parallelize:
             code += '  i+=%s;\n' % ainfo.out_unroll_factor
         code += '} \n'
@@ -1077,7 +1077,7 @@ class CodeGen:
             code += '  __m128d %s0v=_mm_set1_pd(%s);\n' % (ainfo.out_vector, ainfo.init_val)
             code += '  register int j=%s[i], ub=%s[i+1];\n' % (ainfo.row_inds, ainfo.row_inds)
 
-            # the inner cleanup-main loop
+            # the inner cleanup-orio.main.loop
             code += '  while (j<=ub-%s) {\n' % ainfo.in_unroll_factor
             for j in range(0, ainfo.in_unroll_factor/2):
                 if not j: code += '    __m128d '
@@ -1140,7 +1140,7 @@ class CodeGen:
         code += '%s tbuf[2];\n' % ainfo.data_type
         code += '%s xbuf[%s];\n' % (ainfo.data_type, ainfo.in_unroll_factor)
 
-        # the outer main loop
+        # the outer orio.main.loop
         if parallelize:
             code += 'register int i;\n'
             if ainfo.out_unroll_factor==1:
@@ -1166,7 +1166,7 @@ class CodeGen:
             code += '  %s%s0=%s;\n' % ('' if i else '%s ' % ainfo.data_type, ainfo.out_vector,
                                        ainfo.init_val)
             
-            # the inner main-main loop
+            # the inner orio.main.main loop
             code += '  %sj=lb%s;\n' % ('' if i else 'register int ', i)
 
             # simdization (aligned case)
@@ -1210,7 +1210,7 @@ class CodeGen:
             code += '    }\n'
             code += '  }\n'
 
-            # the inner main-cleanup loop
+            # the inner orio.main.cleanup loop
             if ainfo.in_unroll_factor > 1:
                 code += '  while (j<=lb%s-1) {\n' % (i+1)
                 code += '    %s0 += %s[j]*%s[%s[j]];\n' % (ainfo.out_vector, ainfo.in_matrix,
@@ -1219,7 +1219,7 @@ class CodeGen:
                 code += '  }\n'
             code += '  %s[i%s]=%s0;\n' % (ainfo.out_vector, '+%s'%i if i else '', ainfo.out_vector)
 
-        # to close the outer main loop
+        # to close the outer orio.main.loop
         if not parallelize:
             code += '  i+=%s;\n' % ainfo.out_unroll_factor
         code += '} \n'
@@ -1231,7 +1231,7 @@ class CodeGen:
             code += 'while (i<=%s-1) {\n' % ainfo.total_rows
             code += '  %s %s0=%s;\n' % (ainfo.data_type, ainfo.out_vector, ainfo.init_val)
 
-            # the inner cleanup-main loop
+            # the inner cleanup-orio.main.loop
             code += '  register int j=%s[i], ub=%s[i+1];\n' % (ainfo.row_inds, ainfo.row_inds)
 
             # simdization (aligned case)
@@ -1313,7 +1313,7 @@ class CodeGen:
                 elif ainfo.simd == arg_info.ArgInfo.SIMD_XLC:
                     code = self.__generateXlcSimdCode()
                 else:
-                    err('module.spmv.codegen: SpMV: unsupported SIMD type')
+                    err('orio.module.spmv.codegen: SpMV: unsupported SIMD type')
             else:
                 if ainfo.simd == arg_info.ArgInfo.SIMD_NONE:
                     code = self.__generateParCode()
@@ -1324,7 +1324,7 @@ class CodeGen:
                 elif ainfo.simd == arg_info.ArgInfo.SIMD_XLC:
                     code = self.__generateParXlcSimdCode()
                 else:
-                    err('module.spmv.codegen: SpMV: unsupported SIMD type')
+                    err('orio.module.spmv.codegen: SpMV: unsupported SIMD type')
 
         # inode structure format
         elif ainfo.block_structure == arg_info.ArgInfo.BSTRUC_INODE:
@@ -1338,7 +1338,7 @@ class CodeGen:
                 elif ainfo.simd == arg_info.ArgInfo.SIMD_XLC:
                     code = self.__generateXlcSimdInodeCode()
                 else:
-                    err('module.spmv.codegen: SpMV: unsupported SIMD type')
+                    err('orio.module.spmv.codegen: SpMV: unsupported SIMD type')
             else:
                 if ainfo.simd == arg_info.ArgInfo.SIMD_NONE:
                     code = self.__generateParInodeCode()
@@ -1349,9 +1349,9 @@ class CodeGen:
                 elif ainfo.simd == arg_info.ArgInfo.SIMD_XLC:
                     code = self.__generateParXlcSimdInodeCode()
                 else:
-                    err('module.spmv.codegen: SpMV: unsupported SIMD type')
+                    err('orio.module.spmv.codegen: SpMV: unsupported SIMD type')
         else:
-            err('module.spmv.codegen: SpMV: unsupported matrix block structure')
+            err('orio.module.spmv.codegen: SpMV: unsupported matrix block structure')
 
         # return the optimized code
         return code

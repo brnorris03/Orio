@@ -1,20 +1,20 @@
 #
-# Loop transformation submodule that implements unroll and jam
+# Loop transformation submodule.that implements unroll and jam
 #
 
 import sys
-import module.loop.submodule.submodule, transformation
-from main.util.globals import *
+import orio.module.loop.submodule.submodule, transformation
+from orio.main.util.globals import *
 
 #---------------------------------------------------------------------
 
-class UnrollJam(module.loop.submodule.submodule.SubModule):
-    '''The unroll-and-jam transformation submodule'''
+class UnrollJam(orio.module.loop.submodule.submodule.SubModule):
+    '''The unroll-and-jam transformation submodule.'''
     
     def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
-        '''To instantiate an unroll-and-jam transformation submodule'''
+        '''To instantiate an unroll-and-jam transformation submodule.'''
         
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
+        orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
     #-----------------------------------------------------------------
     
@@ -36,7 +36,7 @@ class UnrollJam(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                err('module.loop.submodule.unrolljam.unrolljam: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
+                err('orio.module.loop.submodule.unrolljam.unrolljam: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
                 
             # unroll factor
             if aname == UFACTOR:
@@ -48,11 +48,11 @@ class UnrollJam(module.loop.submodule.submodule.SubModule):
     
             # unknown argument name
             else:
-                err('module.loop.submodule.unrolljam.unrolljam: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
+                err('orio.module.loop.submodule.unrolljam.unrolljam: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check for undefined transformation arguments
         if ufactor == None:
-            err('module.loop.submodule.unrolljam.unrolljam: %s: missing unroll factor argument' % self.__class__.__name__)
+            err('orio.module.loop.submodule.unrolljam.unrolljam: %s: missing unroll factor argument' % self.__class__.__name__)
 
         # check semantics of the transformation arguments
         ufactor, parallelize = self.checkTransfArgs(ufactor, parallelize)
@@ -68,13 +68,13 @@ class UnrollJam(module.loop.submodule.submodule.SubModule):
         # evaluate the unroll factor
         rhs, line_no = ufactor
         if not isinstance(rhs, int) or rhs <= 0:
-            err('module.loop.submodule.unrolljam.unrolljam: %s: unroll factor must be a positive integer: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.unrolljam.unrolljam: %s: unroll factor must be a positive integer: %s' % (line_no, rhs))
         ufactor = rhs
 
         # evaluate the parallelization indicator
         rhs, line_no = parallelize
         if not isinstance(rhs, bool):
-            err('module.loop.submodule.unrolljam.unrolljam: %s: loop parallelization value must be a boolean: %s' % (line_no, rhs))
+            err('orio.module.loop.submodule.unrolljam.unrolljam: %s: loop parallelization value must be a boolean: %s' % (line_no, rhs))
         parallelize = rhs
 
         # return information about the transformation arguments

@@ -3,7 +3,7 @@
 #
 
 import sys
-import module.loop.ast, module.loop.ast_lib.forloop_lib
+import orio.module.loop.ast, orio.module.loop.ast_lib.forloop_lib
 
 #-----------------------------------------
 
@@ -14,26 +14,26 @@ class SemanticChecker:
         '''To instantiate a semantic checker instance'''
 
         self.stmt = stmt
-        self.flib = module.loop.ast_lib.forloop_lib.ForLoopLib()
+        self.flib = orio.module.loop.ast_lib.forloop_lib.ForLoopLib()
 
     #----------------------------------------------------------
 
     def __checkIdenticalNestedLoop(self, stmt, outer_loops):
         '''To ensure that no loops with the same iteration variable name are nested'''
 
-        if isinstance(stmt, module.loop.ast.ExpStmt):
+        if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             pass
             
-        elif isinstance(stmt, module.loop.ast.CompStmt):
+        elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             for s in stmt.stmts:
                 self.__checkIdenticalNestedLoop(s, outer_loops)
             
-        elif isinstance(stmt, module.loop.ast.IfStmt):
+        elif isinstance(stmt, orio.module.loop.ast.IfStmt):
             self.__checkIdenticalNestedLoop(stmt.true_stmt, outer_loops)
             if stmt.false_stmt:
                 self.__checkIdenticalNestedLoop(stmt.false_stmt, outer_loops)
             
-        elif isinstance(stmt, module.loop.ast.ForStmt):
+        elif isinstance(stmt, orio.module.loop.ast.ForStmt):
             for_loop_info = self.flib.extractForLoopInfo(stmt)
             index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
             if index_id.name in outer_loops:
@@ -44,11 +44,11 @@ class SemanticChecker:
             n_outer_loops[index_id.name] = None
             self.__checkIdenticalNestedLoop(stmt.stmt, n_outer_loops)
 
-        elif isinstance(stmt, module.loop.ast.TransformStmt):
+        elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
                         
-        elif isinstance(stmt, module.loop.ast.NewAST):
+        elif isinstance(stmt, orio.module.loop.ast.NewAST):
             pass
 
         else:

@@ -3,12 +3,12 @@
 #
 
 import sys, time
-import main.tuner.search.search
-from main.util.globals import *
+import orio.main.tuner.search.search
+from orio.main.util.globals import *
 
 #-----------------------------------------------------
 
-class Exhaustive(main.tuner.search.search.Search):
+class Exhaustive(orio.main.tuner.search.search.Search):
     '''The search engine that uses an exhaustive search approach'''
 
     def __init__(self, params):
@@ -17,7 +17,7 @@ class Exhaustive(main.tuner.search.search.Search):
         @param params: dictionary of options needed to configure the search algorithm.
         '''
 
-        main.tuner.search.search.Search.__init__(self, params)
+        orio.main.tuner.search.search.Search.__init__(self, params)
 
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
@@ -25,7 +25,7 @@ class Exhaustive(main.tuner.search.search.Search):
         # complain if the total number of search runs is defined (i.e. exhaustive search
         # only needs to be run once)
         if self.total_runs > 1:
-            err('main.tuner.search.exhaustive: the total number of %s search runs must be one (or can be undefined)' %
+            err('orio.main.tuner.search.exhaustive: the total number of %s search runs must be one (or can be undefined)' %
                    self.__class__.__name__)
             sys.exit(1)
             
@@ -118,7 +118,7 @@ class Exhaustive(main.tuner.search.search.Search):
         '''To read all algorithm-specific arguments'''
                 
         for vname, rhs in self.search_opts.iteritems():
-            err('main.tuner.search.exhaustive: unrecognized %s algorithm-specific argument: "%s"' %
+            err('orio.main.tuner.search.exhaustive: unrecognized %s algorithm-specific argument: "%s"' %
                    (self.__class__.__name__, vname))
             sys.exit(1)
 

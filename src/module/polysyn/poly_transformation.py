@@ -5,7 +5,7 @@
 #
 
 import glob, re, os, sys
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #---------------------------------------------------------
 
@@ -26,7 +26,7 @@ class PolyTransformation:
 
         # check if Pluto has been correctly installed
         if os.popen('polycc').read() == '':
-            err('module.polysyn.poly_transformation:  Pluto is not installed. Cannot use "polycc" command.')
+            err('orio.module.polysyn.poly_transformation:  Pluto is not installed. Cannot use "polycc" command.')
 
         # check loop tiling
         use_tiling = True
@@ -44,7 +44,7 @@ class PolyTransformation:
                 f.write(content)
                 f.close()
             except:
-                err('module.polysyn.poly_transformation:  cannot write to file: %s' % ts_fname)
+                err('orio.module.polysyn.poly_transformation:  cannot write to file: %s' % ts_fname)
                 
         # write the annotation body code into a file
         fname = '_orio_polysyn.c'
@@ -53,7 +53,7 @@ class PolyTransformation:
             f.write(code)
             f.close()
         except:
-            err('module.polysyn.poly_transformation:  cannot open file for writing: %s' % fname)
+            err('orio.module.polysyn.poly_transformation:  cannot open file for writing: %s' % fname)
 
         # create the Pluto command
         cmd = 'polycc %s --noprevector' % fname
@@ -67,7 +67,7 @@ class PolyTransformation:
         try:
             os.system(cmd)
         except:
-            err('module.polysyn.poly_transformation:  failed to run command: %s' % cmd)
+            err('orio.module.polysyn.poly_transformation:  failed to run command: %s' % cmd)
    
         # delete unneeded files
         path_name, ext = os.path.splitext(fname)
@@ -78,25 +78,25 @@ class PolyTransformation:
             try:
                 os.unlink(f)
             except:
-                err('module.polysyn.poly_transformation:  failed to remove file: %s' % f)
+                err('orio.module.polysyn.poly_transformation:  failed to remove file: %s' % f)
 
         # get the Pluto-generated code
         plutogen_fnames = glob.glob(path_name + '.*' + ext)
         if len(plutogen_fnames) != 1:
-            err('module.polysyn.poly_transformation:  failed to generate Pluto-transformed code')
+            err('orio.module.polysyn.poly_transformation:  failed to generate Pluto-transformed code')
         plutogen_fname = plutogen_fnames[0]
         try:
             f = open(plutogen_fname, 'r')
             pluto_code = f.read()
             f.close()
         except:
-            err('module.polysyn.poly_transformation:  cannot open file for writing: %s' % fname)
+            err('orio.module.polysyn.poly_transformation:  cannot open file for writing: %s' % fname)
             
         # delete the Pluto-generated file
         try:
             os.unlink(plutogen_fname)
         except:
-            err('module.polysyn.poly_transformation:  failed to remove file: %s' % plutogen_fname)
+            err('orio.module.polysyn.poly_transformation:  failed to remove file: %s' % plutogen_fname)
 
         # return the Pluto-generated code
         return pluto_code

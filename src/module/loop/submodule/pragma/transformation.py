@@ -3,7 +3,7 @@
 #
 
 import sys
-import module.loop.ast
+import orio.module.loop.ast
 
 #-----------------------------------------
 
@@ -28,14 +28,14 @@ class Transformation:
             return self.stmt
 
         # create a pragma directive AST
-        prags = [module.loop.ast.Pragma(p) for p in self.pragmas]
+        prags = [orio.module.loop.ast.Pragma(p) for p in self.pragmas]
 
         # create the transformed statement
-        if isinstance(self.stmt, module.loop.ast.CompStmt):
+        if isinstance(self.stmt, orio.module.loop.ast.CompStmt):
             stmts = self.stmt.stmts
         else:
             stmts = [self.stmt]
-        transformed_stmt = module.loop.ast.CompStmt(prags + stmts)
+        transformed_stmt = orio.module.loop.ast.CompStmt(prags + stmts)
 
         # return the transformed statement
         return transformed_stmt

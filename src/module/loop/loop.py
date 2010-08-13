@@ -3,19 +3,22 @@
 #
 
 import sys
-from main.util.globals import *
-import codegen, module.module, parser, transformation
+from orio.main.util.globals import *
+
+from orio.module.module import Module
+
+import codegen, parser, transformation
 
 #-----------------------------------------
 
-class Loop(module.module.Module):
+class Loop(Module):
     '''Loop transformation module'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
-        '''To instantiate a loop transformation module'''
+        '''Instantiate a loop transformation module'''
         
-        module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
+        Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       line_no, indent_size, language)
 
     #---------------------------------------------------------------------

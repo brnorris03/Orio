@@ -1,20 +1,20 @@
 #
-# Loop transformation submodule that enables pragma directive insertions.
+# Loop transformation submodule.that enables pragma directive insertions.
 #
 
 import sys
-import module.loop.submodule.submodule, transformation
-from main.util.globals import *
+import orio.module.loop.submodule.submodule, transformation
+from orio.main.util.globals import *
 
 #---------------------------------------------------------------------
 
-class Pragma(module.loop.submodule.submodule.SubModule):
-    '''The pragma directive insertion submodule'''
+class Pragma(orio.module.loop.submodule.submodule.SubModule):
+    '''The pragma directive insertion submodule.'''
     
     def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
-        '''To instantiate a pragma insertion submodule'''
+        '''To instantiate a pragma insertion submodule.'''
 
-        module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
+        orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
     #-----------------------------------------------------------------
 
@@ -34,7 +34,7 @@ class Pragma(module.loop.submodule.submodule.SubModule):
             try:
                 rhs = eval(rhs, perf_params)
             except Exception, e:
-                err('module.loop.submodule.pragma.pragma: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
+                err('orio.module.loop.submodule.pragma.pragma: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
 
             # pragma directives
             if aname == PRAGMAS:
@@ -42,7 +42,7 @@ class Pragma(module.loop.submodule.submodule.SubModule):
 
             # unknown argument name
             else:
-                err('module.loop.submodule.pragma.pragma: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
+                err('orio.module.loop.submodule.pragma.pragma: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check semantics of the transformation arguments
         pragmas, = self.checkTransfArgs(pragmas)

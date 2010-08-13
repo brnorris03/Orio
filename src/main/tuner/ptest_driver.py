@@ -4,7 +4,7 @@
 
 import os, sys, time, random, re
 
-from main.util.globals import *
+from orio.main.util.globals import *
 
 #-----------------------------------------------------
 
@@ -46,7 +46,7 @@ class PerfTestDriver:
         self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
 
         if self.pcount_method not in (self.__PCOUNT_BASIC, self.__PCOUNT_BGP):
-            err('main.tuner.ptest_driver:  unknown performance-counting method: "%s"' % self.pcount_method)
+            err('orio.main.tuner.ptest_driver:  unknown performance-counting method: "%s"' % self.pcount_method)
 
     #-----------------------------------------------------
 
@@ -58,7 +58,7 @@ class PerfTestDriver:
             f.write(test_code)
             f.close()
         except:
-            err('main.tuner.ptest_driver:  cannot open file for writing: %s' % self.src_name)
+            err('orio.main.tuner.ptest_driver:  cannot open file for writing: %s' % self.src_name)
 
     #-----------------------------------------------------
 
@@ -77,7 +77,7 @@ class PerfTestDriver:
         info(' compiling:\n\t' + cmd)
         status = os.system(cmd)
         if status:
-            err('main.tuner.ptest_driver:  failed to compile the testing code: "%s"' % cmd)
+            err('orio.main.tuner.ptest_driver:  failed to compile the testing code: "%s"' % cmd)
 
     #-----------------------------------------------------
 
@@ -86,7 +86,7 @@ class PerfTestDriver:
 
         # check if the executable exists
         if not os.path.exists(self.exe_name):
-            err('main.tuner.ptest_driver:  the executable of the testing code does not exist')
+            err('orio.main.tuner.ptest_driver:  the executable of the testing code does not exist')
 
         # initialize the performance costs dictionary
         # (indexed by the string representation of the search coordinates)
@@ -120,7 +120,7 @@ class PerfTestDriver:
                 f.close()
                 if output: perf_costs = eval(output)
             except Exception, e:
-                err('main.tuner.ptest_driver: failed to execute the testing code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
+                err('orio.main.tuner.ptest_driver: failed to execute the testing code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
                 
         # execute the search sequentially
         else:
@@ -131,7 +131,7 @@ class PerfTestDriver:
                 out = f.readlines()
                 f.close()
             except Exception, e:
-                err('main.tuner.ptest_driver: failed to execute the testing code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
+                err('orio.main.tuner.ptest_driver: failed to execute the testing code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
                 
             try:
                 if out: 
@@ -141,13 +141,13 @@ class PerfTestDriver:
                             break
                 if output: perf_costs = eval(str(output))
             except Exception, e:
-                err('main.tuner.ptest_driver: failed to process test result, command was "%s", output: "%s\n --> %s: %s' %
+                err('orio.main.tuner.ptest_driver: failed to process test result, command was "%s", output: "%s\n --> %s: %s' %
                       (cmd,perf_costs,e.__class__.__name__,e))
 
 
         # check if the performance cost is already acquired
         if not perf_costs:
-            err('main.tuner.ptest_driver:  performance testing failed: "%s"' % cmd)
+            err('orio.main.tuner.ptest_driver:  performance testing failed: "%s"' % cmd)
 
         # return the performance costs dictionary
         return perf_costs
@@ -163,7 +163,7 @@ class PerfTestDriver:
                 if os.path.exists(fname):
                     os.unlink(fname)
             except:
-                err('main.tuner.ptest_driver:  cannot delete file: %s' % fname)
+                err('orio.main.tuner.ptest_driver:  cannot delete file: %s' % fname)
 
     #-----------------------------------------------------
 

@@ -3,15 +3,15 @@
 #
 
 import sys
-import module.loop.ast, module.loop.ast_lib.common_lib, module.loop.ast_lib.forloop_lib
-import module.loop.submodule.tile.tile
-import module.loop.submodule.permut.permut
-import module.loop.submodule.regtile.regtile
-import module.loop.submodule.unrolljam.unrolljam
-import module.loop.submodule.scalarreplace.scalarreplace
-import module.loop.submodule.boundreplace.boundreplace
-import module.loop.submodule.pragma.pragma
-import module.loop.submodule.arrcopy.arrcopy
+import orio.module.loop.ast, orio.module.loop.ast_lib.common_lib, orio.module.loop.ast_lib.forloop_lib
+import orio.module.loop.submodule.tile.tile
+import orio.module.loop.submodule.permut.permut
+import orio.module.loop.submodule.regtile.regtile
+import orio.module.loop.submodule.unrolljam.unrolljam
+import orio.module.loop.submodule.scalarreplace.scalarreplace
+import orio.module.loop.submodule.boundreplace.boundreplace
+import orio.module.loop.submodule.pragma.pragma
+import orio.module.loop.submodule.arrcopy.arrcopy
 
 #-----------------------------------------
 
@@ -37,37 +37,37 @@ class Transformation:
         self.counter = 1
         self.prefix = 'cbv_'
         
-        self.flib = module.loop.ast_lib.forloop_lib.ForLoopLib()
-        self.clib = module.loop.ast_lib.common_lib.CommonLib()
+        self.flib = orio.module.loop.ast_lib.forloop_lib.ForLoopLib()
+        self.clib = orio.module.loop.ast_lib.common_lib.CommonLib()
 
-        self.tile_smod = module.loop.submodule.tile.tile.Tile()
-        self.perm_smod = module.loop.submodule.permut.permut.Permut()
-        self.regt_smod = module.loop.submodule.regtile.regtile.RegTile()
-        self.ujam_smod = module.loop.submodule.unrolljam.unrolljam.UnrollJam()
-        self.srep_smod = module.loop.submodule.scalarreplace.scalarreplace.ScalarReplace()
-        self.brep_smod = module.loop.submodule.boundreplace.boundreplace.BoundReplace()
-        self.prag_smod = module.loop.submodule.pragma.pragma.Pragma()
-        self.acop_smod = module.loop.submodule.arrcopy.arrcopy.ArrCopy()
+        self.tile_smod = orio.module.loop.submodule.tile.tile.Tile()
+        self.perm_smod = orio.module.loop.submodule.permut.permut.Permut()
+        self.regt_smod = orio.module.loop.submodule.regtile.regtile.RegTile()
+        self.ujam_smod = orio.module.loop.submodule.unrolljam.unrolljam.UnrollJam()
+        self.srep_smod = orio.module.loop.submodule.scalarreplace.scalarreplace.ScalarReplace()
+        self.brep_smod = orio.module.loop.submodule.boundreplace.boundreplace.BoundReplace()
+        self.prag_smod = orio.module.loop.submodule.pragma.pragma.Pragma()
+        self.acop_smod = orio.module.loop.submodule.arrcopy.arrcopy.ArrCopy()
 
     #----------------------------------------------------------
 
     def __tile(self, stmt, tinfo):
         '''To apply loop tiling'''
         
-        if isinstance(stmt, module.loop.ast.ExpStmt):
+        if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             return stmt
 
-        elif isinstance(stmt, module.loop.ast.CompStmt):
+        elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             stmt.stmts = [self.__tile(s, tinfo) for s in stmt.stmts]
             return stmt
             
-        elif isinstance(stmt, module.loop.ast.IfStmt):
+        elif isinstance(stmt, orio.module.loop.ast.IfStmt):
             stmt.true_stmt = self.__tile(stmt.true_stmt, tinfo)
             if stmt.false_stmt:
                 stmt.false_stmt = self.__tile(stmt.false_stmt, tinfo)
             return stmt
                 
-        elif isinstance(stmt, module.loop.ast.ForStmt):
+        elif isinstance(stmt, orio.module.loop.ast.ForStmt):
 
             # recursively transform the loop body
             stmt.stmt = self.__tile(stmt.stmt, tinfo)
@@ -82,11 +82,11 @@ class Transformation:
             # return this loop statement
             return stmt
 
-        elif isinstance(stmt, module.loop.ast.TransformStmt):
+        elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
                                     
-        elif isinstance(stmt, module.loop.ast.NewAST):
+        elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return stmt
 
         else:
@@ -98,10 +98,10 @@ class Transformation:
     def __unrollJam(self, stmt, tinfos):
         '''To apply loop unroll/jamming'''
         
-        if isinstance(stmt, module.loop.ast.ExpStmt):
+        if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             return (stmt, [])
 
-        elif isinstance(stmt, module.loop.ast.CompStmt):
+        elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             tstmts = []
             unrolled_loop_infos = []
             for s in stmt.stmts:
@@ -111,7 +111,7 @@ class Transformation:
             stmt.stmts = tstmts
             return (stmt, unrolled_loop_infos)
             
-        elif isinstance(stmt, module.loop.ast.IfStmt):
+        elif isinstance(stmt, orio.module.loop.ast.IfStmt):
             unrolled_loop_infos = []
             t,l = self.__unrollJam(stmt.true_stmt, tinfos)
             stmt.true_stmt = t
@@ -122,7 +122,7 @@ class Transformation:
                 unrolled_loop_infos.extend(l)
             return (stmt, unrolled_loop_infos)
 
-        elif isinstance(stmt, module.loop.ast.ForStmt):
+        elif isinstance(stmt, orio.module.loop.ast.ForStmt):
             t,l = self.__unrollJam(stmt.stmt, tinfos)
             stmt.stmt = t
             unrolled_loop_infos = l[:]
@@ -149,11 +149,11 @@ class Transformation:
 
             return (stmt, unrolled_loop_infos)
 
-        elif isinstance(stmt, module.loop.ast.TransformStmt):
+        elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
 
-        elif isinstance(stmt, module.loop.ast.NewAST):
+        elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return (stmt, False)
 
         else:
@@ -165,15 +165,15 @@ class Transformation:
     def __insertPragmas(self, stmt, tinfo):
         '''To insert pragma directives'''
         
-        if isinstance(stmt, module.loop.ast.ExpStmt):
+        if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             return stmt
 
-        elif isinstance(stmt, module.loop.ast.CompStmt):
+        elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             nstmts = []
             for s in stmt.stmts:
-                is_comp_before = isinstance(s, module.loop.ast.CompStmt)
+                is_comp_before = isinstance(s, orio.module.loop.ast.CompStmt)
                 ns = self.__insertPragmas(s, tinfo)
-                is_comp_after = isinstance(ns, module.loop.ast.CompStmt)
+                is_comp_after = isinstance(ns, orio.module.loop.ast.CompStmt)
                 if not is_comp_before and is_comp_after:
                     nstmts.extend(ns.stmts)
                 else:
@@ -181,13 +181,13 @@ class Transformation:
             stmt.stmts = nstmts
             return stmt
             
-        elif isinstance(stmt, module.loop.ast.IfStmt):
+        elif isinstance(stmt, orio.module.loop.ast.IfStmt):
             stmt.true_stmt = self.__insertPragmas(stmt.true_stmt, tinfo)
             if stmt.false_stmt:
                 stmt.false_stmt = self.__insertPragmas(stmt.false_stmt, tinfo)
             return stmt
                 
-        elif isinstance(stmt, module.loop.ast.ForStmt):
+        elif isinstance(stmt, orio.module.loop.ast.ForStmt):
 
             # recursively transform the loop body
             stmt.stmt = self.__insertPragmas(stmt.stmt, tinfo)
@@ -202,11 +202,11 @@ class Transformation:
             # return this loop statement
             return stmt
 
-        elif isinstance(stmt, module.loop.ast.TransformStmt):
+        elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
                                     
-        elif isinstance(stmt, module.loop.ast.NewAST):
+        elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return stmt
 
         else:
@@ -226,27 +226,27 @@ class Transformation:
         decls = []
         asgns = []
         if lbound_exp and self.clib.isComplexExp(lbound_exp):
-            intmd = module.loop.ast.IdentExp(self.prefix + str(self.counter))
+            intmd = orio.module.loop.ast.IdentExp(self.prefix + str(self.counter))
             self.counter += 1
             stmt.init.rhs = intmd.replicate()
-            decls.append(module.loop.ast.VarDecl('register int', [intmd.name]))
-            asgn = module.loop.ast.BinOpExp(intmd.replicate(),
+            decls.append(orio.module.loop.ast.VarDecl('register int', [intmd.name]))
+            asgn = orio.module.loop.ast.BinOpExp(intmd.replicate(),
                                             lbound_exp.replicate(),
-                                            module.loop.ast.BinOpExp.EQ_ASGN)
-            asgn = module.loop.ast.ExpStmt(asgn)
+                                            orio.module.loop.ast.BinOpExp.EQ_ASGN)
+            asgn = orio.module.loop.ast.ExpStmt(asgn)
             asgns.append(asgn)
         if ubound_exp and self.clib.isComplexExp(ubound_exp):
-            intmd = module.loop.ast.IdentExp(self.prefix + str(self.counter))
+            intmd = orio.module.loop.ast.IdentExp(self.prefix + str(self.counter))
             self.counter += 1
             stmt.test.rhs = intmd.replicate()
             if len(decls) > 0:
                 decls[0].var_names.append(intmd.name)
             else:
-                decls.append(module.loop.ast.VarDecl('register int', [intmd.name]))
-            asgn = module.loop.ast.BinOpExp(intmd.replicate(),
+                decls.append(orio.module.loop.ast.VarDecl('register int', [intmd.name]))
+            asgn = orio.module.loop.ast.BinOpExp(intmd.replicate(),
                                             ubound_exp.replicate(),
-                                            module.loop.ast.BinOpExp.EQ_ASGN)
-            asgn = module.loop.ast.ExpStmt(asgn)
+                                            orio.module.loop.ast.BinOpExp.EQ_ASGN)
+            asgn = orio.module.loop.ast.ExpStmt(asgn)
             asgns.append(asgn)      
         
         # generate the transformed loop
@@ -261,15 +261,15 @@ class Transformation:
     def __insertOpenMPPragmas(self, stmt, tinfo):
         '''To insert OpenMP pragma directives (on outermost loops only)'''
         
-        if isinstance(stmt, module.loop.ast.ExpStmt):
+        if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             return stmt
 
-        elif isinstance(stmt, module.loop.ast.CompStmt):
+        elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             nstmts = []
             for s in stmt.stmts:
-                is_comp_before = isinstance(s, module.loop.ast.CompStmt)
+                is_comp_before = isinstance(s, orio.module.loop.ast.CompStmt)
                 ns = self.__insertOpenMPPragmas(s, tinfo)
-                is_comp_after = isinstance(ns, module.loop.ast.CompStmt)
+                is_comp_after = isinstance(ns, orio.module.loop.ast.CompStmt)
                 if not is_comp_before and is_comp_after:
                     nstmts.extend(ns.stmts)
                 else:
@@ -277,13 +277,13 @@ class Transformation:
             stmt.stmts = nstmts
             return stmt
             
-        elif isinstance(stmt, module.loop.ast.IfStmt):
+        elif isinstance(stmt, orio.module.loop.ast.IfStmt):
             stmt.true_stmt = self.__insertOpenMPPragmas(stmt.true_stmt, tinfo)
             if stmt.false_stmt:
                 stmt.false_stmt = self.__insertOpenMPPragmas(stmt.false_stmt, tinfo)
             return stmt
                 
-        elif isinstance(stmt, module.loop.ast.ForStmt):
+        elif isinstance(stmt, orio.module.loop.ast.ForStmt):
 
             # get the loop structure
             for_loop_info = self.flib.extractForLoopInfo(stmt)
@@ -300,11 +300,11 @@ class Transformation:
             # return the transformed loop
             return stmt
 
-        elif isinstance(stmt, module.loop.ast.TransformStmt):
+        elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
                                     
-        elif isinstance(stmt, module.loop.ast.NewAST):
+        elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return stmt
 
         else:
@@ -316,15 +316,15 @@ class Transformation:
     def __insertVectorPragmas(self, stmt, tinfo):
         '''To insert vectorization pragma directives (on innermost loops only)'''
 
-        if isinstance(stmt, module.loop.ast.ExpStmt):
+        if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             return stmt
 
-        elif isinstance(stmt, module.loop.ast.CompStmt):
+        elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             nstmts = []
             for s in stmt.stmts:
-                is_comp_before = isinstance(s, module.loop.ast.CompStmt)
+                is_comp_before = isinstance(s, orio.module.loop.ast.CompStmt)
                 ns = self.__insertVectorPragmas(s, tinfo)
-                is_comp_after = isinstance(ns, module.loop.ast.CompStmt)
+                is_comp_after = isinstance(ns, orio.module.loop.ast.CompStmt)
                 if not is_comp_before and is_comp_after:
                     nstmts.extend(ns.stmts)
                 else:
@@ -332,13 +332,13 @@ class Transformation:
             stmt.stmts = nstmts
             return stmt
         
-        elif isinstance(stmt, module.loop.ast.IfStmt):
+        elif isinstance(stmt, orio.module.loop.ast.IfStmt):
             stmt.true_stmt = self.__insertVectorPragmas(stmt.true_stmt, tinfo)
             if stmt.false_stmt:
                 stmt.false_stmt = self.__insertVectorPragmas(stmt.false_stmt, tinfo)
             return stmt
     
-        elif isinstance(stmt, module.loop.ast.ForStmt):
+        elif isinstance(stmt, orio.module.loop.ast.ForStmt):
 
             # apply recursion on the loop body
             stmt.stmt = self.__insertVectorPragmas(stmt.stmt, tinfo)
@@ -354,11 +354,11 @@ class Transformation:
             # return the transformed loop
             return stmt
 
-        elif isinstance(stmt, module.loop.ast.TransformStmt):
+        elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             print 'internal error: unprocessed transform statement'
             sys.exit(1)
                                     
-        elif isinstance(stmt, module.loop.ast.NewAST):
+        elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return stmt
 
         else:
