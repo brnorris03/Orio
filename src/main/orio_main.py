@@ -39,9 +39,6 @@ def start(argv, lang):
 
     g = Globals(cmdline)
     
-    for key,val in sys.modules.items():
-        print key, ":", val
-    
     # Simply pass through command  (Orio won't do anything)
     if g.disable_orio and g.external_command:
         cmd = ' '.join(g.external_command)
