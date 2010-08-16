@@ -3,6 +3,7 @@
 #
 
 import sys
+from orio.main.util.globals import *
 import ast
 
 #-------------------------------------------------
@@ -56,8 +57,7 @@ class PrettyPrinter:
             elif tnode.op_type == tnode.POST_DEC:
                 s = s + '-- '
             else:
-                print 'internal error:OrTilDriver: unknown unary operator type: %s' % tnode.op_type
-                sys.exit(1)
+                err('module.ortildriver.pprinter internal error: unknown unary operator type: %s' % tnode.op_type)
 
         elif isinstance(tnode, ast.BinOpExp):
             s += self.pprint(tnode.lhs, indent, extra_indent)
@@ -92,8 +92,7 @@ class PrettyPrinter:
             elif tnode.op_type == tnode.EQ_ASGN:
                 s += '='
             else:
-                print 'internal error:OrTilDriver: unknown binary operator type: %s' % tnode.op_type
-                sys.exit(1)
+                err('module.ortildriver.pprinter internal error: unknown binary operator type: %s' % tnode.op_type)
             s += self.pprint(tnode.rhs, indent, extra_indent)
 
         elif isinstance(tnode, ast.ParenthExp):
@@ -150,8 +149,7 @@ class PrettyPrinter:
                 s += self.pprint(tnode.stmt, indent + extra_indent, extra_indent)
 
         else:
-            print 'internal error:OrTilDriver: unrecognized type of AST: %s' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.ortildriver.pprinter internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
 
         return s
 

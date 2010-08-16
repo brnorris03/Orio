@@ -50,7 +50,7 @@ class OrTilDriver(orio.module.module.Module):
             # get the next trailer directive
             m = re.search(trailer_ann_re, code)
             if not m:
-                err('orio.module.ortildriver.ortildriver: OrTilDriver: missing closing directive for full core tiles region')
+                err('orio.module.ortildriver.ortildriver: missing closing directive for full core tiles region')
             trailer_iters = m.group(1)
             body_code = code[:m.start()]
 
@@ -59,7 +59,7 @@ class OrTilDriver(orio.module.module.Module):
 
             # compare both header and trailer directives
             if header_iters != trailer_iters:
-                print ('error:OrTilDriver: different loop iterators in the opening and closing ' +
+                err('module.ortildriver.ortildriver: different loop iterators in the opening and closing ' +
                        'directives of full core tiles region')
                 sys.exit(1)
 
@@ -70,7 +70,7 @@ class OrTilDriver(orio.module.module.Module):
             tile_size_vars = [('T1%s' % i) for i in iters]
             for v in tile_size_vars:
                 if v not in tile_size_table:
-                    err('orio.module.ortildriver.ortildriver: OrTilDriver: undefined tile size variable: "%s"' % v)
+                    err('orio.module.ortildriver.ortildriver: undefined tile size variable: "%s"' % v)
 
             # get the tile size values
             tile_size_vals = [tile_size_table[v] for v in tile_size_vars]
@@ -123,7 +123,7 @@ class OrTilDriver(orio.module.module.Module):
             i,v,c = cr
             stmts = code_parser.getParser().parse(c)
             if len(stmts) != 1 or not isinstance(stmts[0], ast.ForStmt):
-                err('orio.module.ortildriver.ortildriver: OrTilDriver: invalid full core-tile code')
+                err('orio.module.ortildriver.ortildriver: invalid full core-tile code')
             n_code_regions.append((i,v,stmts[0]))
         code_regions = n_code_regions
         
