@@ -205,12 +205,10 @@ def p_assignment_expression_2(p):
         elif (p[2] == '-='):
             rhs = ast.BinOpExp(p[1], p[3], ast.BinOpExp.SUB)
         else:
-            print 'internal error:Tilic: unknown assignment operator'
-            sys.exit(1)
+            err('orio.module.tilic.code_parser internal error: unknown assignment operator')
         p[0] = ast.BinOpExp(lhs, rhs, ast.BinOpExp.EQ_ASGN)
     else:
-        print 'internal error:Tilic: unknown assignment operator'
-        sys.exit(1)
+        err('orio.module.tilic.code_parser internal error: unknown assignment operator')
 
 # assignment-operator:
 def p_assignment_operator(p):
@@ -253,8 +251,7 @@ def p_equality_expression_2(p):
     elif p[2] == '!=':
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.NE)
     else:
-        print 'internal error:Tilic: unknown equality operator'
-        sys.exit(1)
+        err('orio.module.tilic.code_parser internal error: unknown equality operator')
 
 # equality-operator:
 def p_equality_operator(p):
@@ -278,8 +275,7 @@ def p_relational_expression_2(p):
     elif (p[2] == '>='):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.GE)
     else:
-        print 'internal error:Tilic: unknown relational operator'
-        sys.exit(1)
+        err('orio.module.tilic.code_parser internal error: unknown relational operator')
         
 # relational-operator
 def p_relational_operator(p):
@@ -301,8 +297,7 @@ def p_additive_expression_2(p):
     elif (p[2] == '-'):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.SUB)
     else:
-        print 'internal error:Tilic: unknown additive operator' 
-        sys.exit(1)
+        err('orio.module.tilic.code_parser internal error: unknown additive operator' )
 
 # additive-operator:
 def p_additive_operator(p):
@@ -324,8 +319,7 @@ def p_multiplicative_expression_2(p):
     elif (p[2] == '%'):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.MOD)
     else:
-        print 'internal error:Tilic: unknown multiplicative operator'
-        sys.exit(1)
+        err('orio.module.tilic.code_parser internal error: unknown multiplicative operator')
 
 # multiplicative-operator
 def p_multiplicative_operator(p):
@@ -356,8 +350,7 @@ def p_unary_expression_4(p):
     elif p[1] == '!':
         p[0] = ast.UnaryExp(p[2], ast.UnaryExp.LNOT)
     else:
-        print 'internal error:Tilic: unknown unary operator'
-        sys.exit(1)
+        err('orio.module.tilic.code_parser internal error: unknown unary operator')
 
 # unary-operator
 def p_unary_operator(p):

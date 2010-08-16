@@ -83,8 +83,7 @@ class Transformation:
 
         # unknown statement
         else:
-            print 'internal error:Tilic: unknown type of statement: %s' % stmt.__class__.__name__
-            sys.exit(1)
+            err('orio.module.tilic.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
 
     #----------------------------------------------
 
@@ -126,8 +125,7 @@ class Transformation:
 
         # unknown statement
         else:
-            print 'internal error:Tilic: unknown type of statement: %s' % stmt.__class__.__name__
-            sys.exit(1)
+            err('orio.module.tilic.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
 
     #----------------------------------------------
 
