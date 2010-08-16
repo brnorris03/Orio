@@ -77,17 +77,14 @@ class Transformation:
                 t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language)
                 transformed_stmt = t.transform()
             except Exception, e:
-                print (('error:%s: encountered an error as optimizing the transformation ' +
-                        'statement: "%s"') % (stmt.line_no, class_name))
-                print ' --> %s: %s' % (e.__class__.__name__, e)
-                sys.exit(1)
+                err(('module.loop.transformation:%s: encountered an error as optimizing the transformation ' +
+                        'statement: "%s"\n --> %s: %s') % (stmt.line_no, class_name,e.__class__.__name__, e))
 
             # return the transformed statement
             return transformed_stmt
 
         else:
-            print 'internal error: unknown statement type: %s' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.loop.transformation internal error: unknown statement type: %s' % stmt.__class__.__name__)
    
         
 

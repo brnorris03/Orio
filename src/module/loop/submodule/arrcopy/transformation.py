@@ -131,15 +131,13 @@ class Transformation:
             return self.__containARef(tnode.stmt, is_output) 
     
         elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.submodule.arrcopy.transformation internal error: unprocessed transform statement')
             
         elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return []
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.arrcopy.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
 
     #----------------------------------------------------------
     
@@ -201,15 +199,13 @@ class Transformation:
             return tnode
         
         elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.submodule.arrcopy.transformation internal error: unprocessed transform statement')
             
         elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return tnode
         
         else:
-            print 'internal error: unexpected AST type: "%s"' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.arrcopy.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
             
     #----------------------------------------------------------
 
@@ -287,9 +283,8 @@ class Transformation:
                 if is_done:
                     if decl != None:
                         if ndecl != None:
-                            print ('error: array copy optimization cannot work for imperfect ' +
+                            err('module.loop.submodule.arrcopy.transformation: array copy optimization cannot work for imperfect ' +
                                    'loop nests')
-                            sys.exit(1)
                         else:
                             ndecl = decl
                     else:
@@ -413,15 +408,13 @@ class Transformation:
                 return (stmt, False, None, rinfo)
                     
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.submodule.arrcopy.transformation internal error: unprocessed transform statement')
             
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return (stmt, True, None, None)
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.arrcopy.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
         
     #----------------------------------------------------------
 
@@ -457,14 +450,12 @@ class Transformation:
         for e in dim_exps:
             c_inames = filter(lambda i: self.clib.containIdentName(e, i), all_lids)
             if len(c_inames) != 1:
-                print (('error: each dimension expression of array reference %s must contain ' +
+                err(('module.loop.submodule.arrcopy.transformation: each dimension expression of array reference %s must contain ' +
                         'exactly one iteration variable') % self.aref)
-                sys.exit(1)
             iname = c_inames[0]
             if iname in ivar_names:
-                print ('error: repeated iteration variable name "%s" in array reference %s' %
+                err('module.loop.submodule.arrcopy.transformation: repeated iteration variable name "%s" in array reference %s' %
                        (iname, aref))
-                sys.exit(1)
             ivar_names.append(iname)
 
         # get the sizes of the dimensions of the array buffer

@@ -3,6 +3,7 @@
 #
 
 import sys
+from orio.main.util.globals import *
 import orio.module.loop.ast, orio.module.loop.ast_lib.constant_folder, orio.module.loop.ast_lib.forloop_lib
 
 #-----------------------------------------
@@ -55,8 +56,7 @@ class Transformation:
             return tnode
 
         elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.submodule.unrolljam.transformation internal error: unprocessed transform statement')
 
         elif isinstance(tnode, orio.module.loop.ast.NumLitExp):
             return tnode
@@ -100,8 +100,7 @@ class Transformation:
             return tnode
         
         else:
-            print 'internal error: unexpected AST type: "%s"' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
     
     #-----------------------------------------
 
