@@ -63,8 +63,7 @@ class Pluto(orio.module.module.Module):
         open_m = re.search(pluto_open_tag_re, code)
         close_m = re.search(pluto_close_tag_re, code)
         if (not open_m) or (not close_m):
-            print ('error:polysyn: cannot find the opening and closing tags for the PLuTo code')
-            sys.exit(1)
+            err('orio.module.pluto.pluto: cannot find the opening and closing tags for the Pluto code')
             
         # check if Pluto has been correctly installed  
         if os.popen('polycc').read() == '':
@@ -107,7 +106,7 @@ class Pluto(orio.module.module.Module):
 
         # run Pluto
         cmd = 'polycc %s %s' % (fname, cmd_args)
-        print '  running Pluto with command: %s' % cmd
+        info('orio.module.pluto.pluto: running Pluto with command: %s' % cmd,level=1)
         try:
             os.system(cmd)
         except:

@@ -131,13 +131,13 @@ class Transformation:
             return self.__containARef(tnode.stmt, is_output) 
     
         elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
-            err('module.loop.submodule.arrcopy.transformation internal error: unprocessed transform statement')
+            err('orio.module.loop.submodule.arrcopy.transformation internal error: unprocessed transform statement')
             
         elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return []
 
         else:
-            err('module.loop.submodule.arrcopy.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
+            err('orio.module.loop.submodule.arrcopy.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
 
     #----------------------------------------------------------
     
@@ -199,13 +199,13 @@ class Transformation:
             return tnode
         
         elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
-            err('module.loop.submodule.arrcopy.transformation internal error: unprocessed transform statement')
+            err('orio.module.loop.submodule.arrcopy.transformation internal error: unprocessed transform statement')
             
         elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return tnode
         
         else:
-            err('module.loop.submodule.arrcopy.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
+            err('orio.module.loop.submodule.arrcopy.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
             
     #----------------------------------------------------------
 
@@ -283,7 +283,7 @@ class Transformation:
                 if is_done:
                     if decl != None:
                         if ndecl != None:
-                            err('module.loop.submodule.arrcopy.transformation: array copy optimization cannot work for imperfect ' +
+                            err('orio.module.loop.submodule.arrcopy.transformation: array copy optimization cannot work for imperfect ' +
                                    'loop nests')
                         else:
                             ndecl = decl
@@ -408,13 +408,13 @@ class Transformation:
                 return (stmt, False, None, rinfo)
                     
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            err('module.loop.submodule.arrcopy.transformation internal error: unprocessed transform statement')
+            err('orio.module.loop.submodule.arrcopy.transformation internal error: unprocessed transform statement')
             
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return (stmt, True, None, None)
 
         else:
-            err('module.loop.submodule.arrcopy.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
+            err('orio.module.loop.submodule.arrcopy.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
         
     #----------------------------------------------------------
 
@@ -450,11 +450,11 @@ class Transformation:
         for e in dim_exps:
             c_inames = filter(lambda i: self.clib.containIdentName(e, i), all_lids)
             if len(c_inames) != 1:
-                err(('module.loop.submodule.arrcopy.transformation: each dimension expression of array reference %s must contain ' +
+                err(('orio.module.loop.submodule.arrcopy.transformation: each dimension expression of array reference %s must contain ' +
                         'exactly one iteration variable') % self.aref)
             iname = c_inames[0]
             if iname in ivar_names:
-                err('module.loop.submodule.arrcopy.transformation: repeated iteration variable name "%s" in array reference %s' %
+                err('orio.module.loop.submodule.arrcopy.transformation: repeated iteration variable name "%s" in array reference %s' %
                        (iname, aref))
             ivar_names.append(iname)
 

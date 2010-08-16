@@ -104,7 +104,7 @@ class ArrCopy(orio.module.loop.submodule.submodule.SubModule):
         if ((not isinstance(rhs, list) and not isinstance(rhs, tuple)) or
             not reduce(lambda x,y: x and y, map(lambda x: isinstance(x, int), rhs), True) or 
             not reduce(lambda x,y: x and y, map(lambda x: x > 0, rhs), True)):
-            err(('module.loop.submodule.arrcopy.arrcopy:%s: array dimension sizes argument must be a list of positive ' +
+            err(('orio.module.loop.submodule.arrcopy.arrcopy:%s: array dimension sizes argument must be a list of positive ' +
                    'integers: %s') % (line_no, rhs))
         dimsizes = rhs
             

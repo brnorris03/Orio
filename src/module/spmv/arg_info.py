@@ -56,9 +56,8 @@ class ArgInfo:
 
         # check for validity of the simdization requirement
         if self.simd != self.SIMD_NONE and self.in_unroll_factor % 2 != 0:
-            print ('error:SpMV: simdization requires the inner loop unroll factor to be ' +
+            err('orio.module.spmv.arg_info: simdization requires the inner loop unroll factor to be ' +
                    'divisible by two')
-            sys.exit(1)
 
 #---------------------------------------------------------------------
     

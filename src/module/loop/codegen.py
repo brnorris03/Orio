@@ -20,7 +20,7 @@ class CodeGen:
         elif language.lower() in ['f', 'f90', 'fortran']:
             self.generator = CodeGen_F()
         else:
-            err('module.loop.codegen: Unknown language specified for code generation: %s' % language)
+            err('orio.module.loop.codegen: Unknown language specified for code generation: %s' % language)
         pass
 
     #----------------------------------------------
@@ -80,7 +80,7 @@ class CodeGen_C (CodeGen):
             elif tnode.op_type == tnode.POST_DEC:
                 s = s + '-- '
             else:
-                err('module.loop.codegen internal error: unknown unary operator type: %s' % tnode.op_type)
+                err('orio.module.loop.codegen internal error: unknown unary operator type: %s' % tnode.op_type)
 
         elif isinstance(tnode, ast.BinOpExp):
             s += self.generate(tnode.lhs, indent, extra_indent)
@@ -115,7 +115,7 @@ class CodeGen_C (CodeGen):
             elif tnode.op_type == tnode.EQ_ASGN:
                 s += '='
             else:
-                err('module.loop.codegen internal error: unknown binary operator type: %s' % tnode.op_type)
+                err('orio.module.loop.codegen internal error: unknown binary operator type: %s' % tnode.op_type)
             s += self.generate(tnode.rhs, indent, extra_indent)
 
         elif isinstance(tnode, ast.ParenthExp):
@@ -172,7 +172,7 @@ class CodeGen_C (CodeGen):
                 s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
 
         elif isinstance(tnode, ast.TransformStmt):
-            err('module.loop.codegen internal error: a transformation statement is never generated as an output')
+            err('orio.module.loop.codegen internal error: a transformation statement is never generated as an output')
 
         elif isinstance(tnode, ast.VarDecl):
             s += indent + str(tnode.type_name) + ' '
@@ -186,7 +186,7 @@ class CodeGen_C (CodeGen):
             s += self.generate(tnode.ast, indent, extra_indent)
 
         else:
-            err('module.loop.codegen internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
+            err('orio.module.loop.codegen internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
 
         return s
 
@@ -246,7 +246,7 @@ class CodeGen_F(CodeGen):
             elif tnode.op_type == tnode.POST_DEC:
                 s += s + '\n' + indent + s + ' = ' + s + ' - 1\n'
             else:
-                err('module.loop.codegen internal error: unknown unary operator type: %s' % tnode.op_type)
+                err('orio.module.loop.codegen internal error: unknown unary operator type: %s' % tnode.op_type)
 
         elif isinstance(tnode, ast.BinOpExp):
             if tnode.op_type not in [tnode.MOD, tnode.COMMA]:
@@ -278,7 +278,7 @@ class CodeGen_F(CodeGen):
                 elif tnode.op_type == tnode.EQ_ASGN:
                     s += '='
                 else:
-                    err('module.loop.codegen internal error: unknown binary operator type: %s' % tnode.op_type)
+                    err('orio.module.loop.codegen internal error: unknown binary operator type: %s' % tnode.op_type)
                     
                 s += self.generate(tnode.rhs, indent, extra_indent)
                 
@@ -340,10 +340,10 @@ class CodeGen_F(CodeGen):
                 err('orio.module.loop.codegen:  missing loop increment expression. Fortran code generation requires a loop increment expression.')
             s += ', '
             if not isinstance(tnode.test, ast.BinOpExp):
-                err('module.loop.codegen internal error: cannot handle code generation for loop test expression')
+                err('orio.module.loop.codegen internal error: cannot handle code generation for loop test expression')
                 
             if tnode.test.op_type not in [tnode.test.LE, tnode.test.LT, tnode.test.GE, tnode.test.GT]: 
-                err('module.loop.codegen internal error: cannot generate Fortran loop, only <, >, <=, >= are recognized in the loop limit test')
+                err('orio.module.loop.codegen internal error: cannot generate Fortran loop, only <, >, <=, >= are recognized in the loop limit test')
             
             # Generate the loop bound        
             s += self.generate(tnode.test.rhs, indent, extra_indent)
@@ -356,7 +356,7 @@ class CodeGen_F(CodeGen):
             # Generate the loop increment/decrement step
             
             if not isinstance(tnode.iter, (ast.BinOpExp, ast.UnaryExp)):
-                err('module.loop.codegen internal error: cannot handle code generation for loop increment expression')
+                err('orio.module.loop.codegen internal error: cannot handle code generation for loop increment expression')
  
             unary = False
             if isinstance(tnode.iter, ast.UnaryExp):
@@ -365,7 +365,7 @@ class CodeGen_F(CodeGen):
                 
             if not ((isinstance(tnode.iter, ast.BinOpExp) and tnode.iter.op_type == tnode.iter.EQ_ASGN)
                     or (isinstance(tnode.iter, ast.UnaryExp) and tnode.iter.op_type in incr_decr)): 
-                err('module.loop.codegen internal error: cannot handle code generation for loop increment expression')
+                err('orio.module.loop.codegen internal error: cannot handle code generation for loop increment expression')
 
             if tnode.test.op_type in [tnode.test.GT, tnode.test.GE] \
                 and unary and tnode.iter.op_type in [tnode.iter.PRE_DEC, tnode.iter.POST_DEC]:
@@ -385,12 +385,12 @@ class CodeGen_F(CodeGen):
                 s += '\n' + indent + 'end do\n'
 
         elif isinstance(tnode, ast.TransformStmt):
-            err('module.loop.codegen internal error: a transformation statement is never generated as an output')
+            err('orio.module.loop.codegen internal error: a transformation statement is never generated as an output')
 
         elif isinstance(tnode, ast.VarDecl):
             
             if tnode.type_name not in self.ftypes.keys():
-                err('module.loop.codegen internal error: Cannot generate Fortran type for ' + tnode.type_name)
+                err('orio.module.loop.codegen internal error: Cannot generate Fortran type for ' + tnode.type_name)
                 
             s += indent + str(self.ftypes[tnode.type_name]) + ' '
             s += ', '.join(tnode.var_names)
@@ -403,7 +403,7 @@ class CodeGen_F(CodeGen):
             s += self.generate(tnode.ast, indent, extra_indent)
 
         else:
-            err('module.loop.codegen internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
+            err('orio.module.loop.codegen internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
 
         return s
 

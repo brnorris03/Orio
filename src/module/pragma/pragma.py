@@ -3,6 +3,7 @@
 #
 
 import sys
+from orio.main.util.globals import *
 import orio.module.module
 
 #-----------------------------------------
@@ -37,10 +38,8 @@ class Pragma(orio.module.module.Module):
         try:
             pragma_str = eval(self.module_body_code, self.perf_params)
         except Exception, e:
-            print ('error:%s: failed to evaluate the Pragma orio.module.body code expression: "%s"' %
-                   self.module_body_code)
-            print ' --> %s: %s' % (e.__class__.__name__, e)
-            sys.exit(1)
+            err('orio.module.pragma.pragma:%s: failed to evaluate the Pragma orio.module.body code expression: "%s"\n --> %s: %s' %
+                   (self.module_body_code,e.__class__.__name__, e))
 
         # generate the pragma directive if the pragma string is not empty
         pragma_directive = ''

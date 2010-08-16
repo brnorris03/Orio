@@ -92,7 +92,7 @@ class Profiler:
         compile_opts = self.compile_opts if self.compile_opts else ''
         cmd = ('%s %s -g -pg -lm -o %s %s' %
                (compile_cmd, compile_opts, exe_fname, src_fname))
-        if self.verbose: print ' compiling:\n\t' + cmd
+        info('orio.module.polysyn.profiler compiling:\n\t' + cmd, level=1)
         try:
             os.system(cmd)
         except:
@@ -100,7 +100,7 @@ class Profiler:
 
         # execute the executable to generate "gmon.out" file that contains the profiling information
         exec_cmd = './%s' % exe_fname
-        if self.verbose: print ' executing:\n\t' + exec_cmd
+        info('orio.module.polysyn.profiler executing:\n\t' + exec_cmd, level=1)
         try:
             status = os.system(exec_cmd)
         except:
@@ -108,7 +108,7 @@ class Profiler:
 
         # run gprof to extract the profiling information
         gprof_cmd = 'gprof -lbQ %s' % exe_fname
-        if self.verbose: print ' executing profiler:\n\t' + gprof_cmd
+        info('orio.module.polysyn.profiler executing profiler:\n\t' + gprof_cmd, level=1)
         try:
             f = os.popen(gprof_cmd)
             profile_info = f.read()

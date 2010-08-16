@@ -64,7 +64,7 @@ class Transformation:
             arg_names = {}
             for [aname, rhs, line_no] in stmt.args:
                 if aname in arg_names:
-                    err('module.loop.transformation: %s: repeated transformation argument: "%s"' % (line_no, aname))
+                    err('orio.module.loop.transformation: %s: repeated transformation argument: "%s"' % (line_no, aname))
                 arg_names[aname] = None
 
             # dynamically load the transformation submodule class
@@ -77,14 +77,14 @@ class Transformation:
                 t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language)
                 transformed_stmt = t.transform()
             except Exception, e:
-                err(('module.loop.transformation:%s: encountered an error as optimizing the transformation ' +
+                err(('orio.module.loop.transformation:%s: encountered an error as optimizing the transformation ' +
                         'statement: "%s"\n --> %s: %s') % (stmt.line_no, class_name,e.__class__.__name__, e))
 
             # return the transformed statement
             return transformed_stmt
 
         else:
-            err('module.loop.transformation internal error: unknown statement type: %s' % stmt.__class__.__name__)
+            err('orio.module.loop.transformation internal error: unknown statement type: %s' % stmt.__class__.__name__)
    
         
 
