@@ -89,15 +89,13 @@ class Transformation:
                 return [[stmt]]
 
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('orio.module.loop.submodule.permut.transformation internal error: unprocessed transform statement')
                         
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return []
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % tnode.__class__.__name__
-            sys.exit(1)
+            err('orio.module.loop.submodule.permut.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
                         
     #-------------------------------------------------
 

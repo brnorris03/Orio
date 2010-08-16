@@ -3,6 +3,7 @@
 #
 
 import sys
+from orio.main.util.globals import *
 import orio.module.loop.ast, orio.module.loop.ast_lib.common_lib, orio.module.loop.ast_lib.forloop_lib
 
 #-----------------------------------------
@@ -72,8 +73,7 @@ class Transformation:
             return
         
         else:
-            print 'internal error: unexpected AST type: "%s"' % exp.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.scalarreplace.transformation internal error: unexpected AST type: "%s"' % exp.__class__.__name__)
             
     #----------------------------------------------------------
 
@@ -194,15 +194,13 @@ class Transformation:
             return tnode
 
         elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.submodule.scalarreplace.transformation internal error: unprocessed transform statement')
 
         elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return tnode
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.scalarreplace.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
 
     #----------------------------------------------------------
 
@@ -260,15 +258,13 @@ class Transformation:
                 stmt.stmt = orio.module.loop.ast.CompStmt(prologue + [stmt.stmt] + epilogue)
             
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.submodule.scalarreplace.transformation internal error: unprocessed transform statement')
             
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return
         
         else:
-            print 'internal error: unexpected AST type: "%s"' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.scalarreplace.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
             
     #----------------------------------------------------------
 

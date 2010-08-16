@@ -62,9 +62,8 @@ class Pragma(orio.module.loop.submodule.submodule.SubModule):
         else:
             if ((not isinstance(rhs, list) and not isinstance(rhs, tuple)) or
                 not reduce(lambda x,y: x and y, map(lambda x: isinstance(x, str), rhs), True)):
-                print ('error:%s: pragma directives must be a list/tuple of strings: %s' %
+                err('orio.module.loop.submodule.pragma.pragma:%s: pragma directives must be a list/tuple of strings: %s' %
                        (line_no, rhs))
-                sys.exit(1)
             pragmas = rhs
 
         # return information about the transformation arguments
