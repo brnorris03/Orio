@@ -3,6 +3,7 @@
 #
 
 import sys
+from orio.main.util.globals import *
 import ast, ast_util
 
 #-------------------------------------------------
@@ -105,9 +106,8 @@ class Transformation:
             return lhs
 
         else:
-            print ('internal error:OrTilDriver: unknown type of expression: %s' % 
+            err('module.ortildriver.transformation internal error: unknown type of expression: %s' % 
                    exp.__class__.__name__)
-            sys.exit(1)
 
     #----------------------------------------------
         
@@ -254,17 +254,15 @@ class Transformation:
                     return ops
 
             else:
-                print ('error:OrTilDriver: constant folding cannot handle binary operations other ' +
+                err('module.ortildriver.transformation: constant folding cannot handle binary operations other ' +
                        'than +,-,*')
-                sys.exit(1)
 
         elif isinstance(exp, ast.ParenthExp):
             return self.__foldConstantExp(exp.exp, up_sign)
         
         else:
-            print ('internal error:OrTilDriver: unknown type of expression: %s' % 
+            err('module.ortildriver.transformation internal error: unknown type of expression: %s' % 
                    exp.__class__.__name__)
-            sys.exit(1)
 
     #----------------------------------------------
 
@@ -347,8 +345,7 @@ class Transformation:
             return tnode
 
         else:
-            print 'internal error:OrTilDriver: unknown type of AST: %s' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.ortildriver.transformation internal error: unknown type of AST: %s' % tnode.__class__.__name__)
 
     #----------------------------------------------
 
@@ -403,9 +400,8 @@ class Transformation:
 
         # unknown statement      
         else:
-            print ('internal error:OrTilDriver: unknown type of statement: %s' % 
+            err('module.ortildriver.transformation internal error: unknown type of statement: %s' % 
                    stmt.__class__.__name__)
-            sys.exit(1)
  
     #----------------------------------------------
 
@@ -513,8 +509,7 @@ class Transformation:
             return tnode
 
         else:
-            print 'internal error:OrTilDriver: unknown type of AST: %s' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.ortildriver.transformation internal error:OrTilDriver: unknown type of AST: %s' % tnode.__class__.__name__)
  
     #----------------------------------------------
 
@@ -577,8 +572,7 @@ class Transformation:
             self.__countArrRefs(tnode.stmt, count_table, aref_seq)
 
         else:
-            print 'internal error:OrTilDriver: unknown type of AST: %s' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.ortildriver.transformation internal error:OrTilDriver: unknown type of AST: %s' % tnode.__class__.__name__)
  
     #----------------------------------------------
 

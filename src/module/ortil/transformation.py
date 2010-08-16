@@ -154,26 +154,23 @@ class Transformation:
                 else:
                     val = ast.ParenthExp(uval.replicate())
             else:
-                print 'internal error:OrTil: unrecognized min/max argument value'
-                sys.exit(1)
+                err('module.ortil.transformation internal error: unrecognized min/max argument value')
 
             # return the obtained min/max value
             return val
 
         # array reference expression
         elif isinstance(exp, ast.ArrayRefExp):
-            print ('error:OrTil: invalid array-reference expression found in loop bound ' +
+            err('module.ortil.transformation: invalid array-reference expression found in loop bound ' +
                    'expression: %s' % exp)
-            sys.exit(1)
 
         # function call expression
         elif isinstance(exp, ast.FunCallExp):
             
             # check the function name
             if (not isinstance(exp.exp, ast.IdentExp)) or exp.exp.name not in ('min', 'max'):
-                print (('error:OrTil: function name found in loop bound expression must be ' +
+                err('module.ortil.transformation: function name found in loop bound expression must be ' +
                         'min/max, obtained: %s') % exp.exp)
-                sys.exit(1)
 
             # recursion on each function argument
             exp.args = [self.__findMinMaxVal(min_or_max, a, var_names, val_table, up_sign) 
@@ -187,9 +184,8 @@ class Transformation:
             
             # check the unary operation
             if exp.op_type not in (ast.UnaryExp.PLUS, ast.UnaryExp.MINUS):
-                print (('error:OrTil: unary operation found in loop bound expression must ' +
+                err('module.ortil.transformation: unary operation found in loop bound expression must ' +
                         'be +/-, obtained: %s') % exp.exp)
-                sys.exit(1)
 
             # update the sign, and do recursion on the inner expression
             if exp.op_type == ast.UnaryExp.MINUS:
@@ -204,9 +200,8 @@ class Transformation:
             
             # check the binary operation
             if exp.op_type not in (ast.BinOpExp.ADD, ast.BinOpExp.SUB, ast.BinOpExp.MUL):
-                print (('error:OrTil: binary operation found in loop bound expression must ' +
+                err('module.ortil.transformation: binary operation found in loop bound expression must ' +
                         'be +/-/*, obtained: %s') % exp)
-                sys.exit(1)
 
             # do recursion on both operands
             exp.lhs = self.__findMinMaxVal(min_or_max, exp.lhs, var_names, val_table, up_sign)
@@ -228,8 +223,7 @@ class Transformation:
 
         # unrecognized expression
         else:
-            print 'internal error:OrTil: unknown type of expression: %s' % exp.__class__.__name__
-            sys.exit(1)
+            err('module.ortil.transformation internal error: unknown type of expression: %s' % exp.__class__.__name__)
 
     #----------------------------------------------
 
@@ -540,8 +534,7 @@ class Transformation:
             # if it's an if-statement's test expression
             else:
                 if not isinstance(s, ast.BinOpExp):
-                    print 'internal error:OrTil: a test expression is expected'
-                    sys.exit(1)
+                    err('module.ortil.transformation internal error: a test expression is expected')
 
                 # generate AST for the true statement
                 t1 = self.__convertToASTs(dstmts[i+1], tile_level, contain_loop,
@@ -601,14 +594,12 @@ class Transformation:
 
         # complain if the tiling level is not a positive integer
         if not isinstance(tile_level, int) or tile_level <= 0:
-            print 'internal error:OrTil: invalid tiling level: %s' % tile_level
-            sys.exit(1)
+            err('module.ortil.transformation internal error: invalid tiling level: %s' % tile_level)
 
         # cannot handle a directly nested compound statement
         if isinstance(stmt, ast.CompStmt):
-            print ('internal error:OrTil: unexpected compound statement directly nested inside ' +
+           err('module.ortil.transformation internal error: unexpected compound statement directly nested inside ' +
                    'another compound statement')
-            sys.exit(1)
 
         # to handle the given expression statement or if statement
         if isinstance(stmt, ast.ExpStmt) or isinstance(stmt, ast.IfStmt):
@@ -652,9 +643,8 @@ class Transformation:
                 rect_lb_exp = ast.IdentExp(lb_name)
                 rect_ub_exp = ast.IdentExp(ub_name)
                 if not need_orio.main.tiled_loop:
-                    print ('internal error:OrTil: unexpected case where generation of the orio.main.' +
+                    err('module.ortil.transformation internal error: unexpected case where generation of the orio.main.' +
                            'rectangular tiled loop is needed')
-                    sys.exit(1)
 
             # get explicit loop-bound scanning code
             t = self.__getLoopBoundScanningStmts(this_lbody.stmts, tile_level, n_outer_loop_inames,
@@ -678,7 +668,7 @@ class Transformation:
                         res_stmts.append((is_tiled, last_stmts))
                         res_stmts.append((False, [prolog_code]))
                     else:
-                         res_stmts.append((False, last_stmts + [prolog_code]))
+                        res_stmts.append((False, last_stmts + [prolog_code]))
                 else:
                     res_stmts.append((False, [prolog_code]))
                 
@@ -799,8 +789,7 @@ class Transformation:
             return res_stmts
         
         # unknown statement
-        print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
-        sys.exit(1)
+        err('module.ortil.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
 
     #----------------------------------------------
 
@@ -851,8 +840,7 @@ class Transformation:
 
         # unknown statement
         else:
-            print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.ortil.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
 
     #----------------------------------------------
 
@@ -898,8 +886,7 @@ class Transformation:
 
         # unknown statement
         else:
-            print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.ortil.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
 
     #----------------------------------------------
 
@@ -981,8 +968,7 @@ class Transformation:
 
         # unknown statement
         else:
-            print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.ortil.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
 
     #----------------------------------------------
 

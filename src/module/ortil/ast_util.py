@@ -48,8 +48,7 @@ class ASTUtil:
             return inames
                 
         else:
-            print 'internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.ortil.ast_util internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__)
             
     #---------------------------------------------------------------
 
@@ -59,8 +58,7 @@ class ASTUtil:
         '''
 
         if not isinstance(exp, ast.Exp):
-            print 'internal error:OrTil:containIdentName: input not an expression type'
-            sys.exit(1)
+            err('module.ortil.ast_util internal error:OrTil:containIdentName: input not an expression type')
 
         if exp == None:
             return False
@@ -93,8 +91,7 @@ class ASTUtil:
             return self.containIdentName(exp.exp, iname)
         
         else:
-            print 'internal error:OrTil: unexpected AST type: "%s"' % exp.__class__.__name__
-            sys.exit(1)
+            err('module.ortil.ast_util internal error:OrTil: unexpected AST type: "%s"' % exp.__class__.__name__)
             
     #---------------------------------------------------------------
 
@@ -129,9 +126,8 @@ class ASTUtil:
                         stmt.init.rhs = stmt.init.rhs.exp
                     if isinstance(stmt.init.lhs, ast.IdentExp): 
                         break
-                print ('error:OrTil:%s: loop initialization expression not in "<id> = <exp>" form' %
+                err('module.ortil.ast_util:%s: loop initialization expression not in "<id> = <exp>" form' %
                        stmt.init.line_no)
-                sys.exit(1)
                 
         # check test expression
         if stmt.test:
@@ -146,9 +142,8 @@ class ASTUtil:
                         stmt.test.rhs = stmt.test.rhs.exp
                     if isinstance(stmt.test.lhs, ast.IdentExp): 
                         break
-                print ('error:OrTil:%s: loop test expression not in "<id> <= <exp>" or ' +
+                err('module.ortil.ast_util:%s: loop test expression not in "<id> <= <exp>" or ' +
                        '"<id> < <exp>"form' % stmt.test.line_no)
-                sys.exit(1)
             
         # check iteration expression
         if stmt.iter:
@@ -178,15 +173,13 @@ class ASTUtil:
                         stmt.iter.exp = stmt.iter.exp.exp
                     if isinstance(stmt.iter.exp, ast.IdentExp):
                         break
-                print (('error:OrTil:%s: loop iteration expression not in "<id>++" or "<id>--" or ' +
+                err(('module.ortil.ast_util:%s: loop iteration expression not in "<id>++" or "<id>--" or ' +
                         '"<id> += <exp>" or "<id> = <id> + <exp>" form') % stmt.iter.line_no)
-                sys.exit(1)
 
         # check if the control expressions are all empty
         if not stmt.init and not stmt.test and not stmt.iter:
-            print ('error:OrTil:%s: a loop with an empty control expression cannot be handled' %
+            err('module.ortil.ast_util:%s: a loop with an empty control expression cannot be handled' %
                    stmt.line_no)
-            sys.exit(1)
     
         # check if the iterator names are all the same
         init_iname = None
@@ -210,9 +203,8 @@ class ASTUtil:
         if iter_iname:
             inames.append(iter_iname)
         if inames.count(inames[0]) != len(inames):
-            print ('error:OrTil:%s: iterator names across init, test, and iter exps must be the same'
+           err('module.ortil.ast_util:%s: iterator names across init, test, and iter exps must be the same'
                    % stmt.line_no)
-            sys.exit(1)
         
         # extract for-loop structure information
         index_id = ast.IdentExp(inames[0])
@@ -240,11 +232,10 @@ class ASTUtil:
                 elif stmt.iter.op_type in (ast.UnaryExp.POST_DEC, ast.UnaryExp.PRE_DEC):
                     stride_exp = ast.NumLitExp(-1, ast.NumLitExp.INT)
                 else:
-                    print 'internal error:OrTil: unexpected unary operation type'
-                    sys.exit(1)
+                    err('module.ortil.ast_util internal error:OrTil: unexpected unary operation type')
             else:
-                print 'internal error:OrTil: unexpected type of iteration expression'
-                sys.exit(1)
+                err('module.ortil.ast_utilinternal error:OrTil: unexpected type of iteration expression')
+
         loop_body = stmt.stmt.replicate()
         for_loop_info = (index_id, lbound_exp, ubound_exp, stride_exp, loop_body)
         
