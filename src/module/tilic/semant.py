@@ -61,8 +61,7 @@ class SemanticChecker:
             return stmt
         
         else:
-            print 'internal error:Tilic: unknown type of statement: %s' % stmt.__class__.__name__
-            sys.exit(1)
+            err('orio.module.tilic.semant internal error: unknown type of statement: %s' % stmt.__class__.__name__)
                 
     #-----------------------------------------------------
 
@@ -97,8 +96,7 @@ class SemanticChecker:
             self.__checkStmt(stmt.stmt, oloop_inames + [id.name])
             
         else:
-            print 'internal error:Tilic: unknown type of statement: %s' % stmt.__class__.__name__
-            sys.exit(1)
+            err('orio.module.tilic.semant internal error: unknown type of statement: %s' % stmt.__class__.__name__)
 
     #-----------------------------------------------------
 

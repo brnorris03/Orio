@@ -48,8 +48,7 @@ class ASTUtil:
             return inames
                 
         else:
-            print 'internal error:Tilic: unknown type of statement: %s' % stmt.__class__.__name__
-            sys.exit(1)
+            err('orio.module.tilic.ast_util internal error: unknown type of statement: %s' % stmt.__class__.__name__)
             
     #---------------------------------------------------------------
 
@@ -57,8 +56,7 @@ class ASTUtil:
         '''Check if the given expression contains an identifier whose name matches with the given name'''
 
         if not isinstance(exp, ast.Exp):
-            print 'internal error:Tilic:containIdentName: input not an expression type'
-            sys.exit(1)
+            err('orio.module.tilic.ast_util internal error: input not an expression type')
 
         if exp == None:
             return False
@@ -91,8 +89,7 @@ class ASTUtil:
             return self.containIdentName(exp.exp, iname)
         
         else:
-            print 'internal error:Tilic: unexpected AST type: "%s"' % exp.__class__.__name__
-            sys.exit(1)
+            err('orio.module.tilic.ast_util  internal error: unexpected AST type: "%s"' % exp.__class__.__name__)
             
     #---------------------------------------------------------------
 
