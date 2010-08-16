@@ -23,9 +23,7 @@ class AnnParser:
         try:
             val = eval(text, self.perf_params)
         except Exception, e:
-            print ('error:OrTilDriver: failed to evaluate expression: "%s"' % text)
-            print ' --> %s: %s' % (e.__class__.__name__, e)
-            sys.exit(1)
+            err('orio.module.ortildriver.ann_parser: failed to evaluate expression: "%s"\n --> %s: %s' % (text, e.__class__.__name__, e))
         return val
 
     #------------------------------------------------------------
