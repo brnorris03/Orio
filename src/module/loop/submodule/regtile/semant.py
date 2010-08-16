@@ -3,6 +3,7 @@
 #
 
 import sys
+from orio.main.util.globals import *
 import orio.module.loop.ast, orio.module.loop.ast_lib.forloop_lib
 
 #-----------------------------------------
@@ -37,23 +38,20 @@ class SemanticChecker:
             for_loop_info = self.flib.extractForLoopInfo(stmt)
             index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
             if index_id.name in outer_loops:
-                print ('error: loops with the same iteration name "%s" cannot be nested' %
+                err('module.loop.submodule.regtile.semant: loops with the same iteration name "%s" cannot be nested' %
                        index_id.name)
-                sys.exit(1)
             n_outer_loops = outer_loops.copy()
             n_outer_loops[index_id.name] = None
             self.__checkIdenticalNestedLoop(stmt.stmt, n_outer_loops)
 
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.submodule.regtile.semant internal error: unprocessed transform statement')
                         
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             pass
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.regtile.semant internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
 
     #----------------------------------------------------------
     

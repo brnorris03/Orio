@@ -64,9 +64,8 @@ class ForLoopLib:
                         stmt.test.rhs = stmt.test.rhs.exp
                     if isinstance(stmt.test.lhs, orio.module.loop.ast.IdentExp): 
                         break
-                print ('error:%s: loop test expression not in "<id> <= <exp>" form' %
+                err('module.loop.ast_lib.forloop_lib:%s: loop test expression not in "<id> <= <exp>" form' %
                        stmt.test.line_no)
-                sys.exit(1)
             
         # check iteration expression
         if stmt.iter:
@@ -99,15 +98,13 @@ class ForLoopLib:
                         stmt.iter.exp = stmt.iter.exp.exp
                     if isinstance(stmt.iter.exp, orio.module.loop.ast.IdentExp):
                         break
-                print (('error:%s: loop iteration expression not in "<id>++" or "<id>--" or ' +
+                err(('module.loop.ast_lib.forloop_lib:%s: loop iteration expression not in "<id>++" or "<id>--" or ' +
                         '"<id> += <exp>" or "<id> = <id> + <exp>" form') % stmt.iter.line_no)
-                sys.exit(1)
 
         # check if the control expressions are all empty
         if not stmt.init and not stmt.test and not stmt.iter:
-            print ('error:%s: a loop with an empty control expression cannot be handled' %
+            err('module.loop.ast_lib.forloop_lib:%s: a loop with an empty control expression cannot be handled' %
                    stmt.line_no)
-            sys.exit(1)
     
         # check if the iterator names are all the same
         init_iname = None
@@ -131,9 +128,8 @@ class ForLoopLib:
         if iter_iname:
             inames.append(iter_iname)
         if inames.count(inames[0]) != len(inames):
-            print ('error:%s: iterator names across init, test, and iter exps must be the same'
+            err('module.loop.ast_lib.forloop_lib:%s: iterator names across init, test, and iter exps must be the same'
                    % stmt.line_no)
-            sys.exit(1)
         
         # extract for-loop structure information
         index_id = orio.module.loop.ast.IdentExp(inames[0])
@@ -159,11 +155,10 @@ class ForLoopLib:
                                            orio.module.loop.ast.UnaryExp.PRE_DEC):
                     stride_exp = orio.module.loop.ast.NumLitExp(-1, orio.module.loop.ast.NumLitExp.INT)
                 else:
-                    print 'internal error: unexpected unary operation type'
-                    sys.exit(1)
+                    err('module.loop.ast_lib.forloop_lib internal error: unexpected unary operation type')
             else:
-                print 'internal error: unexpected type of iteration expression'
-                sys.exit(1)
+                err('module.loop.ast_lib.forloop_lib internal error: unexpected type of iteration expression')
+
         loop_body = stmt.stmt.replicate()
         for_loop_info = (index_id, lbound_exp, ubound_exp, stride_exp, loop_body)
         
@@ -231,15 +226,13 @@ class ForLoopLib:
             return inames
 
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.ast_lib.forloop_lib internal error: unprocessed transform statement')
                         
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return []
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.loop.ast_lib.forloop_lib internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
 
     #-------------------------------------------------
 
@@ -268,12 +261,10 @@ class ForLoopLib:
             return True
 
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.ast_lib.forloop_lib internal error: unprocessed transform statement')
                         
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return False
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.loop.ast_lib.forloop_lib internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)

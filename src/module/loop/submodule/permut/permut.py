@@ -62,9 +62,8 @@ class Permut(orio.module.loop.submodule.submodule.SubModule):
         # evaluate the permutation sequence
         rhs, line_no = seq
         if not isinstance(rhs, list) and not isinstance(rhs, tuple):
-            print ('error:%s: permutation sequence must be a list/tuple of loop index names: %s' %
+            err('orio.module.loop.submodule.permut.permut:%s: permutation sequence must be a list/tuple of loop index names: %s' %
                    (line_no, rhs))
-            sys.exit(1)
         inames = {}
         for i in rhs:
             if isinstance(i, str):
@@ -72,13 +71,11 @@ class Permut(orio.module.loop.submodule.submodule.SubModule):
             elif isinstance(i, list) and len(i) == 1 and isinstance(i[0], str):
                 i = i[0]
             else:
-                print ('error:%s: invalid element of the permutation sequence: %s' %
+                err('orio.module.loop.submodule.permut.permut:%s: invalid element of the permutation sequence: %s' %
                        (line_no, i))
-                sys.exit(1)
             if i in inames:
-                print ('error:%s: permutation sequence contains repeated loop index: %s' %
+                err('orio.module.loop.submodule.permut.permut:%s: permutation sequence contains repeated loop index: %s' %
                        (line_no, i))
-                sys.exit(1)
             inames[i] = None
         seq = rhs
         

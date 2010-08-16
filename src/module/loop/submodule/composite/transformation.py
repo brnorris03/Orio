@@ -3,6 +3,7 @@
 #
 
 import sys
+from orio.main.util.globals import *
 import orio.module.loop.ast, orio.module.loop.ast_lib.common_lib, orio.module.loop.ast_lib.forloop_lib
 import orio.module.loop.submodule.tile.tile
 import orio.module.loop.submodule.permut.permut
@@ -83,15 +84,12 @@ class Transformation:
             return stmt
 
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
-                                    
+            err('module.loop.submodule.composite.transformation internal error: unprocessed transform statement')                                    
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return stmt
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.composite.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)            
         
     #----------------------------------------------------------
 
@@ -150,15 +148,13 @@ class Transformation:
             return (stmt, unrolled_loop_infos)
 
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.submodule.composite.transformation internal error: unprocessed transform statement')            
 
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return (stmt, False)
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.composite.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)            
         
     #----------------------------------------------------------
     
@@ -203,16 +199,14 @@ class Transformation:
             return stmt
 
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.submodule.composite.transformation internal error: unprocessed transform statement')            
                                     
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return stmt
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % stmt.__class__.__name__
-            sys.exit(1)
-        
+            err('module.loop.submodule.composite.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
+                   
     #----------------------------------------------------------
 
     def __replaceBoundsInsertPrags(self, stmt, pragmas):
@@ -301,15 +295,13 @@ class Transformation:
             return stmt
 
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
-                                    
+            err('module.loop.submodule.composite.transformation internal error: unprocessed transform statement')
+                                                
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return stmt
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.composite.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)            
         
     #----------------------------------------------------------
         
@@ -355,15 +347,14 @@ class Transformation:
             return stmt
 
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
-                                    
+            err('module.loop.submodule.composite.transformation internal error: unprocessed transform statement')
+                                                
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return stmt
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.composite.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
+            
         
     #----------------------------------------------------------
     
@@ -378,9 +369,8 @@ class Transformation:
                 return i
         must_exist = input_lid[0]
         if must_exist:
-            print ('error: no matching loop index name in input argument: %s' %
-                   (tuple(input_lid[1:]), ))
-            sys.exit(1)
+            err('module.loop.submodule.composite.transformation: no matching loop index name in input argument: %s' %
+                   (tuple(input_lid[1:]), ))            
         else:
             return None
             

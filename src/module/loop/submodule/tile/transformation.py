@@ -3,6 +3,7 @@
 #
 
 import sys
+from orio.main.util.globals import *
 import orio.module.loop.ast, orio.module.loop.ast_lib.constant_folder, orio.module.loop.ast_lib.forloop_lib
 
 #-----------------------------------------
@@ -46,9 +47,8 @@ class Transformation:
 
         # check the tile index name
         if self.tindex == index_id.name:
-            print (('error:%s: the tile index name must be different from the new tiled ' +
+            err(('module.loop.submodule.tile.transformation:%s: the tile index name must be different from the new tiled ' +
                     'loop index name: "%s"') % (index_id.line_no, self.tindex))
-            sys.exit(1)
         
         # when tile size = 1, no transformation will be applied
         if self.tsize == 1:
@@ -59,20 +59,16 @@ class Transformation:
         try:
             stride_val = eval(str(stride_exp))
         except Exception, e:
-            print ('error:%s: failed to evaluate expression: "%s"' %
-                   (stride_exp.line_no, stride_exp))
-            print ' --> %s: %s' % (e.__class__.__name__, e)
-            sys.exit(1)
+            err('module.loop.submodule.tile.transformation:%s: failed to evaluate expression: "%s"\n --> %s: %s' %
+                   (stride_exp.line_no, stride_exp,e.__class__.__name__, e))
         if not isinstance(stride_val, int) or stride_val <= 0:
-            print ('error:%s: loop stride size must be a positive integer: %s' %
+            err('module.loop.submodule.tile.transformation:%s: loop stride size must be a positive integer: %s' %
                    (stride_exp.line_no, stride_exp))
-            sys.exit(1)
 
         # check whether tile_size % stride == 0
         if self.tsize % stride_val != 0:
-            print ('error:%s: tile size (%s) must be divisible by the stride value (%s)'
+            err('module.loop.submodule.tile.transformation:%s: tile size (%s) must be divisible by the stride value (%s)'
                    % (stride_exp.line_no, self.tsize, stride_val))
-            sys.exit(1)
 
         # create the tile index name
         tindex_id = orio.module.loop.ast.IdentExp(self.tindex)

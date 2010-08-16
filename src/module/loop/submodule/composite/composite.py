@@ -121,9 +121,8 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         targs = []
         for e in rhs:
             if (not isinstance(e, list) and not isinstance(e, tuple)) or len(e) != 3:
-                print (('error:%s: element of tile argument must be in the form of ' +
+                err(('module.loop.submodule.composite.composite:%s: element of tile argument must be in the form of ' +
                         '(<loop-id>,<tsize>,<tindex>): %s') % (line_no, e))
-                sys.exit(1)
             loop_id, tsize, tindex = e
             loop_id = self.__convertLoopId(loop_id, line_no)
             tsize, tindex = self.tile_smod.checkTransfArgs((tsize, line_no), (tindex, line_no))
@@ -143,9 +142,8 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         if not isinstance(rhs, list) and not isinstance(rhs, tuple):
             err('orio.module.loop.submodule.composite.composite: %s: register-tiling argument must be a list/tuple: %s' % (line_no, rhs))
         if len(rhs) != 2:
-            print (('error:%s: register-tiling argument must be in the form of ' +
+            err(('module.loop.submodule.composite.composite:%s: register-tiling argument must be in the form of ' +
                     '(<loop-ids>,<ufactors>): %s') % (line_no, rhs))
-            sys.exit(1)
         loops, ufactors = rhs
         loops, ufactors = self.regt_smod.checkTransfArgs((loops, line_no), (ufactors, line_no))
         regtiles = (loops, ufactors)
@@ -155,9 +153,8 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         if not isinstance(rhs, list) and not isinstance(rhs, tuple):
             err('orio.module.loop.submodule.composite.composite: %s: unroll/jam argument must be a list/tuple: %s' % (line_no, rhs))
         if len(rhs) != 2:
-            print (('error:%s: unroll/jam argument must be in the form of ' +
+            err(('module.loop.submodule.composite.composite:%s: unroll/jam argument must be in the form of ' +
                     '(<loop-ids>,<ufactors>): %s') % (line_no, rhs))
-            sys.exit(1)
         loops, ufactors = rhs
         for lp,uf in zip(loops, ufactors):
             self.ujam_smod.checkTransfArgs((uf, line_no), (False, line_no))
@@ -170,9 +167,8 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         else:
             if ((not isinstance(rhs, list) and not isinstance(rhs, tuple)) or len(rhs) < 1 or
                 len(rhs) > 3 or (not isinstance(rhs[0], bool) and rhs[0] != 0 and rhs[0] != 1)):
-                print (('error:%s: scalar replacement argument must be in the form of ' +
+                err(('module.loop.submodule.composite.composite:%s: scalar replacement argument must be in the form of ' +
                         '((True|False),<dtype>,<prefix>): %s') % (line_no, rhs))
-                sys.exit(1)
             do_scalarrep = rhs[0]
             dtype = None
             prefix = None
@@ -190,9 +186,8 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         else:
             if ((not isinstance(rhs, list) and not isinstance(rhs, tuple)) or len(rhs) < 1 or
                 len(rhs) > 3 or (not isinstance(rhs[0], bool) and rhs[0] != 0 and rhs[0] != 1)):
-                print (('error:%s: bound replacement argument must be in the form of ' +
+                err(('module.loop.submodule.composite.composite:%s: bound replacement argument must be in the form of ' +
                         '((True|False),<lprefix>,<uprefix>): %s') % (line_no, rhs))
-                sys.exit(1)
             do_boundrep = rhs[0]
             lprefix = None
             uprefix = None
@@ -210,9 +205,8 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         targs = []
         for e in rhs:
             if (not isinstance(e, list) and not isinstance(e, tuple)) or len(e) != 2:
-                print (('error:%s: element of pragma directive argument must be in the form of ' +
+                err(('module.loop.submodule.composite.composite:%s: element of pragma directive argument must be in the form of ' +
                         '(<loop-id>,<pragma-strings>): %s') % (line_no, e))
-                sys.exit(1)
             loop_id, pragmas = e
             loop_id = self.__convertLoopId(loop_id, line_no)
             pragmas, = self.prag_smod.checkTransfArgs((pragmas, line_no))
@@ -223,9 +217,8 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         rhs, line_no = openmp
         if ((not isinstance(rhs, list) and not isinstance(rhs, tuple)) or len(rhs) != 2 or
             not isinstance(rhs[0], bool)):
-            print (('error:%s: element of openmp pragma directive argument must be in the form of ' +
+            err(('module.loop.submodule.composite.composite:%s: element of openmp pragma directive argument must be in the form of ' +
                     '((True|False),<pragma-strings>): %s') % (line_no, rhs))
-            sys.exit(1)
         do_openmp, pragmas = rhs
         pragmas, = self.prag_smod.checkTransfArgs((pragmas, line_no))
         openmp = do_openmp, pragmas
@@ -234,9 +227,8 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         rhs, line_no = vector
         if ((not isinstance(rhs, list) and not isinstance(rhs, tuple)) or len(rhs) != 2 or
             not isinstance(rhs[0], bool)):
-            print (('error:%s: element of vectorization pragma directive argument must be in ' +
+            err(('module.loop.submodule.composite.composite:%s: element of vectorization pragma directive argument must be in ' +
                     'the form of ((True|False),<pragma-strings>): %s') % (line_no, rhs))
-            sys.exit(1)
         do_vector, pragmas = rhs
         pragmas, = self.prag_smod.checkTransfArgs((pragmas, line_no))
         vector = do_vector, pragmas
@@ -249,10 +241,9 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         for e in rhs:
             if ((not isinstance(e, list) and not isinstance(e, tuple)) or len(e) > 5 or
                 len(e) < 3 or not isinstance(e[0], bool)):
-                print (('error:%s: element of tile argument must be in the form of ' +
+                err(('module.loop.submodule.composite.composite:%s: element of tile argument must be in the form of ' +
                         '((True|False),<array-ref-str>,<dim-sizes>,<suffix>,<dtype>): %s') %
                        (line_no, e))
-                sys.exit(1)
             dtype = None
             suffix = None
             if len(e) == 3:
@@ -315,7 +306,7 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
             lids.append(isinstance(lid, tuple))
             lids.extend(lid)
         else:
-            print 'internal error: incorrect representation of the loop IDs'
+            err('module.loop.submodule.composite.composite internal error: incorrect representation of the loop IDs')
             sys.exit(1)
         return lids
 

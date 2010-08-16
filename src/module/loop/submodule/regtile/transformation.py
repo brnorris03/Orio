@@ -3,6 +3,7 @@
 #
 
 import sys
+from orio.main.util.globals import *
 import orio.module.loop.ast, orio.module.loop.ast_lib.constant_folder, orio.module.loop.ast_lib.forloop_lib
 import orio.module.loop.ast_lib.common_lib, semant
 
@@ -78,8 +79,7 @@ class Transformation:
             return tnode
 
         elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.submodule.regtile.transformation internal error: unprocessed transform statement')
 
         elif isinstance(tnode, orio.module.loop.ast.NumLitExp):
             return tnode
@@ -123,8 +123,7 @@ class Transformation:
             return tnode
         
         else:
-            print 'internal error: unexpected AST type: "%s"' % tnode.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.regtile.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
 
     #----------------------------------------------------------
 
@@ -172,9 +171,8 @@ class Transformation:
 
         # check for-loop structure
         if lbound_exp == None or ubound_exp == None or stride_exp == None:
-            print ('error: the loop to be unrolled/jammed must NOT have empty bounds/stride ' +
+            err('module.loop.submodule.regtile.transformation: the loop to be unrolled/jammed must NOT have empty bounds/stride ' +
                    'expressions')
-            sys.exit(1)
 
         # compute lower bound --> new_LB = LB
         new_lbound_exp = lbound_exp.replicate()
@@ -480,8 +478,7 @@ class Transformation:
                 if lb_stmt: stmts += [lb_stmt]
                 if ub_stmt: stmts += [ub_stmt]
                 if len(stmts) == 0:
-                    print 'internal error: loop-bound initialization loop cannot be empty'
-                    sys.exit(1)
+                    err('module.loop.submodule.regtile.transformation internal error: loop-bound initialization loop cannot be empty')
                 if len(stmts) == 1:
                     bound_stmt = stmts[0]
                 else:
@@ -572,15 +569,13 @@ class Transformation:
                 return orio.module.loop.ast.CompStmt(stmts)
             
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            print 'internal error: unprocessed transform statement'
-            sys.exit(1)
+            err('module.loop.submodule.regtile.transformation internal error: unprocessed transform statement')
 
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return stmt
 
         else:
-            print 'internal error: unexpected AST type: "%s"' % stmt.__class__.__name__
-            sys.exit(1)
+            err('module.loop.submodule.regtile.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
 
     #----------------------------------------------------------
 
