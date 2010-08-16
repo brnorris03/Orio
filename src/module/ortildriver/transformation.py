@@ -106,7 +106,7 @@ class Transformation:
             return lhs
 
         else:
-            err('module.ortildriver.transformation internal error: unknown type of expression: %s' % 
+            err('orio.module.ortildriver.transformation internal error: unknown type of expression: %s' % 
                    exp.__class__.__name__)
 
     #----------------------------------------------
@@ -254,14 +254,14 @@ class Transformation:
                     return ops
 
             else:
-                err('module.ortildriver.transformation: constant folding cannot handle binary operations other ' +
+                err('orio.module.ortildriver.transformation: constant folding cannot handle binary operations other ' +
                        'than +,-,*')
 
         elif isinstance(exp, ast.ParenthExp):
             return self.__foldConstantExp(exp.exp, up_sign)
         
         else:
-            err('module.ortildriver.transformation internal error: unknown type of expression: %s' % 
+            err('orio.module.ortildriver.transformation internal error: unknown type of expression: %s' % 
                    exp.__class__.__name__)
 
     #----------------------------------------------
@@ -345,7 +345,7 @@ class Transformation:
             return tnode
 
         else:
-            err('module.ortildriver.transformation internal error: unknown type of AST: %s' % tnode.__class__.__name__)
+            err('orio.module.ortildriver.transformation internal error: unknown type of AST: %s' % tnode.__class__.__name__)
 
     #----------------------------------------------
 
@@ -400,7 +400,7 @@ class Transformation:
 
         # unknown statement      
         else:
-            err('module.ortildriver.transformation internal error: unknown type of statement: %s' % 
+            err('orio.module.ortildriver.transformation internal error: unknown type of statement: %s' % 
                    stmt.__class__.__name__)
  
     #----------------------------------------------
@@ -509,7 +509,7 @@ class Transformation:
             return tnode
 
         else:
-            err('module.ortildriver.transformation internal error:OrTilDriver: unknown type of AST: %s' % tnode.__class__.__name__)
+            err('orio.module.ortildriver.transformation internal error:OrTilDriver: unknown type of AST: %s' % tnode.__class__.__name__)
  
     #----------------------------------------------
 
@@ -572,7 +572,7 @@ class Transformation:
             self.__countArrRefs(tnode.stmt, count_table, aref_seq)
 
         else:
-            err('module.ortildriver.transformation internal error:OrTilDriver: unknown type of AST: %s' % tnode.__class__.__name__)
+            err('orio.module.ortildriver.transformation internal error:OrTilDriver: unknown type of AST: %s' % tnode.__class__.__name__)
  
     #----------------------------------------------
 

@@ -56,7 +56,7 @@ class Transformation:
             return tnode
 
         elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
-            err('module.loop.submodule.unrolljam.transformation internal error: unprocessed transform statement')
+            err('orio.module.loop.submodule.unrolljam.transformation internal error: unprocessed transform statement')
 
         elif isinstance(tnode, orio.module.loop.ast.NumLitExp):
             return tnode
@@ -100,7 +100,7 @@ class Transformation:
             return tnode
         
         else:
-            err('module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
+            err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
     
     #-----------------------------------------
 

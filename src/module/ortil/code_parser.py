@@ -216,10 +216,10 @@ def p_assignment_expression_2(p):
         elif (p[2] == '-='):
             rhs = ast.BinOpExp(p[1], p[3], ast.BinOpExp.SUB, getLineNumber(p.lineno(1)))
         else:
-            err('module.ortil.code_parser internal error:OrTil: unknown assignment operator')
+            err('orio.module.ortil.code_parser internal error:OrTil: unknown assignment operator')
         p[0] = ast.BinOpExp(lhs, rhs, ast.BinOpExp.EQ_ASGN, getLineNumber(p.lineno(1)))
     else:
-        err('module.ortil.code_parser internal error:OrTil: unknown assignment operator')
+        err('orio.module.ortil.code_parser internal error:OrTil: unknown assignment operator')
 
 # assignment-operator:
 def p_assignment_operator(p):
@@ -262,7 +262,7 @@ def p_equality_expression_2(p):
     elif p[2] == '!=':
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.NE, getLineNumber(p.lineno(1)))
     else:
-        err('module.ortil.code_parser internal error:OrTil: unknown equality operator')
+        err('orio.module.ortil.code_parser internal error:OrTil: unknown equality operator')
 
 # equality-operator:
 def p_equality_operator(p):
@@ -286,7 +286,7 @@ def p_relational_expression_2(p):
     elif (p[2] == '>='):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.GE, getLineNumber(p.lineno(1)))
     else:
-        err('module.ortil.code_parser internal error:OrTil: unknown relational operator')
+        err('orio.module.ortil.code_parser internal error:OrTil: unknown relational operator')
         
 # relational-operator
 def p_relational_operator(p):
@@ -308,7 +308,7 @@ def p_additive_expression_2(p):
     elif (p[2] == '-'):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.SUB, getLineNumber(p.lineno(1)))
     else:
-        err('module.ortil.code_parser internal error:OrTil: unknown additive operator' )
+        err('orio.module.ortil.code_parser internal error:OrTil: unknown additive operator' )
 
 # additive-operator:
 def p_additive_operator(p):
@@ -330,7 +330,7 @@ def p_multiplicative_expression_2(p):
     elif (p[2] == '%'):
         p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.MOD, getLineNumber(p.lineno(1)))
     else:
-        err('module.ortil.code_parser internal error:OrTil: unknown multiplicative operator')
+        err('orio.module.ortil.code_parser internal error:OrTil: unknown multiplicative operator')
 
 # multiplicative-operator
 def p_multiplicative_operator(p):
@@ -361,7 +361,7 @@ def p_unary_expression_4(p):
     elif p[1] == '!':
         p[0] = ast.UnaryExp(p[2], ast.UnaryExp.LNOT, getLineNumber(p.lineno(1)))
     else:
-        err('module.ortil.code_parser internal error:OrTil: unknown unary operator')
+        err('orio.module.ortil.code_parser internal error:OrTil: unknown unary operator')
 
 # unary-operator
 def p_unary_operator(p):

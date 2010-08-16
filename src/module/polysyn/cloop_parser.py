@@ -43,16 +43,13 @@ class CLoopParser:
             return None
         pos = self.__findClosingChar('(', ')', linestr[m1.end():], 1)
         if pos < 0:
-            print 'internal-error:cloop_parser: for-loop is not declared in one line'
-            sys.exit(1)
+            err('orio.module.polysyn.cloop_parser internal error: for-loop is not declared in one line')
         m2 = re.match(r'\s*\{\s*$', linestr[m1.end():][pos+1:])
         if not m2:
-            print 'internal-error:cloop_parser: for-loop does not have an opening curly brace'
-            sys.exit(1)
+            err('orio.module.polysyn.cloop_parser internal error: for-loop does not have an opening curly brace')
         m3 = re.match(r'^\s*(\w+)\s*=', linestr[m1.end():][:pos])
         if not m3:
-            print 'internal-error:cloop_parser: init-expression of for loop cannot be empty'
-            sys.exit(1)
+            err('orio.module.polysyn.cloop_parser internal error: init-expression of for loop cannot be empty')
         loop_id = m3.group(1)
         return ('forloop', linestr, line_num, loop_id)
 
@@ -66,12 +63,10 @@ class CLoopParser:
             return None
         pos = self.__findClosingChar('(', ')', linestr[m1.end():], 1)
         if pos < 0:
-            print 'internal-error:cloop_parser: if-statement is not declared in one line'
-            sys.exit(1)
+            err('orio.module.polysyn.cloop_parser internal error: if-statement is not declared in one line')
         m2 = re.match(r'\s*\{\s*$', linestr[m1.end():][pos+1:])
         if not m2:
-            print 'internal-error:cloop_parser: if-statement does not have an opening curly brace'
-            sys.exit(1)
+            err('orio.module.polysyn.cloop_parser internal error: if-statement does not have an opening curly brace')
         return ('ifstmt', linestr, line_num)
 
     #-------------------------------------------------------------------
@@ -94,12 +89,10 @@ class CLoopParser:
             return None
         pos = self.__findClosingChar('(', ')', linestr[m1.end():], 1)
         if pos < 0:
-            print 'internal-error:cloop_parser: Sn(...)-statement is not declared in one line'
-            sys.exit(1)
+            err('orio.module.polysyn.cloop_parser internal error: Sn(...)-statement is not declared in one line')
         m2 = re.match(r'\s*;\s*$', linestr[m1.end():][pos+1:])
         if not m2:
-            print 'internal-error:cloop_parser: Sn(...)-statement does not end with a semicolon'
-            sys.exit(1)
+            err('orio.module.polysyn.cloop_parser internal error: Sn(...)-statement does not end with a semicolon')
         return ('macrostmt', linestr, line_num)
     
     #-------------------------------------------------------------------
@@ -166,9 +159,8 @@ class CLoopParser:
         open_m = re.search(open_tag_re, pluto_code)
         close_m = re.search(close_tag_re, pluto_code)
         if (not open_m) or (not close_m):
-            print ('internal-error:polysyn: cannot find the opening and closing tags for ' +
+            err('orio.module.polysyn.cloop_parser internal error: cannot find the opening and closing tags for ' +
                    'the Cloog code')
-            sys.exit(1)
         (open_start_pos, open_end_pos) = (open_m.start(), open_m.end())
         (close_start_pos, close_end_pos) = (close_m.start(), close_m.end())
 
@@ -231,9 +223,9 @@ class CLoopParser:
         open_m = re.search(open_tag_re, pluto_code)
         close_m = re.search(close_tag_re, pluto_code)
         if (not open_m) or (not close_m):
-            print ('internal-error:polysyn: cannot find the opening and closing tags for ' +
+            err('orio.module.polysyn.cloop_parser internal error: cannot find the opening and closing tags for ' +
                    'the Cloog code')
-            sys.exit(1)
+
         (open_start_pos, open_end_pos) = (open_m.start(), open_m.end())
         (close_start_pos, close_end_pos) = (close_m.start(), close_m.end())
 
@@ -286,8 +278,7 @@ class CLoopParser:
                 while True:
                     i += 1
                     if i == len(parsed_clines):
-                        print 'internal-error:cloop_parser: cannot find a matching closing brace'
-                        sys.exit(1)
+                        err('orio.module.polysyn.cloop_parser internal error: cannot find a matching closing brace')
                     pcl = parsed_clines[i]
                     if pcl[0] in ('forloop', 'ifstmt'):
                         num_openings += 1
@@ -316,8 +307,7 @@ class CLoopParser:
                 while True:
                     i += 1
                     if i == len(parsed_clines):
-                        print 'internal-error:cloop_parser: cannot find a matching closing brace'
-                        sys.exit(1)
+                        err('orio.module.polysyn.cloop_parser internal error: cannot find a matching closing brace')
                     pcl = parsed_clines[i]
                     if pcl[0] in ('forloop', 'ifstmt'):
                         num_openings += 1
@@ -380,8 +370,7 @@ class CLoopParser:
                     inner_loop_nests.extend(false_inests)
 
                 else:
-                    print 'internal-error:cloop_parser: unrecognized scope: "%s"' % cl
-                    sys.exit(1)
+                    err('orio.module.polysyn.cloop_parser internal error: unrecognized scope: "%s"' % cl)
 
         return inner_loop_nests
 
@@ -393,9 +382,8 @@ class CLoopParser:
         hotspot_inests = self.__findInnerLoopNests(clines)
 
         if len(hotspot_inests) > 1:
-            print ('internal-error:cloop_parser: hotspot must not contain two (or more) ' +
+            err('orio.module.polysyn.cloop_parser internal error: hotspot must not contain two (or more) ' +
                    'separate subloop nests')
-            sys.exit(1)
 
         if len(hotspot_inests) == 1:
             return hotspot_inests[0]
@@ -437,13 +425,11 @@ class CLoopParser:
                         return self.__isParallelLoop(line_num, true_stmt)
 
                 else:
-                    print 'internal-error:cloop_parser: unrecognized scope: "%s"' % cl
-                    sys.exit(1)
+                    err('orio.module.polysyn.cloop_parser internal error: unrecognized scope: "%s"' % cl)
 
             prev_cl = cl
 
-        print 'internal-error:cloop_parser: code at line number "%s" cannot be found' % line_num
-        sys.exit(1)
+        err('orio.module.polysyn.cloop_parser internal error: code at line number "%s" cannot be found' % line_num)
 
     #-------------------------------------------------------------------
 
@@ -476,8 +462,7 @@ class CLoopParser:
                         return n_outer_loop_nest
                     elif middle_l:
                         if line_num == middle_l:
-                            print 'internal-error:cloop_parser: hotspot cannot be at else keyword'
-                            sys.exit(1)
+                            err('orio.module.polysyn.cloop_parser internal error: hotspot cannot be at else keyword')
                         if head_l < line_num < middle_l:
                             return self.__findOuterLoopNest(line_num, true_stmt, n_outer_loop_nest)
                         elif middle_l < line_num < tail_l:
@@ -486,16 +471,14 @@ class CLoopParser:
                         return self.__findOuterLoopNest(line_num, true_stmt, n_outer_loop_nest)
 
                 else:
-                    print 'internal-error:cloop_parser: unrecognized scope: "%s"' % cl
-                    sys.exit(1)
+                    err('orio.module.polysyn.cloop_parser internal error: unrecognized scope: "%s"' % cl)
 
             else:
                 _, _, l = cl
                 if line_num == l:
                     return outer_loop_nest
 
-        print 'internal-error:cloop_parser: code at line number "%s" cannot be found' % line_num
-        sys.exit(1)
+        err('orio.module.polysyn.cloop_parser internal error: code at line number "%s" cannot be found' % line_num)
 
     #-------------------------------------------------------------------
 
@@ -616,8 +599,7 @@ class CLoopParser:
         for i, cl in enumerate(cloog_code.split('\n')):
             d = self.__parseCodeLine(cl, i+1)
             if not d:
-                print 'internal-error:cloop_parser: unrecognized line of code: "%s"' % cl
-                sys.exit(1)
+                err('orio.module.polysyn.cloop_parser internal error: unrecognized line of code: "%s"' % cl)
             clines.append(d)
 
         # find the scope of each for-loop and if statement

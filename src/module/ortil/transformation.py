@@ -154,14 +154,14 @@ class Transformation:
                 else:
                     val = ast.ParenthExp(uval.replicate())
             else:
-                err('module.ortil.transformation internal error: unrecognized min/max argument value')
+                err('orio.module.ortil.transformation internal error: unrecognized min/max argument value')
 
             # return the obtained min/max value
             return val
 
         # array reference expression
         elif isinstance(exp, ast.ArrayRefExp):
-            err('module.ortil.transformation: invalid array-reference expression found in loop bound ' +
+            err('orio.module.ortil.transformation: invalid array-reference expression found in loop bound ' +
                    'expression: %s' % exp)
 
         # function call expression
@@ -169,7 +169,7 @@ class Transformation:
             
             # check the function name
             if (not isinstance(exp.exp, ast.IdentExp)) or exp.exp.name not in ('min', 'max'):
-                err('module.ortil.transformation: function name found in loop bound expression must be ' +
+                err('orio.module.ortil.transformation: function name found in loop bound expression must be ' +
                         'min/max, obtained: %s') % exp.exp)
 
             # recursion on each function argument
@@ -184,7 +184,7 @@ class Transformation:
             
             # check the unary operation
             if exp.op_type not in (ast.UnaryExp.PLUS, ast.UnaryExp.MINUS):
-                err('module.ortil.transformation: unary operation found in loop bound expression must ' +
+                err('orio.module.ortil.transformation: unary operation found in loop bound expression must ' +
                         'be +/-, obtained: %s') % exp.exp)
 
             # update the sign, and do recursion on the inner expression
@@ -200,7 +200,7 @@ class Transformation:
             
             # check the binary operation
             if exp.op_type not in (ast.BinOpExp.ADD, ast.BinOpExp.SUB, ast.BinOpExp.MUL):
-                err('module.ortil.transformation: binary operation found in loop bound expression must ' +
+                err('orio.module.ortil.transformation: binary operation found in loop bound expression must ' +
                         'be +/-/*, obtained: %s') % exp)
 
             # do recursion on both operands
@@ -223,7 +223,7 @@ class Transformation:
 
         # unrecognized expression
         else:
-            err('module.ortil.transformation internal error: unknown type of expression: %s' % exp.__class__.__name__)
+            err('orio.module.ortil.transformation internal error: unknown type of expression: %s' % exp.__class__.__name__)
 
     #----------------------------------------------
 
@@ -534,7 +534,7 @@ class Transformation:
             # if it's an if-statement's test expression
             else:
                 if not isinstance(s, ast.BinOpExp):
-                    err('module.ortil.transformation internal error: a test expression is expected')
+                    err('orio.module.ortil.transformation internal error: a test expression is expected')
 
                 # generate AST for the true statement
                 t1 = self.__convertToASTs(dstmts[i+1], tile_level, contain_loop,
@@ -594,11 +594,11 @@ class Transformation:
 
         # complain if the tiling level is not a positive integer
         if not isinstance(tile_level, int) or tile_level <= 0:
-            err('module.ortil.transformation internal error: invalid tiling level: %s' % tile_level)
+            err('orio.module.ortil.transformation internal error: invalid tiling level: %s' % tile_level)
 
         # cannot handle a directly nested compound statement
         if isinstance(stmt, ast.CompStmt):
-           err('module.ortil.transformation internal error: unexpected compound statement directly nested inside ' +
+           err('orio.module.ortil.transformation internal error: unexpected compound statement directly nested inside ' +
                    'another compound statement')
 
         # to handle the given expression statement or if statement
@@ -643,7 +643,7 @@ class Transformation:
                 rect_lb_exp = ast.IdentExp(lb_name)
                 rect_ub_exp = ast.IdentExp(ub_name)
                 if not need_orio.main.tiled_loop:
-                    err('module.ortil.transformation internal error: unexpected case where generation of the orio.main.' +
+                    err('orio.module.ortil.transformation internal error: unexpected case where generation of the orio.main.' +
                            'rectangular tiled loop is needed')
 
             # get explicit loop-bound scanning code
@@ -789,7 +789,7 @@ class Transformation:
             return res_stmts
         
         # unknown statement
-        err('module.ortil.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
+        err('orio.module.ortil.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
 
     #----------------------------------------------
 
@@ -840,7 +840,7 @@ class Transformation:
 
         # unknown statement
         else:
-            err('module.ortil.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
+            err('orio.module.ortil.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
 
     #----------------------------------------------
 
@@ -886,7 +886,7 @@ class Transformation:
 
         # unknown statement
         else:
-            err('module.ortil.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
+            err('orio.module.ortil.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
 
     #----------------------------------------------
 
@@ -968,7 +968,7 @@ class Transformation:
 
         # unknown statement
         else:
-            err('module.ortil.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
+            err('orio.module.ortil.transformation internal error: unknown type of statement: %s' % stmt.__class__.__name__)
 
     #----------------------------------------------
 

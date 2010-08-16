@@ -47,7 +47,7 @@ class Transformation:
 
         # check the tile index name
         if self.tindex == index_id.name:
-            err(('module.loop.submodule.tile.transformation:%s: the tile index name must be different from the new tiled ' +
+            err(('orio.module.loop.submodule.tile.transformation:%s: the tile index name must be different from the new tiled ' +
                     'loop index name: "%s"') % (index_id.line_no, self.tindex))
         
         # when tile size = 1, no transformation will be applied
@@ -59,15 +59,15 @@ class Transformation:
         try:
             stride_val = eval(str(stride_exp))
         except Exception, e:
-            err('module.loop.submodule.tile.transformation:%s: failed to evaluate expression: "%s"\n --> %s: %s' %
+            err('orio.module.loop.submodule.tile.transformation:%s: failed to evaluate expression: "%s"\n --> %s: %s' %
                    (stride_exp.line_no, stride_exp,e.__class__.__name__, e))
         if not isinstance(stride_val, int) or stride_val <= 0:
-            err('module.loop.submodule.tile.transformation:%s: loop stride size must be a positive integer: %s' %
+            err('orio.module.loop.submodule.tile.transformation:%s: loop stride size must be a positive integer: %s' %
                    (stride_exp.line_no, stride_exp))
 
         # check whether tile_size % stride == 0
         if self.tsize % stride_val != 0:
-            err('module.loop.submodule.tile.transformation:%s: tile size (%s) must be divisible by the stride value (%s)'
+            err('orio.module.loop.submodule.tile.transformation:%s: tile size (%s) must be divisible by the stride value (%s)'
                    % (stride_exp.line_no, self.tsize, stride_val))
 
         # create the tile index name

@@ -3,6 +3,7 @@
 #
 
 import re, os, sys
+from orio.main.util.globals import *
 import cloop_parser, macro_expander, orio.module.module, parser, poly_transformation, profiler
 import syn_transformation, transf_info
 
@@ -35,7 +36,7 @@ class PolySyn(orio.module.module.Module):
         open_m = re.search(pluto_open_tag_re, code)
         close_m = re.search(pluto_close_tag_re, code)
         if (not open_m) or (not close_m):
-            print ('error:polysyn: cannot find the opening and closing tags for the PLuTo code') 
+            err('orio.module.polysyn.polysyn: cannot find the opening and closing tags for the Pluto code') 
             sys.exit(1) 
 
         # insert the polysyn tags
