@@ -48,7 +48,7 @@ class ASTUtil:
             return inames
                 
         else:
-            err('module.ortil.ast_util internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__)
+            err('orio.module.ortil.ast_util internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__)
             
     #---------------------------------------------------------------
 
@@ -58,7 +58,7 @@ class ASTUtil:
         '''
 
         if not isinstance(exp, ast.Exp):
-            err('module.ortil.ast_util internal error:OrTil:containIdentName: input not an expression type')
+            err('orio.module.ortil.ast_util internal error:OrTil:containIdentName: input not an expression type')
 
         if exp == None:
             return False
@@ -91,7 +91,7 @@ class ASTUtil:
             return self.containIdentName(exp.exp, iname)
         
         else:
-            err('module.ortil.ast_util internal error:OrTil: unexpected AST type: "%s"' % exp.__class__.__name__)
+            err('orio.module.ortil.ast_util internal error:OrTil: unexpected AST type: "%s"' % exp.__class__.__name__)
             
     #---------------------------------------------------------------
 
@@ -126,7 +126,7 @@ class ASTUtil:
                         stmt.init.rhs = stmt.init.rhs.exp
                     if isinstance(stmt.init.lhs, ast.IdentExp): 
                         break
-                err('module.ortil.ast_util:%s: loop initialization expression not in "<id> = <exp>" form' %
+                err('orio.module.ortil.ast_util:%s: loop initialization expression not in "<id> = <exp>" form' %
                        stmt.init.line_no)
                 
         # check test expression
@@ -142,7 +142,7 @@ class ASTUtil:
                         stmt.test.rhs = stmt.test.rhs.exp
                     if isinstance(stmt.test.lhs, ast.IdentExp): 
                         break
-                err('module.ortil.ast_util:%s: loop test expression not in "<id> <= <exp>" or ' +
+                err('orio.module.ortil.ast_util:%s: loop test expression not in "<id> <= <exp>" or ' +
                        '"<id> < <exp>"form' % stmt.test.line_no)
             
         # check iteration expression
@@ -173,12 +173,12 @@ class ASTUtil:
                         stmt.iter.exp = stmt.iter.exp.exp
                     if isinstance(stmt.iter.exp, ast.IdentExp):
                         break
-                err(('module.ortil.ast_util:%s: loop iteration expression not in "<id>++" or "<id>--" or ' +
+                err(('orio.module.ortil.ast_util:%s: loop iteration expression not in "<id>++" or "<id>--" or ' +
                         '"<id> += <exp>" or "<id> = <id> + <exp>" form') % stmt.iter.line_no)
 
         # check if the control expressions are all empty
         if not stmt.init and not stmt.test and not stmt.iter:
-            err('module.ortil.ast_util:%s: a loop with an empty control expression cannot be handled' %
+            err('orio.module.ortil.ast_util:%s: a loop with an empty control expression cannot be handled' %
                    stmt.line_no)
     
         # check if the iterator names are all the same
@@ -203,7 +203,7 @@ class ASTUtil:
         if iter_iname:
             inames.append(iter_iname)
         if inames.count(inames[0]) != len(inames):
-           err('module.ortil.ast_util:%s: iterator names across init, test, and iter exps must be the same'
+           err('orio.module.ortil.ast_util:%s: iterator names across init, test, and iter exps must be the same'
                    % stmt.line_no)
         
         # extract for-loop structure information
@@ -232,9 +232,9 @@ class ASTUtil:
                 elif stmt.iter.op_type in (ast.UnaryExp.POST_DEC, ast.UnaryExp.PRE_DEC):
                     stride_exp = ast.NumLitExp(-1, ast.NumLitExp.INT)
                 else:
-                    err('module.ortil.ast_util internal error:OrTil: unexpected unary operation type')
+                    err('orio.module.ortil.ast_util internal error:OrTil: unexpected unary operation type')
             else:
-                err('module.ortil.ast_utilinternal error:OrTil: unexpected type of iteration expression')
+                err('orio.module.ortil.ast_utilinternal error:OrTil: unexpected type of iteration expression')
 
         loop_body = stmt.stmt.replicate()
         for_loop_info = (index_id, lbound_exp, ubound_exp, stride_exp, loop_body)

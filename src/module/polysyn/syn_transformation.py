@@ -39,7 +39,7 @@ class SynTransformation:
             
         # execute Orio
         cmd = 'orcc -o %s %s' % (ofname, ifname)
-        if self.verbose: print ' running command:\n\t%s\n' % cmd
+        info('orio.module.polysyn.syn_transformation running command:\n\t%s\n' % cmd, level = 1)
         try:
             os.system(cmd)
         except:
@@ -147,8 +147,7 @@ class SynTransformation:
 
             # if no hotspot's tail tag cannot be found
             if not tail_m:
-                print 'internal-error:polysyn: hotspot tail tag cannot be found'
-                sys.exit(1)
+                err('orio.module.polysyn.syn_transformation: hotspot tail tag cannot be found')
 
             # find the hotspot loop nest code
             hotspot_code = code[head_m.end():tail_m.start()]

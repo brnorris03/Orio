@@ -128,9 +128,9 @@ class TransfInfoGen:
                       isinstance(rhs_val[1], str)):
                     scalar_replace = rhs_val
                 else:
-                    print (('error:%s: scalar replacement value must be in the form of ' +
+                    err(('orio.module.polysyn.tranf_info:%s: scalar replacement value must be in the form of ' +
                             '(True/False, <type-string>)') % rhs_line_no)
-                    sys.exit(1)
+
 
             # vectorization
             elif vname == VECTOR:

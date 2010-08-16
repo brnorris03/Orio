@@ -65,7 +65,7 @@ class SemanticAnalyzer:
             return stmt
         
         else:
-            err('module.ortil.semant internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__)
+            err('orio.module.ortil.semant internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__)
                 
     #-----------------------------------------------------
 
@@ -100,14 +100,14 @@ class SemanticAnalyzer:
         elif isinstance(stmt, ast.ForStmt):
             (id, lb, ub, st, bod) = self.ast_util.getForLoopInfo(stmt)
             if id.name in oloop_inames:
-                err('module.ortil.semant: illegal loop nest where an inner loop has the same iterator ' +
+                err('orio.module.ortil.semant: illegal loop nest where an inner loop has the same iterator ' +
                        'name as the outer loop')
             if id.name not in self.iter_names:
                 err('orio.module.ortil.semant: OrTil: missing tiled-loop iterator name: "%s"' % id.name)
             self.__checkStmt(stmt.stmt, oloop_inames + [id.name])
             
         else:
-            err('module.ortil.semant internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__)
+            err('orio.module.ortil.semant internal error:OrTil: unknown type of statement: %s' % stmt.__class__.__name__)
 
     #-----------------------------------------------------
 

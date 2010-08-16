@@ -155,12 +155,12 @@ class Transformation:
             return (nstmt, nasgns)
             
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
-            err('module.loop.submodule.boundreplace.transformation internal error: unprocessed transform statement')
+            err('orio.module.loop.submodule.boundreplace.transformation internal error: unprocessed transform statement')
 
 
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return (stmt, [])
 
         else:
-            err('module.loop.submodule.boundreplace.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)                                    
+            err('orio.module.loop.submodule.boundreplace.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)                                    
 

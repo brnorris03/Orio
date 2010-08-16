@@ -63,7 +63,7 @@ class PolyTransformation:
             cmd += ' --tile --l2tile'
 
         # execute Pluto
-        if self.verbose: print ' running command:\n\t%s\n' % cmd 
+        info('orio.module.polysyn.poly_transformation running command:\n\t%s\n' % cmd, level=1)
         try:
             os.system(cmd)
         except:
