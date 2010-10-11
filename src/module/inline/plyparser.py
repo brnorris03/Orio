@@ -22,48 +22,79 @@ import orio.tool.ply.yacc as yacc
 import orio.module.inline.sublexer as lexer
 from orio.main.util.globals import *
 import orio.module.inline.subroutine as subroutine
-
-f90reserved = ['IF', 'ELSE', 'FOR', 'TRANSFORM', 'NOT', 'AND', 'OR']
-
    
 # Get the token map
-tokens = lexer.FLexer.tokens
+tokens = lexer.SubroutineLexer.tokens
 baseTypes = {}
 
 
-# R201
-def p_program(p):
-    'program : program_unit_list'
-    p[0] = p[1]
-    pass
-
 def p_subroutine_definition(p):
-    'subroutine_definition: subroutine_header subroutine_body END SUBROUTINE subroutine_name'
-    p[0] = subroutine.SubroutineDefinition(p[1], p[2])
+    'subroutine_definition : subroutine_header varref_list ENDSUBROUTINE'
+    p[0] = subroutine.SubroutineDefinition(p[1], p[2], p[3])
     pass
 
 def p_subroutine_header(p):
     'subroutine_header : SUBROUTINE subroutine_name LPAREN argument_list RPAREN'
-    p[0] = subroutine.SubroutineHeader(name=p[2],args=p[4])
-    pass
+    p[0] = (p[2],p[4])
 
 def p_argument_list(p):
     '''argument_list : ID
                     | argument_list COMMA ID
                     | empty
                     '''
-    if len(p) > 1: p[1].append(p[3])
-    p[0] = p[1]
+    if len(p) > 2: 
+        p[1].append(p[3])
+        p[0] = p[1]
+    elif p[1] != None:
+        p[0] = [p[1]]
+    else:
+        p[0] = []
     pass
 
-def p_subroutine_body(p):
-    '''subroutine_body: '''
-    pass
+def p_varref_list(p):
+    '''varref_list : ID
+                    | varref_list ID
+                    | empty
+                    '''
+    if len(p) > 2:
+        p[1].append((p[2],p.lexspan(2)))
+        p[0] = p[1]
+    elif p[1]:
+        p[0] = [(p[1],p.lexspan(1))]
+    else:
+        p[0] = []
 
 def p_subroutine_name(p):
     'subroutine_name : ID'
     p[0] = p[1]
     
+def p_empty(p):
+    'empty : '
+    p[0] = None
+    
+def p_error(t):
+    if t:
+        line,col = find_column(t.lexer.lexdata,t)
+        pos = (col-1)*' '
+        err("[orio.module.inline.fparser] unexpected symbol '%s' at line %s, column %s:\n\t%s\n\t%s^" \
+            % (t.value, t.lexer.lineno, col, line, pos))
+    else:
+        err("[orio.module.inline.fparser] internal error, please email source code to norris@mcs.anl.gov")
+    
+# Compute column. 
+#     input is the input text string
+#     token is a token instance
+def find_column(input,token):
+    i = token.lexpos
+    startline = input[:i].rfind('\n')
+    endline = startline + input[startline+1:].find('\n') 
+    line = input[startline+1:endline+1]
+    while i > 0:
+        if input[i] == '\n': break
+        i -= 1
+    column = (token.lexpos - i)
+    return line, column
+
 
 # Driver (regenerates parse table)
 def setup_regen(debug = 1, outputdir='.'):
@@ -132,8 +163,9 @@ if __name__ == '__main__':
         #print 'Comments: \n', comments
         
         lex.reset()
-        ast = parser.parse(s, lexer=lex.lexer, debug=0)
+        sub = parser.parse(s, lexer=lex.lexer, debug=0)
         debug('[inliner parse] Successfully parsed %s' % sys.argv[i])
+        print str(sub)
         
         #printer = visitor.printer.Printer()
         #ast.accept(printer)
