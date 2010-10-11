@@ -27,7 +27,24 @@ import orio.module.inline.subroutine as subroutine
 tokens = lexer.SubroutineLexer.tokens
 baseTypes = {}
 
-
+def p_file(p):
+    '''file : stuff_we_dont_care_about
+            | subroutine_definition_list
+    '''
+    p[0] = p[1]
+    
+def p_stuff_we_dont_care_about(p):
+    '''stuff_we_dont_care_about : idlist
+    '''
+    p[0] = None
+    
+def p_subroutine_definition_list(p):
+    '''subroutine_definition_list : subroutine_definition
+                                | subroutine_definition_list subroutine_definition
+                                | empty
+                                '''
+    p[0] = []
+    
 def p_subroutine_definition(p):
     'subroutine_definition : subroutine_header varref_list ENDSUBROUTINE'
     p[0] = subroutine.SubroutineDefinition(p[1], p[2], p[3])
@@ -63,6 +80,14 @@ def p_varref_list(p):
         p[0] = [(p[1],p.lexspan(1))]
     else:
         p[0] = []
+      
+# Lists of identifiers outside subroutines  
+def p_idlist(p):
+    '''idlist : ID
+            | idlist ID
+            | empty
+            '''
+    p[0] = []
 
 def p_subroutine_name(p):
     'subroutine_name : ID'
