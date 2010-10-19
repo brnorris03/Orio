@@ -1,0 +1,1172 @@
+
+<!doctype html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module graph</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>graph</strong></big></big> (version 0.4)</font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dickrp/svn/support/python/graph/graph.py">/home/dickrp/svn/support/python/graph/graph.py</a></font></td></tr></table>
+    <p><tt>Directed&nbsp;and&nbsp;undirected&nbsp;graph&nbsp;data&nbsp;structures&nbsp;and&nbsp;algorithms.<br>
+&nbsp;<br>
+Copyright&nbsp;2005,&nbsp;Robert&nbsp;Dick&nbsp;(dickrp@ece.northwestern.edu).&nbsp;&nbsp;Numerous&nbsp;bug&nbsp;fixes<br>
+and&nbsp;improvements&nbsp;from&nbsp;Kosta&nbsp;Gaitanis&nbsp;(gaitanis@tele.ucl.ac.be).&nbsp;&nbsp;Please&nbsp;see&nbsp;the<br>
+license&nbsp;file&nbsp;for&nbsp;legal&nbsp;information.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#fffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="copy.html">copy</a><br>
+<a href="delegate.html">delegate</a><br>
+</td><td width="25%" valign=top><a href="new.html">new</a><br>
+<a href="operator.html">operator</a><br>
+</td><td width="25%" valign=top><a href="struct.html">struct</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#dict">__builtin__.dict</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="graph.html#EdgeDict">EdgeDict</a>(<a href="__builtin__.html#dict">__builtin__.dict</a>, <a href="delegate.html#Delegate">delegate.Delegate</a>)
+</font></dt><dt><font face="helvetica, arial"><a href="graph.html#VertexDict">VertexDict</a>(<a href="__builtin__.html#dict">__builtin__.dict</a>, <a href="delegate.html#Delegate">delegate.Delegate</a>)
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#float">__builtin__.float</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="graph.html#SortStruct">SortStruct</a>(<a href="__builtin__.html#float">__builtin__.float</a>, <a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="graph.html#SortStruct">SortStruct</a>(<a href="__builtin__.html#float">__builtin__.float</a>, <a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="delegate.html#Delegate">delegate.Delegate</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="graph.html#EdgeDict">EdgeDict</a>(<a href="__builtin__.html#dict">__builtin__.dict</a>, <a href="delegate.html#Delegate">delegate.Delegate</a>)
+</font></dt><dt><font face="helvetica, arial"><a href="graph.html#Graph">Graph</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="graph.html#Tree">Tree</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="graph.html#RawEdge">RawEdge</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="graph.html#DirEdge">DirEdge</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="graph.html#DataDirEdge">DataDirEdge</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="graph.html#UndirEdge">UndirEdge</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="graph.html#DataUndirEdge">DataUndirEdge</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="graph.html#Vertex">Vertex</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="graph.html#DataVertex">DataVertex</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="graph.html#VertexDict">VertexDict</a>(<a href="__builtin__.html#dict">__builtin__.dict</a>, <a href="delegate.html#Delegate">delegate.Delegate</a>)
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="exceptions.html#StandardError">exceptions.StandardError</a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="graph.html#GraphError">GraphError</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="graph.html#TreeError">TreeError</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DataDirEdge">class <strong>DataDirEdge</strong></a>(<a href="graph.html#DirEdge">DirEdge</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Wrapper&nbsp;to&nbsp;add&nbsp;'data'&nbsp;to&nbsp;another&nbsp;class.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#DataDirEdge">DataDirEdge</a></dd>
+<dd><a href="graph.html#DirEdge">DirEdge</a></dd>
+<dd><a href="graph.html#RawEdge">RawEdge</a></dd>
+<dd><a href="delegate.html#Delegate">delegate.Delegate</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="DataDirEdge-__init__"><strong>__init__</strong></a>(self, *pargs, **kargs)</dt><dd><tt>Use&nbsp;last&nbsp;parg&nbsp;for&nbsp;data&nbsp;and&nbsp;sends&nbsp;all&nbsp;other&nbsp;args&nbsp;to&nbsp;base.</tt></dd></dl>
+
+<dl><dt><a name="DataDirEdge-__str__"><strong>__str__</strong></a>(self)</dt><dd><tt>Append&nbsp;data&nbsp;to&nbsp;base's&nbsp;__str__.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="graph.html#DirEdge">DirEdge</a>:<br>
+<dl><dt><a name="DataDirEdge-enters"><strong>enters</strong></a>(self, v)</dt><dd><tt>True&nbsp;only&nbsp;if&nbsp;the&nbsp;vertex&nbsp;is&nbsp;this&nbsp;edge's&nbsp;destination.</tt></dd></dl>
+
+<dl><dt><a name="DataDirEdge-invert"><strong>invert</strong></a>(self)</dt><dd><tt>Inverts&nbsp;the&nbsp;edge&nbsp;direction.</tt></dd></dl>
+
+<dl><dt><a name="DataDirEdge-leaves"><strong>leaves</strong></a>(self, v)</dt><dd><tt>True&nbsp;only&nbsp;if&nbsp;the&nbsp;vertex&nbsp;is&nbsp;this&nbsp;edge's&nbsp;source.</tt></dd></dl>
+
+<dl><dt><a name="DataDirEdge-weight"><strong>weight</strong></a>(self, v1, v2)</dt><dd><tt>1&nbsp;if&nbsp;this&nbsp;edge&nbsp;has&nbsp;v1&nbsp;as&nbsp;its&nbsp;source&nbsp;and&nbsp;v2&nbsp;as&nbsp;its&nbsp;destination.</tt></dd></dl>
+
+<hr>
+Properties inherited from <a href="graph.html#DirEdge">DirEdge</a>:<br>
+<dl><dt><strong>dest_v</strong></dt>
+<dd><tt>Single&nbsp;element&nbsp;list&nbsp;containing&nbsp;the&nbsp;edge's&nbsp;destination&nbsp;vertex.<br>
+&nbsp;<br>
+Must&nbsp;be&nbsp;a&nbsp;list&nbsp;to&nbsp;conform&nbsp;with&nbsp;UndirEdge's&nbsp;interface.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = dest_v(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>src_v</strong></dt>
+<dd><tt>Single&nbsp;element&nbsp;list&nbsp;containing&nbsp;the&nbsp;edge's&nbsp;source&nbsp;vertex.<br>
+&nbsp;<br>
+Must&nbsp;be&nbsp;a&nbsp;list&nbsp;to&nbsp;conform&nbsp;with&nbsp;UndirEdge's&nbsp;interface.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = src_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Methods inherited from <a href="graph.html#RawEdge">RawEdge</a>:<br>
+<dl><dt><a name="DataDirEdge-__setstate__"><strong>__setstate__</strong></a>(self, state)</dt><dd><tt>Restore&nbsp;own&nbsp;state&nbsp;and&nbsp;add&nbsp;self&nbsp;to&nbsp;connected&nbsp;vertex&nbsp;edge&nbsp;lists.</tt></dd></dl>
+
+<hr>
+Properties inherited from <a href="graph.html#RawEdge">RawEdge</a>:<br>
+<dl><dt><strong>all_v</strong></dt>
+<dd><tt>All&nbsp;connected&nbsp;vertices.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = all_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="delegate.html#Delegate">delegate.Delegate</a>:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'delegate._delegate_meta'&gt;<dd><tt>Sets&nbsp;up&nbsp;delegation&nbsp;private&nbsp;variables.<br>
+&nbsp;<br>
+Traverses&nbsp;inheritance&nbsp;graph&nbsp;on&nbsp;class&nbsp;construction.&nbsp;&nbsp;Creates&nbsp;a&nbsp;private<br>
+__base&nbsp;variable&nbsp;for&nbsp;each&nbsp;base&nbsp;class.&nbsp;&nbsp;If&nbsp;delegating&nbsp;to&nbsp;the&nbsp;base&nbsp;class&nbsp;is<br>
+inappropriate,&nbsp;uses&nbsp;_no_delegation&nbsp;class.</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'Delegate' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DataUndirEdge">class <strong>DataUndirEdge</strong></a>(<a href="graph.html#UndirEdge">UndirEdge</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Wrapper&nbsp;to&nbsp;add&nbsp;'data'&nbsp;to&nbsp;another&nbsp;class.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#DataUndirEdge">DataUndirEdge</a></dd>
+<dd><a href="graph.html#UndirEdge">UndirEdge</a></dd>
+<dd><a href="graph.html#RawEdge">RawEdge</a></dd>
+<dd><a href="delegate.html#Delegate">delegate.Delegate</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="DataUndirEdge-__init__"><strong>__init__</strong></a>(self, *pargs, **kargs)</dt><dd><tt>Use&nbsp;last&nbsp;parg&nbsp;for&nbsp;data&nbsp;and&nbsp;sends&nbsp;all&nbsp;other&nbsp;args&nbsp;to&nbsp;base.</tt></dd></dl>
+
+<dl><dt><a name="DataUndirEdge-__str__"><strong>__str__</strong></a>(self)</dt><dd><tt>Append&nbsp;data&nbsp;to&nbsp;base's&nbsp;__str__.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="graph.html#UndirEdge">UndirEdge</a>:<br>
+<dl><dt><a name="DataUndirEdge-enters"><strong>enters</strong></a>(self, v)</dt><dd><tt>True&nbsp;if&nbsp;this&nbsp;edge&nbsp;is&nbsp;connected&nbsp;to&nbsp;the&nbsp;vertex.</tt></dd></dl>
+
+<dl><dt><a name="DataUndirEdge-leaves"><strong>leaves</strong></a>(self, v)</dt><dd><tt>True&nbsp;if&nbsp;this&nbsp;edge&nbsp;is&nbsp;connected&nbsp;to&nbsp;the&nbsp;vertex.</tt></dd></dl>
+
+<dl><dt><a name="DataUndirEdge-weight"><strong>weight</strong></a>(self, v1, v2)</dt><dd><tt>1&nbsp;if&nbsp;this&nbsp;edge&nbsp;connects&nbsp;the&nbsp;vertices.</tt></dd></dl>
+
+<hr>
+Properties inherited from <a href="graph.html#UndirEdge">UndirEdge</a>:<br>
+<dl><dt><strong>dest_v</strong></dt>
+<dd><tt>Destination&nbsp;vertices.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = dest_v(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>src_v</strong></dt>
+<dd><tt>Source&nbsp;vertices.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = src_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Methods inherited from <a href="graph.html#RawEdge">RawEdge</a>:<br>
+<dl><dt><a name="DataUndirEdge-__setstate__"><strong>__setstate__</strong></a>(self, state)</dt><dd><tt>Restore&nbsp;own&nbsp;state&nbsp;and&nbsp;add&nbsp;self&nbsp;to&nbsp;connected&nbsp;vertex&nbsp;edge&nbsp;lists.</tt></dd></dl>
+
+<hr>
+Properties inherited from <a href="graph.html#RawEdge">RawEdge</a>:<br>
+<dl><dt><strong>all_v</strong></dt>
+<dd><tt>All&nbsp;connected&nbsp;vertices.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = all_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="delegate.html#Delegate">delegate.Delegate</a>:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'delegate._delegate_meta'&gt;<dd><tt>Sets&nbsp;up&nbsp;delegation&nbsp;private&nbsp;variables.<br>
+&nbsp;<br>
+Traverses&nbsp;inheritance&nbsp;graph&nbsp;on&nbsp;class&nbsp;construction.&nbsp;&nbsp;Creates&nbsp;a&nbsp;private<br>
+__base&nbsp;variable&nbsp;for&nbsp;each&nbsp;base&nbsp;class.&nbsp;&nbsp;If&nbsp;delegating&nbsp;to&nbsp;the&nbsp;base&nbsp;class&nbsp;is<br>
+inappropriate,&nbsp;uses&nbsp;_no_delegation&nbsp;class.</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'Delegate' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DataVertex">class <strong>DataVertex</strong></a>(<a href="graph.html#Vertex">Vertex</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Wrapper&nbsp;to&nbsp;add&nbsp;'data'&nbsp;to&nbsp;another&nbsp;class.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#DataVertex">DataVertex</a></dd>
+<dd><a href="graph.html#Vertex">Vertex</a></dd>
+<dd><a href="delegate.html#Delegate">delegate.Delegate</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="DataVertex-__init__"><strong>__init__</strong></a>(self, *pargs, **kargs)</dt><dd><tt>Use&nbsp;last&nbsp;parg&nbsp;for&nbsp;data&nbsp;and&nbsp;sends&nbsp;all&nbsp;other&nbsp;args&nbsp;to&nbsp;base.</tt></dd></dl>
+
+<dl><dt><a name="DataVertex-__str__"><strong>__str__</strong></a>(self)</dt><dd><tt>Append&nbsp;data&nbsp;to&nbsp;base's&nbsp;__str__.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="graph.html#Vertex">Vertex</a>:<br>
+<dl><dt><a name="DataVertex-__getstate__"><strong>__getstate__</strong></a>(self)</dt><dd><tt>Need&nbsp;to&nbsp;break&nbsp;cycles&nbsp;to&nbsp;prevent&nbsp;recursion&nbsp;blowup&nbsp;in&nbsp;pickle.<br>
+&nbsp;<br>
+Dump&nbsp;everything&nbsp;except&nbsp;for&nbsp;edges.</tt></dd></dl>
+
+<dl><dt><a name="DataVertex-attach_e"><strong>attach_e</strong></a>(self, e)</dt><dd><tt>Attach&nbsp;an&nbsp;edge.</tt></dd></dl>
+
+<dl><dt><a name="DataVertex-connecting_e"><strong>connecting_e</strong></a>(self, v)</dt><dd><tt>List&nbsp;of&nbsp;edges&nbsp;connecting&nbsp;self&nbsp;and&nbsp;other&nbsp;vertex.</tt></dd></dl>
+
+<hr>
+Properties inherited from <a href="graph.html#Vertex">Vertex</a>:<br>
+<dl><dt><strong>adjacent_v</strong></dt>
+<dd><tt>Set&nbsp;of&nbsp;adjacent&nbsp;vertices.&nbsp;&nbsp;Edge&nbsp;direction&nbsp;ignored.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = adjacent_v(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>all_e</strong></dt>
+<dd><tt>All&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = all_e(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>in_e</strong></dt>
+<dd><tt>Incoming&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = in_e(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>in_v</strong></dt>
+<dd><tt>Set&nbsp;of&nbsp;vertices&nbsp;connected&nbsp;by&nbsp;incoming&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = in_v(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>is_intermed</strong></dt>
+<dd><tt>True&nbsp;if&nbsp;vertex&nbsp;has&nbsp;incoming&nbsp;and&nbsp;outgoing&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = is_intermed(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>is_sink</strong></dt>
+<dd><tt>True&nbsp;if&nbsp;vertex&nbsp;has&nbsp;no&nbsp;outgoing&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = is_sink(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>is_src</strong></dt>
+<dd><tt>True&nbsp;if&nbsp;vertex&nbsp;has&nbsp;no&nbsp;incoming&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = is_src(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>out_e</strong></dt>
+<dd><tt>Outgoing&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = out_e(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>out_v</strong></dt>
+<dd><tt>Set&nbsp;of&nbsp;vertices&nbsp;connected&nbsp;by&nbsp;outgoing&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = out_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="delegate.html#Delegate">delegate.Delegate</a>:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'delegate._delegate_meta'&gt;<dd><tt>Sets&nbsp;up&nbsp;delegation&nbsp;private&nbsp;variables.<br>
+&nbsp;<br>
+Traverses&nbsp;inheritance&nbsp;graph&nbsp;on&nbsp;class&nbsp;construction.&nbsp;&nbsp;Creates&nbsp;a&nbsp;private<br>
+__base&nbsp;variable&nbsp;for&nbsp;each&nbsp;base&nbsp;class.&nbsp;&nbsp;If&nbsp;delegating&nbsp;to&nbsp;the&nbsp;base&nbsp;class&nbsp;is<br>
+inappropriate,&nbsp;uses&nbsp;_no_delegation&nbsp;class.</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'Delegate' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DirEdge">class <strong>DirEdge</strong></a>(<a href="graph.html#RawEdge">RawEdge</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Directed&nbsp;edge.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#DirEdge">DirEdge</a></dd>
+<dd><a href="graph.html#RawEdge">RawEdge</a></dd>
+<dd><a href="delegate.html#Delegate">delegate.Delegate</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="DirEdge-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="DirEdge-enters"><strong>enters</strong></a>(self, v)</dt><dd><tt>True&nbsp;only&nbsp;if&nbsp;the&nbsp;vertex&nbsp;is&nbsp;this&nbsp;edge's&nbsp;destination.</tt></dd></dl>
+
+<dl><dt><a name="DirEdge-invert"><strong>invert</strong></a>(self)</dt><dd><tt>Inverts&nbsp;the&nbsp;edge&nbsp;direction.</tt></dd></dl>
+
+<dl><dt><a name="DirEdge-leaves"><strong>leaves</strong></a>(self, v)</dt><dd><tt>True&nbsp;only&nbsp;if&nbsp;the&nbsp;vertex&nbsp;is&nbsp;this&nbsp;edge's&nbsp;source.</tt></dd></dl>
+
+<dl><dt><a name="DirEdge-weight"><strong>weight</strong></a>(self, v1, v2)</dt><dd><tt>1&nbsp;if&nbsp;this&nbsp;edge&nbsp;has&nbsp;v1&nbsp;as&nbsp;its&nbsp;source&nbsp;and&nbsp;v2&nbsp;as&nbsp;its&nbsp;destination.</tt></dd></dl>
+
+<hr>
+Properties defined here:<br>
+<dl><dt><strong>dest_v</strong></dt>
+<dd><tt>Single&nbsp;element&nbsp;list&nbsp;containing&nbsp;the&nbsp;edge's&nbsp;destination&nbsp;vertex.<br>
+&nbsp;<br>
+Must&nbsp;be&nbsp;a&nbsp;list&nbsp;to&nbsp;conform&nbsp;with&nbsp;UndirEdge's&nbsp;interface.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = dest_v(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>src_v</strong></dt>
+<dd><tt>Single&nbsp;element&nbsp;list&nbsp;containing&nbsp;the&nbsp;edge's&nbsp;source&nbsp;vertex.<br>
+&nbsp;<br>
+Must&nbsp;be&nbsp;a&nbsp;list&nbsp;to&nbsp;conform&nbsp;with&nbsp;UndirEdge's&nbsp;interface.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = src_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Methods inherited from <a href="graph.html#RawEdge">RawEdge</a>:<br>
+<dl><dt><a name="DirEdge-__init__"><strong>__init__</strong></a>(self, name, v1, v2)</dt><dd><tt>Name&nbsp;needn't&nbsp;be&nbsp;a&nbsp;string&nbsp;but&nbsp;must&nbsp;be&nbsp;immutable&nbsp;and&nbsp;hashable.</tt></dd></dl>
+
+<dl><dt><a name="DirEdge-__setstate__"><strong>__setstate__</strong></a>(self, state)</dt><dd><tt>Restore&nbsp;own&nbsp;state&nbsp;and&nbsp;add&nbsp;self&nbsp;to&nbsp;connected&nbsp;vertex&nbsp;edge&nbsp;lists.</tt></dd></dl>
+
+<hr>
+Properties inherited from <a href="graph.html#RawEdge">RawEdge</a>:<br>
+<dl><dt><strong>all_v</strong></dt>
+<dd><tt>All&nbsp;connected&nbsp;vertices.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = all_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="delegate.html#Delegate">delegate.Delegate</a>:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'delegate._delegate_meta'&gt;<dd><tt>Sets&nbsp;up&nbsp;delegation&nbsp;private&nbsp;variables.<br>
+&nbsp;<br>
+Traverses&nbsp;inheritance&nbsp;graph&nbsp;on&nbsp;class&nbsp;construction.&nbsp;&nbsp;Creates&nbsp;a&nbsp;private<br>
+__base&nbsp;variable&nbsp;for&nbsp;each&nbsp;base&nbsp;class.&nbsp;&nbsp;If&nbsp;delegating&nbsp;to&nbsp;the&nbsp;base&nbsp;class&nbsp;is<br>
+inappropriate,&nbsp;uses&nbsp;_no_delegation&nbsp;class.</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'Delegate' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="EdgeDict">class <strong>EdgeDict</strong></a>(<a href="__builtin__.html#dict">__builtin__.dict</a>, <a href="delegate.html#Delegate">delegate.Delegate</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Dictionary&nbsp;of&nbsp;edges.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#EdgeDict">EdgeDict</a></dd>
+<dd><a href="__builtin__.html#dict">__builtin__.dict</a></dd>
+<dd><a href="delegate.html#Delegate">delegate.Delegate</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="EdgeDict-__delitem__"><strong>__delitem__</strong></a>(self, key)</dt><dd><tt>Remove&nbsp;edge&nbsp;from&nbsp;vertices&nbsp;to&nbsp;which&nbsp;it&nbsp;is&nbsp;attached.</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__setitem__"><strong>__setitem__</strong></a>(self, key, val)</dt></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'EdgeDict' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+<hr>
+Methods inherited from <a href="__builtin__.html#dict">__builtin__.dict</a>:<br>
+<dl><dt><a name="EdgeDict-__cmp__"><strong>__cmp__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__cmp__">__cmp__</a>(y)&nbsp;&lt;==&gt;&nbsp;cmp(x,y)</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__contains__"><strong>__contains__</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-__contains__">__contains__</a>(k)&nbsp;-&gt;&nbsp;True&nbsp;if&nbsp;D&nbsp;has&nbsp;a&nbsp;key&nbsp;k,&nbsp;else&nbsp;False</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__eq__"><strong>__eq__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__eq__">__eq__</a>(y)&nbsp;&lt;==&gt;&nbsp;x==y</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__ge__"><strong>__ge__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__ge__">__ge__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&gt;=y</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__gt__"><strong>__gt__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__gt__">__gt__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&gt;y</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__hash__"><strong>__hash__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__hash__">__hash__</a>()&nbsp;&lt;==&gt;&nbsp;hash(x)</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;x.__class__.__doc__&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__iter__"><strong>__iter__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__iter__">__iter__</a>()&nbsp;&lt;==&gt;&nbsp;iter(x)</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__le__"><strong>__le__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__le__">__le__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&lt;=y</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__len__"><strong>__len__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__len__">__len__</a>()&nbsp;&lt;==&gt;&nbsp;len(x)</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__lt__"><strong>__lt__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__lt__">__lt__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&lt;y</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__ne__"><strong>__ne__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__ne__">__ne__</a>(y)&nbsp;&lt;==&gt;&nbsp;x!=y</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#EdgeDict-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-clear"><strong>clear</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-clear">clear</a>()&nbsp;-&gt;&nbsp;None.&nbsp;&nbsp;Remove&nbsp;all&nbsp;items&nbsp;from&nbsp;D.</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-copy"><strong>copy</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-copy">copy</a>()&nbsp;-&gt;&nbsp;a&nbsp;shallow&nbsp;copy&nbsp;of&nbsp;D</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-get"><strong>get</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-get">get</a>(k[,d])&nbsp;-&gt;&nbsp;D[k]&nbsp;if&nbsp;k&nbsp;in&nbsp;D,&nbsp;else&nbsp;d.&nbsp;&nbsp;d&nbsp;defaults&nbsp;to&nbsp;None.</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-has_key"><strong>has_key</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-has_key">has_key</a>(k)&nbsp;-&gt;&nbsp;True&nbsp;if&nbsp;D&nbsp;has&nbsp;a&nbsp;key&nbsp;k,&nbsp;else&nbsp;False</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-items"><strong>items</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-items">items</a>()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;D's&nbsp;(key,&nbsp;value)&nbsp;pairs,&nbsp;as&nbsp;2-tuples</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-iteritems"><strong>iteritems</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-iteritems">iteritems</a>()&nbsp;-&gt;&nbsp;an&nbsp;iterator&nbsp;over&nbsp;the&nbsp;(key,&nbsp;value)&nbsp;items&nbsp;of&nbsp;D</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-iterkeys"><strong>iterkeys</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-iterkeys">iterkeys</a>()&nbsp;-&gt;&nbsp;an&nbsp;iterator&nbsp;over&nbsp;the&nbsp;keys&nbsp;of&nbsp;D</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-itervalues"><strong>itervalues</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-itervalues">itervalues</a>()&nbsp;-&gt;&nbsp;an&nbsp;iterator&nbsp;over&nbsp;the&nbsp;values&nbsp;of&nbsp;D</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-keys"><strong>keys</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-keys">keys</a>()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;D's&nbsp;keys</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-pop"><strong>pop</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-pop">pop</a>(k[,d])&nbsp;-&gt;&nbsp;v,&nbsp;remove&nbsp;specified&nbsp;key&nbsp;and&nbsp;return&nbsp;the&nbsp;corresponding&nbsp;value<br>
+If&nbsp;key&nbsp;is&nbsp;not&nbsp;found,&nbsp;d&nbsp;is&nbsp;returned&nbsp;if&nbsp;given,&nbsp;otherwise&nbsp;KeyError&nbsp;is&nbsp;raised</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-popitem"><strong>popitem</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-popitem">popitem</a>()&nbsp;-&gt;&nbsp;(k,&nbsp;v),&nbsp;remove&nbsp;and&nbsp;return&nbsp;some&nbsp;(key,&nbsp;value)&nbsp;pair&nbsp;as&nbsp;a<br>
+2-tuple;&nbsp;but&nbsp;raise&nbsp;KeyError&nbsp;if&nbsp;D&nbsp;is&nbsp;empty</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-setdefault"><strong>setdefault</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-setdefault">setdefault</a>(k[,d])&nbsp;-&gt;&nbsp;D.<a href="#EdgeDict-get">get</a>(k,d),&nbsp;also&nbsp;set&nbsp;D[k]=d&nbsp;if&nbsp;k&nbsp;not&nbsp;in&nbsp;D</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-update"><strong>update</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-update">update</a>(E,&nbsp;**F)&nbsp;-&gt;&nbsp;None.&nbsp;&nbsp;Update&nbsp;D&nbsp;from&nbsp;E&nbsp;and&nbsp;F:&nbsp;for&nbsp;k&nbsp;in&nbsp;E:&nbsp;D[k]&nbsp;=&nbsp;E[k]<br>
+(if&nbsp;E&nbsp;has&nbsp;keys&nbsp;else:&nbsp;for&nbsp;(k,&nbsp;v)&nbsp;in&nbsp;E:&nbsp;D[k]&nbsp;=&nbsp;v)&nbsp;then:&nbsp;for&nbsp;k&nbsp;in&nbsp;F:&nbsp;D[k]&nbsp;=&nbsp;F[k]</tt></dd></dl>
+
+<dl><dt><a name="EdgeDict-values"><strong>values</strong></a>(...)</dt><dd><tt>D.<a href="#EdgeDict-values">values</a>()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;D's&nbsp;values</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="__builtin__.html#dict">__builtin__.dict</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#EdgeDict-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<dl><dt><strong>fromkeys</strong> = &lt;built-in method fromkeys of _delegate_meta object&gt;<dd><tt><a href="__builtin__.html#dict">dict</a>.<a href="#EdgeDict-fromkeys">fromkeys</a>(S[,v])&nbsp;-&gt;&nbsp;New&nbsp;<a href="__builtin__.html#dict">dict</a>&nbsp;with&nbsp;keys&nbsp;from&nbsp;S&nbsp;and&nbsp;values&nbsp;equal&nbsp;to&nbsp;v.<br>
+v&nbsp;defaults&nbsp;to&nbsp;None.</tt></dl>
+
+<hr>
+Data and other attributes inherited from <a href="delegate.html#Delegate">delegate.Delegate</a>:<br>
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'delegate._delegate_meta'&gt;<dd><tt>Sets&nbsp;up&nbsp;delegation&nbsp;private&nbsp;variables.<br>
+&nbsp;<br>
+Traverses&nbsp;inheritance&nbsp;graph&nbsp;on&nbsp;class&nbsp;construction.&nbsp;&nbsp;Creates&nbsp;a&nbsp;private<br>
+__base&nbsp;variable&nbsp;for&nbsp;each&nbsp;base&nbsp;class.&nbsp;&nbsp;If&nbsp;delegating&nbsp;to&nbsp;the&nbsp;base&nbsp;class&nbsp;is<br>
+inappropriate,&nbsp;uses&nbsp;_no_delegation&nbsp;class.</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Graph">class <strong>Graph</strong></a>(<a href="delegate.html#Delegate">delegate.Delegate</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>General-purpose&nbsp;graph&nbsp;data&nbsp;structure.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#Graph">Graph</a></dd>
+<dd><a href="delegate.html#Delegate">delegate.Delegate</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Graph-__init__"><strong>__init__</strong></a>(self, name<font color="#909090">=None</font>)</dt></dl>
+
+<dl><dt><a name="Graph-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Graph-add_e"><strong>add_e</strong></a>(self, e)</dt><dd><tt>Add&nbsp;and&nbsp;return&nbsp;an&nbsp;edge.</tt></dd></dl>
+
+<dl><dt><a name="Graph-add_v"><strong>add_v</strong></a>(self, v)</dt><dd><tt>Add&nbsp;and&nbsp;return&nbsp;a&nbsp;vertex.</tt></dd></dl>
+
+<dl><dt><a name="Graph-all_pairs_sp"><strong>all_pairs_sp</strong></a>(self, weight_func<font color="#909090">=None</font>)</dt><dd><tt>Return&nbsp;a&nbsp;dictionary&nbsp;of&nbsp;shortest&nbsp;path&nbsp;lists&nbsp;for&nbsp;all&nbsp;vertex&nbsp;pairs.<br>
+&nbsp;<br>
+Keys&nbsp;are&nbsp;(source,&nbsp;destination)&nbsp;tuples.<br>
+'weight_func'&nbsp;is&nbsp;a&nbsp;function&nbsp;taking&nbsp;(edge,&nbsp;v1,&nbsp;v2)&nbsp;that&nbsp;returns&nbsp;a&nbsp;weight.<br>
+Defaults&nbsp;to&nbsp;e.weight()</tt></dd></dl>
+
+<dl><dt><a name="Graph-connected_components"><strong>connected_components</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;list&nbsp;of&nbsp;lists.&nbsp;&nbsp;Each&nbsp;holds&nbsp;transitively-connected&nbsp;vertices.</tt></dd></dl>
+
+<dl><dt><a name="Graph-greedy_paths"><strong>greedy_paths</strong></a>(self, start, goal, weight_func<font color="#909090">=None</font>)</dt><dd><tt>Return&nbsp;a&nbsp;<a href="__builtin__.html#dict">dict</a>&nbsp;of&nbsp;greedy&nbsp;paths&nbsp;with&nbsp;(start&nbsp;vertex,&nbsp;end&nbsp;vertex)&nbsp;keys.<br>
+&nbsp;<br>
+Always&nbsp;makes&nbsp;the&nbsp;highest-gain&nbsp;decision.&nbsp;&nbsp;Will&nbsp;find&nbsp;a&nbsp;path&nbsp;if&nbsp;one&nbsp;exists.<br>
+Not&nbsp;necessarily&nbsp;optimal.&nbsp;&nbsp;'weight_func'&nbsp;is&nbsp;a&nbsp;function&nbsp;of&nbsp;(edge,&nbsp;v1,&nbsp;v2)<br>
+returning&nbsp;a&nbsp;weight.&nbsp;&nbsp;Defaults&nbsp;to&nbsp;e.weight()</tt></dd></dl>
+
+<dl><dt><a name="Graph-minimal_span_tree"><strong>minimal_span_tree</strong></a>(self, **kargs)</dt><dd><tt>Return&nbsp;minimal&nbsp;spanning&nbsp;'<a href="#Tree">Tree</a>'.<br>
+&nbsp;<br>
+Keyword&nbsp;arg&nbsp;'weight_func'&nbsp;is&nbsp;a&nbsp;function&nbsp;taking&nbsp;(edge,&nbsp;v1,&nbsp;v2)&nbsp;and<br>
+returning&nbsp;a&nbsp;weight.&nbsp;&nbsp;Defaults&nbsp;to&nbsp;e.weight().<br>
+'targets'&nbsp;list&nbsp;of&nbsp;target&nbsp;vertices.&nbsp;&nbsp;Defaults&nbsp;to&nbsp;all&nbsp;vertices.</tt></dd></dl>
+
+<dl><dt><a name="Graph-shortest_tree"><strong>shortest_tree</strong></a>(self, start, **kargs)</dt><dd><tt>Return&nbsp;a&nbsp;'<a href="#Tree">Tree</a>'&nbsp;of&nbsp;shortest&nbsp;paths&nbsp;to&nbsp;all&nbsp;nodes.<br>
+&nbsp;<br>
+Keyword&nbsp;arg&nbsp;'weight_func'&nbsp;is&nbsp;a&nbsp;function&nbsp;taking&nbsp;(edge,&nbsp;v1,&nbsp;v2)&nbsp;and<br>
+returning&nbsp;a&nbsp;weight.&nbsp;&nbsp;Defaults&nbsp;to&nbsp;e.weight().<br>
+'targets'&nbsp;list&nbsp;of&nbsp;target&nbsp;vertices.&nbsp;&nbsp;Defaults&nbsp;to&nbsp;all&nbsp;vertices.</tt></dd></dl>
+
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="Graph-breadth_first_search"><strong>breadth_first_search</strong></a>(start_v)</dt><dd><tt>Return&nbsp;a&nbsp;breadth-first&nbsp;search&nbsp;list&nbsp;of&nbsp;vertices.</tt></dd></dl>
+
+<dl><dt><a name="Graph-depth_first_search"><strong>depth_first_search</strong></a>(start_v)</dt><dd><tt>Return&nbsp;a&nbsp;depth-first&nbsp;search&nbsp;list&nbsp;of&nbsp;vertices.</tt></dd></dl>
+
+<dl><dt><a name="Graph-path_weight"><strong>path_weight</strong></a>(path, weight_func<font color="#909090">=None</font>)</dt><dd><tt>Return&nbsp;the&nbsp;weight&nbsp;of&nbsp;the&nbsp;path,&nbsp;which&nbsp;is&nbsp;a&nbsp;list&nbsp;of&nbsp;vertices.<br>
+&nbsp;<br>
+'weight_func'&nbsp;is&nbsp;a&nbsp;function&nbsp;taking&nbsp;(edge,&nbsp;v1,&nbsp;v2)&nbsp;and&nbsp;returning&nbsp;a&nbsp;weight.</tt></dd></dl>
+
+<dl><dt><a name="Graph-topological_sort"><strong>topological_sort</strong></a>(start_v)</dt><dd><tt>Return&nbsp;a&nbsp;topological&nbsp;sort&nbsp;list&nbsp;of&nbsp;vertices.</tt></dd></dl>
+
+<hr>
+Properties defined here:<br>
+<dl><dt><strong>intermed_v</strong></dt>
+<dd><tt>List&nbsp;of&nbsp;all&nbsp;vertices&nbsp;with&nbsp;both&nbsp;incoming&nbsp;and&nbsp;outgoing&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = intermed_v(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>sink_v</strong></dt>
+<dd><tt>List&nbsp;of&nbsp;all&nbsp;vertices&nbsp;without&nbsp;outgoing&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = sink_v(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>src_v</strong></dt>
+<dd><tt>List&nbsp;of&nbsp;all&nbsp;vertices&nbsp;without&nbsp;incoming&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = src_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="delegate.html#Delegate">delegate.Delegate</a>:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'delegate._delegate_meta'&gt;<dd><tt>Sets&nbsp;up&nbsp;delegation&nbsp;private&nbsp;variables.<br>
+&nbsp;<br>
+Traverses&nbsp;inheritance&nbsp;graph&nbsp;on&nbsp;class&nbsp;construction.&nbsp;&nbsp;Creates&nbsp;a&nbsp;private<br>
+__base&nbsp;variable&nbsp;for&nbsp;each&nbsp;base&nbsp;class.&nbsp;&nbsp;If&nbsp;delegating&nbsp;to&nbsp;the&nbsp;base&nbsp;class&nbsp;is<br>
+inappropriate,&nbsp;uses&nbsp;_no_delegation&nbsp;class.</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'Delegate' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="GraphError">class <strong>GraphError</strong></a>(<a href="exceptions.html#StandardError">exceptions.StandardError</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Exception&nbsp;for&nbsp;graph&nbsp;errors.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#GraphError">GraphError</a></dd>
+<dd><a href="exceptions.html#StandardError">exceptions.StandardError</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><a name="GraphError-__getitem__"><strong>__getitem__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="GraphError-__init__"><strong>__init__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="GraphError-__str__"><strong>__str__</strong></a>(...)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RawEdge">class <strong>RawEdge</strong></a>(<a href="delegate.html#Delegate">delegate.Delegate</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Base&nbsp;class&nbsp;for&nbsp;undirected&nbsp;and&nbsp;directed&nbsp;edges.&nbsp;&nbsp;Not&nbsp;directly&nbsp;useful.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#RawEdge">RawEdge</a></dd>
+<dd><a href="delegate.html#Delegate">delegate.Delegate</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="RawEdge-__init__"><strong>__init__</strong></a>(self, name, v1, v2)</dt><dd><tt>Name&nbsp;needn't&nbsp;be&nbsp;a&nbsp;string&nbsp;but&nbsp;must&nbsp;be&nbsp;immutable&nbsp;and&nbsp;hashable.</tt></dd></dl>
+
+<dl><dt><a name="RawEdge-__setstate__"><strong>__setstate__</strong></a>(self, state)</dt><dd><tt>Restore&nbsp;own&nbsp;state&nbsp;and&nbsp;add&nbsp;self&nbsp;to&nbsp;connected&nbsp;vertex&nbsp;edge&nbsp;lists.</tt></dd></dl>
+
+<hr>
+Properties defined here:<br>
+<dl><dt><strong>all_v</strong></dt>
+<dd><tt>All&nbsp;connected&nbsp;vertices.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = all_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="delegate.html#Delegate">delegate.Delegate</a>:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'delegate._delegate_meta'&gt;<dd><tt>Sets&nbsp;up&nbsp;delegation&nbsp;private&nbsp;variables.<br>
+&nbsp;<br>
+Traverses&nbsp;inheritance&nbsp;graph&nbsp;on&nbsp;class&nbsp;construction.&nbsp;&nbsp;Creates&nbsp;a&nbsp;private<br>
+__base&nbsp;variable&nbsp;for&nbsp;each&nbsp;base&nbsp;class.&nbsp;&nbsp;If&nbsp;delegating&nbsp;to&nbsp;the&nbsp;base&nbsp;class&nbsp;is<br>
+inappropriate,&nbsp;uses&nbsp;_no_delegation&nbsp;class.</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'Delegate' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SortStruct">class <strong>SortStruct</strong></a>(<a href="__builtin__.html#float">__builtin__.float</a>, <a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Throw-away&nbsp;class&nbsp;for&nbsp;temporarily&nbsp;holding&nbsp;values.<br>
+&nbsp;<br>
+Initialize&nbsp;with&nbsp;a&nbsp;<a href="__builtin__.html#float">float</a>&nbsp;distance&nbsp;and&nbsp;as&nbsp;many&nbsp;keyword&nbsp;args&nbsp;as&nbsp;desired.<br>
+The&nbsp;keyword&nbsp;args&nbsp;become&nbsp;attributes.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#SortStruct">SortStruct</a></dd>
+<dd><a href="__builtin__.html#float">__builtin__.float</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Static methods defined here:<br>
+<dl><dt><a name="SortStruct-__new__"><strong>__new__</strong></a>(cls, val, **kargs)</dt></dl>
+
+<hr>
+Properties defined here:<br>
+<dl><dt><strong>number</strong></dt>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = number(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'SortStruct' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+<hr>
+Methods inherited from <a href="__builtin__.html#float">__builtin__.float</a>:<br>
+<dl><dt><a name="SortStruct-__abs__"><strong>__abs__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__abs__">__abs__</a>()&nbsp;&lt;==&gt;&nbsp;abs(x)</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__add__"><strong>__add__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__add__">__add__</a>(y)&nbsp;&lt;==&gt;&nbsp;x+y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__coerce__"><strong>__coerce__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__coerce__">__coerce__</a>(y)&nbsp;&lt;==&gt;&nbsp;coerce(x,&nbsp;y)</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__div__"><strong>__div__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__div__">__div__</a>(y)&nbsp;&lt;==&gt;&nbsp;x/y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__divmod__"><strong>__divmod__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__divmod__">__divmod__</a>(y)&nbsp;&lt;==&gt;&nbsp;xdivmod(x,&nbsp;y)y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__eq__"><strong>__eq__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__eq__">__eq__</a>(y)&nbsp;&lt;==&gt;&nbsp;x==y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__float__"><strong>__float__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__float__">__float__</a>()&nbsp;&lt;==&gt;&nbsp;<a href="__builtin__.html#float">float</a>(x)</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__floordiv__"><strong>__floordiv__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__floordiv__">__floordiv__</a>(y)&nbsp;&lt;==&gt;&nbsp;x//y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__ge__"><strong>__ge__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__ge__">__ge__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&gt;=y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__getnewargs__"><strong>__getnewargs__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="SortStruct-__gt__"><strong>__gt__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__gt__">__gt__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&gt;y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__hash__"><strong>__hash__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__hash__">__hash__</a>()&nbsp;&lt;==&gt;&nbsp;hash(x)</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__int__"><strong>__int__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__int__">__int__</a>()&nbsp;&lt;==&gt;&nbsp;int(x)</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__le__"><strong>__le__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__le__">__le__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&lt;=y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__long__"><strong>__long__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__long__">__long__</a>()&nbsp;&lt;==&gt;&nbsp;long(x)</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__lt__"><strong>__lt__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__lt__">__lt__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&lt;y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__mod__"><strong>__mod__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__mod__">__mod__</a>(y)&nbsp;&lt;==&gt;&nbsp;x%y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__mul__"><strong>__mul__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__mul__">__mul__</a>(y)&nbsp;&lt;==&gt;&nbsp;x*y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__ne__"><strong>__ne__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__ne__">__ne__</a>(y)&nbsp;&lt;==&gt;&nbsp;x!=y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__neg__"><strong>__neg__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__neg__">__neg__</a>()&nbsp;&lt;==&gt;&nbsp;-x</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__nonzero__"><strong>__nonzero__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__nonzero__">__nonzero__</a>()&nbsp;&lt;==&gt;&nbsp;x&nbsp;!=&nbsp;0</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__pos__"><strong>__pos__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__pos__">__pos__</a>()&nbsp;&lt;==&gt;&nbsp;+x</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__pow__"><strong>__pow__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__pow__">__pow__</a>(y[,&nbsp;z])&nbsp;&lt;==&gt;&nbsp;pow(x,&nbsp;y[,&nbsp;z])</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__radd__"><strong>__radd__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__radd__">__radd__</a>(y)&nbsp;&lt;==&gt;&nbsp;y+x</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__rdiv__"><strong>__rdiv__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__rdiv__">__rdiv__</a>(y)&nbsp;&lt;==&gt;&nbsp;y/x</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__rdivmod__"><strong>__rdivmod__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__rdivmod__">__rdivmod__</a>(y)&nbsp;&lt;==&gt;&nbsp;ydivmod(y,&nbsp;x)x</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__rfloordiv__"><strong>__rfloordiv__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__rfloordiv__">__rfloordiv__</a>(y)&nbsp;&lt;==&gt;&nbsp;y//x</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__rmod__"><strong>__rmod__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__rmod__">__rmod__</a>(y)&nbsp;&lt;==&gt;&nbsp;y%x</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__rmul__"><strong>__rmul__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__rmul__">__rmul__</a>(y)&nbsp;&lt;==&gt;&nbsp;y*x</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__rpow__"><strong>__rpow__</strong></a>(...)</dt><dd><tt>y.<a href="#SortStruct-__rpow__">__rpow__</a>(x[,&nbsp;z])&nbsp;&lt;==&gt;&nbsp;pow(x,&nbsp;y[,&nbsp;z])</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__rsub__"><strong>__rsub__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__rsub__">__rsub__</a>(y)&nbsp;&lt;==&gt;&nbsp;y-x</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__rtruediv__"><strong>__rtruediv__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__rtruediv__">__rtruediv__</a>(y)&nbsp;&lt;==&gt;&nbsp;y/x</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__sub__"><strong>__sub__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__sub__">__sub__</a>(y)&nbsp;&lt;==&gt;&nbsp;x-y</tt></dd></dl>
+
+<dl><dt><a name="SortStruct-__truediv__"><strong>__truediv__</strong></a>(...)</dt><dd><tt>x.<a href="#SortStruct-__truediv__">__truediv__</a>(y)&nbsp;&lt;==&gt;&nbsp;x/y</tt></dd></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Tree">class <strong>Tree</strong></a>(<a href="graph.html#Graph">Graph</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#Tree">Tree</a>&nbsp;data&nbsp;structure.<br>
+&nbsp;<br>
+Edges&nbsp;must&nbsp;be&nbsp;directed&nbsp;and&nbsp;reconvergent&nbsp;paths&nbsp;do&nbsp;not&nbsp;occur.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#Tree">Tree</a></dd>
+<dd><a href="graph.html#Graph">Graph</a></dd>
+<dd><a href="delegate.html#Delegate">delegate.Delegate</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Tree-add_e"><strong>add_e</strong></a>(self, e)</dt><dd><tt>Add&nbsp;edge&nbsp;if&nbsp;tree&nbsp;invariant&nbsp;holds.&nbsp;&nbsp;Otherwise,&nbsp;raise&nbsp;exception.</tt></dd></dl>
+
+<dl><dt><a name="Tree-auto_add_e"><strong>auto_add_e</strong></a>(self, e)</dt><dd><tt>Automatically&nbsp;choose&nbsp;correct&nbsp;direction&nbsp;for&nbsp;new&nbsp;edge.</tt></dd></dl>
+
+<dl><dt><a name="Tree-is_safe_e"><strong>is_safe_e</strong></a>(self, target_v)</dt><dd><tt>True&nbsp;if&nbsp;edge&nbsp;maintains&nbsp;tree&nbsp;invariant.</tt></dd></dl>
+
+<dl><dt><a name="Tree-path_dict"><strong>path_dict</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;dictionary&nbsp;of&nbsp;path&nbsp;lists&nbsp;from&nbsp;the&nbsp;root&nbsp;to&nbsp;each&nbsp;vertex.<br>
+&nbsp;<br>
+Keys&nbsp;are&nbsp;(source&nbsp;vertex,&nbsp;destination&nbsp;vertex)&nbsp;tuples.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="graph.html#Graph">Graph</a>:<br>
+<dl><dt><a name="Tree-__init__"><strong>__init__</strong></a>(self, name<font color="#909090">=None</font>)</dt></dl>
+
+<dl><dt><a name="Tree-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Tree-add_v"><strong>add_v</strong></a>(self, v)</dt><dd><tt>Add&nbsp;and&nbsp;return&nbsp;a&nbsp;vertex.</tt></dd></dl>
+
+<dl><dt><a name="Tree-all_pairs_sp"><strong>all_pairs_sp</strong></a>(self, weight_func<font color="#909090">=None</font>)</dt><dd><tt>Return&nbsp;a&nbsp;dictionary&nbsp;of&nbsp;shortest&nbsp;path&nbsp;lists&nbsp;for&nbsp;all&nbsp;vertex&nbsp;pairs.<br>
+&nbsp;<br>
+Keys&nbsp;are&nbsp;(source,&nbsp;destination)&nbsp;tuples.<br>
+'weight_func'&nbsp;is&nbsp;a&nbsp;function&nbsp;taking&nbsp;(edge,&nbsp;v1,&nbsp;v2)&nbsp;that&nbsp;returns&nbsp;a&nbsp;weight.<br>
+Defaults&nbsp;to&nbsp;e.weight()</tt></dd></dl>
+
+<dl><dt><a name="Tree-connected_components"><strong>connected_components</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;list&nbsp;of&nbsp;lists.&nbsp;&nbsp;Each&nbsp;holds&nbsp;transitively-connected&nbsp;vertices.</tt></dd></dl>
+
+<dl><dt><a name="Tree-greedy_paths"><strong>greedy_paths</strong></a>(self, start, goal, weight_func<font color="#909090">=None</font>)</dt><dd><tt>Return&nbsp;a&nbsp;<a href="__builtin__.html#dict">dict</a>&nbsp;of&nbsp;greedy&nbsp;paths&nbsp;with&nbsp;(start&nbsp;vertex,&nbsp;end&nbsp;vertex)&nbsp;keys.<br>
+&nbsp;<br>
+Always&nbsp;makes&nbsp;the&nbsp;highest-gain&nbsp;decision.&nbsp;&nbsp;Will&nbsp;find&nbsp;a&nbsp;path&nbsp;if&nbsp;one&nbsp;exists.<br>
+Not&nbsp;necessarily&nbsp;optimal.&nbsp;&nbsp;'weight_func'&nbsp;is&nbsp;a&nbsp;function&nbsp;of&nbsp;(edge,&nbsp;v1,&nbsp;v2)<br>
+returning&nbsp;a&nbsp;weight.&nbsp;&nbsp;Defaults&nbsp;to&nbsp;e.weight()</tt></dd></dl>
+
+<dl><dt><a name="Tree-minimal_span_tree"><strong>minimal_span_tree</strong></a>(self, **kargs)</dt><dd><tt>Return&nbsp;minimal&nbsp;spanning&nbsp;'<a href="#Tree">Tree</a>'.<br>
+&nbsp;<br>
+Keyword&nbsp;arg&nbsp;'weight_func'&nbsp;is&nbsp;a&nbsp;function&nbsp;taking&nbsp;(edge,&nbsp;v1,&nbsp;v2)&nbsp;and<br>
+returning&nbsp;a&nbsp;weight.&nbsp;&nbsp;Defaults&nbsp;to&nbsp;e.weight().<br>
+'targets'&nbsp;list&nbsp;of&nbsp;target&nbsp;vertices.&nbsp;&nbsp;Defaults&nbsp;to&nbsp;all&nbsp;vertices.</tt></dd></dl>
+
+<dl><dt><a name="Tree-shortest_tree"><strong>shortest_tree</strong></a>(self, start, **kargs)</dt><dd><tt>Return&nbsp;a&nbsp;'<a href="#Tree">Tree</a>'&nbsp;of&nbsp;shortest&nbsp;paths&nbsp;to&nbsp;all&nbsp;nodes.<br>
+&nbsp;<br>
+Keyword&nbsp;arg&nbsp;'weight_func'&nbsp;is&nbsp;a&nbsp;function&nbsp;taking&nbsp;(edge,&nbsp;v1,&nbsp;v2)&nbsp;and<br>
+returning&nbsp;a&nbsp;weight.&nbsp;&nbsp;Defaults&nbsp;to&nbsp;e.weight().<br>
+'targets'&nbsp;list&nbsp;of&nbsp;target&nbsp;vertices.&nbsp;&nbsp;Defaults&nbsp;to&nbsp;all&nbsp;vertices.</tt></dd></dl>
+
+<hr>
+Static methods inherited from <a href="graph.html#Graph">Graph</a>:<br>
+<dl><dt><a name="Tree-breadth_first_search"><strong>breadth_first_search</strong></a>(start_v)</dt><dd><tt>Return&nbsp;a&nbsp;breadth-first&nbsp;search&nbsp;list&nbsp;of&nbsp;vertices.</tt></dd></dl>
+
+<dl><dt><a name="Tree-depth_first_search"><strong>depth_first_search</strong></a>(start_v)</dt><dd><tt>Return&nbsp;a&nbsp;depth-first&nbsp;search&nbsp;list&nbsp;of&nbsp;vertices.</tt></dd></dl>
+
+<dl><dt><a name="Tree-path_weight"><strong>path_weight</strong></a>(path, weight_func<font color="#909090">=None</font>)</dt><dd><tt>Return&nbsp;the&nbsp;weight&nbsp;of&nbsp;the&nbsp;path,&nbsp;which&nbsp;is&nbsp;a&nbsp;list&nbsp;of&nbsp;vertices.<br>
+&nbsp;<br>
+'weight_func'&nbsp;is&nbsp;a&nbsp;function&nbsp;taking&nbsp;(edge,&nbsp;v1,&nbsp;v2)&nbsp;and&nbsp;returning&nbsp;a&nbsp;weight.</tt></dd></dl>
+
+<dl><dt><a name="Tree-topological_sort"><strong>topological_sort</strong></a>(start_v)</dt><dd><tt>Return&nbsp;a&nbsp;topological&nbsp;sort&nbsp;list&nbsp;of&nbsp;vertices.</tt></dd></dl>
+
+<hr>
+Properties inherited from <a href="graph.html#Graph">Graph</a>:<br>
+<dl><dt><strong>intermed_v</strong></dt>
+<dd><tt>List&nbsp;of&nbsp;all&nbsp;vertices&nbsp;with&nbsp;both&nbsp;incoming&nbsp;and&nbsp;outgoing&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = intermed_v(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>sink_v</strong></dt>
+<dd><tt>List&nbsp;of&nbsp;all&nbsp;vertices&nbsp;without&nbsp;outgoing&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = sink_v(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>src_v</strong></dt>
+<dd><tt>List&nbsp;of&nbsp;all&nbsp;vertices&nbsp;without&nbsp;incoming&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = src_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="delegate.html#Delegate">delegate.Delegate</a>:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'delegate._delegate_meta'&gt;<dd><tt>Sets&nbsp;up&nbsp;delegation&nbsp;private&nbsp;variables.<br>
+&nbsp;<br>
+Traverses&nbsp;inheritance&nbsp;graph&nbsp;on&nbsp;class&nbsp;construction.&nbsp;&nbsp;Creates&nbsp;a&nbsp;private<br>
+__base&nbsp;variable&nbsp;for&nbsp;each&nbsp;base&nbsp;class.&nbsp;&nbsp;If&nbsp;delegating&nbsp;to&nbsp;the&nbsp;base&nbsp;class&nbsp;is<br>
+inappropriate,&nbsp;uses&nbsp;_no_delegation&nbsp;class.</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'Delegate' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="TreeError">class <strong>TreeError</strong></a>(<a href="graph.html#GraphError">GraphError</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#TreeError">TreeError</a></dd>
+<dd><a href="graph.html#GraphError">GraphError</a></dd>
+<dd><a href="exceptions.html#StandardError">exceptions.StandardError</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+</dl>
+<hr>
+Methods inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><a name="TreeError-__getitem__"><strong>__getitem__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="TreeError-__init__"><strong>__init__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="TreeError-__str__"><strong>__str__</strong></a>(...)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="UndirEdge">class <strong>UndirEdge</strong></a>(<a href="graph.html#RawEdge">RawEdge</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Undirected&nbsp;edge.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#UndirEdge">UndirEdge</a></dd>
+<dd><a href="graph.html#RawEdge">RawEdge</a></dd>
+<dd><a href="delegate.html#Delegate">delegate.Delegate</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="UndirEdge-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="UndirEdge-enters"><strong>enters</strong></a>(self, v)</dt><dd><tt>True&nbsp;if&nbsp;this&nbsp;edge&nbsp;is&nbsp;connected&nbsp;to&nbsp;the&nbsp;vertex.</tt></dd></dl>
+
+<dl><dt><a name="UndirEdge-leaves"><strong>leaves</strong></a>(self, v)</dt><dd><tt>True&nbsp;if&nbsp;this&nbsp;edge&nbsp;is&nbsp;connected&nbsp;to&nbsp;the&nbsp;vertex.</tt></dd></dl>
+
+<dl><dt><a name="UndirEdge-weight"><strong>weight</strong></a>(self, v1, v2)</dt><dd><tt>1&nbsp;if&nbsp;this&nbsp;edge&nbsp;connects&nbsp;the&nbsp;vertices.</tt></dd></dl>
+
+<hr>
+Properties defined here:<br>
+<dl><dt><strong>dest_v</strong></dt>
+<dd><tt>Destination&nbsp;vertices.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = dest_v(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>src_v</strong></dt>
+<dd><tt>Source&nbsp;vertices.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = src_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Methods inherited from <a href="graph.html#RawEdge">RawEdge</a>:<br>
+<dl><dt><a name="UndirEdge-__init__"><strong>__init__</strong></a>(self, name, v1, v2)</dt><dd><tt>Name&nbsp;needn't&nbsp;be&nbsp;a&nbsp;string&nbsp;but&nbsp;must&nbsp;be&nbsp;immutable&nbsp;and&nbsp;hashable.</tt></dd></dl>
+
+<dl><dt><a name="UndirEdge-__setstate__"><strong>__setstate__</strong></a>(self, state)</dt><dd><tt>Restore&nbsp;own&nbsp;state&nbsp;and&nbsp;add&nbsp;self&nbsp;to&nbsp;connected&nbsp;vertex&nbsp;edge&nbsp;lists.</tt></dd></dl>
+
+<hr>
+Properties inherited from <a href="graph.html#RawEdge">RawEdge</a>:<br>
+<dl><dt><strong>all_v</strong></dt>
+<dd><tt>All&nbsp;connected&nbsp;vertices.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = all_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="delegate.html#Delegate">delegate.Delegate</a>:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'delegate._delegate_meta'&gt;<dd><tt>Sets&nbsp;up&nbsp;delegation&nbsp;private&nbsp;variables.<br>
+&nbsp;<br>
+Traverses&nbsp;inheritance&nbsp;graph&nbsp;on&nbsp;class&nbsp;construction.&nbsp;&nbsp;Creates&nbsp;a&nbsp;private<br>
+__base&nbsp;variable&nbsp;for&nbsp;each&nbsp;base&nbsp;class.&nbsp;&nbsp;If&nbsp;delegating&nbsp;to&nbsp;the&nbsp;base&nbsp;class&nbsp;is<br>
+inappropriate,&nbsp;uses&nbsp;_no_delegation&nbsp;class.</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'Delegate' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Vertex">class <strong>Vertex</strong></a>(<a href="delegate.html#Delegate">delegate.Delegate</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>General&nbsp;graph&nbsp;vertex.<br>
+&nbsp;<br>
+All&nbsp;methods&nbsp;colaborate&nbsp;with&nbsp;directed&nbsp;and&nbsp;undirected<br>
+edges.&nbsp;&nbsp;If&nbsp;the&nbsp;edges&nbsp;are&nbsp;undirected,&nbsp;ine&nbsp;==&nbsp;oute.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#Vertex">Vertex</a></dd>
+<dd><a href="delegate.html#Delegate">delegate.Delegate</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Vertex-__getstate__"><strong>__getstate__</strong></a>(self)</dt><dd><tt>Need&nbsp;to&nbsp;break&nbsp;cycles&nbsp;to&nbsp;prevent&nbsp;recursion&nbsp;blowup&nbsp;in&nbsp;pickle.<br>
+&nbsp;<br>
+Dump&nbsp;everything&nbsp;except&nbsp;for&nbsp;edges.</tt></dd></dl>
+
+<dl><dt><a name="Vertex-__init__"><strong>__init__</strong></a>(self, name)</dt><dd><tt>Name&nbsp;neen't&nbsp;be&nbsp;a&nbsp;string&nbsp;but&nbsp;must&nbsp;be&nbsp;hashable&nbsp;and&nbsp;immutable.</tt></dd></dl>
+
+<dl><dt><a name="Vertex-__str__"><strong>__str__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Vertex-attach_e"><strong>attach_e</strong></a>(self, e)</dt><dd><tt>Attach&nbsp;an&nbsp;edge.</tt></dd></dl>
+
+<dl><dt><a name="Vertex-connecting_e"><strong>connecting_e</strong></a>(self, v)</dt><dd><tt>List&nbsp;of&nbsp;edges&nbsp;connecting&nbsp;self&nbsp;and&nbsp;other&nbsp;vertex.</tt></dd></dl>
+
+<hr>
+Properties defined here:<br>
+<dl><dt><strong>adjacent_v</strong></dt>
+<dd><tt>Set&nbsp;of&nbsp;adjacent&nbsp;vertices.&nbsp;&nbsp;Edge&nbsp;direction&nbsp;ignored.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = adjacent_v(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>all_e</strong></dt>
+<dd><tt>All&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = all_e(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>in_e</strong></dt>
+<dd><tt>Incoming&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = in_e(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>in_v</strong></dt>
+<dd><tt>Set&nbsp;of&nbsp;vertices&nbsp;connected&nbsp;by&nbsp;incoming&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = in_v(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>is_intermed</strong></dt>
+<dd><tt>True&nbsp;if&nbsp;vertex&nbsp;has&nbsp;incoming&nbsp;and&nbsp;outgoing&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = is_intermed(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>is_sink</strong></dt>
+<dd><tt>True&nbsp;if&nbsp;vertex&nbsp;has&nbsp;no&nbsp;outgoing&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = is_sink(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>is_src</strong></dt>
+<dd><tt>True&nbsp;if&nbsp;vertex&nbsp;has&nbsp;no&nbsp;incoming&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = is_src(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>out_e</strong></dt>
+<dd><tt>Outgoing&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = out_e(self)</dt></dl>
+</dd>
+</dl>
+<dl><dt><strong>out_v</strong></dt>
+<dd><tt>Set&nbsp;of&nbsp;vertices&nbsp;connected&nbsp;by&nbsp;outgoing&nbsp;edges.</tt></dd>
+<dd><dl><dt><a name="-<em>get</em>"><strong><em>get</em></strong></a> = out_v(self)</dt></dl>
+</dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="delegate.html#Delegate">delegate.Delegate</a>:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'delegate._delegate_meta'&gt;<dd><tt>Sets&nbsp;up&nbsp;delegation&nbsp;private&nbsp;variables.<br>
+&nbsp;<br>
+Traverses&nbsp;inheritance&nbsp;graph&nbsp;on&nbsp;class&nbsp;construction.&nbsp;&nbsp;Creates&nbsp;a&nbsp;private<br>
+__base&nbsp;variable&nbsp;for&nbsp;each&nbsp;base&nbsp;class.&nbsp;&nbsp;If&nbsp;delegating&nbsp;to&nbsp;the&nbsp;base&nbsp;class&nbsp;is<br>
+inappropriate,&nbsp;uses&nbsp;_no_delegation&nbsp;class.</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'Delegate' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="VertexDict">class <strong>VertexDict</strong></a>(<a href="__builtin__.html#dict">__builtin__.dict</a>, <a href="delegate.html#Delegate">delegate.Delegate</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Dictionary&nbsp;of&nbsp;vertices.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="graph.html#VertexDict">VertexDict</a></dd>
+<dd><a href="__builtin__.html#dict">__builtin__.dict</a></dd>
+<dd><a href="delegate.html#Delegate">delegate.Delegate</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="VertexDict-__delitem__"><strong>__delitem__</strong></a>(self, key)</dt><dd><tt>Delete&nbsp;all&nbsp;edges&nbsp;connected&nbsp;to&nbsp;the&nbsp;vertex,&nbsp;along&nbsp;with&nbsp;the&nbsp;vertex.</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__init__"><strong>__init__</strong></a>(self, graph)</dt></dl>
+
+<dl><dt><a name="VertexDict-__setitem__"><strong>__setitem__</strong></a>(self, key, val)</dt></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__dict__</strong> = &lt;dictproxy object&gt;<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dl>
+
+<dl><dt><strong>__weakref__</strong> = &lt;attribute '__weakref__' of 'VertexDict' objects&gt;<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;(if&nbsp;defined)</tt></dl>
+
+<hr>
+Methods inherited from <a href="__builtin__.html#dict">__builtin__.dict</a>:<br>
+<dl><dt><a name="VertexDict-__cmp__"><strong>__cmp__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__cmp__">__cmp__</a>(y)&nbsp;&lt;==&gt;&nbsp;cmp(x,y)</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__contains__"><strong>__contains__</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-__contains__">__contains__</a>(k)&nbsp;-&gt;&nbsp;True&nbsp;if&nbsp;D&nbsp;has&nbsp;a&nbsp;key&nbsp;k,&nbsp;else&nbsp;False</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__eq__"><strong>__eq__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__eq__">__eq__</a>(y)&nbsp;&lt;==&gt;&nbsp;x==y</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__ge__"><strong>__ge__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__ge__">__ge__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&gt;=y</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__gt__"><strong>__gt__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__gt__">__gt__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&gt;y</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__hash__"><strong>__hash__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__hash__">__hash__</a>()&nbsp;&lt;==&gt;&nbsp;hash(x)</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__iter__"><strong>__iter__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__iter__">__iter__</a>()&nbsp;&lt;==&gt;&nbsp;iter(x)</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__le__"><strong>__le__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__le__">__le__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&lt;=y</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__len__"><strong>__len__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__len__">__len__</a>()&nbsp;&lt;==&gt;&nbsp;len(x)</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__lt__"><strong>__lt__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__lt__">__lt__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&lt;y</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__ne__"><strong>__ne__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__ne__">__ne__</a>(y)&nbsp;&lt;==&gt;&nbsp;x!=y</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#VertexDict-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-clear"><strong>clear</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-clear">clear</a>()&nbsp;-&gt;&nbsp;None.&nbsp;&nbsp;Remove&nbsp;all&nbsp;items&nbsp;from&nbsp;D.</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-copy"><strong>copy</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-copy">copy</a>()&nbsp;-&gt;&nbsp;a&nbsp;shallow&nbsp;copy&nbsp;of&nbsp;D</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-get"><strong>get</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-get">get</a>(k[,d])&nbsp;-&gt;&nbsp;D[k]&nbsp;if&nbsp;k&nbsp;in&nbsp;D,&nbsp;else&nbsp;d.&nbsp;&nbsp;d&nbsp;defaults&nbsp;to&nbsp;None.</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-has_key"><strong>has_key</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-has_key">has_key</a>(k)&nbsp;-&gt;&nbsp;True&nbsp;if&nbsp;D&nbsp;has&nbsp;a&nbsp;key&nbsp;k,&nbsp;else&nbsp;False</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-items"><strong>items</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-items">items</a>()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;D's&nbsp;(key,&nbsp;value)&nbsp;pairs,&nbsp;as&nbsp;2-tuples</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-iteritems"><strong>iteritems</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-iteritems">iteritems</a>()&nbsp;-&gt;&nbsp;an&nbsp;iterator&nbsp;over&nbsp;the&nbsp;(key,&nbsp;value)&nbsp;items&nbsp;of&nbsp;D</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-iterkeys"><strong>iterkeys</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-iterkeys">iterkeys</a>()&nbsp;-&gt;&nbsp;an&nbsp;iterator&nbsp;over&nbsp;the&nbsp;keys&nbsp;of&nbsp;D</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-itervalues"><strong>itervalues</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-itervalues">itervalues</a>()&nbsp;-&gt;&nbsp;an&nbsp;iterator&nbsp;over&nbsp;the&nbsp;values&nbsp;of&nbsp;D</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-keys"><strong>keys</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-keys">keys</a>()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;D's&nbsp;keys</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-pop"><strong>pop</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-pop">pop</a>(k[,d])&nbsp;-&gt;&nbsp;v,&nbsp;remove&nbsp;specified&nbsp;key&nbsp;and&nbsp;return&nbsp;the&nbsp;corresponding&nbsp;value<br>
+If&nbsp;key&nbsp;is&nbsp;not&nbsp;found,&nbsp;d&nbsp;is&nbsp;returned&nbsp;if&nbsp;given,&nbsp;otherwise&nbsp;KeyError&nbsp;is&nbsp;raised</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-popitem"><strong>popitem</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-popitem">popitem</a>()&nbsp;-&gt;&nbsp;(k,&nbsp;v),&nbsp;remove&nbsp;and&nbsp;return&nbsp;some&nbsp;(key,&nbsp;value)&nbsp;pair&nbsp;as&nbsp;a<br>
+2-tuple;&nbsp;but&nbsp;raise&nbsp;KeyError&nbsp;if&nbsp;D&nbsp;is&nbsp;empty</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-setdefault"><strong>setdefault</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-setdefault">setdefault</a>(k[,d])&nbsp;-&gt;&nbsp;D.<a href="#VertexDict-get">get</a>(k,d),&nbsp;also&nbsp;set&nbsp;D[k]=d&nbsp;if&nbsp;k&nbsp;not&nbsp;in&nbsp;D</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-update"><strong>update</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-update">update</a>(E,&nbsp;**F)&nbsp;-&gt;&nbsp;None.&nbsp;&nbsp;Update&nbsp;D&nbsp;from&nbsp;E&nbsp;and&nbsp;F:&nbsp;for&nbsp;k&nbsp;in&nbsp;E:&nbsp;D[k]&nbsp;=&nbsp;E[k]<br>
+(if&nbsp;E&nbsp;has&nbsp;keys&nbsp;else:&nbsp;for&nbsp;(k,&nbsp;v)&nbsp;in&nbsp;E:&nbsp;D[k]&nbsp;=&nbsp;v)&nbsp;then:&nbsp;for&nbsp;k&nbsp;in&nbsp;F:&nbsp;D[k]&nbsp;=&nbsp;F[k]</tt></dd></dl>
+
+<dl><dt><a name="VertexDict-values"><strong>values</strong></a>(...)</dt><dd><tt>D.<a href="#VertexDict-values">values</a>()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;D's&nbsp;values</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="__builtin__.html#dict">__builtin__.dict</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#VertexDict-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<dl><dt><strong>fromkeys</strong> = &lt;built-in method fromkeys of _delegate_meta object&gt;<dd><tt><a href="__builtin__.html#dict">dict</a>.<a href="#VertexDict-fromkeys">fromkeys</a>(S[,v])&nbsp;-&gt;&nbsp;New&nbsp;<a href="__builtin__.html#dict">dict</a>&nbsp;with&nbsp;keys&nbsp;from&nbsp;S&nbsp;and&nbsp;values&nbsp;equal&nbsp;to&nbsp;v.<br>
+v&nbsp;defaults&nbsp;to&nbsp;None.</tt></dl>
+
+<hr>
+Data and other attributes inherited from <a href="delegate.html#Delegate">delegate.Delegate</a>:<br>
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'delegate._delegate_meta'&gt;<dd><tt>Sets&nbsp;up&nbsp;delegation&nbsp;private&nbsp;variables.<br>
+&nbsp;<br>
+Traverses&nbsp;inheritance&nbsp;graph&nbsp;on&nbsp;class&nbsp;construction.&nbsp;&nbsp;Creates&nbsp;a&nbsp;private<br>
+__base&nbsp;variable&nbsp;for&nbsp;each&nbsp;base&nbsp;class.&nbsp;&nbsp;If&nbsp;delegating&nbsp;to&nbsp;the&nbsp;base&nbsp;class&nbsp;is<br>
+inappropriate,&nbsp;uses&nbsp;_no_delegation&nbsp;class.</tt></dl>
+
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-DataWrapped"><strong>DataWrapped</strong></a>(cls)</dt><dd><tt>Returns&nbsp;a&nbsp;wrapped&nbsp;class&nbsp;with&nbsp;a&nbsp;new&nbsp;'data'&nbsp;member.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>PosInf</strong> = inf<br>
+<strong>__author__</strong> = 'Robert Dick and Kosta Gaitanis'<br>
+<strong>__author_email__</strong> = 'dickrp@ece.northwestern.edu and gaitanis@tele.ucl.ac.be'<br>
+<strong>__version__</strong> = '0.4'</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Robert&nbsp;Dick&nbsp;and&nbsp;Kosta&nbsp;Gaitanis</td></tr></table>
+</body></html>

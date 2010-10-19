@@ -1,0 +1,23 @@
+Metadata-Version: 1.0
+Name: graph
+Version: 0.4
+Summary: Directed and undirected graph data structures and algorithms.
+Home-page: http://ziyang.ece.northwestern.edu/~dickrp/python/mods.html
+Author: Robert Dick and Kosta Gaitanis
+Author-email: dickrp@ece.northwestern.edu and gaitanis@tele.ucl.ac.be
+License: modified Python
+Download-URL: http://ziyang.ece.northwestern.edu/~dickrp/python/graph-0.4.tar.gz
+Description: Directed and undirected graph data structures and algorithms.
+        
+        Copyright 2005, Robert Dick (dickrp@ece.northwestern.edu).  Numerous bug fixes
+        and improvements from Kosta Gaitanis (gaitanis@tele.ucl.ac.be).  Please see the
+        license file for legal information.
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python
+Classifier: License :: OSI Approved :: Python Software Foundation License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Software Development
+Classifier: Topic :: Scientific/Engineering
