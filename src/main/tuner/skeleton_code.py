@@ -12,6 +12,7 @@ SEQ_DEFAULT = r'''
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <limits.h>
 
 /*@ global @*/
 
@@ -58,7 +59,7 @@ int main(int argc, char *argv[])
 {
   /*@ prologue @*/
 
-  double orio_t_start, orio_t_end, orio_t_total=0;
+  double orio_t_start, orio_t_end, orio_t, orio_t_total=0, orio_t_min = (double)LONG_MAX;
   int orio_i;
 
   for (orio_i=0; orio_i<REPS; orio_i++)
@@ -68,9 +69,10 @@ int main(int argc, char *argv[])
     /*@ tested code @*/
 
     orio_t_end = getClock();
-    orio_t_total += orio_t_end - orio_t_start;
+    orio_t = orio_t_end - orio_t_start;
+    if (orio_t < orio_t_min) orio_t_min = orio_t;
   }
-  orio_t_total = orio_t_total / REPS;
+  orio_t_total = orio_t_min;
   
   printf("{'/*@ coordinate @*/' : %g}", orio_t_total);
 
@@ -89,6 +91,7 @@ PAR_DEFAULT = r'''
 #include <stdlib.h>
 #include <sys/time.h>
 #include <string.h>
+#include <limits.h>
 #include "mpi.h"
 
 /*@ global @*/
@@ -171,7 +174,7 @@ int main(int argc, char *argv[])
   switch (myid)
   {
       /*@ begin switch body @*/
-      double orio_t_start, orio_t_end, orio_t_total=0;
+      double orio_t_start, orio_t_end, orio_t, orio_t_total=0, orio_t_min=(double)LONG_MAX;
       int orio_i;
       mytimeinfo.testid = myid;
       strcpy(mytimeinfo.coord,"/*@ coordinate @*/");
@@ -182,9 +185,12 @@ int main(int argc, char *argv[])
         /*@ tested code @*/
 
         orio_t_end = getClock();
-        orio_t_total += orio_t_end - orio_t_start;
+        orio_t = orio_t_end - orio_t_start;
+        if (orio_t < orio_t_min) orio_t_min = orio_t;
       }
-      orio_t_total = orio_t_total / REPS; 
+      /* Mean of all times -- not a good idea in the presence of noise, instead use min */
+      /* orio_t_total = orio_t_total / REPS; */
+      orio_t_total = orio_t_min;
       mytimeinfo.tm = orio_t_total;
       /*@ end switch body @*/
 

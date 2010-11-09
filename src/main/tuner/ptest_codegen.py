@@ -4,6 +4,7 @@
 
 import random, re, sys
 import skeleton_code
+from orio.main.util.globals import *
 
 #-----------------------------------------------------
 
