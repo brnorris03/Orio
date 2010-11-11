@@ -80,10 +80,11 @@ register int newub_c1, newub_c2, newub_c3, newub_c4, newub_c5, newub_c6,
     
   profiling_code = 'lu_profiling.c';
   compile_cmd = 'gcc';
-  compile_opts = '-lm';
+  compile_opts = '';
   ) @*/
 
 /* pluto start (N) */
+#pragma scop
 for (k=0; k<=N-1; k++)
   {
     for (j=k+1; j<=N-1; j++)
@@ -92,6 +93,7 @@ for (k=0; k<=N-1; k++)
       for (j=k+1; j<=N-1; j++)
         A[i][j] = A[i][j] - A[i][k]*A[k][j];
   }
+#pragma endscop
 /* pluto end */
 
 /*@ end @*/
