@@ -37,7 +37,6 @@ class PolySyn(orio.module.module.Module):
         close_m = re.search(pluto_close_tag_re, code)
         if (not open_m) or (not close_m):
             err('orio.module.polysyn.polysyn: cannot find the opening and closing tags for the Pluto code') 
-            sys.exit(1) 
 
         # insert the polysyn tags
         code = (code[:open_m.start()] + polysyn_open_tag + '\n' + 

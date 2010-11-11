@@ -63,7 +63,7 @@ class PolyTransformation:
             cmd += ' --tile --l2tile'
 
         # execute Pluto
-        info('orio.module.polysyn.poly_transformation running command:\n\t%s\n' % cmd, level=1)
+        info('orio.module.polysyn.poly_transformation running command:\n\t%s\n' % cmd)
         try:
             os.system(cmd)
         except:
@@ -81,10 +81,9 @@ class PolyTransformation:
                 err('orio.module.polysyn.poly_transformation:  failed to remove file: %s' % f)
 
         # get the Pluto-generated code
-        plutogen_fnames = glob.glob(path_name + '.*' + ext)
-        if len(plutogen_fnames) != 1:
+        plutogen_fname = path_name + '.tiled' + ext
+        if not os.path.exists(plutogen_fname):
             err('orio.module.polysyn.poly_transformation:  failed to generate Pluto-transformed code')
-        plutogen_fname = plutogen_fnames[0]
         try:
             f = open(plutogen_fname, 'r')
             pluto_code = f.read()
