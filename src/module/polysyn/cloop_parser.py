@@ -96,6 +96,15 @@ class CLoopParser:
         return ('macrostmt', linestr, line_num)
     
     #-------------------------------------------------------------------
+    
+    def __parseDeclarations(self, linestr, line_num):
+        '''Parse the given line string for a variable declaration statement, e.g., int t1, t2;'''
+        m = re.match(r'^\s*int t1.*;$', linestr )
+        if not m:
+            return None
+        return ('declaration', linestr, line_num)
+    
+    #-------------------------------------------------------------------
 
     def __parseDirective(self, linestr, line_num):
         '''Parse the given line string for a directive'''
@@ -143,6 +152,7 @@ class CLoopParser:
                 self.__parseIfStmt(linestr, line_num) or
                 self.__parseClosingBrace(linestr, line_num) or
                 self.__parseMacroStmt(linestr, line_num) or
+                self.__parseDeclarations(linestr, line_num) or
                 self.__parseDirective(linestr, line_num) or
                 self.__parseAssignStmt(linestr, line_num) or
                 self.__parseElseStmt(linestr, line_num) or
