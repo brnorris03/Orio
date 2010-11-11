@@ -26,7 +26,7 @@ class SynTransformation:
         '''To execute the annotation tool to perform syntactic code transformations'''
         
         # the used filenames
-        ifname = '_orio_unroll_code.i'
+        ifname = '_orio_unroll_code.i.c'
         ofname = '_orio_unroll_code.o'
         
         # write the given code into a file
@@ -39,7 +39,7 @@ class SynTransformation:
             
         # execute Orio
         cmd = 'orcc -o %s %s' % (ofname, ifname)
-        info('orio.module.polysyn.syn_transformation running command:\n\t%s\n' % cmd, level = 1)
+        info('orio.module.polysyn.syn_transformation running command:\n\t%s\n' % cmd)
         try:
             os.system(cmd)
         except:
