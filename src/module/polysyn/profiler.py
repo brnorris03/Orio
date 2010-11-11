@@ -26,6 +26,7 @@ class Profiler:
 
         # regular expression
         polysyn_re = r'/\*@\s*profiled\s+code\s*@\*/'
+        math_re = r'#include\s*<math\.h>'
         
         # get the profiling code
         try:
@@ -47,7 +48,10 @@ class Profiler:
         start_line_no = profiling_code[:start_pos].count('\n') + 1
 
         # insert the pluto code into the profiling code
-        profile_code, num = re.subn(polysyn_re, pluto_code, profiling_code)
+        pcode, num = re.subn(math_re, '/* #include <math.h> */', profiling_code)
+        profile_code, num = re.subn(polysyn_re, pluto_code, pcode)
+        profile_code = '#include <math.h>\n' + profile_code
+
 
         # check the number of performed replacements
         if num > 1:
@@ -90,9 +94,9 @@ class Profiler:
         # compile the profiling code
         compile_cmd = self.compile_cmd if self.compile_cmd else 'gcc'
         compile_opts = self.compile_opts if self.compile_opts else ''
-        cmd = ('%s %s -g -pg -lm -o %s %s' %
+        cmd = ('%s %s -g -pg -o %s %s -lm' %
                (compile_cmd, compile_opts, exe_fname, src_fname))
-        info('orio.module.polysyn.profiler compiling:\n\t' + cmd, level=1)
+        info('orio.module.polysyn.profiler compiling:\n\t' + cmd)
         try:
             os.system(cmd)
         except:
@@ -100,7 +104,7 @@ class Profiler:
 
         # execute the executable to generate "gmon.out" file that contains the profiling information
         exec_cmd = './%s' % exe_fname
-        info('orio.module.polysyn.profiler executing:\n\t' + exec_cmd, level=1)
+        info('orio.module.polysyn.profiler executing:\n\t' + exec_cmd)
         try:
             status = os.system(exec_cmd)
         except:
@@ -108,7 +112,7 @@ class Profiler:
 
         # run gprof to extract the profiling information
         gprof_cmd = 'gprof -lbQ %s' % exe_fname
-        info('orio.module.polysyn.profiler executing profiler:\n\t' + gprof_cmd, level=1)
+        info('orio.module.polysyn.profiler executing profiler:\n\t' + gprof_cmd)
         try:
             f = os.popen(gprof_cmd)
             profile_info = f.read()
@@ -117,12 +121,13 @@ class Profiler:
             err('orio.module.polysyn.profiler:  failed to execute GProf: "%s"\n --> %s: %s' % (gprof_cmd,e.__class__.__name__, e))
 
         # delete unneeded files
-        removed_files = [src_fname, exe_fname, 'gmon.out']
-        for f in removed_files:
-            try:
-                os.unlink(f)
-            except:
-                err('orio.module.polysyn.profiler:  failed to delete file: %s' % f)
+        if not Globals().keep_temps:
+            removed_files = [src_fname, exe_fname, 'gmon.out']
+            for f in removed_files:
+                try:
+                    os.unlink(f)
+                except:
+                    err('orio.module.polysyn.profiler:  failed to delete file: %s' % f)
         
         # set back the number of OpenMP threads to the original one
         if orig_num_threads == None:
