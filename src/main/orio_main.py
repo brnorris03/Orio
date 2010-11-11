@@ -107,7 +107,8 @@ def start(argv, lang):
                         suffix = ''
                         for pname, pval in input_params:
                             suffix += '_%s_%s' % (pname, pval)
-                        out_filename = ('%s%s' % (path_name, suffix)) + ext
+                        if Globals.out_filename: out_filename = Globals.out_filename
+                        else: out_filename = ('%s%s' % (path_name, suffix)) + ext
                     info('--> writing output to: %s' % out_filename)
                     try:
                         f = open(out_filename, 'w')

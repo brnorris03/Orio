@@ -58,13 +58,20 @@ class CmdParser:
         otherargv = []
         srcfiles = {}
         index = 1
+        orioarg = False
         wrapper = False
         for arg in argv[1:]:
             if not wrapper  and arg.startswith('-'): 
                 orioargv.append(arg)
+                if arg in ['c','-o','-p','s']:
+                    # Options with arguments
+                    orioarg = True
                 continue
             argisinput = False
             if not arg.startswith('-'):
+                if orioarg: 
+                    orioargv.append(arg)
+                    orioarg = False
                 # Look for the source(s)
                 if arg.count('.') > 0:
                     suffix = arg[arg.rfind('.')+1:]
@@ -168,7 +175,7 @@ class CmdParser:
                 sys.exit(1)
 
         # create the output filenames
-        if len(srcfiles) == 1 and 'out_filename' in cmdline.keys(): 
+        if len(srcfiles.keys()) == 1 and 'out_filename' in cmdline.keys(): 
             srcfiles[srcfiles.keys()[0]] = cmdline['out_filename']
         else:
             for src_filename in srcfiles.keys():

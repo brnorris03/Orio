@@ -2,8 +2,7 @@
 /*@ begin PerfTuning (        
   def build
   {
-    arg command = 'icc';
-    arg options = '-fast -openmp -I/usr/local/icc/include -lm';
+    arg build_command = 'icc -DDYNAMIC -fast -openmp -I/usr/local/icc/include -lm';
   }
    
   def performance_counter         
@@ -70,11 +69,15 @@
   {
     param VSIZE = VR;
     param OSIZE = OR;
+  }
+
+  def input_vars
+  {
     decl int V = VSIZE;
     decl int O = OSIZE;
-    decl double A2[V][O] = random;
-    decl double T[V][O][O][O] = random;
-    decl double R[V][V][O][O] = 0;
+    decl dynamic double A2[V][O] = random;
+    decl dynamic double T[V][O][O][O] = random;
+    decl dynamic double R[V][V][O][O] = 0;
   }
 ) @*/
 
@@ -95,7 +98,7 @@ int tv1,tv2,to1,to2,tox;
              (T_O2 if T_O2>1 else ORANGE)],'_copy'), 
            (ACOPY_A2,'A2[v2][ox]',
             [(T_V2 if T_V2>1 else VRANGE),(T_OX if T_OX>1 else ORANGE)],'_copy')], 
-    unrolljam = [('v1',U_V1),('v2',U_V2),('o1',U_O1),('o2',U_O2),('ox',U_OX)],
+    unrolljam = [('v1','v2','o1','o2','ax'),(U_V1,U_V2,U_O1,U_O2,U_OX)],
     scalarreplace = (SCREP, 'double', 'scv_'),
     vector = (VEC, ['ivdep','vector always']),
     openmp = (OMP, 'omp parallel for private(tv1,tv2,to1,to2,tox,v1,v2,o1,o2,ox,R_copy,A2_copy,T_copy)')
