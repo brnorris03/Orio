@@ -63,6 +63,7 @@
 
 register int i,j,k;
 register int c1t, c2t, c3t, c4t, c5t, c6t, c7t, c8t, c9t, c10t, c11t, c12t;
+register int t7t, t8t, t9t;
 register int newlb_c1, newlb_c2, newlb_c3, newlb_c4, newlb_c5, newlb_c6,
   newlb_c7, newlb_c8, newlb_c9, newlb_c10, newlb_c11, newlb_c12;
 register int newub_c1, newub_c2, newub_c3, newub_c4, newub_c5, newub_c6,

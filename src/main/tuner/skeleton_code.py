@@ -12,9 +12,10 @@ SEQ_DEFAULT = r'''
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
-#include <limits.h>
 
 /*@ global @*/
+
+#define BIG_NUMBER 147483647.0
 
 #ifdef BGP_COUNTER
 #define SPRN_TBRL 0x10C // Time Base Read Lower Register (user & sup R/O)
@@ -59,7 +60,7 @@ int main(int argc, char *argv[])
 {
   /*@ prologue @*/
 
-  double orio_t_start, orio_t_end, orio_t, orio_t_total=0, orio_t_min = (double)LONG_MAX;
+  double orio_t_start, orio_t_end, orio_t, orio_t_total=0, orio_t_min = BIG_NUMBER;
   int orio_i;
 
   for (orio_i=0; orio_i<REPS; orio_i++)
@@ -91,10 +92,11 @@ PAR_DEFAULT = r'''
 #include <stdlib.h>
 #include <sys/time.h>
 #include <string.h>
-#include <limits.h>
 #include "mpi.h"
 
 /*@ global @*/
+
+#define BIG_NUMBER 147483647.0
 
 #ifdef BGP_COUNTER
 #define SPRN_TBRL 0x10C  // Time Base Read Lower Register (user & sup R/O)
@@ -174,7 +176,7 @@ int main(int argc, char *argv[])
   switch (myid)
   {
       /*@ begin switch body @*/
-      double orio_t_start, orio_t_end, orio_t, orio_t_total=0, orio_t_min=(double)LONG_MAX;
+      double orio_t_start, orio_t_end, orio_t, orio_t_total=0, orio_t_min=BIG_NUMBER;
       int orio_i;
       mytimeinfo.testid = myid;
       strcpy(mytimeinfo.coord,"/*@ coordinate @*/");
