@@ -6,15 +6,16 @@ void axpy_4(int N, double *y,
 
 /*@ begin PerfTuning (
  def build {
+   #arg build_command = 'icc -O0';
    arg build_command = 'icc -O3';
  } 
  def performance_counter {
    #arg method = 'bgp counter';
-   arg repetitions = 100;
+   arg repetitions = 3;
  }
  def performance_params {  
    param UF[] = range(1,11);
-   constraint divisible_by_two = (UF % 2 == 0);
+   #constraint divisible_by_two = (UF % 2 == 0);
  }
  def input_params {
    param N[] = [1000000];
