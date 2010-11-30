@@ -36,6 +36,7 @@ class CodeGen_C (CodeGen):
 
     def __init__(self):
         '''To instantiate a code generator'''
+        self.arrayref_level = 0
         pass
 
     #----------------------------------------------
@@ -219,9 +220,18 @@ class CodeGen_F(CodeGen):
         elif isinstance(tnode, ast.IdentExp):
             s += str(tnode.name)
 
-        elif isinstance(tnode, ast.ArrayRefExp):
-            s += self.generate(tnode.exp, indent, extra_indent)
-            s += '(' + self.generate(tnode.sub_exp, indent, extra_indent) + ')'
+        elif isinstance(tnode, ast.ArrayRefExp):            
+            # Now get all the indices
+            tmpnode = tnode
+            prevtmpnode = tnode
+            indices = []
+            while isinstance(tmpnode, ast.ArrayRefExp):
+                indices.append(tmpnode.sub_exp)
+                prevtmpnode = tmpnode
+                tmpnode = tmpnode.exp
+            
+            s += self.generate(prevtmpnode.exp, indent, extra_indent)  # the variable name
+            s += '(' + ','.join([self.generate(x, indent, extra_indent) for x in indices]) + ')'
 
         elif isinstance(tnode, ast.FunCallExp):
             s += self.generate(tnode.exp, indent, extra_indent) + '('
@@ -334,7 +344,6 @@ class CodeGen_F(CodeGen):
         elif isinstance(tnode, ast.ForStmt):
             s += indent + 'do ' 
             if tnode.init:
-                print 'found tnode.init'
                 s += self.generate(tnode.init, indent, extra_indent)
             if not tnode.test:
                 err('orio.module.loop.codegen:  missing loop test expression. Fortran code generation requires a loop test expression.')
@@ -363,7 +372,7 @@ class CodeGen_F(CodeGen):
  
             unary = False
             if isinstance(tnode.iter, ast.UnaryExp):
-                incr_decr = [tnode.iter.POST_DEC, tnode.iter.op_type.PRE_DEC, tnode.iter.POST_INC, tnode.iter.PRE_INC]
+                incr_decr = [tnode.iter.POST_DEC, tnode.iter.PRE_DEC, tnode.iter.POST_INC, tnode.iter.PRE_INC]
                 unary = True
                 
             if not ((isinstance(tnode.iter, ast.BinOpExp) and tnode.iter.op_type == tnode.iter.EQ_ASGN)

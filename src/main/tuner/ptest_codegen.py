@@ -504,13 +504,6 @@ class PerfTestCodeGenFortran:
         except:
             err('orio.main.tuner.ptest_codegen:  cannot read file: "%s"' % self.init_file)
 
-        # check if the file contains the initialization function
-        init_func_re = r'void\s+%s\(\s*\)\s*\{' % self.init_func_name
-        match_obj = re.search(init_func_re, init_code)
-        if not match_obj:
-            err (('orio.main.tuner.ptest_codegen: no initialization function (named "%s") can be found in the ' +
-                    'initialization file: "%s"') % (self.init_func_name, self.init_file))
-
     #-----------------------------------------------------
 
     def __checkSkeletonCodeFile(self):

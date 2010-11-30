@@ -28,16 +28,10 @@ class PerfTestDriver:
 
     #-----------------------------------------------------
     
-    def __init__(self, build_cmd, batch_cmd, status_cmd, num_procs, pcount_method, pcount_reps,
-                 use_parallel_search, language="c"):
+    def __init__(self, tinfo, use_parallel_search, language="c"):
         '''To instantiate the performance-testing driver'''
 
-        self.build_cmd = build_cmd
-        self.batch_cmd = batch_cmd
-        self.status_cmd = status_cmd
-        self.num_procs = num_procs
-        self.pcount_method = pcount_method
-        self.pcount_reps = pcount_reps
+        self.tinfo = tinfo
         self.use_parallel_search = use_parallel_search
 
         global counter
@@ -48,8 +42,8 @@ class PerfTestDriver:
             self.src_name = self.__PTEST_FNAME + str(counter) + '.F90'
         self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
 
-        if self.pcount_method not in (self.__PCOUNT_BASIC, self.__PCOUNT_BGP):
-            err('orio.main.tuner.ptest_driver:  unknown performance-counting method: "%s"' % self.pcount_method)
+        if self.tinfo.pcount_method not in (self.__PCOUNT_BASIC, self.__PCOUNT_BGP):
+            err('orio.main.tuner.ptest_driver:  unknown performance-counting method: "%s"' % self.tinfo.pcount_method)
 
     #-----------------------------------------------------
 
@@ -70,13 +64,13 @@ class PerfTestDriver:
         
         # get all extra options
         extra_compiler_opts = ''
-        if self.pcount_method == self.__PCOUNT_BGP:
+        if self.tinfo.pcount_method == self.__PCOUNT_BGP:
             extra_compiler_opts += ' -DBGP_COUNTER'
-        extra_compiler_opts += ' -DREPS=%s' % self.pcount_reps
+        extra_compiler_opts += ' -DREPS=%s' % self.tinfo.pcount_reps
             
         # compile the testing code
-        cmd = ('%s %s -o %s %s' % (self.build_cmd, extra_compiler_opts,
-                                   self.exe_name, self.src_name))
+        cmd = ('%s %s -o %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+                                   self.exe_name, self.src_name, self.tinfo.libs))
         info(' compiling:\n\t' + cmd)
         status = os.system(cmd)
         if status:
@@ -98,7 +92,7 @@ class PerfTestDriver:
 
         # execute the search process in parallel
         if self.use_parallel_search:
-            cmd = '%s %s' % (self.batch_cmd, self.exe_name)
+            cmd = '%s %s' % (self.tinfo.batch_cmd, self.exe_name)
             info(' running:\n\t' + cmd)
             # TODO: redo this to take output file name
             try:
@@ -107,7 +101,7 @@ class PerfTestDriver:
                 f.close()
                 # TODO: very bad assumption that the last number out is the batch job name
                 jobid = output.strip().split('\n')[-1]
-                status_cmd = '%s %s | grep %s | wc -l' % (self.status_cmd, jobid, jobid)
+                status_cmd = '%s %s | grep %s | wc -l' % (self.tinfo.status_cmd, jobid, jobid)
                 status = '1'
                 while status == '1': 
                     time.sleep(3)
