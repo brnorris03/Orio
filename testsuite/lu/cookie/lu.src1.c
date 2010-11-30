@@ -45,8 +45,10 @@
   def search 
   { 
     arg algorithm = 'Exhaustive'; 
-#    arg algorithm = 'Simplex'; 
-#    arg total_runs = 1;
+#   arg algorithm = 'ChaosGA';
+#   arg algorithm = 'Simplex';
+#   arg total_runs = 100;
+#   arg time_limit = 100;
   } 
    
   def input_params 
