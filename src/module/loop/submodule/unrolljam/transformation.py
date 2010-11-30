@@ -18,6 +18,7 @@ class Transformation:
         self.do_jamming = do_jamming
         self.stmt = stmt
         self.parallelize = parallelize
+        self.language = Globals().language
         self.flib = orio.module.loop.ast_lib.forloop_lib.ForLoopLib()
         self.cfolder = orio.module.loop.ast_lib.constant_folder.ConstFolder()
         
@@ -233,7 +234,7 @@ class Transformation:
                                             new_stride_exp, unrolled_loop_body)
         
         # generate the cleanup-loop lower-bound expression
-        if self.parallelize:
+        if self.parallelize or self.language == 'fortran':
             t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
                                          orio.module.loop.ast.NumLitExp(self.ufactor,
                                                                    orio.module.loop.ast.NumLitExp.INT),

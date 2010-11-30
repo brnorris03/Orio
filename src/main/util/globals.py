@@ -18,6 +18,7 @@ class Globals:
 
         def __init__(self,cmdline={}):
             
+            self.language = 'c'         # default language is C
             self.error_pre = "\x1B[00;31m"
             self.error_post = "\x1B[00m"
             if 'dry_run' in cmdline.keys():

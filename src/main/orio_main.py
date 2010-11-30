@@ -21,14 +21,13 @@ def start(argv, lang):
     # check for Fortran source, which is not supported yet now
     if lang == FORTRAN:
         language = 'fortran'
-        sys.stderr.write('WARNING: Fortran support is limited')
+        sys.stderr.write('WARNING: Fortran support is limited\n')
     elif lang == C_CPP:
         language = 'c'
     else:
         sys.stderr.write('orio.main.main:  Language not supported at this time.')
         sys.exit(1)
 
-    
 
     # import other required Python packages
     import ann_parser, cmd_line_opts, opt_driver, tspec.tspec
@@ -38,6 +37,7 @@ def start(argv, lang):
     
 
     g = Globals(cmdline)
+    Globals().language = language
     
     # Simply pass through command  (Orio won't do anything)
     if g.disable_orio and g.external_command:
