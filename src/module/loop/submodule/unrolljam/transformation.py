@@ -229,7 +229,7 @@ class Transformation:
             unrolled_loop_body = orio.module.loop.ast.CompStmt(unrolled_stmts)
             
         # generate the orio.main.unrolled loop
-        orio.main.loop = self.flib.createForLoop(index_id, new_lbound_exp, new_ubound_exp,
+        loop = self.flib.createForLoop(index_id, new_lbound_exp, new_ubound_exp,
                                             new_stride_exp, unrolled_loop_body)
         
         # generate the cleanup-loop lower-bound expression
@@ -252,15 +252,15 @@ class Transformation:
         
         # generate the transformed statement
         if self.parallelize:
-            inames = self.flib.getLoopIndexNames(orio.main.loop)
+            inames = self.flib.getLoopIndexNames(loop)
             inames_str = ','.join(inames)
             if inames:
                 omp_pragma = orio.module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
             else:
                 omp_pragma = orio.module.loop.ast.Pragma('omp parallel for')     
-            stmts = [omp_pragma, orio.main.loop, cleanup_loop]
+            stmts = [omp_pragma, loop, cleanup_loop]
         else:
-            stmts = [orio.main.loop, cleanup_loop]
+            stmts = [loop, cleanup_loop]
         transformed_stmt = orio.module.loop.ast.CompStmt(stmts)
 
         # return the transformed statement

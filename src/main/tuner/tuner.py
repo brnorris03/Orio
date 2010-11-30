@@ -49,15 +49,23 @@ class PerfTuner:
         # create a performance-testing code generator for each distinct problem size
         ptcodegens = []
         for prob_size in self.__getProblemSizes(tinfo.iparam_params, tinfo.iparam_constraints):
-            c = orio.main.tuner.ptest_codegen.PerfTestCodeGen(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
-                                                              tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
-                                                              use_parallel_search)
+            if self.odriver.lang == 'c':
+                c = orio.main.tuner.ptest_codegen.PerfTestCodeGen(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
+                                                                  tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
+                                                                  tinfo.random_seed, use_parallel_search)
+            elif self.odriver.lang == 'fortran':
+                c = orio.main.tuner.ptest_codegen.PerfTestCodeGenFortran(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
+                                                                         tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
+                                                                         tinfo.random_seed, use_parallel_search)
+            else:
+                err('main.tuner.tuner:  unknown output language specified: %s' % self.odriver.lang)
+      
             ptcodegens.append(c)
 
         # create the performance-testing driver
         ptdriver = orio.main.tuner.ptest_driver.PerfTestDriver(tinfo.build_cmd, tinfo.batch_cmd, tinfo.status_cmd,
                                                                tinfo.num_procs, tinfo.pcount_method,
-                                                               tinfo.pcount_reps, use_parallel_search)
+                                                               tinfo.pcount_reps, use_parallel_search, self.odriver.lang)
 
         # get the axis names and axis value ranges to represent the search space
         axis_names, axis_val_ranges = self.__buildCoordSystem(tinfo.pparam_params)

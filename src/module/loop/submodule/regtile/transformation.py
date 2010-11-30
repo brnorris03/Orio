@@ -199,7 +199,7 @@ class Transformation:
                                             cloop_index_id.name, mloop_index_id.name)
 
         # generate the orio.main.unrolled loop
-        orio.main.loop = self.flib.createForLoop(mloop_index_id, new_lbound_exp, new_ubound_exp,
+        loop = self.flib.createForLoop(mloop_index_id, new_lbound_exp, new_ubound_exp,
                                             new_stride_exp, mloop_body)
 
         # generate the cleanup loop
@@ -207,7 +207,7 @@ class Transformation:
                                                stride_exp, loop_body)
         
         # return the information about the tiled loops
-        return (orio.main.loop, cleanup_loop)
+        return (loop, cleanup_loop)
 
     #----------------------------------------------------------
 
@@ -388,12 +388,12 @@ class Transformation:
 
             # to apply the simple (rectangular) register tiling to this loop
             elif len(bound_unrolls) == 0 or (not self.use_nonrect_tile):
-                orio.main.loop, cleanup_loop = self.__createUnrolledLoops(i_for_loop_info, i_ufactor)
-                orio.main.loop.stmt = self.__transformLoop(orio.main.loop.stmt, ext_free_unrolls)
+                loop, cleanup_loop = self.__createUnrolledLoops(i_for_loop_info, i_ufactor)
+                loop.stmt = self.__transformLoop(loop.stmt, ext_free_unrolls)
                 cleanup_loop.stmt = self.__transformLoop(cleanup_loop.stmt, orig_free_unrolls)
                 bound_unrolls.reverse()
                 if self.use_full_unroll:
-                    stmts = [[orio.main.loop, cleanup_loop]]
+                    stmts = [[loop, cleanup_loop]]
                     for iname, ufactor, stride_exp in bound_unrolls:
                         n_stmts = []
                         for i in range(0, ufactor):
@@ -410,7 +410,7 @@ class Transformation:
                     stmts = reduce(lambda x,y: x+y, stmts, [])
                     return orio.module.loop.ast.CompStmt(stmts)
                 else:
-                    nstmt = orio.module.loop.ast.CompStmt([orio.main.loop, cleanup_loop])
+                    nstmt = orio.module.loop.ast.CompStmt([loop, cleanup_loop])
                     for iname, ufactor, stride_exp in bound_unrolls:
                         intratile_iname = self.itvar_map_rev[iname]
                         loop_body = self.clib.replaceIdent(nstmt, iname, intratile_iname)
@@ -494,8 +494,8 @@ class Transformation:
 
                 # create the orio.main.and cleanup loops
                 c_for_loop_info = (i_index_id, new_lb_id, new_ub_id, i_stride_exp, i_loop_body)
-                orio.main.loop, cleanup_loop = self.__createUnrolledLoops(c_for_loop_info, i_ufactor)
-                orio.main.loop.stmt = self.__transformLoop(orio.main.loop.stmt, ext_outer_unrolls)
+                loop, cleanup_loop = self.__createUnrolledLoops(c_for_loop_info, i_ufactor)
+                loop.stmt = self.__transformLoop(loop.stmt, ext_outer_unrolls)
                 cleanup_loop.stmt = self.__transformLoop(cleanup_loop.stmt, orig_outer_unrolls)
 
                 # create the prologue and epilogue loops
@@ -553,7 +553,7 @@ class Transformation:
                         epil_stmt = self.__createIntraTileLoop(intratile_iname, iname, ufactor,
                                                                stride_exp, epil_loop_body)
 
-                # combine together the loop-bound initializations, prologue loop, orio.main.loop,
+                # combine together the loop-bound initializations, prologue loop, loop,
                 # cleanup loop, and the epilogue loop
                 stmts = []
                 stmts += bound_stmt.stmts
@@ -561,7 +561,7 @@ class Transformation:
                     stmts += prol_stmt.stmts
                 else:
                     stmts += [prol_stmt]
-                stmts += [orio.main.loop, cleanup_loop]
+                stmts += [loop, cleanup_loop]
                 if isinstance(epil_stmt, orio.module.loop.ast.CompStmt):
                     stmts += epil_stmt.stmts
                 else:

@@ -96,3 +96,25 @@ class CodeGen_C(CodeGen):
         return s
     
 
+class CodeGen_F(CodeGen):
+    '''The code generator for the Blue Gene's memory alignment optimizer'''
+
+    def __init__(self, vars, annot_body_code, indent):
+        '''To instantiate a code generator instance'''
+        self.vars = vars
+        self.annot_body_code = annot_body_code
+        self.indent = indent
+        self.language = 'f'
+        pass
+
+    #------------------------------------------------------
+
+    def generate(self):
+        '''To generate the memory-alignment checking code'''
+
+        s = ''
+        raise NotImplementedError('%s: Fortran code generation not implemented yet for align module')
+        # return the generated code
+        return s
+    
+

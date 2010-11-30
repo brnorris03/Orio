@@ -169,12 +169,14 @@ class Transformation:
             
             # check the function name
             if (not isinstance(exp.exp, ast.IdentExp)) or exp.exp.name not in ('min', 'max'):
-                err('orio.module.ortil.transformation: function name found in loop bound expression must be ' +
+                err(('orio.module.ortil.transformation: function name found in loop bound expression must be ' +
                         'min/max, obtained: %s') % exp.exp)
 
             # recursion on each function argument
-            exp.args = [self.__findMinMaxVal(min_or_max, a, var_names, val_table, up_sign) 
-                        for a in exp.args]
+            exp.args = []
+            for a in exp.args:
+                exp.args.append(self.__findMinMaxVal(min_or_max, a, var_names, val_table, up_sign)) 
+                
 
             # return the computed expression
             return exp
@@ -184,7 +186,7 @@ class Transformation:
             
             # check the unary operation
             if exp.op_type not in (ast.UnaryExp.PLUS, ast.UnaryExp.MINUS):
-                err('orio.module.ortil.transformation: unary operation found in loop bound expression must ' +
+                err(('orio.module.ortil.transformation: unary operation found in loop bound expression must ' +
                         'be +/-, obtained: %s') % exp.exp)
 
             # update the sign, and do recursion on the inner expression
@@ -200,7 +202,7 @@ class Transformation:
             
             # check the binary operation
             if exp.op_type not in (ast.BinOpExp.ADD, ast.BinOpExp.SUB, ast.BinOpExp.MUL):
-                err('orio.module.ortil.transformation: binary operation found in loop bound expression must ' +
+                err(('orio.module.ortil.transformation: binary operation found in loop bound expression must ' +
                         'be +/-/*, obtained: %s') % exp)
 
             # do recursion on both operands
@@ -284,16 +286,16 @@ class Transformation:
 
             # generate booleans to indicate the needs of prolog, epilog, and orio.main.tiled loop
             if is_one_time_loop:
-                need_orio.main.tiled_loop = False
+                need_tiled_loop = False
                 need_prolog = False
                 need_epilog = False
             else:
-                need_orio.main.tiled_loop = True
+                need_tiled_loop = True
                 need_prolog = len(lb_inames) > 0
                 need_epilog = len(ub_inames) > 0
 
             # generate new variable names for both the new lower and upper loop bounds
-            if need_orio.main.tiled_loop:
+            if need_tiled_loop:
                 lb_name, ub_name = self.__getLoopBoundNames()
                 int_vars.extend([lb_name, ub_name])
             else:
@@ -301,11 +303,11 @@ class Transformation:
                 ub_name = ''
 
             # append information about the new loop bounds
-            lbinfo = (lb_name, ub_name, need_prolog, need_epilog, need_orio.main.tiled_loop)
+            lbinfo = (lb_name, ub_name, need_prolog, need_epilog, need_tiled_loop)
             lbound_info_seq.append(lbinfo)
 
             # skip generating loop-bound scanning code (if it's a one-time loop)
-            if not need_orio.main.tiled_loop:
+            if not need_tiled_loop:
                 continue
 
             # determine the value of the new lower loop bound
@@ -387,16 +389,16 @@ class Transformation:
 
             # generate booleans to indicate the needs of prolog, epilog, and orio.main.tiled loop
             if is_one_time_loop:
-                need_orio.main.tiled_loop = False
+                need_tiled_loop = False
                 need_prolog = False
                 need_epilog = False
             else:
-                need_orio.main.tiled_loop = True
+                need_tiled_loop = True
                 need_prolog = len(lb_inames) > 0
                 need_epilog = len(ub_inames) > 0
 
             # generate new variable names for both the new lower and upper loop bounds
-            if need_orio.main.tiled_loop:
+            if need_tiled_loop:
                 lb_name, ub_name = self.__getLoopBoundNames()
                 int_vars.extend([lb_name, ub_name])
             else:
@@ -404,11 +406,11 @@ class Transformation:
                 ub_name = ''
 
             # append information about the new loop bounds
-            lbinfo = (lb_name, ub_name, need_prolog, need_epilog, need_orio.main.tiled_loop)
+            lbinfo = (lb_name, ub_name, need_prolog, need_epilog, need_tiled_loop)
             lbound_info_seq.append(lbinfo)
 
             # skip generating loop-bound scanning code (if it's a one-time loop)
-            if not need_orio.main.tiled_loop:
+            if not need_tiled_loop:
                 continue
 
             # generate loop-bound scanning code for the prolog
@@ -639,10 +641,10 @@ class Transformation:
             rect_lb_exp = this_lb_exp
             rect_ub_exp = this_ub_exp
             if lbound_info:
-                lb_name, ub_name, need_prolog, need_epilog, need_orio.main.tiled_loop = lbound_info
+                lb_name, ub_name, need_prolog, need_epilog, need_tiled_loop = lbound_info
                 rect_lb_exp = ast.IdentExp(lb_name)
                 rect_ub_exp = ast.IdentExp(ub_name)
-                if not need_orio.main.tiled_loop:
+                if not need_tiled_loop:
                     err('orio.module.ortil.transformation internal error: unexpected case where generation of the orio.main.' +
                            'rectangular tiled loop is needed')
 
@@ -708,8 +710,8 @@ class Transformation:
 
                     # (optimization) special handling for one-time loop --> remove the if's true
                     # condition (i.e., lb<ub) since it will never be executed.
-                    _,_,_,_,need_orio.main.tiled_loop = binfo
-                    if not need_orio.main.tiled_loop:
+                    _,_,_,_,need_tiled_loop = binfo
+                    if not need_tiled_loop:
                         if p_stmts:
                             is_tiled, last_stmts = p_stmts.pop()
                             if is_tiled:
@@ -771,12 +773,12 @@ class Transformation:
             lbody = ast.CompStmt(lbody_stmts)
             iname = self.__getTileIterName(this_iname, tile_level)
             tname = self.__getTileSizeName(this_iname, tile_level)
-            orio.main.tiled_code = self.__getInterTileLoop(iname, tname, rect_lb_exp, rect_ub_exp,
+            tiled_code = self.__getInterTileLoop(iname, tname, rect_lb_exp, rect_ub_exp,
                                                       this_st_exp, lbody)
-            res_stmts.append((True, [orio.main.tiled_code]))
+            res_stmts.append((True, [tiled_code]))
             
             # mark the loop if it's a loop iterating the full rectangular tiles
-            self.__labelFullCoreTiledLoop(orio.main.tiled_code, n_outer_loop_inames)
+            self.__labelFullCoreTiledLoop(tiled_code, n_outer_loop_inames)
             
             # generate the cleanup code (the epilog is already fused)
             if not this_fully_tiled:

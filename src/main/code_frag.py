@@ -16,7 +16,7 @@
 class CodeFragment:
 
     def __init__(self):
-        '''To instantiate a code fragment'''
+        '''Instantiate a code fragment'''
         pass
 
 #-----------------------------------------
@@ -24,7 +24,7 @@ class CodeFragment:
 class Ann(CodeFragment):
 
     def __init__(self, code, line_no, indent_size):
-        '''To instantiate an annotation'''
+        '''Instantiate an annotation'''
 
         CodeFragment.__init__(self)
         self.code = code
@@ -49,7 +49,7 @@ class LeaderAnn(Ann):
 class TrailerAnn(Ann):
 
     def __init__(self, code, line_no, indent_size):
-        '''To instantiate a trailer annotation'''
+        '''Instantiate a trailer annotation'''
 
         Ann.__init__(self, code, line_no, indent_size)
 
@@ -58,7 +58,7 @@ class TrailerAnn(Ann):
 class NonAnn(CodeFragment):
 
     def __init__(self, code, line_no, indent_size):
-        '''To instantiate a non-annotation'''
+        '''Instantiate a non-annotation'''
 
         CodeFragment.__init__(self)
         self.code = code
@@ -70,7 +70,7 @@ class NonAnn(CodeFragment):
 class AnnCodeRegion(CodeFragment):
 
     def __init__(self, leader_ann, cfrags, trailer_ann):
-        '''To instantiate an annotation code region'''
+        '''Instantiate an annotated code region'''
 
         CodeFragment.__init__(self)
         self.leader_ann = leader_ann

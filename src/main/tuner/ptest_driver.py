@@ -29,7 +29,7 @@ class PerfTestDriver:
     #-----------------------------------------------------
     
     def __init__(self, build_cmd, batch_cmd, status_cmd, num_procs, pcount_method, pcount_reps,
-                 use_parallel_search):
+                 use_parallel_search, language="c"):
         '''To instantiate the performance-testing driver'''
 
         self.build_cmd = build_cmd
@@ -42,7 +42,10 @@ class PerfTestDriver:
 
         global counter
         counter += 1
-        self.src_name = self.__PTEST_FNAME + str(counter) + '.c'
+        if language == 'c': 
+            self.src_name = self.__PTEST_FNAME + str(counter) + '.c'
+        else:
+            self.src_name = self.__PTEST_FNAME + str(counter) + '.F90'
         self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
 
         if self.pcount_method not in (self.__PCOUNT_BASIC, self.__PCOUNT_BGP):

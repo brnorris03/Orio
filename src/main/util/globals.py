@@ -17,8 +17,6 @@ class Globals:
         """ Implementation of the singleton interface """
 
         def __init__(self,cmdline={}):
-            #print "Hi!"
-            #traceback.print_stack()
             
             self.error_pre = "\x1B[00;31m"
             self.error_post = "\x1B[00m"
@@ -135,11 +133,6 @@ class Globals:
         """ Delegate access to implementation """
         return setattr(self.__single, attr, value)
 
-    def __del__(self):
-        #print "Nooooooo!"
-        #traceback.print_stack()
-        pass
-
 # ---------------------------------------------------------------------------------
 """ 
 Various error-handling related miscellanea
@@ -165,7 +158,7 @@ def info(msg='', end='\n', pre='', post='', logging=True):
 
 def debug(msg='', end='\n', pre='', post='', logging=True, level=5):
     if Globals().debug and level <= Globals().debug_level:
-        sys.stderr.write(pre + 'DEBUG:' + msg + post + end)
+        sys.stdout.write(pre + 'DEBUG:' + str(msg) + post + end)
         if logging:
             Globals().logger.debug(msg)
         
