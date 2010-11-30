@@ -17,7 +17,7 @@
 # source directory.
 
 import sys, os
-import ast, tool.ply.yacc
+import ast, orio.tool.ply.yacc
 import orio.main.parsers.flexer as lexer
 from orio.main.parsers.fAST import *
 from orio.main.util.globals import *
@@ -38,27 +38,35 @@ def p_program_unit_list_1(p):
     p[0] = [p[1]]
     
 def p_program_unit_list_2(p):
-    'program_unit_list : program_unit program_unit_list'
-    p[1].append(p[2])
-    p[0] = p[1]
+    'program_unit_list : program_unit_list program_unit'
+    p[0] = p[1] + [p[2]]
 
 # R202
 def p_program_unit(p):
-    '''program_unit : orio.main.program
+    '''program_unit : main_program
                     | external_subprogram
                     | module
                     '''
     p[0] = p[1]
+    
+##---- Names (also see Constants)
+
+# R304
+def p_name(p):
+    '''name : ID'''
+    p[0] = p[1]
+
+
 
 # R1101
-def p_orio.main.program(p):
-    'orio.main.program : program_stmt specification_part execution_part internal_subprogram_part_opt end_program_stmt'
+def p_main_program(p):
+    'main_program : program_stmt specification_part execution_part internal_subprogram_part_opt end_program_stmt'
     if p[1]: lineno = p.linespan(1)[0]
     elif p[2]: lineno = p.linespan(2)[0]
     elif p[3]: lineno = p.linespan(3)[0]
     elif p[4]: lineno = p.linespan(4)[0]
     else: lineno = p.linespan(5)[0]
-    p[0] = ast.MainProgram(str(lineno), p[0], p[2], p[3])
+    p[0] = MainProgram(str(lineno), p[0], p[2], p[3])
 
 # R1102
 def p_program_stmt_1(p):
@@ -83,7 +91,8 @@ def p_end_program_stmt_2(p):
 # R204   
 def p_specification_part_1(p):
     'specification_part : use_stmt_part import_stmt_list implicit_part declaration_construct_list'
-    p[0] = p[1] 
+    #TODO
+    p[0] = p[2] 
 
 def p_specification_part_2(p):
     'specification_part : empty'
@@ -95,7 +104,7 @@ def p_use_stmt_part_1(p):
     pass
 
 def p_use_stmt_part_2(p):
-    'use_stmt_part : use_stmt opt_semi use_stmt_part'
+    'use_stmt_part : use_stmt_part opt_semi use_stmt'
     pass
 
 def p_use_stmt_part_3(p):
@@ -143,9 +152,8 @@ def p_only_list_1(p):
     p[0] = p[1]
     
 def p_only_list_2(p):
-    'only_list : only COMMA only_list'
-    p[1].append(p[2])
-    p[0] = p[1]
+    'only_list : only_list COMMA only'
+    p[0] = p[1] + [p[3]]
 
 # R1112
 def p_only(p):
@@ -256,8 +264,9 @@ def p_internal_subprogram_part_1(p):
     'internal_subprogram_part : internal_subprogram'
     pass
 
-def p_internal_subprogram_list_2(p):
-    'internal_subprogram_part : internal_subprogram internal_subprogram_part'
+def p_internal_subprogram_part_2(p):
+    'internal_subprogram_part : internal_subprogram_part internal_subprogram'
+    p[0] = p[1] + [p[0]]
 
 # R211
 def p_internal_subprogram(p):
@@ -395,7 +404,7 @@ def p_intrinsic_operator(p):
     p[0] = p[1]
     
 # R311
-def p_defined_operator(p):
+def p_defined_operator_1(p):
     '''defined_operator : defined_unary_op
                         | defined_binary_op
                         | extended_intrinsic_op
@@ -599,7 +608,10 @@ def p_char_literal_constant(p):
                             | SCONST_D
                             | partial_string_list
                             '''
-    p[0] = p[1]
+    if isinstance(p[1],list):
+        p[0] = p[1]
+    else:
+        p[0] = [p[1]]
     
 def p_partial_string(p):
     '''partial_string : PSCONST_S
@@ -612,8 +624,8 @@ def p_partial_string_list_1(p):
     p[0] = p[1]
     
 def p_partial_string_list_2(p):
-    'partial_string_list : partial_string partial_string_list'
-    p[0] = p[1] + p[2]
+    'partial_string_list : partial_string_list partial_string'
+    p[0] = p[1] + [p[2]]
     
 # R428
 def p_logical_literal_constant(p):
@@ -678,7 +690,7 @@ def p_type_attr_spec_list_1(p):
     p[0] = [p[1]]
 
 def p_type_attr_spec_list_2(p):
-    'type_attr_spec_list : type_attr_spec COMMA type_attr_spec_list'
+    'type_attr_spec_list : type_attr_spec_list COMMA type_attr_spec'
     p[3].append(p[1])
     p[0] = p[3]
 
@@ -719,7 +731,7 @@ def p_type_param_def_stmt_part_1(p):
     p[2].append(p[1])
     p[0] = p[2]
     
-def p_type_param_def_stmt_part_1(p):
+def p_type_param_def_stmt_part_2(p):
     'type_param_def_stmt_part : empty'
     p[0] = []   
 
@@ -743,7 +755,7 @@ def p_type_param_name_list_1(p):
     p[0] = [p[1]]
     
 def p_type_param_name_list_2(p):
-    'type_param_name_list : type_param_name COMMA type_param_name_list'
+    'type_param_name_list : type_param_name_list COMMA type_param_name'
     p[3].append(p[1])
     p[0] = p[3]
     
@@ -809,12 +821,6 @@ def p_opt_component_array_spec(p):
     if len(p) < 4: p[0] = None
     else: p[0] = p[2]
 
-def p_opt_char_length(p):
-    '''opt_char_length : TIMES char_length
-                        | empty
-                        '''
-    if len(p) < 3: p[0] = None
-    else: p[0] = p[2]
 
 def p_opt_component_initialization(p):
     '''opt_component_initialization : component_initialization
@@ -868,7 +874,7 @@ def p_proc_component_attr_spec_2(p):
     pass
 
 def p_proc_component_attr_spec_list(p):
-    '''proc_component_attr_spec_list : proc_component_attr_spec COMMA proc_component_attr_spec_list
+    '''proc_component_attr_spec_list : proc_component_attr_spec_list COMMA proc_component_attr_spec
                                     | empty
                                     '''
     if len(p) < 4: p[0] = []
@@ -979,7 +985,7 @@ def p_type_param_spec_2(p):
     pass
 
 def p_type_param_spec_list(p):
-    '''type_param_spec : type_param_spec COMMA type_param_spec_list
+    '''type_param_spec : type_param_spec_list COMMA type_param_spec
                         | empty
                         '''
     if len(p) < 4: p[0] = []
@@ -1011,7 +1017,7 @@ def p_component_spec_2(p):
     pass
 
 def p_component_spec_list(p):
-    '''component_spec_list : component_spec COMMA component_spec_list
+    '''component_spec_list : component_spec_list COMMA component_spec
                             | component_spec
                             '''
     if len(p) < 4: p[0] = [p[1]]
@@ -1109,7 +1115,7 @@ def p_ac_value(p):
     pass
 
 def p_ac_value_list(p):
-    '''ac_value_list : ac_value COMMA ac_value_list
+    '''ac_value_list : ac_value_list COMMA ac_value
                     | ac_value
                     '''
     if len(p) < 4: p[0] = [p[1]]
@@ -1220,7 +1226,7 @@ def p_opt_array_spec(p):
                     '''
     if len(p) < 4: p[0] = None
     else: p[0] = p[2]
-    
+
 def p_opt_char_length(p):
     '''opt_char_legth : TIMES char_length
                     | empty
@@ -1295,7 +1301,7 @@ def p_explicit_shape_spec_2(p):
     pass
 
 def p_explicit_shape_spec_list(p):
-    '''explicit_shape_spec_list : explicit_shape COMMA explicit_shape_spec_list
+    '''explicit_shape_spec_list : explicit_shape_list COMMA explicit_shape_spec
                                 | explicit_shape
                                 '''
     if len(p) < 4: p[0] = [p[1]]
@@ -1322,7 +1328,7 @@ def p_assumed_shape_spec_2(p):
     pass
     
 def p_assumed_shape_spec_list(p):
-    '''assumed_shape_spec_list : explicit_shape COMMA assumed_shape_spec_list
+    '''assumed_shape_spec_list : explicit_shape_list COMMA assumed_shape_spec
                                 | explicit_shape
                                 '''
     if len(p) < 4: p[0] = [p[1]]
@@ -1337,7 +1343,7 @@ def p_deferred_shape_spec(p):
     pass
 
 def p_deferred_shape_spec_list(p):
-    '''deferred_shape_spec_list : deferred_shape COMMA deferred_shape_spec_list
+    '''deferred_shape_spec_list : deferred_shape_list COMMA deferred_shape_spec
                                 | deferred_shape
                                 '''
     if len(p) < 4: p[0] = [p[1]]
@@ -1353,7 +1359,7 @@ def p_assumed_size_spec(p):
     pass
 
 def p_opt_explicit_shape_spec_list(p):
-    '''opt_explicit_shape_spec_list : explicit_shape_spec_list COMMA
+    '''opt_explicit_shape_spec_list : explicit_shape_spec_list COMMA explicit_shape
                                     | empty
                                     '''
     if len(p) < 3: p[0] = None
@@ -1383,7 +1389,7 @@ def p_access_stmt_1(p):
     pass
 
 def p_access_stmt_2(p):
-    'access_stmt : access_spec opt_colon_colon access_id_list'
+    'access_stmt : access_spec_list opt_colon_colon access_id'
     # TODO
     pass
 
@@ -1428,7 +1434,7 @@ def p_object_name_list_1(p):
     p[0] = [p[1]]
 
 def p_object_name_list_2(p):
-    'object_name_list : object_name COMMA object_name_list'
+    'object_name_list : object_name_list COMMA object_name'
     p[3].append(p[1])
     p[0] = p[3]
 
@@ -1765,7 +1771,7 @@ def p_scalar_int_expression(p):
     p[0] = p[1]
     
 def p_scalar_int_expression_list(p):
-    '''scalar_int_expression_list : scalar_int_expression COMMA scalar_int_expression_list
+    '''scalar_int_expression_list : scalar_int_expression_list COMMA scalar_int_expression
                                 | scalar_int_expression
                                 '''
     if len(p) < 4: p[0] = [p[1]]
@@ -1802,7 +1808,7 @@ def p_where_body_construct_part_2(p):
     p[2].append(p[1])
     p[0] = p[2]
     
-def p_where_body_construct_part_2(p):
+def p_where_body_construct_part_3(p):
     'where_body_construct_part : empty'
     p[0] = []
 
@@ -1923,7 +1929,7 @@ def p_forall_triplet_spec_2(p):
     pass
 
 def p_forall_triplet_spec_list_1(p):
-    'forall_triplet_spec_list : forall_triplet_spec COMMA forall_triplet_spec_list'
+    'forall_triplet_spec_list : forall_triplet_spec_list COMMA forall_triplet_spec'
     p[3].append(p[1])
     p[0] = p[3]
 
@@ -1964,7 +1970,62 @@ def p_forall_stmt(p):
     pass
 
 
+###--- Procedures and interfaces  ------------------------------------------------
 
+# R1201
+def p_interface_block(p):
+    'interface_block : interface_stmt interface_spec_list end_interface_stmt'
+    p[0] = p[2]
+    
+def p_interface_spec_list(p):
+    '''interface_spec_list : interface_spec_list interface_spec 
+                            | empty
+                            '''
+    if len(p) > 1:
+        p[1].append(p[2])
+        p[0] = p[1]
+    else:
+        p[0] = []
+        
+# R2102
+def p_interface_spec(p):
+    'interface_spec : interface_body'
+    p[0] = p[1]
+
+# R1214
+def p_proc_decl_1(p):
+    'proc_decl : procedure_entity_name'
+    p[0] = p[1]
+    
+def p_proc_decl_2(p):
+    'proc_decl : procedure_entity_name EQ_GT null_init'
+    p[0] = p[1]
+    
+def p_proc_decl_list(p):
+    '''proc_decl_list : proc_decl_list COMMA proc_decl
+                    | empty
+                    '''
+    if len(p) < 4: p[0] = []
+    else: 
+        p[3].append(p[1])
+        p[0] = p[3]
+        
+# R1215
+#C1212 (R1215) The name shall be the name of an abstract interface or of a procedure that has an 
+#explicit interface. If name is declared by a procedure-declaration-stmt it shall be previously 
+#declared. If name denotes an intrinsic procedure it shall be one that is listed in 13.6 and not 
+#marked with a bullet. 
+#C1213 (R1215) The name shall not be the same as a keyword that specifies an intrinsic type. 
+#C1214 If a procedure entity has the INTENT attribute or SAVE attribute, it shall also have the 
+#POINTER attribute. 
+def p_iterface_name(p):
+    'interface_name : name'
+    p[0] = p[1]
+    
+
+
+
+    
 
 
 ###--- Miscellaneous --------------------------------------------
@@ -2001,26 +2062,7 @@ def p_empty(p):
     p[0] = None
 
 
-###--- Procedure ------------------------------------------------
-
-# R1214
-def p_proc_decl_1(p):
-    'proc_decl : procedure_entity_name'
-    p[0] = p[1]
     
-def p_proc_decl_2(p):
-    'proc_decl : procedure_entity_name EQ_GT null_init'
-    p[0] = p[1]
-    
-def p_proc_decl_list(p):
-    '''proc_decl_list : proc_decl COMMA proc_decl_list
-                    | empty
-                    '''
-    if len(p) < 4: p[0] = []
-    else: 
-        p[3].append(p[1])
-        p[0] = p[3]
-        
 ###--- End Fortran parser rules ---------------------------------
 
 

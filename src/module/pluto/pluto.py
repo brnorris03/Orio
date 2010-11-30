@@ -9,11 +9,11 @@ from orio.main.util.globals import *
 #-----------------------------------------
 
 class Pluto(orio.module.module.Module):
-    '''The class definition for Pluto transformation module.'''
+    '''Class definition for Pluto transformation module.'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code,
                  line_no, indent_size, language='C'):
-        '''To instantiate a Pluto transformation module.'''
+        '''Instantiate a Pluto transformation module.'''
         
         orio.module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       line_no, indent_size, language)

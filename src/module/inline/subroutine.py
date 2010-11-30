@@ -1,17 +1,23 @@
-class SubroutineDefinition:
-    def __init__(self, header, varrefs, body):
-        '''header is a tuple of (name, arglist)'''
+class SubroutineDeclaration:
+    def __init__(self, header, varrefs, body, function=False):
+        '''
+        @param header: a tuple of (name, arglist)
+        @param body: a tuple of (subroutine statements string, span in source file); 
+                The span is a (startpos, endpos) tuple.
+                
+        '''
         self.name = header[0]
         self.arglist = header[1]
         self.varrefs = varrefs
         self.body = body[0]
-        self.bodyspan = body[1] # the location span
+        self.bodyspan = body[1]         # the location span
+        self.function = function        # designates whether subroutine is function or procedure
         return
     
     def __repr__(self):
         buf = 'subroutine:'
-        buf += self.name + '\n' + str(self.arglist) + '\n' + str(self.varrefs) + \
-            '\n' + self.body + '\n' + str(self.bodyspan)
+        buf += str(self.name) + '\n' + str(self.arglist) + '\n' + str(self.varrefs) + \
+            '\n' + str(self.body) + '\n' + str(self.bodyspan)
         return buf
     
     def inline(self, params):
@@ -27,6 +33,8 @@ class SubroutineDefinition:
             
         return
         
-     
     
     # end of class SubroutineDefinition
+    
+class SubroutineDefinition(SubroutineDeclaration):
+    pass

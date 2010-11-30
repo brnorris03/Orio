@@ -28,7 +28,7 @@
 # Orio source directory.
 
 import sys, re
-import tool.ply.lex as lex
+import orio.tool.ply.lex as lex
 from orio.main.util.globals import *
 
 class FLexer:
@@ -42,7 +42,11 @@ class FLexer:
         self.fixedform = False
         self.needs_preprocessing = False
         self.incomment = False
+        self.code_start = -1
+        self.subroutines = []
+        self.insubroutine = False
         self.eolre = re.compile(r'[\n\r]')
+        self.testval = ''
         
     def reset(self, fname=''):
         self.currentline = ''
@@ -53,6 +57,10 @@ class FLexer:
         self.fixedform = False
         self.needs_preprocessing = False
         self.incomment = False
+        self.code_start = -1
+        self.subroutines = []
+        self.insubroutine = False
+        self.testval = ''
         if fname:
             self.setFileName(fname)
             self.determineFileFormat(fname)
@@ -63,6 +71,7 @@ class FLexer:
           ('misc', 'exclusive'),
           ('sstring', 'exclusive'),
           ('dstring', 'exclusive'),
+          ('fcode', 'exclusive')
          )
 
    
@@ -238,7 +247,6 @@ class FLexer:
     t_GO               = 'GO'            
     t_GOTO             = 'GOTO'          
     t_IF               = 'IF'            
-    t_IMPLICIT         = 'IMPLICIT'      
     t_IMPORT           = 'IMPORT'        
     t_IN               = 'IN'            
     t_INOUT            = 'INOUT'         
@@ -272,8 +280,8 @@ class FLexer:
     t_PURE             = 'PURE'          
     t_READ             = 'READ'          
     t_RECURSIVE        = 'RECURSIVE'     
-    t_RESULT           = 'RESULT'        
-    t_RETURN           = 'RETURN'        
+    t_RESULT           = 'RESULT'             
+    t_RETURN           = 'RETURN' 
     t_REWIND           = 'REWIND'        
     t_SAVE             = 'SAVE'          
     t_SELECT           = 'SELECT'        
@@ -307,12 +315,13 @@ class FLexer:
     t_ENDINTERFACE     = 'ENDINTERFACE'  
     t_ENDMODULE        = 'ENDMODULE'     
     t_ENDPROGRAM       = 'ENDPROGRAM'    
-    t_ENDSELECT        = 'ENDSELECT'     
-    t_ENDSUBROUTINE    = 'ENDSUBROUTINE' 
+    t_ENDSELECT        = 'ENDSELECT' 
+    t_ENDSUBROUTINE    = 'ENDSUBROUTINE'    
     t_ENDTYPE          = 'ENDTYPE'       
     t_ENDWHERE         = 'ENDWHERE'      
     
-    t_END              = 'END'
+    # END is in a longer rule below
+    #t_END              = 'END'
             
     
     t_DIMENSION        = 'DIMENSION'     
@@ -346,9 +355,25 @@ class FLexer:
     def t_FORMAT(self, t):
         r'FORMAT'
         self.inFormat = True
-        t.lexer.begin('format')
+        t.lexer.push_state('format')
         return t
-    
+        
+    # Limited initial subroutine body detection (between 
+    def t_INITIAL_fcode_IMPLICIT(self, t):
+        r'IMPLICIT'
+        t.lexer.code_start = t.lexpos
+        t.lexer.insubroutine = True
+        t.lexer.push_state('fcode')
+        return t
+        
+    def t_INITIAL_fcode_END(self,t):
+        r'END'
+        if self.subre.match(t.lexer.lexdata[t.lexpos:]) and self.insubroutine:
+            t.lexer.insubroutine = False
+            t.lexer.subroutines.append(t.lexer.lexdata[t.lexer.code_start:t.lexpos].strip())
+            t.lexer.pop_state()  # leave the 'fcode' state
+        return t
+        
     # integer constant, label, and part of kind; R409
     t_DIGIT_STRING = r'\d+'
     
@@ -370,14 +395,14 @@ class FLexer:
         r'(([A-Za-z]\w*)_)?\"([^\\\n\"]|(\\.))*&\s*\n'
         self.lineno += 1
         t.value = t.value.strip().strip('&').strip('"')
-        t.lexer.begin('dstring')
+        t.lexer.push_state('dstring')
         return t
     
     # The end of a partial double-quoted string literal (continued from a previous line)
     def t_dstring_PSCONST_D(self, t):
         r'\s*&?([^\\\n]|(\\.))*\"'
         t.value = t.value.strip().strip('&').strip('"')
-        t.lexer.begin('INITIAL')
+        t.lexer.pop_state()
         return t
  
     # string literal (with single quotes); R427
@@ -389,14 +414,14 @@ class FLexer:
         r'(([A-Za-z]\w*)_)?\'([^\\\n\']|(\\.))*&\s*\n'
         self.lineno += 1
         t.value = t.value.strip().strip('&').strip("'")
-        t.lexer.begin('sstring')
+        t.lexer.push_state('sstring')
         return t
     
     # the end of a partial single-quoted string literal (continued from another line)
     def t_sstring_PSCONST_S(self, t):
         r'\s*&?([^\\\n]|(\\.))*\''
         t.value = t.value.strip().strip('&').strip("'")
-        t.lexer.begin('INITIAL')
+        t.lexer.pop_state()
         return t
     
     # octal constant (with double quotes); R413
@@ -423,13 +448,13 @@ class FLexer:
         self.incontinuation = True
                 
         pass   # eat it
-    
+
     # count newlines
     def t_NEWLINE(self, t):
         r'\n+'
         self.lineno += t.value.count('\n')
         if self.fixedform and not self.incontinuation:
-            t.lexer.begin('misc')
+            t.lexer.push_state('misc')
         self.incontinuation = False
         
     # A catch-all rule for the case when any character is used in column 1 or 6
@@ -452,11 +477,11 @@ class FLexer:
                     #debug('tvalue=%s' % t.value)
                     t.type = 'LINECOMMENT'
                     t.lexer.lexpos = eol
-                    t.lexer.begin('INITIAL')
+                    t.lexer.pop_state()
                     return t
             elif len(t.value) == 6 and t.value[-1] != ' ':
                 self.incontinuation = True
-                t.lexer.begin('INITIAL')
+                t.lexer.pop_state()
                 return  # discard the token
             else:
                 # No idea what we are parsing, revert
@@ -466,16 +491,15 @@ class FLexer:
             self.incontinuation = True
             self.lexer.lexpos -= 1   # let the continuation rule handle it
         
-        t.lexer.begin('INITIAL')     # revert to freeform
+        t.lexer.pop_state()     # revert to freeform
         
         return   # for debugging (to see this token), change this to 'return t'
-    
-        
+            
     # syntactical error (shared by both states)
     def t_misc_INITIAL_error(self, t):
         self.raise_error(t)
 
-    def t_sstring_dstring_error(self,t):
+    def t_sstring_error(self,t):
         self.raise_error(t)
     
     def raise_error(self,t):
@@ -506,9 +530,7 @@ class FLexer:
        
     # instantiate lexer
     def build(self,**kwargs):
-        self.lexer = lex.lex(object=self, **kwargs)
-        
-        
+        self.lexer = lex.lex(object=self, reflags=re.IGNORECASE, **kwargs)  
 
     # Test it output
     def test(self,data):
@@ -517,6 +539,7 @@ class FLexer:
             tok = self.lexer.token()
             if not tok: break
             debug(tok,level=5)
+        print 'subroutines:',self.subroutines
     
     def determineFileFormat(self, filename):
         # Use the filename suffix to determine whether this is fixed form or free form (same as the Intel compiler):
@@ -527,7 +550,7 @@ class FLexer:
         suffix = filename[filename.rfind('.'):]
         if suffix.lower() in ['.f', '.for', '.ftn']:
             self.fixedform = True
-            self.lexer.begin('misc')
+            self.lexer.push_state('misc')
         if suffix.isupper():
             self.needs_preprocessing = True
         
@@ -541,9 +564,10 @@ class FLexer:
         
 #lexer = parse.ply.lex.lex(optimize = 0)
 # Main for debugging the lexer:
-if __name__ == "__orio.main._":
+if __name__ == "__main__":
     import sys
     # Build the lexer and try it out
+    Globals().verbose = True
     l = FLexer()
     l.build(debug=1)           # Build the lexer
     for i in range(1, len(sys.argv)):

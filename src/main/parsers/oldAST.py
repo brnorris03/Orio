@@ -33,6 +33,7 @@
 #
 
 import os
+import orio.main.parsers.fcodegen
 
 #-----------------------------------------------
 # ASTNode - Abstract Syntax Tree
@@ -52,7 +53,7 @@ class ASTNode:
 
     def __repr__(self):
         '''Return a string representation for this ASTNode object'''
-        return codegen.CodeGen().generate(self)
+        return orio.main.parsers.fcodegen.CodeGen().generate(self)
 
     def __str__(self):
         '''Return a string representation for this ASTNode object'''

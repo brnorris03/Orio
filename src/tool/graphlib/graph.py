@@ -9,12 +9,13 @@ license file for legal information.'''
 '''Modified for backward compatibility with Python 2.3 by Boyana Norris
 (norris@mcs.anl.gov).'''
 
-__version__ = '0.4.bocca'
+__version__ = '0.4.1'
 __author__ = 'Robert Dick and Kosta Gaitanis'
 __author_email__ = 'dickrp@ece.northwestern.edu and gaitanis@tele.ucl.ac.be'
 
 
-import copy, new, operator, struct, delegate
+import copy, new, operator, struct
+import orio.tool.graphlib.delegate as delegate
 # For 2.3 compatibility (since set is builtin starting in 2.4)
 from sets import *
 
@@ -328,7 +329,7 @@ class Graph(delegate.Delegate):
         self.e = EdgeDict()
  
     def __str__(self): 
-         return self.__class__.__name__ + \
+        return self.__class__.__name__ + \
             _condop(self.name, ' ' + str(self.name), '') + '\nVertices:\n' + \
             '\n'.join([str(v) for v in bn_sorted(self.v)]) + \
             '\nEdges:\n' + \

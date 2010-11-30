@@ -19,7 +19,7 @@ class TuningInfo:
 
         # unpack all information
         build_cmd, batch_cmd, status_cmd, num_procs = build_info
-        pcount_method, pcount_reps = pcount_info
+        pcount_method, pcount_reps, random_seed = pcount_info
         search_algo, search_time_limit, search_total_runs, search_opts = search_info
         pparam_params, pparam_constraints = pparam_info
         iparam_params, iparam_constraints = iparam_info
@@ -35,6 +35,7 @@ class TuningInfo:
         # performance counter arguments
         self.pcount_method = pcount_method             # default: 'basic timer' --> in microseconds
         self.pcount_reps = pcount_reps                 # default: 1
+        self.random_seed = random_seed                 # default: None
 
         # search arguments
         self.search_algo = search_algo                 # default: 'Exhaustive'
@@ -212,10 +213,12 @@ class TuningInfoGen:
         # all expected argument names
         METHOD = 'method'
         REPS = 'repetitions'
+        RANDOM_SEED = 'random_seed'
 
         # all expected performance counting information
         pcount_method = None
         pcount_reps = None
+        random_seed = None
 
         # iterate over each statement
         for stmt in stmt_seq:
@@ -235,7 +238,7 @@ class TuningInfoGen:
             _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
             
             # unknown argument name
-            if id_name not in (METHOD, REPS):
+            if id_name not in (METHOD, REPS, RANDOM_SEED):
                 err('orio.main.tspec.tune_info: %s: unknown performance counter argument: "%s"' % (id_line_no, id_name))
                 
 
@@ -252,9 +255,15 @@ class TuningInfoGen:
                     warn('orio.main.tspec.tune_info: %s: performance counting repetitions must be a positive integer' % rhs_line_no)
                     
                 pcount_reps = rhs
+                
+            # user-specified random seed (otherwhise non-repeatable value based on time is used)
+            elif id_name == RANDOM_SEED:
+                if not isinstance(rhs, int):
+                    warn('orio.main.tspec.tune_info: %s: performance counting repetitions must be an integer' % rhs_line_no)
+                random_seed = rhs
         
         # return all performance counting information
-        return (pcount_method, pcount_reps)
+        return (pcount_method, pcount_reps, random_seed)
 
     #-----------------------------------------------------------
 
@@ -644,13 +653,13 @@ class TuningInfoGen:
 
             # performance counter definition
             elif dname == PERF_COUNTER:
-                pcount_method, pcount_reps = self.__genPerfCounterInfo(body_stmt_seq, line_no)
+                pcount_method, pcount_reps, random_seed = self.__genPerfCounterInfo(body_stmt_seq, line_no)
                 default_p_method, default_p_reps = pcount_info
                 if pcount_method == None:
                     pcount_method = default_p_method
                 if pcount_reps == None:
                     pcount_reps = default_p_reps
-                pcount_info = (pcount_method, pcount_reps)
+                pcount_info = (pcount_method, pcount_reps, random_seed)
                 
             # search definition
             elif dname == SEARCH:
