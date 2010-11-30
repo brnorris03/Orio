@@ -334,6 +334,7 @@ class CodeGen_F(CodeGen):
         elif isinstance(tnode, ast.ForStmt):
             s += indent + 'do ' 
             if tnode.init:
+                print 'found tnode.init'
                 s += self.generate(tnode.init, indent, extra_indent)
             if not tnode.test:
                 err('orio.module.loop.codegen:  missing loop test expression. Fortran code generation requires a loop test expression.')
