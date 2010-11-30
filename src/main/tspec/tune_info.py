@@ -18,7 +18,7 @@ class TuningInfo:
         '''To instantiate the tuning information'''
 
         # unpack all information
-        build_cmd, batch_cmd, status_cmd, num_procs = build_info
+        build_cmd, batch_cmd, status_cmd, num_procs, libs = build_info
         pcount_method, pcount_reps, random_seed = pcount_info
         search_algo, search_time_limit, search_total_runs, search_opts = search_info
         pparam_params, pparam_constraints = pparam_info
@@ -28,6 +28,7 @@ class TuningInfo:
 
         # build arguments
         self.build_cmd = build_cmd        # command for compiling the generated code
+        self.libs = libs                  # extra libraries for linking
         self.batch_cmd = batch_cmd        # command for requesting a batch job
         self.status_cmd = status_cmd      # command for checking status of submitted batch
         self.num_procs = num_procs        # the number of processes used to run the test driver
@@ -72,6 +73,7 @@ class TuningInfo:
         s += ' tuning info      \n'
         s += '------------------\n'
         s += ' build command: %s \n' % self.build_cmd
+        s += ' libraries to link: %s \n' % self.libs
         s += ' batch command: %s \n' % self.batch_cmd
         s += ' status command: %s \n' % self.status_cmd
         s += ' num-processors: %s \n' % self.num_procs
@@ -142,12 +144,14 @@ class TuningInfoGen:
 
         # all expected argument names
         BUILDCMD = 'build_command'
+        LIBS = 'libs'
         BATCHCMD = 'batch_command'
         STATUSCMD = 'status_command'
         NUMPROCS = 'num_procs'
         
         # all expected build information
         build_cmd = None
+        libs = ''
         batch_cmd = None
         status_cmd = None
         num_procs = 1
@@ -170,7 +174,7 @@ class TuningInfoGen:
             _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
             
             # unknown argument name
-            if id_name not in (BUILDCMD, BATCHCMD, STATUSCMD, NUMPROCS):
+            if id_name not in (BUILDCMD, BATCHCMD, STATUSCMD, NUMPROCS, LIBS):
                 err('orio.main.tspec.tune_info: %s: unknown build argument: "%s"' % (id_line_no, id_name))
                 
 
@@ -181,6 +185,13 @@ class TuningInfoGen:
                     
                 build_cmd = rhs
 
+            # evaluate the libs 
+            if id_name == LIBS:
+                if not isinstance(rhs, str):
+                    err('orio.main.tspec.tune_info: %s: link-time libraries in build section must be a string' % rhs_line_no)
+                    
+                libs = rhs
+                
             # evaluate the batch command
             elif id_name == BATCHCMD:
                 if not isinstance(rhs, str):
@@ -203,7 +214,7 @@ class TuningInfoGen:
                 num_procs = rhs
 
         # return all build information
-        return (build_cmd, batch_cmd, status_cmd, num_procs)
+        return (build_cmd, batch_cmd, status_cmd, num_procs, libs)
 
     #-----------------------------------------------------------
 
@@ -636,7 +647,7 @@ class TuningInfoGen:
             # build definition
             if dname == BUILD:
                 (build_cmd, batch_cmd, status_cmd,
-                 num_procs) = self.__genBuildInfo(body_stmt_seq, line_no)
+                 num_procs, libs) = self.__genBuildInfo(body_stmt_seq, line_no)
                 if build_cmd == None:
                     err('orio.main.tspec.tune_info: %s: missing build command in the build section' % line_no)
                     
@@ -649,7 +660,7 @@ class TuningInfoGen:
                     warn(('orio.main.tspec.tune_info: %s: number of processors in build section must be greater than ' +
                             'one for non-batch (or non-parallel) search') % line_no)
                     
-                build_info = (build_cmd, batch_cmd, status_cmd, num_procs)
+                build_info = (build_cmd, batch_cmd, status_cmd, num_procs, libs)
 
             # performance counter definition
             elif dname == PERF_COUNTER:

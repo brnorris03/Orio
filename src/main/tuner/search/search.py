@@ -36,7 +36,7 @@ class Search:
             self.space_size = reduce(lambda x,y: x*y, self.dim_uplimits, 1)
         if 'use_parallel_search' in params.keys(): self.use_parallel_search = params['use_parallel_search']
         else: self.use_parallel_search = False
-        if 'ptdriver' in params.keys(): self.num_procs = params['ptdriver'].num_procs
+        if 'ptdriver' in params.keys(): self.num_procs = params['ptdriver'].tinfo.num_procs
         else: self.num_procs = 1
         
         # the class variables that may be ignored when developing a new search engine subclass

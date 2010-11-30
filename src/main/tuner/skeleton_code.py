@@ -232,101 +232,36 @@ SEQ_FORTRAN_DEFAULT = r'''
 
 program main
 
-implicit none
-
-integer, parameter :: double = selected_real_kind(10,40)
-integer, parameter :: single = selected_real_kind(5,20)
-
-real(double) :: orio_t_start, orio_t_end, orio_min_time, orio_delta_time
-integer      :: orio_i
-
+    implicit none
+    
+    integer, parameter :: double = selected_real_kind(10,40)
+    integer, parameter :: single = selected_real_kind(5,20)
+    
+    real(double) :: orio_t_start, orio_t_end, orio_min_time, orio_delta_time
+    integer      :: orio_i
+    
 !@ declarations @!
-
+    
 !@ prologue @!
-
-orio_min_time = 1231419831238.0   ! very large number
-do orio_i = 0, REPS-1
-
-  call cpu_time(orio_t_start)
-
-  !@ tested code @!
-
-  call cpu_time(orio_t_end)
-  orio_delta_time = orio_t_end - orio_t_start
-  if (orio_delta_time < orio_min_time) then
-      orio_min_time = orio_delta_time
-  end if
-
-enddo
-
-write(*,"(A,ES20.13,A)",advance="no") "{'!@ coordinate @!' : ", orio_delta_time, "}"
-
-!@ epilogue @!
-
-contains
-
-!@ global @!
-
-#ifdef BGP_COUNTER
-!XXX
-!#define SPRN_TBRL 0x10C // Time Base Read Lower Register (user & sup R/O)
-!#define SPRN_TBRU 0x10D // Time Base Read Upper Register (user & sup R/O)
-!#define _bgp_mfspr( SPRN )\
-!({\
-!  unsigned int tmp;\
-!  do {\
-!    asm volatile ("mfspr %0,%1" : "=&r" (tmp) : "i" (SPRN) : "memory" );\
-!  }\
-!  while(0);\
-!  tmp;\
-!})\
-!
-!double getClock()
-!{
-!  union {
-!    unsigned int ul[2];
-!    unsigned long long ull;
-!  }
-!  hack;
-!  unsigned int utmp;
-!  do {
-!    utmp = _bgp_mfspr( SPRN_TBRU );
-!    hack.ul[1] = _bgp_mfspr( SPRN_TBRL );
-!    hack.ul[0] = _bgp_mfspr( SPRN_TBRU );
-!  }
-!  while(utmp != hack.ul[0]);
-!  return((double) hack.ull );
-!}
-!XXX
-#else
-
-real(double) function getClock()
-implicit none
-integer :: time_array(8)
-integer :: cum_day_cnts(12) = (/0,31,59,90,120,151,181,212,243,273,304,334/)
-integer :: nleaps, skip_this_year
-
-! doesn't account for leap seconds; probably doesn't work before 1970 or
-! after 2399
-
-call date_and_time(values=time_array)
-! number of leap years since 1970
-skip_this_year = 0
-if (time_array(2) < 3) skip_this_year = 1
-nleaps = (time_array(1) - skip_this_year - 1972) / 4
-if (time_array(1) < 2000) nleaps = nleaps + 1
-
-getClock = ( (time_array(1)-1970)*365 + nleaps + cum_day_cnts(time_array(2)) + &
-             (time_array(3)-1) ) * 86400. + &
-           time_array(5)*3600. + &
-           time_array(6)*60. + &
-           time_array(7) + &
-           time_array(8)*0.001
-
-return
-end function getClock
-
-#endif
+    
+    orio_min_time = X'7FF00000'   ! large number
+    do orio_i = 0, REPS-1
+    
+      call cpu_time(orio_t_start)
+    
+      !@ tested code @!
+    
+      call cpu_time(orio_t_end)
+      orio_delta_time = orio_t_end - orio_t_start
+      if (orio_delta_time < orio_min_time) then
+          orio_min_time = orio_delta_time
+      end if
+    
+    enddo
+    
+    write(*,"(A,ES20.13,A)",advance="no") "{'!@ coordinate @!' : ", orio_delta_time, "}"
+    
+    !@ epilogue @!
 
 end program main
 
@@ -338,161 +273,96 @@ PAR_FORTRAN_DEFAULT = r'''
 
 program main
 
-use mpi
-implicit none
-
-integer, parameter :: double = selected_real_kind(10,40)
-integer, parameter :: single = selected_real_kind(5,20)
-
-type TimingInfo
-  sequence
-  integer             :: testid
-  character(len=1024) :: coord
-  real(double)        :: tm
-end type TimingInfo
-
-integer          :: numprocs, myid, i_, ierror
-integer          :: TimingInfoMPIType
-integer          :: blocklen(3) = (/ 1, 1024, 1/)
-integer          :: disp(3)     = (/ 0, 4, 4+1024 /) ! assume four-byte integers
-integer          :: types(3)    = (/ MPI_INTEGER, MPI_CHARACTER, &
-                                     MPI_DOUBLE_PRECISION /)
-type(TimingInfo) :: mytimeinfo
-type(TimingInfo), allocatable :: timevec(:)
-real(double)     :: orio_t_start, orio_t_end, orio_t_total = 0
-integer          :: orio_i
-
+    use mpi
+    implicit none
+    
+    integer, parameter :: double = selected_real_kind(10,40)
+    integer, parameter :: single = selected_real_kind(5,20)
+    
+    type TimingInfo
+      sequence
+      integer             :: testid
+      character(len=1024) :: coord
+      real(double)        :: tm
+    end type TimingInfo
+    
+    integer          :: numprocs, myid, i_, ierror
+    integer          :: TimingInfoMPIType
+    integer          :: blocklen(3) = (/ 1, 1024, 1/)
+    integer          :: disp(3)     = (/ 0, 4, 4+1024 /) ! assume four-byte integers
+    integer          :: types(3)    = (/ MPI_INTEGER, MPI_CHARACTER, &
+                                         MPI_DOUBLE_PRECISION /)
+    type(TimingInfo) :: mytimeinfo
+    type(TimingInfo), allocatable :: timevec(:)
+    real(double)     :: orio_t_start, orio_t_end, orio_min_time, orio_delta_time
+    integer          :: orio_i
+    
 !@ declarations @!
-
-call mpi_init(ierror)
-call mpi_comm_size(MPI_COMM_WORLD, numprocs)
-call mpi_comm_rank(MPI_COMM_WORLD, myid)
-
-! Construct the MPI type for the timing info (what a pain!)
-
-call mpi_type_create_struct(3, blocklen, disp, types, TimingInfoMPIType, ierror)
-call mpi_type_commit(TimingInfoMPIType, ierror)
-
-if (myid == 0) allocate(timevec(0:numprocs-1))
-
+    
+    call mpi_init(ierror)
+    call mpi_comm_size(MPI_COMM_WORLD, numprocs)
+    call mpi_comm_rank(MPI_COMM_WORLD, myid)
+    
+    ! Construct the MPI type for the timing info (what a pain!)
+    
+    call mpi_type_create_struct(3, blocklen, disp, types, TimingInfoMPIType, ierror)
+    call mpi_type_commit(TimingInfoMPIType, ierror)
+    
+    if (myid == 0) allocate(timevec(0:numprocs-1))
+    
+    orio_min_time = X'7FF00000'   ! large number
+    
 !@ prologue @!
-  
-select case (myid)
-
-    !@ begin switch body @!
-
-    mytimeinfo%testid = myid
-    mytimeinfo%coord  = "!@ coordinate @!"
-
-    do orio_i = 0, REPS-1
-
-      orio_t_start = getClock()
-
-      !@ tested code @!
-
-      orio_t_end = getClock()
-      orio_t_total = orio_t_total + orio_t_end - orio_t_start
-
-    enddo
-
-    orio_t_total = orio_t_total / REPS
-    mytimeinfo%tm = orio_t_total
-
-    !@ end switch body @!
-
-  case default
-
-    mytimeinfo%testid = -1
-    mytimeinfo%coord  = ""
-    mytimeinfo%tm     = -1
-
-end select
-
-call mpi_gather(mytimeinfo, 1, TimingInfoMPIType, &
-                timevec, 1, TimingInfoMPIType, &
-                0, MPI_COMM_WORLD, ierror)
-
-if (myid == 0) then
-  write(*,"(A)",advance="no") "{"
-  if ((mytimeinfo%tm >= 0) .and. (mytimeinfo%coord /= "")) &
-    write(*,"(3A,ES20.13)",advance="no") " '", mytimeinfo%coord, "' : ", &
-                                         mytimeinfo%tm
-  do i_ = 1, numprocs-1
-    if ((timevec(i_)%tm >= 0) .and. (timevec(i_)%coord /= ""))
-      write (*,"(3A,ES20.13)",advance="no") &
-        " '", timevec(i_)%coord, "' : ", timevec(i_)%tm
-  enddo
-  write(*,"(A)",advance="yes") "}"
-endif
-
-call mpi_finalize(ierror)
-
-!@ epilogue @!
-
-contains
-
-!@ global @!
-
-#ifdef BGP_COUNTER
-!XXX
-!#define SPRN_TBRL 0x10C // Time Base Read Lower Register (user & sup R/O)
-!#define SPRN_TBRU 0x10D // Time Base Read Upper Register (user & sup R/O)
-!#define _bgp_mfspr( SPRN )\
-!({\
-!  unsigned int tmp;\
-!  do {\
-!    asm volatile ("mfspr %0,%1" : "=&r" (tmp) : "i" (SPRN) : "memory" );\
-!  }\
-!  while(0);\
-!  tmp;\
-!})\
-!
-!double getClock()
-!{
-!  union {
-!    unsigned int ul[2];
-!    unsigned long long ull;
-!  }
-!  hack;
-!  unsigned int utmp;
-!  do {
-!    utmp = _bgp_mfspr( SPRN_TBRU );
-!    hack.ul[1] = _bgp_mfspr( SPRN_TBRL );
-!    hack.ul[0] = _bgp_mfspr( SPRN_TBRU );
-!  }
-!  while(utmp != hack.ul[0]);
-!  return((double) hack.ull );
-!}
-!XXX
-#else
-
-real(double) function getClock()
-implicit none
-integer :: time_array(8)
-integer :: cum_day_cnts(12) = (/0,31,59,90,120,151,181,212,243,273,304,334/)
-integer :: nleaps, skip_this_year
-
-! doesn't account for leap seconds; probably doesn't work before 1970 or
-! after 2399
-
-call date_and_time(values=time_array)
-! number of leap years since 1970
-skip_this_year = 0
-if (time_array(2) < 3) skip_this_year = 1
-nleaps = (time_array(1) - skip_this_year - 1972) / 4
-if (time_array(1) < 2000) nleaps = nleaps + 1
-
-getClock = ( (time_array(1)-1970)*365 + nleaps + cum_day_cnts(time_array(2)) + &
-             (time_array(3)-1) ) * 86400. + &
-           time_array(5)*3600. + &
-           time_array(6)*60. + &
-           time_array(7) + &
-           time_array(8)*0.001
-
-return
-end function getClock
-
-#endif
+      
+    select case (myid)
+    
+        !@ begin switch body @!
+    
+        mytimeinfo%testid = myid
+        mytimeinfo%coord  = "!@ coordinate @!"
+    
+        do orio_i = 1, REPS
+    
+          orio_t_start = MPI_Wtime()
+    
+          !@ tested code @!
+    
+          orio_t_end = MPI_Wtime()
+          orio_min_time = min(orio_min_time, orio_t_end - orio_t_start)
+        enddo
+    
+        mytimeinfo%tm = orio_min_time
+    
+        !@ end switch body @!
+    
+      case default
+    
+        mytimeinfo%testid = -1
+        mytimeinfo%coord  = ""
+        mytimeinfo%tm     = -1
+    
+    end select
+    
+    call mpi_gather(mytimeinfo, 1, TimingInfoMPIType, &
+                    timevec, 1, TimingInfoMPIType, &
+                    0, MPI_COMM_WORLD, ierror)
+    
+    if (myid == 0) then
+      write(*,"(A)",advance="no") "{"
+      if ((mytimeinfo%tm >= 0) .and. (mytimeinfo%coord /= "")) &
+        write(*,"(3A,ES20.13)",advance="no") " '", mytimeinfo%coord, "' : ", &
+                                             mytimeinfo%tm
+      do i_ = 1, numprocs-1
+        if ((timevec(i_)%tm >= 0) .and. (timevec(i_)%coord /= ""))
+          write (*,"(3A,ES20.13)",advance="no") &
+            " '", timevec(i_)%coord, "' : ", timevec(i_)%tm
+      enddo
+      write(*,"(A)",advance="yes") "}"
+    endif
+    
+    call mpi_finalize(ierror)
+    
+    !@ epilogue @!
 
 end program main
 
