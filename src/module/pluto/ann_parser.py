@@ -18,7 +18,7 @@ class AnnParser:
     #------------------------------------------------------------
 
     def __evalExp(self, text):
-        '''To evaluate the given expression text'''
+        '''Evaluate the given expression text'''
 
         try:
             val = eval(text, self.perf_params)
@@ -29,7 +29,7 @@ class AnnParser:
     #------------------------------------------------------------
 
     def parse(self, text):
-        '''To parse the annotation text to get variable-value pairs'''
+        '''Parse the annotation text to get variable-value pairs'''
 
         # remember the given code text
         orig_text = text

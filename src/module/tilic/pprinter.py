@@ -4,6 +4,7 @@
 
 import sys
 import ast
+from orio.main.util.globals import *
 
 #-------------------------------------------------
 

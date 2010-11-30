@@ -12,6 +12,7 @@ SEQ_DEFAULT = r'''
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <math.h>
 
 /*@ global @*/
 
@@ -92,7 +93,9 @@ PAR_DEFAULT = r'''
 #include <stdlib.h>
 #include <sys/time.h>
 #include <string.h>
+#include <math.h>
 #include "mpi.h"
+
 
 /*@ global @*/
 
@@ -225,6 +228,273 @@ int main(int argc, char *argv[])
 
 '''
 
+SEQ_FORTRAN_DEFAULT = r'''
+
+program main
+
+implicit none
+
+integer, parameter :: double = selected_real_kind(10,40)
+integer, parameter :: single = selected_real_kind(5,20)
+
+real(double) :: orio_t_start, orio_t_end, orio_t_total = 0
+integer      :: orio_i
+
+!@ declarations @!
+
+!@ prologue @!
+
+do orio_i = 0, REPS-1
+
+  orio_t_start = getClock()
+
+  !@ tested code @!
+
+  orio_t_end = getClock()
+  orio_t_total = orio_t_total + orio_t_end - orio_t_start
+
+enddo
+
+orio_t_total = orio_t_total / REPS
+
+write(*,"(A,ES20.13,A)",advance="no") "{'!@ coordinate @!' : ", orio_t_total, "}"
+
+!@ epilogue @!
+
+contains
+
+!@ global @!
+
+#ifdef BGP_COUNTER
+!XXX
+!#define SPRN_TBRL 0x10C // Time Base Read Lower Register (user & sup R/O)
+!#define SPRN_TBRU 0x10D // Time Base Read Upper Register (user & sup R/O)
+!#define _bgp_mfspr( SPRN )\
+!({\
+!  unsigned int tmp;\
+!  do {\
+!    asm volatile ("mfspr %0,%1" : "=&r" (tmp) : "i" (SPRN) : "memory" );\
+!  }\
+!  while(0);\
+!  tmp;\
+!})\
+!
+!double getClock()
+!{
+!  union {
+!    unsigned int ul[2];
+!    unsigned long long ull;
+!  }
+!  hack;
+!  unsigned int utmp;
+!  do {
+!    utmp = _bgp_mfspr( SPRN_TBRU );
+!    hack.ul[1] = _bgp_mfspr( SPRN_TBRL );
+!    hack.ul[0] = _bgp_mfspr( SPRN_TBRU );
+!  }
+!  while(utmp != hack.ul[0]);
+!  return((double) hack.ull );
+!}
+!XXX
+#else
+
+real(double) function getClock()
+implicit none
+integer :: time_array(8)
+integer :: cum_day_cnts(12) = (/0,31,59,90,120,151,181,212,243,273,304,334/)
+integer :: nleaps, skip_this_year
+
+! doesn't account for leap seconds; probably doesn't work before 1970 or
+! after 2399
+
+call date_and_time(values=time_array)
+! number of leap years since 1970
+skip_this_year = 0
+if (time_array(2) < 3) skip_this_year = 1
+nleaps = (time_array(1) - skip_this_year - 1972) / 4
+if (time_array(1) < 2000) nleaps = nleaps + 1
+
+getClock = ( (time_array(1)-1970)*365 + nleaps + cum_day_cnts(time_array(2)) + &
+             (time_array(3)-1) ) * 86400. + &
+           time_array(5)*3600. + &
+           time_array(6)*60. + &
+           time_array(7) + &
+           time_array(8)*0.001
+
+return
+end function getClock
+
+#endif
+
+end program main
+
+'''
+
+#-----------------------------------------------------
+
+PAR_FORTRAN_DEFAULT = r'''
+
+program main
+
+use mpi
+implicit none
+
+integer, parameter :: double = selected_real_kind(10,40)
+integer, parameter :: single = selected_real_kind(5,20)
+
+type TimingInfo
+  sequence
+  integer             :: testid
+  character(len=1024) :: coord
+  real(double)        :: tm
+end type TimingInfo
+
+integer          :: numprocs, myid, i_, ierror
+integer          :: TimingInfoMPIType
+integer          :: blocklen(3) = (/ 1, 1024, 1/)
+integer          :: disp(3)     = (/ 0, 4, 4+1024 /) ! assume four-byte integers
+integer          :: types(3)    = (/ MPI_INTEGER, MPI_CHARACTER, &
+                                     MPI_DOUBLE_PRECISION /)
+type(TimingInfo) :: mytimeinfo
+type(TimingInfo), allocatable :: timevec(:)
+real(double)     :: orio_t_start, orio_t_end, orio_t_total = 0
+integer          :: orio_i
+
+!@ declarations @!
+
+call mpi_init(ierror)
+call mpi_comm_size(MPI_COMM_WORLD, numprocs)
+call mpi_comm_rank(MPI_COMM_WORLD, myid)
+
+! Construct the MPI type for the timing info (what a pain!)
+
+call mpi_type_create_struct(3, blocklen, disp, types, TimingInfoMPIType, ierror)
+call mpi_type_commit(TimingInfoMPIType, ierror)
+
+if (myid == 0) allocate(timevec(0:numprocs-1))
+
+!@ prologue @!
+  
+select case (myid)
+
+    !@ begin switch body @!
+
+    mytimeinfo%testid = myid
+    mytimeinfo%coord  = "!@ coordinate @!"
+
+    do orio_i = 0, REPS-1
+
+      orio_t_start = getClock()
+
+      !@ tested code @!
+
+      orio_t_end = getClock()
+      orio_t_total = orio_t_total + orio_t_end - orio_t_start
+
+    enddo
+
+    orio_t_total = orio_t_total / REPS
+    mytimeinfo%tm = orio_t_total
+
+    !@ end switch body @!
+
+  case default
+
+    mytimeinfo%testid = -1
+    mytimeinfo%coord  = ""
+    mytimeinfo%tm     = -1
+
+end select
+
+call mpi_gather(mytimeinfo, 1, TimingInfoMPIType, &
+                timevec, 1, TimingInfoMPIType, &
+                0, MPI_COMM_WORLD, ierror)
+
+if (myid == 0) then
+  write(*,"(A)",advance="no") "{"
+  if ((mytimeinfo%tm >= 0) .and. (mytimeinfo%coord /= "")) &
+    write(*,"(3A,ES20.13)",advance="no") " '", mytimeinfo%coord, "' : ", &
+                                         mytimeinfo%tm
+  do i_ = 1, numprocs-1
+    if ((timevec(i_)%tm >= 0) .and. (timevec(i_)%coord /= ""))
+      write (*,"(3A,ES20.13)",advance="no") &
+        " '", timevec(i_)%coord, "' : ", timevec(i_)%tm
+  enddo
+  write(*,"(A)",advance="yes") "}"
+endif
+
+call mpi_finalize(ierror)
+
+!@ epilogue @!
+
+contains
+
+!@ global @!
+
+#ifdef BGP_COUNTER
+!XXX
+!#define SPRN_TBRL 0x10C // Time Base Read Lower Register (user & sup R/O)
+!#define SPRN_TBRU 0x10D // Time Base Read Upper Register (user & sup R/O)
+!#define _bgp_mfspr( SPRN )\
+!({\
+!  unsigned int tmp;\
+!  do {\
+!    asm volatile ("mfspr %0,%1" : "=&r" (tmp) : "i" (SPRN) : "memory" );\
+!  }\
+!  while(0);\
+!  tmp;\
+!})\
+!
+!double getClock()
+!{
+!  union {
+!    unsigned int ul[2];
+!    unsigned long long ull;
+!  }
+!  hack;
+!  unsigned int utmp;
+!  do {
+!    utmp = _bgp_mfspr( SPRN_TBRU );
+!    hack.ul[1] = _bgp_mfspr( SPRN_TBRL );
+!    hack.ul[0] = _bgp_mfspr( SPRN_TBRU );
+!  }
+!  while(utmp != hack.ul[0]);
+!  return((double) hack.ull );
+!}
+!XXX
+#else
+
+real(double) function getClock()
+implicit none
+integer :: time_array(8)
+integer :: cum_day_cnts(12) = (/0,31,59,90,120,151,181,212,243,273,304,334/)
+integer :: nleaps, skip_this_year
+
+! doesn't account for leap seconds; probably doesn't work before 1970 or
+! after 2399
+
+call date_and_time(values=time_array)
+! number of leap years since 1970
+skip_this_year = 0
+if (time_array(2) < 3) skip_this_year = 1
+nleaps = (time_array(1) - skip_this_year - 1972) / 4
+if (time_array(1) < 2000) nleaps = nleaps + 1
+
+getClock = ( (time_array(1)-1970)*365 + nleaps + cum_day_cnts(time_array(2)) + &
+             (time_array(3)-1) ) * 86400. + &
+           time_array(5)*3600. + &
+           time_array(6)*60. + &
+           time_array(7) + &
+           time_array(8)*0.001
+
+return
+end function getClock
+
+#endif
+
+end program main
+
+'''
 #-----------------------------------------------------
 
 class PerfTestSkeletonCode:
@@ -356,3 +626,120 @@ class PerfTestSkeletonCode:
         # return the performance-testing code
         return code
 
+class PerfTestSkeletonCodeFortran:
+    '''The skeleton code used in the performance testing'''
+
+    # tags
+    __PROLOGUE_TAG = r'!@\s*prologue\s*@!'
+    __DECLARATIONS_TAG = r'!@\s*declarations\s*@!'
+    __ALLOCATIONS_TAG = r'!@\s*allocation\s*@!'
+    __EPILOGUE_TAG = r'!@\s*epilogue\s*@!'
+    __TCODE_TAG = r'!@\s*tested\s+code\s*@!'
+    __COORD_TAG = r'!@\s*coordinate\s*@!'
+    __BEGIN_SWITCHBODY_TAG = r'!@\s*begin\s+switch\s+body\s*@!'
+    __END_SWITCHBODY_TAG = r'!@\s*end\s+switch\s+body\s*@!'
+    __SWITCHBODY_TAG = __BEGIN_SWITCHBODY_TAG + r'((.|\n)*?)' + __END_SWITCHBODY_TAG
+
+    #-----------------------------------------------------
+    
+    def __init__(self, code, use_parallel_search):
+        '''To instantiate the skeleton code for the performance testing'''
+
+        if code == None:
+            if use_parallel_search:
+                code = PAR_FORTRAN_DEFAULT
+            else:
+                code = SEQ_FORTRAN_DEFAULT
+
+        self.code = code
+        self.use_parallel_search = use_parallel_search
+
+        self.__checkSkeletonCode(self.code)
+
+    #-----------------------------------------------------
+
+    def __checkSkeletonCode(self, code):
+        '''To check the validity of the skeleton code'''
+
+        match_obj = re.search(self.__PROLOGUE_TAG, code)
+        if not match_obj:
+            print 'error: missing "prologue" tag in the skeleton code'
+            sys.exit(1)
+
+        match_obj = re.search(self.__EPILOGUE_TAG, code)
+        if not match_obj:
+            err('missing "epilogue" tag in the skeleton code')
+
+        match_obj = re.search(self.__TCODE_TAG, code)
+        if not match_obj:
+            err('missing "tested code" tag in the skeleton code')
+
+        match_obj = re.search(self.__COORD_TAG, code)
+        if not match_obj:
+            err('missing "coordinate" tag in the skeleton code')
+            
+        if self.use_parallel_search:
+
+            match_obj = re.search(self.__BEGIN_SWITCHBODY_TAG, code)
+            if not match_obj:
+                err('error: missing "begin switch body" tag in the skeleton code')
+        
+            match_obj = re.search(self.__END_SWITCHBODY_TAG, code)
+            if not match_obj:
+                err('missing "end switch body" tag in the skeleton code')
+        
+            match_obj = re.search(self.__SWITCHBODY_TAG, code)
+            if not match_obj:
+                err('internal error: missing placement of switch body statement')
+
+            switch_body_code = match_obj.group(1)
+
+            match_obj = re.search(self.__TCODE_TAG, switch_body_code)
+            if not match_obj:
+                err('missing "tested code" tag in the switch body statement')
+            
+            match_obj = re.search(self.__COORD_TAG, switch_body_code)
+            if not match_obj:
+                err('missing "coordinate" tag in the switch body statement')
+
+    #-----------------------------------------------------
+
+    def insertCode(self, decl_code, prologue_code, epilogue_code, tested_code_map):
+        '''To insert code fragments into the skeleton code'''
+
+        # check the given tested code mapping
+        if len(tested_code_map) == 0:
+            err('internal error: the number of tested codes cannot be zero')
+
+        if not self.use_parallel_search and len(tested_code_map) != 1:
+            err('internal error: the number of tested sequential codes must be exactly one')
+
+        # initialize the performance-testing code
+        code = self.code
+
+        # insert global definitions, prologue, and epilogue codes
+        code = re.sub(self.__DECLARATIONS_TAG, decl_code, code)
+        code = re.sub(self.__PROLOGUE_TAG, prologue_code, code)
+        code = re.sub(self.__EPILOGUE_TAG, epilogue_code, code)
+
+        # insert the parallel code
+        if self.use_parallel_search:
+            switch_body_code = re.search(self.__SWITCHBODY_TAG, code).group(1)
+            tcode = ''
+            for i, (code_key, code_value) in enumerate(tested_code_map.items()):
+                scode = switch_body_code
+                scode = re.sub(self.__COORD_TAG, code_key, scode)
+                scode = re.sub(self.__TCODE_TAG, code_value, scode)
+                tcode += '\n'
+                tcode += '  case (%s)\n' % i
+                tcode += '    \n' + scode + '\n\n'
+            code = re.sub(self.__SWITCHBODY_TAG, tcode, code)
+            
+        # insert the sequential code
+        else:
+            ((coord_key, tcode),) = tested_code_map.items()
+            code = re.sub(self.__COORD_TAG, coord_key, code)
+            code = re.sub(self.__TCODE_TAG, tcode, code)
+
+        # return the performance-testing code
+        return code
