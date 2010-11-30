@@ -237,27 +237,29 @@ implicit none
 integer, parameter :: double = selected_real_kind(10,40)
 integer, parameter :: single = selected_real_kind(5,20)
 
-real(double) :: orio_t_start, orio_t_end, orio_t_total = 0
+real(double) :: orio_t_start, orio_t_end, orio_min_time, orio_delta_time
 integer      :: orio_i
 
 !@ declarations @!
 
 !@ prologue @!
 
+orio_min_time = 1231419831238.0   ! very large number
 do orio_i = 0, REPS-1
 
-  orio_t_start = getClock()
+  call cpu_time(orio_t_start)
 
   !@ tested code @!
 
-  orio_t_end = getClock()
-  orio_t_total = orio_t_total + orio_t_end - orio_t_start
+  call cpu_time(orio_t_end)
+  orio_delta_time = orio_t_end - orio_t_start
+  if (orio_delta_time < orio_min_time) then
+      orio_min_time = orio_delta_time
+  end if
 
 enddo
 
-orio_t_total = orio_t_total / REPS
-
-write(*,"(A,ES20.13,A)",advance="no") "{'!@ coordinate @!' : ", orio_t_total, "}"
+write(*,"(A,ES20.13,A)",advance="no") "{'!@ coordinate @!' : ", orio_delta_time, "}"
 
 !@ epilogue @!
 
