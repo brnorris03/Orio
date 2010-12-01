@@ -5,6 +5,7 @@
 import os, sys, time, random, re
 
 from orio.main.util.globals import *
+from orio.main.tuner.skeleton_code import SEQ_TIMER
 
 #-----------------------------------------------------
 
@@ -28,7 +29,7 @@ class PerfTestDriver:
 
     #-----------------------------------------------------
     
-    def __init__(self, tinfo, use_parallel_search, language="c"):
+    def __init__(self, tinfo, use_parallel_search, language="c", timing_code=''):
         '''To instantiate the performance-testing driver'''
 
         self.tinfo = tinfo
@@ -41,6 +42,8 @@ class PerfTestDriver:
         else:
             self.src_name = self.__PTEST_FNAME + str(counter) + '.F90'
         self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
+        
+        self.timer_code = timing_code
 
         if self.tinfo.pcount_method not in (self.__PCOUNT_BASIC, self.__PCOUNT_BGP):
             err('orio.main.tuner.ptest_driver:  unknown performance-counting method: "%s"' % self.tinfo.pcount_method)
@@ -56,6 +59,18 @@ class PerfTestDriver:
             f.close()
         except:
             err('orio.main.tuner.ptest_driver:  cannot open file for writing: %s' % self.src_name)
+            
+        if not self.tinfo.timer_file and not os.path.exists('timer_cpu.c'):
+            # Generate the timing routine file
+            try: 
+                f = open('timer_cpu.c', 'w')
+                f.write(self.timer_code)
+                f.close()
+            except:
+                err('orio.main.tuner.ptest_driver:  cannot open file for writing: timer_cpu.c')
+                
+        return
+                
 
     #-----------------------------------------------------
 
@@ -68,9 +83,19 @@ class PerfTestDriver:
             extra_compiler_opts += ' -DBGP_COUNTER'
         extra_compiler_opts += ' -DREPS=%s' % self.tinfo.pcount_reps
             
+        # compile the timing code (if needed)
+        if not self.tinfo.timer_file: timer_file = 'timer_cpu.c'
+        else: timer_file = self.tinfo.timer_file
+        timer_objfile = timer_file[:timer_file.rfind('.')] + '.o'
+        cmd = ('%s -O0 -c -o %s %s' % (self.tinfo.cc, timer_objfile, timer_file))
+        info(' compiling:\n\t' + cmd)
+        status = os.system(cmd)
+        if status or not os.path.exists(timer_objfile):
+            err('orio.main.tuner.ptest_driver:  failed to compile the timer code: "%s"' % cmd)
+            
         # compile the testing code
-        cmd = ('%s %s -o %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
-                                   self.exe_name, self.src_name, self.tinfo.libs))
+        cmd = ('%s %s -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+                                   self.exe_name, self.src_name, timer_objfile, self.tinfo.libs))
         info(' compiling:\n\t' + cmd)
         status = os.system(cmd)
         if status:
@@ -155,7 +180,7 @@ class PerfTestDriver:
         '''Delete all the generated files'''
 
         if Globals().keep_temps: return
-        for fname in [self.exe_name, self.src_name]:
+        for fname in [self.exe_name, self.src_name, 'cpu_timer.c']:
             try:
                 if os.path.exists(fname):
                     os.unlink(fname)
@@ -163,7 +188,7 @@ class PerfTestDriver:
                 err('orio.main.tuner.ptest_driver:  cannot delete file: %s' % fname)
 
     #-----------------------------------------------------
-
+            
     def run(self, test_code):
         '''To compile and to execute the given testing code to get the performance cost
         @param test_code: the code for testing multiple coordinates in the search space

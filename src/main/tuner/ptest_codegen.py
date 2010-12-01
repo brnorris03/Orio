@@ -5,6 +5,7 @@
 import random, re, sys
 import skeleton_code
 from orio.main.util.globals import *
+from main.tuner.skeleton_code import SEQ_TIMER
 
 #-----------------------------------------------------
 
@@ -300,10 +301,26 @@ class PerfTestCodeGen:
 
         # return the performance-testing code
         return ptest_code
+    
+    def getTimerCode(self, use_parallel_search = False):
+        if not use_parallel_search:
+            return SEQ_TIMER
+        else: 
+            return ''     
+        
+# --------------------------------------------------------------------------------------
 
 
 class PerfTestCodeGenFortran:
-    '''The code generator used to produce a performance-testing code'''
+    '''
+    The code generator used to produce a performance-testing code.
+    
+    The Fortran driver differs from the C one in the following ways:
+        - The timer is in C and built in a separate file because of the difficulties in 
+        getting a working, high-resolution, portable timing routine.
+        - The declarations and initializations are embedded in the main program
+        instead of specified as separate subroutines.
+    '''
 
     #-----------------------------------------------------
 
@@ -526,6 +543,12 @@ class PerfTestCodeGenFortran:
 
     #-----------------------------------------------------
 
+    def getTimerCode(self, use_parallel_search = False):
+        if not use_parallel_search:
+            return SEQ_TIMER
+        else: 
+            return ''     
+        
     def generate(self, code_map):
         '''
         Generate the testing code, which is evaluated to get the performance cost.
@@ -565,6 +588,6 @@ class PerfTestCodeGenFortran:
         # get the performance-testing code
         ptest_code = self.ptest_skeleton_code.insertCode(declaration_code, prologue_code,
                                                          epilogue_code, code_map)
-
+        
         # return the performance-testing code
         return ptest_code

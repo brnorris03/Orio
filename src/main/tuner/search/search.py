@@ -55,6 +55,8 @@ class Search:
         if 'odriver' in params.keys(): self.odriver = params['odriver']
         else: self.odriver = None
         
+        self.timing_code = ''
+        
         self.verbose = Globals().verbose
         self.perf_cost_records = {}
         
