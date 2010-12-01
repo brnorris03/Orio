@@ -6,15 +6,11 @@ import os, re, sys
 from orio.main.util.globals import *
 
 #-----------------------------------------------------
-
-SEQ_DEFAULT = r'''
-
+SEQ_TIMER = '''
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
 #include <math.h>
-
-/*@ global @*/
 
 #define BIG_NUMBER 147483647.0
 
@@ -48,6 +44,7 @@ double getClock()
   return((double) hack.ull );
 }
 #else
+#ifdef __APPLE__
 double getClock()
 {
   struct timezone tzp;
@@ -55,7 +52,23 @@ double getClock()
   gettimeofday (&tp, &tzp);
   return (tp.tv_sec + tp.tv_usec*1.0e-6);
 }
+#else
+double getClock()
+{
+    long sec;
+    double secx;
+    struct tms realbuf;
+
+    times(&realbuf);
+    secx = ( realbuf.tms_stime + realbuf.tms_utime ) / (float) CLOCKS_PER_SEC;
+    return ((double) secx);
+}
 #endif
+#endif
+'''
+
+SEQ_DEFAULT = r'''
+/*@ global @*/
 
 int main(int argc, char *argv[])
 {
@@ -247,11 +260,11 @@ program main
     orio_min_time = X'7FF00000'   ! large number
     do orio_i = 0, REPS-1
     
-      call cpu_time(orio_t_start)
+      orio_t_start = getClock()
     
       !@ tested code @!
     
-      call cpu_time(orio_t_end)
+      orio_t_end = getClock()
       orio_delta_time = orio_t_end - orio_t_start
       if (orio_delta_time < orio_min_time) then
           orio_min_time = orio_delta_time
@@ -262,6 +275,18 @@ program main
     write(*,"(A,ES20.13,A)",advance="no") "{'!@ coordinate @!' : ", orio_delta_time, "}"
     
     !@ epilogue @!
+    
+    contains
+
+    real(double) function getClock()
+        implicit none
+        integer (kind = 8) clock_count, clock_max, clock_rate
+        integer ( kind = 8 ), parameter :: call_num = 100
+
+        call system_clock(clock_count, clock_rate, clock_max)
+
+        getClock = dble(clock_count) / dble(call_num * clock_rate)
+    end function
 
 end program main
 
@@ -497,6 +522,7 @@ class PerfTestSkeletonCode:
 
         # return the performance-testing code
         return code
+  
 
 class PerfTestSkeletonCodeFortran:
     '''The skeleton code used in the performance testing'''
@@ -614,4 +640,4 @@ class PerfTestSkeletonCodeFortran:
             code = re.sub(self.__TCODE_TAG, tcode, code)
 
         # return the performance-testing code
-        return code
+        return  code
