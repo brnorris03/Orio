@@ -44,15 +44,7 @@ double getClock()
   return((double) hack.ull );
 }
 #else
-#ifdef __APPLE__
-double getClock()
-{
-  struct timezone tzp;
-  struct timeval tp;
-  gettimeofday (&tp, &tzp);
-  return (tp.tv_sec + tp.tv_usec*1.0e-6);
-}
-#else
+#ifdef __GNUC__
 double getClock()
 {
     long sec;
@@ -62,6 +54,14 @@ double getClock()
     times(&realbuf);
     secx = ( realbuf.tms_stime + realbuf.tms_utime ) / (float) CLOCKS_PER_SEC;
     return ((double) secx);
+}
+#else
+double getClock()
+{
+  struct timezone tzp;
+  struct timeval tp;
+  gettimeofday (&tp, &tzp);
+  return (tp.tv_sec + tp.tv_usec*1.0e-6);
 }
 #endif
 #endif
