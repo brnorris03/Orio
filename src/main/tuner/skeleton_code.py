@@ -44,7 +44,7 @@ double getClock()
   return((double) hack.ull );
 }
 #else
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__INTEL_COMPILER)
 double getClock()
 {
     long sec;
