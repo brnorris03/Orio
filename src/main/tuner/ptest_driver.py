@@ -88,7 +88,9 @@ class PerfTestDriver:
         else: timer_file = self.tinfo.timer_file
         timer_objfile = timer_file[:timer_file.rfind('.')] + '.o'
         
-        if not os.path.exists(timer_objfile):  
+        if self.tinfo.num_procs > 1: timer_objfile = ''
+        
+        if timer_objfile and not os.path.exists(timer_objfile):  
             # Too crude, need to make sure object is newer than source
             cmd = ('%s -O0 -c -o %s %s' % (self.tinfo.cc, timer_objfile, timer_file))
             info(' compiling:\n\t' + cmd)
