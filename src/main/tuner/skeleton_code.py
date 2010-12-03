@@ -48,8 +48,8 @@ double getClock()
     struct timespec ts;
     
     /* CLOCK_PROCESS_CPUTIME_ID */
-    if (clock_get_time(CLOCK_REALTIME, &ts) != 0) return -1;
-    return (double)(ts.tv_sec + ts.tv_nsec / 10.e-9);
+    if (clock_gettime(CLOCK_REALTIME, &ts) != 0) return -1;
+    return (double)(ts.tv_sec + ts.tv_nsec*1.0e-9);
 }
 #else
 double getClock()
