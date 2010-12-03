@@ -98,7 +98,6 @@ class PerfTestDriver:
             if status or not os.path.exists(timer_objfile):
                 err('orio.main.tuner.ptest_driver:  failed to compile the timer code: "%s"' % cmd)
             
-        print '*** timer', timer_objfile
         # compile the testing code
         cmd = ('%s %s -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
                                    self.exe_name, self.src_name, timer_objfile, self.tinfo.libs))
