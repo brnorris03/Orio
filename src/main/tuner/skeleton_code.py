@@ -42,14 +42,13 @@ double getClock()
   return((double) hack.ull );
 }
 #else
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(__APPLE__)
+#if !defined(__APPLE__)
 double getClock()
 {
-    struct timespec ts;
+    timespec ts;
     
-    /* CLOCK_PROCESS_CPUTIME_ID */
-    if (clock_gettime(CLOCK_REALTIME, &ts) != 0) return -1;
-    return (double)(ts.tv_sec + ts.tv_nsec*1.0e-9);
+    if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts) != 0) return -1;
+    return (double)ts.tv_sec + ((double)ts.tv_nsec)*1.0e-9);
 }
 #else
 double getClock()
@@ -66,10 +65,8 @@ double getClock()
 SEQ_DEFAULT = r'''
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
 #include <math.h>
-
-#define BIG_NUMBER 147483647.0
+#include <limits.h>
 
 /*@ global @*/
 
@@ -77,7 +74,7 @@ int main(int argc, char *argv[])
 {
   /*@ prologue @*/
 
-  double orio_t_start, orio_t_end, orio_t, orio_t_total=0, orio_t_min = BIG_NUMBER;
+  double orio_t_start, orio_t_end, orio_t, orio_t_min = (double)LONG_MAX;
   int orio_i;
 
   for (orio_i=0; orio_i<REPS; orio_i++)
@@ -90,9 +87,8 @@ int main(int argc, char *argv[])
     orio_t = orio_t_end - orio_t_start;
     if (orio_t < orio_t_min) orio_t_min = orio_t;
   }
-  orio_t_total = orio_t_min;
   
-  printf("{'/*@ coordinate @*/' : %g}", orio_t_total);
+  printf("{'/*@ coordinate @*/' : %g}", orio_t_min);
 
   /*@ epilogue @*/
 
