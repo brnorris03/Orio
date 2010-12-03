@@ -88,7 +88,7 @@ class PerfTestDriver:
         else: timer_file = self.tinfo.timer_file
         timer_objfile = timer_file[:timer_file.rfind('.')] + '.o'
         
-        if self.tinfo.num_procs > 1: timer_objfile = ''
+        if self.use_parallel_search: timer_objfile = ''
         
         if timer_objfile and not os.path.exists(timer_objfile):  
             # Too crude, need to make sure object is newer than source
@@ -98,6 +98,7 @@ class PerfTestDriver:
             if status or not os.path.exists(timer_objfile):
                 err('orio.main.tuner.ptest_driver:  failed to compile the timer code: "%s"' % cmd)
             
+        print '*** timer', timer_objfile
         # compile the testing code
         cmd = ('%s %s -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
                                    self.exe_name, self.src_name, timer_objfile, self.tinfo.libs))
