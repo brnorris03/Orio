@@ -12,8 +12,6 @@ SEQ_TIMER = '''
 #include <sys/time.h>
 #include <math.h>
 
-#define BIG_NUMBER 147483647.0
-
 #ifdef BGP_COUNTER
 #define SPRN_TBRL 0x10C // Time Base Read Lower Register (user & sup R/O)
 #define SPRN_TBRU 0x10D // Time Base Read Upper Register (user & sup R/O)
@@ -44,7 +42,7 @@ double getClock()
   return((double) hack.ull );
 }
 #else
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER)
+#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(__APPLE__)
 double getClock()
 {
     long sec;
@@ -68,6 +66,13 @@ double getClock()
 '''
 
 SEQ_DEFAULT = r'''
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <math.h>
+
+#define BIG_NUMBER 147483647.0
+
 /*@ global @*/
 
 int main(int argc, char *argv[])
