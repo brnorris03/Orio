@@ -9,7 +9,7 @@ from orio.main.util.globals import *
 SEQ_TIMER = '''
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
+#include <time.h>
 #include <math.h>
 
 #ifdef BGP_COUNTER
@@ -45,13 +45,11 @@ double getClock()
 #if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(__APPLE__)
 double getClock()
 {
-    long sec;
-    double secx;
-    struct tms realbuf;
-
-    times(&realbuf);
-    secx = ( realbuf.tms_stime + realbuf.tms_utime ) / (float) CLOCKS_PER_SEC;
-    return ((double) secx);
+    struct timespec ts;
+    
+    /* CLOCK_PROCESS_CPUTIME_ID */
+    if (clock_get_time(CLOCK_REALTIME, &ts) != 0) return -1;
+    return (double)(ts.tv_sec + ts.tv_nsec / 10.e-9);
 }
 #else
 double getClock()
