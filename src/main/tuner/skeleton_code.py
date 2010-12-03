@@ -48,7 +48,7 @@ double getClock()
     timespec ts;
     
     if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts) != 0) return -1;
-    return (double)ts.tv_sec + ((double)ts.tv_nsec)*1.0e-9);
+    return (double)ts.tv_sec + ((double)ts.tv_nsec)*1.0e-9;
 }
 #else
 double getClock()
@@ -67,8 +67,11 @@ SEQ_DEFAULT = r'''
 #include <stdlib.h>
 #include <math.h>
 #include <limits.h>
+#include <time.h>
 
 /*@ global @*/
+
+extern double getClock(); 
 
 int main(int argc, char *argv[])
 {
