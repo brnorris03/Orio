@@ -45,7 +45,7 @@ double getClock()
 #if !defined(__APPLE__)
 double getClock()
 {
-    timespec ts;
+    struct timespec ts;
     
     if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts) != 0) return -1;
     return (double)ts.tv_sec + ((double)ts.tv_nsec)*1.0e-9;
