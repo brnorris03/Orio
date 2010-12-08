@@ -49,6 +49,9 @@ class SemanticChecker:
                         
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             pass
+        
+        elif isinstance(stmt, orio.module.loop.ast.Comment):
+            pass
 
         else:
             err('orio.module.loop.submodule.regtile.semant internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)

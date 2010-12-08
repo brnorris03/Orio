@@ -36,8 +36,12 @@ tokens = reserved + [
     'LBRACKET', 'RBRACKET',
     'LBRACE', 'RBRACE',
     'COMMA', 'SEMI', 'COLON', 'PERIOD',
+    'LINECOMMENT'
     ]
 
+# Comments
+t_LINECOMMENT    = r'[\#!][^\n\r]*'
+      
 # operators
 t_PLUS             = r'\+'
 t_MINUS            = r'-'
@@ -145,8 +149,22 @@ def p_statement(p):
                  | selection_statement
                  | iteration_statement
                  | transformation_statement
+                 | line_comment
                  '''
     p[0] = p[1]
+    
+# line comment
+def p_line_comment(p):
+    'line_comment : LINECOMMENT'
+    p[0] = ast.Comment(p[1], p.lineno(1) + __start_line_no - 1)
+    
+#def p_optional_line_comment(p):
+#    '''optional_line_comment : line_comment
+#                            | empty
+#                            '''
+#    if p[1]: 
+#        p[0] = ast.Comment(p[1], p.lineno(1) + __start_line_no - 1)
+#    p[0] = None
     
 # expression-statement:
 def p_expression_statement(p):
@@ -604,6 +622,10 @@ def p_py_atom_2(p):
     'py_atom : LPAREN py_expression_list_opt RPAREN'
     p[0] = p[1] + p[2] + p[3]
 
+#def p_empty(p):
+#    'empty : '
+#    p[0] = None
+    
 #------------------------------------------------
 
 def getParser(start_line_no):
@@ -614,8 +636,8 @@ def getParser(start_line_no):
     __start_line_no = start_line_no
 
     # create the lexer and parser
-    lexer = tool.ply.lex.lex()
-    parser = tool.ply.yacc.yacc(method='LALR', debug=0)
+    lexer = tool.ply.lex.lex(debug=0, optimize=1)
+    parser = tool.ply.yacc.yacc(method='LALR', debug=0, optimize=1)
 
     # return the parser
     return parser

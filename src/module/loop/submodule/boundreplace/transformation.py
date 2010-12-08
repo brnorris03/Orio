@@ -160,6 +160,9 @@ class Transformation:
 
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return (stmt, [])
+        
+        elif isinstance(stmt, orio.module.loop.ast.Comment):
+            return (stmt, [])
 
         else:
             err('orio.module.loop.submodule.boundreplace.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)                                    

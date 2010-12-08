@@ -122,6 +122,9 @@ class Transformation:
         elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return tnode
         
+        elif isinstance(tnode, orio.module.loop.ast.Comment):
+            return tnode
+            
         else:
             err('orio.module.loop.submodule.regtile.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
 
@@ -573,7 +576,10 @@ class Transformation:
 
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return stmt
-
+        
+        elif isinstance(stmt, orio.module.loop.ast.Comment):
+            return stmt 
+        
         else:
             err('orio.module.loop.submodule.regtile.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
 
