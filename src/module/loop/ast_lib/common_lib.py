@@ -85,7 +85,10 @@ class CommonLib:
         
         elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return tnode
-        
+
+        elif isinstance(tnode, orio.module.loop.ast.Comment):
+            return tnode
+
         else:
             err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
         
@@ -129,6 +132,9 @@ class CommonLib:
         elif isinstance(exp, orio.module.loop.ast.NewAST):
             return False
         
+        elif isinstance(exp, orio.module.loop.ast.Comment):
+            return False
+
         else:
             err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % exp.__class__.__name__)
             
@@ -170,6 +176,9 @@ class CommonLib:
         elif isinstance(exp, orio.module.loop.ast.NewAST):
             return True
         
+        elif isinstance(exp, orio.module.loop.ast.Comment):
+            return False
+
         else:
             err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % exp.__class__.__name__)
             

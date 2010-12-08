@@ -135,6 +135,9 @@ class Transformation:
             
         elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return []
+        
+        elif isinstance(tnode, orio.module.loop.ast.Comment):
+            return tnode
 
         else:
             err('orio.module.loop.submodule.arrcopy.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
@@ -202,6 +205,9 @@ class Transformation:
             err('orio.module.loop.submodule.arrcopy.transformation internal error: unprocessed transform statement')
             
         elif isinstance(tnode, orio.module.loop.ast.NewAST):
+            return tnode
+        
+        elif isinstance(tnode, orio.module.loop.ast.Comment):
             return tnode
         
         else:
@@ -411,6 +417,9 @@ class Transformation:
             err('orio.module.loop.submodule.arrcopy.transformation internal error: unprocessed transform statement')
             
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
+            return (stmt, True, None, None)
+        
+        elif isinstance(stmt, orio.module.loop.ast.Comment):
             return (stmt, True, None, None)
 
         else:

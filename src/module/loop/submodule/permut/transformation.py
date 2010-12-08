@@ -93,6 +93,10 @@ class Transformation:
                         
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return []
+        
+        elif isinstance(stmt, orio.module.loop.ast.Comment):
+            return []
+            
 
         else:
             err('orio.module.loop.submodule.permut.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)

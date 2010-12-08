@@ -28,7 +28,10 @@ class ConstFolder:
 
         elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return tnode
-            
+        
+        elif isinstance(tnode, orio.module.loop.ast.Comment):
+            return tnode
+        
         else:
             err('orio.module.loop.ast_lib.constant_folder internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
 
@@ -66,9 +69,15 @@ class ConstFolder:
             err('orio.module.loop.ast_lib.constant_folder:%s: a constant folding is never applied to a transformation statement' %
                    stmt.line_no)
 
+        elif isinstance(stmt, orio.module.loop.ast.Comment):
+            return stmt
+        
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return stmt
-            
+         
+        elif isinstance(stmt, orio.module.loop.ast.Comment):
+            return stmt
+           
         else:
             err('orio.module.loop.ast_lib.constant_folder internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
         
@@ -349,6 +358,9 @@ class ConstFolder:
             return exp
         
         elif isinstance(exp, orio.module.loop.ast.NewAST):
+            return exp
+        
+        elif isinstance(exp, orio.module.loop.ast.Comment):
             return exp
 
         else:

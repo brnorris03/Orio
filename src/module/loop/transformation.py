@@ -55,6 +55,10 @@ class Transformation:
             stmt.stmt = self.__transformStmt(stmt.stmt)
             return stmt
 
+        elif isinstance(stmt, ast.Comment):
+            stmt.stmt = stmt
+            return stmt
+        
         elif isinstance(stmt, ast.TransformStmt):
 
             # transform the nested statement

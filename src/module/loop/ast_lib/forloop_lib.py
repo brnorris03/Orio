@@ -231,6 +231,9 @@ class ForLoopLib:
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return []
 
+        elif isinstance(stmt, orio.module.loop.ast.Comment):
+            return []
+
         else:
             err('orio.module.loop.ast_lib.forloop_lib internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
 
@@ -262,7 +265,10 @@ class ForLoopLib:
 
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             err('orio.module.loop.ast_lib.forloop_lib internal error: unprocessed transform statement')
-                        
+        
+        elif isinstance(stmt, orio.module.loop.ast.Comment):
+            return False
+                
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
             return False
 

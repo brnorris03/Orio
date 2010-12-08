@@ -80,7 +80,7 @@ class Transformation:
             return tnode
         
         elif isinstance(tnode, orio.module.loop.ast.FunCallExp):
-            tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
+            tnode.exp = self.__addIdentWithExp(tnode.exps, index_name, exp)
             tnode.args = [self.__addIdentWithExp(a, index_name, exp) for a in tnode.args]
             return tnode
 
@@ -100,6 +100,9 @@ class Transformation:
         elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return tnode
         
+        elif isinstance(tnode, orio.module.loop.ast.Comment):
+            return tnode  
+              
         else:
             err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
     

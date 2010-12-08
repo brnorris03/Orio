@@ -220,6 +220,19 @@ class ParenthExp(Exp):
         return ParenthExp(self.exp.replicate(), self.line_no)
         
 #-----------------------------------------------
+# Comments
+#-----------------------------------------------
+class Comment(AST):
+
+    def __init__(self, comment, line_no = ''):
+        AST.__init__(self,line_no)
+        self.text = comment
+
+    def replicate(self):
+        '''Replicates the comment node'''
+        return Comment(self.text, self.line_no)
+
+#-----------------------------------------------
 # Statement
 #-----------------------------------------------
 
