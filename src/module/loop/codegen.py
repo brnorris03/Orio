@@ -122,6 +122,12 @@ class CodeGen_C (CodeGen):
         elif isinstance(tnode, ast.ParenthExp):
             s += '(' + self.generate(tnode.exp, indent, extra_indent) + ')'
 
+        elif isinstance(tnode, ast.Comment):
+            s += indent
+            if tnode.text:
+                s += '/*' + tnode.text + '*/'
+            s += '\n'
+            
         elif isinstance(tnode, ast.ExpStmt):
             s += indent
             if tnode.exp:
@@ -307,6 +313,12 @@ class CodeGen_F(CodeGen):
 
         elif isinstance(tnode, ast.ParenthExp):
             s += '(' + self.generate(tnode.exp, indent, extra_indent) + ')'
+
+        elif isinstance(tnode, ast.Comment):
+            s += indent
+            if tnode.text:
+                s += '!' + tnode.text 
+            s += '\n'
 
         elif isinstance(tnode, ast.ExpStmt):
             s += indent
