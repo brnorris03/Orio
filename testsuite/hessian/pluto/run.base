@@ -1,6 +1,6 @@
 
 export OMP_NUM_THREADS=1
-icc -fast -parallel -I/usr/local/icc/include haxpy3.base.c -DREPS=4 -DSIZE=10000
+icc -fast -parallel -I/usr/local/icc/include haxpy3.base.c -DORIO_REPS=4 -DSIZE=10000
 ./a.out
 ./a.out
 rm a.out

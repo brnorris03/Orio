@@ -22,7 +22,7 @@ def runExp(ename, flag, src_file, libs, numthreads):
         i = random.randint(1,100000)
 
         # build the code
-        build_cmd = ('%s %s -DN=%s -DREPS=%s -o %s%s %s %s' %
+        build_cmd = ('%s %s -DN=%s -DORIO_REPS=%s -o %s%s %s %s' %
                      (CC, flag, n, reps, ename, i, src_file, libs))
         print '********************************'
         print build_cmd

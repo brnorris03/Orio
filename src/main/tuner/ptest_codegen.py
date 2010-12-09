@@ -293,6 +293,7 @@ class PerfTestCodeGen:
         prologue_code += ('%s();' % self.init_func_name) + '\n'
 
         # create code for the epilogue section
+        # TODO: Here we should put validation with original results
         epilogue_code = ''
 
         # get the performance-testing code

@@ -83,7 +83,7 @@ def myDiff(fname1, fname2):
 
 def checkCorrectness(optflag, arrtype):
     N=5000
-    compile_cmd = (('gcc -DDYNAMIC -O0 -DREPS=1 -DN=%s -DTEST atax.matlab.c -lm') % N)
+    compile_cmd = (('gcc -DDYNAMIC -O0 -DORIO_REPS=1 -DN=%s -DTEST atax.matlab.c -lm') % N)
     run_cmd = 'export OMP_NUM_THREADS=1; ./a.out'
     print '***********************'
     print compile_cmd
@@ -103,7 +103,7 @@ def checkCorrectness(optflag, arrtype):
         'atax.orio.par.c', 
         ]
     for fname in fnames:
-        compile_cmd = (('icc %s %s -openmp -DREPS=1 -DN=%s -DTEST %s -lm') % 
+        compile_cmd = (('icc %s %s -openmp -DORIO_REPS=1 -DN=%s -DTEST %s -lm') % 
                        (arrtype, optflag, N, fname))
         run_cmd = 'export OMP_NUM_THREADS=1; ./a.out'
         print '***********************'
@@ -146,7 +146,7 @@ if 1:
     reps = 10
     N = 10000
     N = 20000
-    flags = '-DREPS=%s -DN=%s' % (reps, N)
+    flags = '-DORIO_REPS=%s -DN=%s' % (reps, N)
 
     rtimes_matlab_static =[]
     rtimes_matlab_dynamic =[]
@@ -166,7 +166,7 @@ if 1:
         
     for N in range(2000,22000,2000):
         #rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -parallel' % OPTFLAG, 
-        flags = '-DREPS=%s -DN=%s' % (reps, N)
+        flags = '-DORIO_REPS=%s -DN=%s' % (reps, N)
         rtimes = runExp([8], 'icc %s -DDYNAMIC -parallel' % OPTFLAG, 
                     'atax.matlab.c', flags, '-lm')
         rtimes_matlab_dynamic.extend(rtimes)
@@ -180,7 +180,7 @@ if 1:
         
     for N in range(2000,22000,2000):
         #rtimes = runExp([1,2,3,4,5,6,7,8], 'icc %s -DDYNAMIC -openmp' % OPTFLAG,
-        flags = '-DREPS=%s -DN=%s' % (reps, N)
+        flags = '-DORIO_REPS=%s -DN=%s' % (reps, N)
         rtimes = runExp([8], 'icc %s -DDYNAMIC -openmp' % OPTFLAG,
                     'atax.orio.par.c', flags, '-lm')
         rtimes_orio_dynamic.extend(rtimes)
@@ -238,7 +238,7 @@ if 0:
         else:
             reps = 2
 
-        flags = '-DREPS=%s -DN=%s' % (reps, N)
+        flags = '-DORIO_REPS=%s -DN=%s' % (reps, N)
         
         if N <= 10000:
             rtimes = runExp([1], 'icc %s' % OPTFLAG, 'atax.matlab.c', flags, '-lm')
