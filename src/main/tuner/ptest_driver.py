@@ -42,7 +42,7 @@ class PerfTestDriver:
         else:
             self.src_name = self.__PTEST_FNAME + str(counter) + '.F90'
         self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
-        self.exe_name = self.__PTEST_FNAME + str(counter) + 'original.exe'
+        self.original_exe_name = self.__PTEST_FNAME + str(counter) + 'original.exe'
         
         self.timer_code = timing_code
 
