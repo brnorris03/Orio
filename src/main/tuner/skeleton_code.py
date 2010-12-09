@@ -78,9 +78,10 @@ int main(int argc, char *argv[])
   /*@ prologue @*/
 
   double orio_t_start, orio_t_end, orio_t, orio_t_min = (double)LONG_MAX;
+  double orio_times[ORIO_TIMES_ARRAY_SIZE];
   int orio_i;
 
-  for (orio_i=0; orio_i<REPS; orio_i++)
+  for (orio_i=0; orio_i<ORIO_REPS; orio_i++)
   {
     orio_t_start = getClock();
     
@@ -198,7 +199,7 @@ int main(int argc, char *argv[])
       int orio_i;
       mytimeinfo.testid = myid;
       strcpy(mytimeinfo.coord,"/*@ coordinate @*/");
-      for (orio_i=0; orio_i<REPS; orio_i++)
+      for (orio_i=0; orio_i<ORIO_REPS; orio_i++)
       {
         orio_t_start = getClock(); 
 
@@ -260,7 +261,7 @@ program main
 !@ prologue @!
     
     orio_min_time = X'7FF00000'   ! large number
-    do orio_i = 0, REPS-1
+    do orio_i = 1, ORIO_REPS
     
       orio_t_start = getClock()
     
@@ -348,7 +349,7 @@ program main
         mytimeinfo%testid = myid
         mytimeinfo%coord  = "!@ coordinate @!"
     
-        do orio_i = 1, REPS
+        do orio_i = 1, ORIO_REPS
     
           orio_t_start = MPI_Wtime()
     

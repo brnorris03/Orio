@@ -42,6 +42,7 @@ class PerfTestDriver:
         else:
             self.src_name = self.__PTEST_FNAME + str(counter) + '.F90'
         self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
+        self.exe_name = self.__PTEST_FNAME + str(counter) + 'original.exe'
         
         self.timer_code = timing_code
 
@@ -81,7 +82,7 @@ class PerfTestDriver:
         extra_compiler_opts = ''
         if self.tinfo.pcount_method == self.__PCOUNT_BGP:
             extra_compiler_opts += ' -DBGP_COUNTER'
-        extra_compiler_opts += ' -DREPS=%s' % self.tinfo.pcount_reps
+        extra_compiler_opts += ' -DORIO_REPS=%s' % self.tinfo.pcount_reps
             
         # compile the timing code (if needed)
         if not self.tinfo.timer_file: timer_file = 'timer_cpu.c'
@@ -98,9 +99,20 @@ class PerfTestDriver:
             if status or not os.path.exists(timer_objfile):
                 err('orio.main.tuner.ptest_driver:  failed to compile the timer code: "%s"' % cmd)
             
+        # compile the original code if needed
+        if not os.path.exists(self.original_exe_name):
+            cmd = ('%s %s -DORIGINAL -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+                                                        self.original_exe_name, self.src_name, 
+                                                        timer_objfile, self.tinfo.libs))
+            info(' compiling:\n\t' + cmd)
+            status = os.system(cmd)
+            if status:
+                err('orio.main.tuner.ptest_driver:  failed to compile the original version of the code: "%s"' % cmd)
+            
         # compile the testing code
         cmd = ('%s %s -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
-                                   self.exe_name, self.src_name, timer_objfile, self.tinfo.libs))
+                                         self.exe_name, self.src_name, 
+                                         timer_objfile, self.tinfo.libs))
         info(' compiling:\n\t' + cmd)
         status = os.system(cmd)
         if status:

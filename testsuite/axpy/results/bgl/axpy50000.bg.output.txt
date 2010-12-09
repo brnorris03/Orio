@@ -53,5 +53,5 @@
 
 ----- begin exhaustive search -----
  compiling:
-	mpixlc  -O3 -qstrict -lm -DREPS=10000 -o _annot_perftest3768.exe _annot_perftest3768.c
-error: failed to compile the testing code: "mpixlc  -O3 -qstrict -lm -DREPS=10000 -o _annot_perftest3768.exe _annot_perftest3768.c"
+	mpixlc  -O3 -qstrict -lm -DORIO_REPS=10000 -o _annot_perftest3768.exe _annot_perftest3768.c
+error: failed to compile the testing code: "mpixlc  -O3 -qstrict -lm -DORIO_REPS=10000 -o _annot_perftest3768.exe _annot_perftest3768.c"

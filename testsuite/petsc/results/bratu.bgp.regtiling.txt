@@ -20,14 +20,14 @@ using project 'pilot-norris'
 
 ----- begin exhaustive search -----
  compiling:
-	mpixlc  -O3 -qstrict -lm -DREPS=1000 -o _annot_perftest10051.exe _annot_perftest10051.c
+	mpixlc  -O3 -qstrict -lm -DORIO_REPS=1000 -o _annot_perftest10051.exe _annot_perftest10051.c
  running:
 	cqsub -n 64 -t 10 -q short  _annot_perftest10051.exe
 >>>> best coordinate found: [5, 0], cost: 6.04856e-05
 >>>> best coordinate found: [22, 0], cost: 6.02598e-05
 >>>> best coordinate found: [14, 1], cost: 5.9597e-05
  compiling:
-	mpixlc  -O3 -qstrict -lm -DREPS=1000 -o _annot_perftest10051.exe _annot_perftest10051.c
+	mpixlc  -O3 -qstrict -lm -DORIO_REPS=1000 -o _annot_perftest10051.exe _annot_perftest10051.c
  running:
 	cqsub -n 64 -t 10 -q short  _annot_perftest10051.exe
 >>>> best coordinate found: [4, 2], cost: 5.95761e-05

@@ -19,7 +19,7 @@ class TuningInfo:
 
         # unpack all information
         build_cmd, batch_cmd, status_cmd, num_procs, libs, cc, timer_file = build_info
-        pcount_method, pcount_reps, random_seed = pcount_info
+        pcount_method, pcount_reps, random_seed, timing_array_size = pcount_info
         search_algo, search_time_limit, search_total_runs, search_opts = search_info
         pparam_params, pparam_constraints = pparam_info
         iparam_params, iparam_constraints = iparam_info
@@ -40,6 +40,7 @@ class TuningInfo:
         self.pcount_reps = pcount_reps                 # default: 1
         #self.pcount_subreps = pcount_subreps           # mandatory subrepetitions (to enable timing of very small computations), default: 10
         self.random_seed = random_seed                 # default: None
+        self.timing_array_size = timing_array_size     # default an odd number >= pcount_reps
 
         # search arguments
         self.search_algo = search_algo                 # default: 'Exhaustive'
@@ -83,6 +84,7 @@ class TuningInfo:
         s += ' num-processors: %s \n' % self.num_procs
         s += ' perf-counting method: %s \n' % self.pcount_method
         s += ' perf-counting repetitions: %s \n' % self.pcount_reps
+        s += ' number of timing results to store: %s \n ' % self.timing_array_size
         s += ' timer routine file: %s \n' % self.timer_file
         s += ' search algorithm: %s \n' % self.search_algo
         s += ' search time limit: %s \n' % self.search_time_limit
@@ -257,11 +259,14 @@ class TuningInfoGen:
         METHOD = 'method'
         REPS = 'repetitions'
         RANDOM_SEED = 'random_seed'
+        TIMING_ARRAY_SIZE = 'timing_array_size'
 
         # all expected performance counting information
         pcount_method = None
         pcount_reps = None
         random_seed = None
+        timing_array_size = None
+        
 
         # iterate over each statement
         for stmt in stmt_seq:
@@ -281,7 +286,7 @@ class TuningInfoGen:
             _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
             
             # unknown argument name
-            if id_name not in (METHOD, REPS, RANDOM_SEED):
+            if id_name not in (METHOD, REPS, RANDOM_SEED, TIMING_ARRAY_SIZE):
                 err('orio.main.tspec.tune_info: %s: unknown performance counter argument: "%s"' % (id_line_no, id_name))
                 
 
@@ -299,6 +304,12 @@ class TuningInfoGen:
                     
                 pcount_reps = rhs
                 
+            elif id_name == TIMING_ARRAY_SIZE:
+                if not isinstance(rhs, int) or rhs <= 0:
+                    warn('orio.main.tspec.tune_info: %s: performance counting repetitions must be a positive integer' % rhs_line_no)
+                    
+                timing_array_size = rhs
+                
             # user-specified random seed (otherwhise non-repeatable value based on time is used)
             elif id_name == RANDOM_SEED:
                 if not isinstance(rhs, int):
@@ -306,7 +317,7 @@ class TuningInfoGen:
                 random_seed = rhs
         
         # return all performance counting information
-        return (pcount_method, pcount_reps, random_seed)
+        return (pcount_method, pcount_reps, random_seed, timing_array_size)
 
     #-----------------------------------------------------------
 
@@ -696,13 +707,15 @@ class TuningInfoGen:
 
             # performance counter definition
             elif dname == PERF_COUNTER:
-                pcount_method, pcount_reps, random_seed = self.__genPerfCounterInfo(body_stmt_seq, line_no)
+                pcount_method, pcount_reps, random_seed, timing_array_size = self.__genPerfCounterInfo(body_stmt_seq, line_no)
                 default_p_method, default_p_reps = pcount_info
                 if pcount_method == None:
                     pcount_method = default_p_method
                 if pcount_reps == None:
                     pcount_reps = default_p_reps
-                pcount_info = (pcount_method, pcount_reps, random_seed)
+                if not timing_array_size:
+                    timing_array_size = pcount_reps + (pcount_reps+1) % 2
+                pcount_info = (pcount_method, pcount_reps, random_seed, timing_array_size)
                 
             # search definition
             elif dname == SEARCH:
