@@ -16,7 +16,7 @@
 
 ----- begin exhaustive search -----
  compiling:
-	mpixlc  -O3 -qstrict -lm -DREPS=1000 -o _annot_perftest2154.exe _annot_perftest2154.c
+	mpixlc  -O3 -qstrict -lm -DORIO_REPS=1000 -o _annot_perftest2154.exe _annot_perftest2154.c
  running:
 	cqsub -n 64 -t 10 -q short  _annot_perftest2154.exe
 >>>> best coordinate found: [5, 0], cost: 7.07251e-05
@@ -24,7 +24,7 @@
 >>>> best coordinate found: [14, 1], cost: 6.97806e-05
 >>>> best coordinate found: [15, 1], cost: 6.97541e-05
  compiling:
-	mpixlc  -O3 -qstrict -lm -DREPS=1000 -o _annot_perftest2154.exe _annot_perftest2154.c
+	mpixlc  -O3 -qstrict -lm -DORIO_REPS=1000 -o _annot_perftest2154.exe _annot_perftest2154.c
  running:
 	cqsub -n 64 -t 10 -q short  _annot_perftest2154.exe
 >>>> best coordinate found: [6, 2], cost: 6.96938e-05

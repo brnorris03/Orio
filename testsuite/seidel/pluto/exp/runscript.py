@@ -70,7 +70,7 @@ def myDiff(fname1, fname2):
 def checkCorrectness(optflag = '-O0'):
     T=1
     N=512
-    compile_cmd = ('icc -O0 -DREPS=1 -DT=%s -DN=%s -DTEST -o base_test seidel.base.c -lm' % 
+    compile_cmd = ('icc -O0 -DORIO_REPS=1 -DT=%s -DN=%s -DTEST -o base_test seidel.base.c -lm' % 
                    (T, N))
     run_cmd = 'export OMP_NUM_THREADS=1; ./base_test'
     print '***********************'
@@ -91,7 +91,7 @@ def checkCorrectness(optflag = '-O0'):
         'seidel.pluto_orio.seq_par.c',
         ]
     for fname in fnames:
-        compile_cmd = (('icc %s -openmp -DREPS=1 -DT=%s -DN=%s -DTEST ' +
+        compile_cmd = (('icc %s -openmp -DORIO_REPS=1 -DT=%s -DN=%s -DTEST ' +
                         '-o opt_test %s -lm') % (optflag, T, N, fname))
         run_cmd = 'export OMP_NUM_THREADS=1; ./opt_test'
         print '***********************'
@@ -131,7 +131,7 @@ if 0:
     reps = 1
     T = 1024
     N = 1024
-    flags = '-DREPS=%s -DT=%s -DN=%s' % (reps, T, N)
+    flags = '-DORIO_REPS=%s -DT=%s -DN=%s' % (reps, T, N)
 
     rtimes_base_par = runExp([1,2,3,4], 'icc %s -parallel' % OPTFLAG, 
                              'seidel.base.c', 'base_par', flags, '-lm')
@@ -159,7 +159,7 @@ if 1:
     mflopss_pluto = []
     mflopss_orio = []
     for N in [256,512,1024,2048,4096]:
-        flags = '-DREPS=%s -DT=%s -DN=%s' % (reps, T, N)
+        flags = '-DORIO_REPS=%s -DT=%s -DN=%s' % (reps, T, N)
         rtimes_base = runExp([1], 'icc %s' % OPTFLAG, 
                              'seidel.base.c', 'base_seq', flags, '-lm')
         p = countFlops(T,N,rtimes_base)

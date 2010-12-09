@@ -61,7 +61,7 @@ tuner.
    The 'performance_counter' definition is used to denote the
    performance-counting technique. From the above example, the
    performance counting is repeated ten times. This is done by
-   providing -DREPS=10 compiler option.
+   providing -DORIO_REPS=10 compiler option.
 
 4. The search engine used for the exploration of the search space.
    Class: Search 

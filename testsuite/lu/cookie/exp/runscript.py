@@ -83,7 +83,7 @@ def myDiff(fname1, fname2):
 
 def checkCorrectness(optflag = '-O0'):
     N=500
-    compile_cmd = 'gcc -O0 -DREPS=1 -DN=%s -DTEST -o base_test lu.base.c -lm' % (N)
+    compile_cmd = 'gcc -O0 -DORIO_REPS=1 -DN=%s -DTEST -o base_test lu.base.c -lm' % (N)
     run_cmd = 'export OMP_NUM_THREADS=1; ./base_test'
     print '***********************'
     print compile_cmd
@@ -107,7 +107,7 @@ def checkCorrectness(optflag = '-O0'):
         'lu.orio.par.c',
         ]
     for fname in fnames:
-        compile_cmd = (('icc %s -openmp -DREPS=1 -DN=%s -DTEST -o opt_test %s -lm') % 
+        compile_cmd = (('icc %s -openmp -DORIO_REPS=1 -DN=%s -DTEST -o opt_test %s -lm') % 
                        (optflag, N, fname))
         run_cmd = 'export OMP_NUM_THREADS=1; ./opt_test'
         print '***********************'
@@ -146,7 +146,7 @@ checkCorrectness(OPTFLAG)
 if 1:
     reps = 1
     N = 4000
-    flags = '-DREPS=%s -DN=%s' % (reps, N)
+    flags = '-DORIO_REPS=%s -DN=%s' % (reps, N)
 
     mflopss_base = []
     mflopss_pluto_l1 = []
@@ -185,7 +185,7 @@ if 1:
     mflopss_orio_large = []
 
     for N in [125,250,500,1000,2000,4000,8000]:
-        flags = '-DREPS=%s -DN=%s' % (reps, N)
+        flags = '-DORIO_REPS=%s -DN=%s' % (reps, N)
         
         rtimes_base = runExp([1], 'icc %s' % OPTFLAG, 
                              'lu.base.c', 'base_seq', flags, '-lm')

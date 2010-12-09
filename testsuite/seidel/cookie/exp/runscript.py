@@ -84,7 +84,7 @@ def myDiff(fname1, fname2):
 def checkCorrectness(optflag = '-O0'):
     T=100
     N=500
-    compile_cmd = 'gcc -O0 -DREPS=1 -DT=%s -DN=%s -DTEST -o base_test seidel.base.c -lm' % (T,N)
+    compile_cmd = 'gcc -O0 -DORIO_REPS=1 -DT=%s -DN=%s -DTEST -o base_test seidel.base.c -lm' % (T,N)
     run_cmd = 'export OMP_NUM_THREADS=1; ./base_test'
     print '***********************'
     print compile_cmd
@@ -107,7 +107,7 @@ def checkCorrectness(optflag = '-O0'):
         'seidel.orio.par.c',
         ]
     for fname in fnames:
-        compile_cmd = (('icc %s -openmp -DREPS=1 -DT=%s -DN=%s -DTEST -o opt_test %s -lm') % 
+        compile_cmd = (('icc %s -openmp -DORIO_REPS=1 -DT=%s -DN=%s -DTEST -o opt_test %s -lm') % 
                        (optflag, T, N, fname))
         run_cmd = 'export OMP_NUM_THREADS=1; ./opt_test'
         print '***********************'
@@ -147,7 +147,7 @@ if 1:
     reps = 1
     T = 500
     N = 4000
-    flags = '-DREPS=%s -DT=%s -DN=%s' % (reps, T, N)
+    flags = '-DORIO_REPS=%s -DT=%s -DN=%s' % (reps, T, N)
 
     mflopss_base = []
     mflopss_pluto_l1 = []
@@ -186,7 +186,7 @@ if 1:
     mflopss_orio = []
 
     for N in [125,250,500,1000,2000,4000,8000]:
-        flags = '-DREPS=%s -DT=%s -DN=%s' % (reps, T, N)
+        flags = '-DORIO_REPS=%s -DT=%s -DN=%s' % (reps, T, N)
         
         #rtimes_base = runExp([1], 'icc %s' % OPTFLAG, 
         #                     'seidel.base.c', 'base_seq', flags, '-lm')

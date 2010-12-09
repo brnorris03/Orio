@@ -52,7 +52,7 @@
 
 ----- begin exhaustive search -----
  compiling:
-	mpixlc  -O3 -qstrict -lm -DREPS=10000 -o _annot_perftest11115.exe _annot_perftest11115.c
+	mpixlc  -O3 -qstrict -lm -DORIO_REPS=10000 -o _annot_perftest11115.exe _annot_perftest11115.c
  running:
 	cqsub -n 64 -t 10 -q short  _annot_perftest11115.exe
 >>>> best coordinate found: [13], cost: 2.54014e-06
