@@ -37,3 +37,5 @@
 	! check what the tolerance and max its should really be
 	hy_nriem = 30
 	hy_riemanTol = 1.E-4
+
+	numintcells5 = 100
