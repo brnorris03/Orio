@@ -19,6 +19,7 @@
     param U3[] = range(1,6);
     param U4[] = range(1,6);
     param U5[] = range(1,6);
+    param U6[] = range(1,6);
 
     param IVEC1[] = [True,False];
     param SCREP[] = [True,False];
@@ -160,7 +161,8 @@
 
         if (abs(pstar2[i]-pstar1[i]) <= hy_smallp) scrch1[i] = 0.0;
 
-        if (abs(scrch1[i]) < hy_smallu) {
+        if (abs(scrch1[i]) < hy_smallu) 
+        {
            delu2 = 0.0;
            scrch1[i] = 1.0;
         }

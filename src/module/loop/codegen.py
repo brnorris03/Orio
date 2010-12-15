@@ -336,7 +336,9 @@ class CodeGen_F(CodeGen):
             s += indent + 'if (' + self.generate(tnode.test, indent, extra_indent) + ') then \n'
             if isinstance(tnode.true_stmt, ast.CompStmt):
                 tstmt_s = self.generate(tnode.true_stmt, indent, extra_indent)
-                s += tstmt_s[tstmt_s.index('{'):]
+                # TODO: fix below cludge -- { is missing for some reason in some compound ifs
+                if tstmt_s.count('{') > 0: s += tstmt_s[tstmt_s.index('{'):]
+                else: s += tstmt_s
                 if tnode.false_stmt:
                     s = s[:-1] + ' else '
             else:
