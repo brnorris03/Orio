@@ -7,7 +7,7 @@ real(double), dimension (N) :: aux, game, gmin, gmax, gamfac, &
 
 real(double), dimension(2) :: hy_pstor
 
-real(double) ge, gc, hy_smallp, small_dp, hy_smallu, hy_nriem, &
+real(double) ge, gc, hy_smallp, small_dp, hy_smallu,  &
 				& ustrr1, ustrl1, ustrl2, delu1, delu2, hy_riemanTol, pres_err
 
-integer i, n, numintcells5
+integer i, n, numintcells5, hy_nriem
