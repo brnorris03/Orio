@@ -1,32 +1,11 @@
+real(double), dimension (N) :: aux, game, gmin, gmax, gamfac, &
+				& hy_gmelft, hy_gmergt, hy_gmclft, hy_gmcrgt, &
+				& pstar1, hy_prght, hy_plft, hy_crght, hy_clft, hy_ulft, hy_urght, &
+				& gmstrl, gmstrr, &
+				& scrch1, scrch2, wlft1, wrght1, hy_vright, hy_vlft, &
+				& hy_pstor, pstar2, wlft, wrght, pstar
 
-	call random_seed
-	aux(:) = 0.0
-	game(:) = 0.0
-	gmin(:) = 0.0
-	gmax(:) = 0.0
-	gamfac(:) = 0.0
-	pstar1(:) = 0.0
-	gmstrl(:) = 0.0
-	gmstrr(:) = 0.0
-	scrch1(:) = 0.0
-	scrch2(:) = 0.0
-	wlft1(:) = 0.0
-	wrght1(:) = 0.0
-	call random_number(hy_gmelft)
-	call random_number(hy_gmergt)
-	call random_number(hy_gmclft)
-	call random_number(hy_gmcrgt)
-	call random_number(hy_prght)
-	call random_number(hy_plft)
-	call random_number(hy_crght)
-	call random_number(hy_clft)
-	call random_number(hy_ulft)
-	call random_number(hy_urght)
-	call random_number(hy_vright)
-	call random_number(hy_vlft)
+real(double), dimension(2) :: hy_pstor
 
-	ge = 0.0
-	gc = 0.0
-	hy_small = 1.E-10
-
-real(double) ge, gc, hy_smallp
+real(double) ge, gc, hy_smallp, small_dp, hy_smallu, hy_nriem, &
+				& ustrl1, ustrl2, delu1, delu2, hy_riemanTol, pres_err
