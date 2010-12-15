@@ -13,7 +13,7 @@
 
   def performance_params 
   {
-    param Ri[] = [1,4,8];
+    param Rn[] = [1,4,8];
     param U1[] = range(1,6);
     param U2[] = range(1,6);
     param U3[] = range(1,6);
@@ -112,6 +112,99 @@
      pstar2[i] = max (hy_smallp, pstar2[i]);
   }
   
+  transform UnrollJam(ufactor=U6)
+  for (i = 5; i<=numIntCells5; i++) {
+
+     hy_pstor[1] = pstar1[i]
+     hy_pstor[2] = pstar2[i]
+
+  	transform Composite (
+  	scalarreplace = (SCREP, 'double'),
+  	regtile = (['n'],[Rn]),
+  	vector = (IVEC1, ['ivdep','vector always']))
+    for (n = 1; n<=hy_nriem; n++) {
+
+        ! new values for the gamma at the "star" state -- again, using CG Eq. 31
+
+        gmstrl[i] = gamfac[i] * (pstar2[i] - hy_plft[i])
+        gmstrl[i] = hy_gmelft[i] + 2.0 * gmstrl[i] / (pstar2[i] + hy_plft[i])
+
+        gmstrr[i] = gamfac[i] * (pstar2[i] - hy_prght[i])
+        gmstrr[i] = hy_gmergt[i] + 2.0 * gmstrr[i] / (pstar2[i] + hy_prght[i])
+
+        gmstrl[i] = max (gmin[i], min (gmax[i], gmstrl[i]))
+        gmstrr[i] = max (gmin[i], min (gmax[i], gmstrr[i]))
+
+        ! new nonlinear wave speeds, using CG Eq. 34 and the updated gammas
+
+        scrch1[i] = pstar2[i] - (gmstrl[i] - 1.0) * hy_plft[i] / (hy_gmelft[i] - 1.0)
+        if (scrch1[i] == 0.0) scrch1[i] = hy_smallp
+
+        wlft[i]   = pstar2[i] + 0.5 * (gmstrl[i] - 1.0) * (pstar2[i] + hy_plft[i])
+        wlft[i]   = (pstar2[i] - hy_plft[i]) * wlft[i] / (hy_vlft[i] * scrch1[i])
+        wlft[i]   = sqrt(abs(wlft[i]))
+
+        scrch2[i] = pstar2[i] - (gmstrr[i] - 1.0) * hy_prght[i] /(hy_gmergt[i] - 1.0)
+
+        if (scrch2[i] == 0.0) scrch2[i] = hy_smallp
+
+        wrght[i]  = pstar2[i] + 0.5 * (gmstrr[i] - 1.0) * (pstar2[i] + hy_prght[i])
+        wrght[i]  = (pstar2[i] - hy_prght[i]) * wrght[i] / (hy_vrght[i] * scrch2[i])
+        wrght[i]  = sqrt(abs(wrght[i]))
+
+        ! if the pressure jump is small, the wave speed is just the sound speed
+
+        if (abs (pstar2[i] - hy_plft[i]) < small_dp*(pstar2[i] + hy_plft[i]))
+        	wlft[i] = hy_clft[i]
+        wlft[i]  = max (wlft[i], aux[i] * hy_clft[i])
+
+        if (abs (pstar2[i] - hy_prght[i]) < small_dp*(pstar2[i] + hy_prght[i])) wrght[i] = hy_crght[i]
+        wrght[i] = max (wrght[i], aux[i] * hy_crght[i])
+
+        ! compute the velocities in the "star" state -- using CG Eq. 18 -- ustrl2 and
+        ! ustrr2 are the velocities they define there.  ustrl1 and ustrl2 seem to be
+        ! the velocities at the last time, since pstar1 is the old 'star' pressure, and
+        ! wlft1 is the old wave speed.
+
+        ustrl1    =  hy_ulft[i] - (pstar1[i] -  hy_plft[i]) /  wlft1[i]
+        ustrr1    = hy_urght[i] + (pstar1[i] - hy_prght[i]) / wrght1[i]
+        ustrl2    =  hy_ulft[i] - (pstar2[i] -  hy_plft[i]) /   wlft[i]
+        ustrr2    = hy_urght[i] + (pstar2[i] - hy_prght[i]) /  wrght[i]
+
+        delu1     = ustrl1 - ustrr1
+        delu2     = ustrl2 - ustrr2
+        scrch1[i] = delu2  - delu1
+
+        if (abs(pstar2[i]-pstar1[i]) <= hy_smallp) scrch1[i] = 0.0
+
+        if (abs(scrch1[i]) < hy_smallu) then
+           delu2 = 0.0
+           scrch1[i] = 1.0
+        endif
+
+        ! pressure at the "star" state -- using CG Eq. 18
+
+        pstar[i]  = pstar2[i] - delu2 * (pstar2[i] - pstar1[i]) / scrch1[i]
+        pstar[i]  = max (hy_smallp, pstar[i])
+
+        ! check for convergence of iteration, hy_riemanTol is a run-time parameter
+
+        pres_err = abs(pstar[i]-pstar2[i]) / pstar[i]
+        if (pres_err < hy_riemanTol) break;
+
+        ! reset variables for next iteration
+
+        pstar1[i] = pstar2[i]
+        pstar2[i] = pstar[i]
+        hy_pstor[n+2] = pstar[i]
+
+        wlft1[i]  = wlft[i]
+        wrght1[i] = wrght[i]
+
+     }
+  }
+
+
   ) @*/
 
   do i = 5, numIntCells5
