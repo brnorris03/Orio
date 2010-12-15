@@ -181,6 +181,8 @@
         wrght1[i] = wrght[i];
 
      }
+
+     if (pres_err >= hy_riemanTol) rieman_err(i);
   }
 
 
