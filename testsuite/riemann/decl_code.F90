@@ -3,9 +3,11 @@ real(double), dimension (N) :: aux, game, gmin, gmax, gamfac, &
 				& pstar1, hy_prght, hy_plft, hy_crght, hy_clft, hy_ulft, hy_urght, &
 				& gmstrl, gmstrr, &
 				& scrch1, scrch2, wlft1, wrght1, hy_vright, hy_vlft, &
-				& hy_pstor, pstar2, wlft, wrght, pstar
+				& pstar2, wlft, wrght, pstar
 
 real(double), dimension(2) :: hy_pstor
 
 real(double) ge, gc, hy_smallp, small_dp, hy_smallu, hy_nriem, &
-				& ustrl1, ustrl2, delu1, delu2, hy_riemanTol, pres_err
+				& ustrr1, ustrl1, ustrl2, delu1, delu2, hy_riemanTol, pres_err
+
+integer i, n, numintcells5
