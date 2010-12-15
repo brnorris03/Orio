@@ -25,7 +25,7 @@
 	call random_number(hy_clft)
 	call random_number(hy_ulft)
 	call random_number(hy_urght)
-	call random_number(hy_vright)
+	call random_number(hy_vrght)
 	call random_number(hy_vlft)
 
 	ge = 0.0
