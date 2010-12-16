@@ -238,7 +238,7 @@ class Comment(AST):
 
 class Stmt(AST):
 
-    def __init__(self, line_no = ''):
+    def __init__(self, line_no = '', label=None):
         '''Create a statement'''
         AST.__init__(self, line_no)
         self.label = None
@@ -248,6 +248,7 @@ class Stmt(AST):
     
     def getLabel(self):
         return self.label
+    
 
 #-----------------------------------------------
 # Expression Statement
@@ -255,7 +256,7 @@ class Stmt(AST):
 
 class ExpStmt(Stmt):
 
-    def __init__(self, exp, line_no = ''):
+    def __init__(self, exp, line_no = '', label=None):
         '''Create an expression statement'''
         Stmt.__init__(self, line_no)
         self.exp = exp         # may be null
@@ -265,7 +266,7 @@ class ExpStmt(Stmt):
         r_e = self.exp
         if r_e:
             r_e = r_e.replicate()
-        return ExpStmt(r_e, self.line_no)
+        return ExpStmt(r_e, self.line_no, self.label)
 
 class GotoStmt(Stmt):
     def __init__(self, target, line_no = ''):
@@ -275,7 +276,7 @@ class GotoStmt(Stmt):
 
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
-        return GotoStmt(self.target, self.line_no)
+        return GotoStmt(self.target, self.line_no, self.label)
      
 #-----------------------------------------------
 # Compound Statement
@@ -290,7 +291,7 @@ class CompStmt(Stmt):
 
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
-        return CompStmt([s.replicate() for s in self.stmts], self.line_no)
+        return CompStmt([s.replicate() for s in self.stmts], self.line_no, self.label)
     
 #-----------------------------------------------
 # If-Then-Else
@@ -310,7 +311,7 @@ class IfStmt(Stmt):
         f_s = self.false_stmt
         if f_s:
             f_s = f_s.replicate()
-        return IfStmt(self.test.replicate(), self.true_stmt.replicate(), f_s, self.line_no)
+        return IfStmt(self.test.replicate(), self.true_stmt.replicate(), f_s, self.line_no, self.label)
 
 #-----------------------------------------------
 # For Loop
@@ -337,7 +338,7 @@ class ForStmt(Stmt):
             r_t = r_t.replicate()
         if r_it:
             r_it = r_it.replicate()
-        return ForStmt(r_in, r_t, r_it, self.stmt.replicate(), self.line_no)
+        return ForStmt(r_in, r_t, r_it, self.stmt.replicate(), self.line_no, self.label)
 
 #-----------------------------------------------
 # Transformation
