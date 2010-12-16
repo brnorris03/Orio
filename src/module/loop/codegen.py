@@ -445,6 +445,7 @@ class CodeGen_F(CodeGen):
             s += '$pragma ' + str(tnode.pstring) + '\n'
 
         elif isinstance(tnode, ast.Container):
+            if tnode.getLabel(): s += tnode.getLabel() + ' '
             s += self.generate(tnode.ast, indent, extra_indent)
 
         else:
