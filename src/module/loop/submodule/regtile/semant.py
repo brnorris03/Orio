@@ -24,7 +24,10 @@ class SemanticChecker:
 
         if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             pass
-            
+        
+        if isinstance(stmt, orio.module.loop.ast.GotoStmt):
+            pass      
+              
         elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             for s in stmt.stmts:
                 self.__checkIdenticalNestedLoop(s, outer_loops)
