@@ -249,6 +249,34 @@ class Transformation:
                 return stmts[0]
             return orio.module.loop.ast.CompStmt(stmts)
         
+        elif isinstance(stmt, orio.module.loop.ast.GotoStmt):
+            # unroll this statement based on the given sequence of unroll factors
+            stmts = [stmt]
+            outer_unrolls_rev = outer_unrolls[:]
+            outer_unrolls_rev.reverse()
+            for iname, ufactor, stride_exp in outer_unrolls_rev:
+
+                # skip unroll factor of 1
+                if ufactor == 1:
+                    continue
+
+                # unroll this statement
+                n_stmts = []
+                for i in range(0, ufactor):
+                    it = orio.module.loop.ast.NumLitExp(i, orio.module.loop.ast.NumLitExp.INT)
+                    increment_exp = orio.module.loop.ast.BinOpExp(it,
+                                                             stride_exp.replicate(),
+                                                             orio.module.loop.ast.BinOpExp.MUL)
+                    increment_exp = self.cfolder.fold(increment_exp)
+                    n_stmts += [self.__addIdentWithExp(s.replicate(), iname, increment_exp) 
+                                for s in stmts]
+                stmts = n_stmts
+
+            if len(stmts) == 1:
+                return stmts[0]
+            return orio.module.loop.ast.CompStmt(stmts)
+
+        
         elif isinstance(stmt, orio.module.loop.ast.CompStmt):
 
             # unroll/jam this compound statement
