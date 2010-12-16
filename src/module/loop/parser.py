@@ -13,7 +13,7 @@ __start_line_no = 1
 #------------------------------------------------
 
 # reserved words
-reserved = ['IF', 'ELSE', 'FOR', 'TRANSFORM', 'NOT', 'AND', 'OR']
+reserved = ['IF', 'ELSE', 'FOR', 'TRANSFORM', 'NOT', 'AND', 'OR', 'GOTO']
 
 tokens = reserved + [
 
@@ -30,6 +30,7 @@ tokens = reserved + [
 
     # increment/decrement (++,--)
     'PLUSPLUS', 'MINUSMINUS',
+    
 
     # delimeters ( ) [ ] { } , ; :
     'LPAREN', 'RPAREN',
@@ -144,13 +145,27 @@ def p_statement_list_2(p):
     
 # statement:
 def p_statement(p):
-    '''statement : expression_statement
+    '''statement : labeled_statement
+                 | goto_statement
+                 | expression_statement
                  | compound_statement
                  | selection_statement
                  | iteration_statement
                  | transformation_statement
                  | line_comment
                  '''
+    p[0] = p[1]
+    
+# labeled statement (limited)
+def p_labeled_statement(p):
+    'labeled_statement : label COLON statement'
+    p[3].setLabel(p[1])
+    p[0] = p[3]
+
+def p_label(p):
+    '''label : ID 
+            | ICONST
+    '''
     p[0] = p[1]
     
 # line comment
@@ -170,6 +185,10 @@ def p_line_comment(p):
 def p_expression_statement(p):
     'expression_statement : expression_opt SEMI'
     p[0] = ast.ExpStmt(p[1], p.lineno(1) + __start_line_no - 1)
+    
+def p_goto_statement(p):
+    'goto_statement : GOTO label SEMI'
+    p[0] = ast.GotoStmt(p[2])
 
 # compound-statement:
 def p_compound_statement(p):
@@ -479,7 +498,27 @@ def p_argument_expression_list_2(p):
 
 # grammatical error
 def p_error(p):
-    err('orio.module.loop.parser: %s: grammatical error: "%s"' % ((p.lineno + __start_line_no - 1), p.value))
+
+    line,col = find_column(p.lexer.lexdata,p)
+    pos = (col-1)*' '
+    err("[orio.module.loop.parser] unexpected symbol '%s' at line %s, column %s:\n\t%s\n\t%s^" \
+        % (p.value, p.lexer.lineno, col, line, pos))
+   
+    #err('orio.module.loop.parser: %s: grammatical error: "%s"' % ((p.lineno + __start_line_no - 1), p.value))
+
+# Compute column. 
+#     input is the input text string
+#     token is a token instance
+def find_column(input,token):
+    i = token.lexpos
+    startline = input[:i].rfind('\n')
+    endline = startline + input[startline+1:].find('\n') 
+    line = input[startline+1:endline+1]
+    while i > 0:
+        if input[i] == '\n': break
+        i -= 1
+    column = (token.lexpos - i)
+    return line, column
 
 #------------------------------------------------
 

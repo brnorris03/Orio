@@ -129,11 +129,18 @@ class CodeGen_C (CodeGen):
             s += '\n'
             
         elif isinstance(tnode, ast.ExpStmt):
+            if tnode.getLabel(): s += tnode.getLabel() + ':'
             s += indent
             if tnode.exp:
                 s += self.generate(tnode.exp, indent, extra_indent)
             s += ';\n'
 
+        elif isinstance(tnode, ast.GotoStmt):
+            if tnode.getLabel(): s += tnode.getLabel() + ':'
+            s += indent
+            if tnode.target:
+                s += 'goto ' + tnode.target + ';\n'
+                
         elif isinstance(tnode, ast.CompStmt):
             s += indent + '{\n'
             for stmt in tnode.stmts:
@@ -141,6 +148,7 @@ class CodeGen_C (CodeGen):
             s += indent + '}\n'
 
         elif isinstance(tnode, ast.IfStmt):
+            if tnode.getLabel(): s += tnode.getLabel() + ':'
             s += indent + 'if (' + self.generate(tnode.test, indent, extra_indent) + ') '
             if isinstance(tnode.true_stmt, ast.CompStmt):
                 tstmt_s = self.generate(tnode.true_stmt, indent, extra_indent)
@@ -161,6 +169,7 @@ class CodeGen_C (CodeGen):
                     s += self.generate(tnode.false_stmt, indent + extra_indent, extra_indent)
 
         elif isinstance(tnode, ast.ForStmt):
+            if tnode.getLabel(): s += tnode.getLabel() + ':'
             s += indent + 'for ('
             if tnode.init:
                 s += self.generate(tnode.init, indent, extra_indent)
@@ -321,18 +330,27 @@ class CodeGen_F(CodeGen):
             s += '\n'
 
         elif isinstance(tnode, ast.ExpStmt):
+            if tnode.getLabel(): s += tnode.getLabel() + ' '
             s += indent
             if tnode.exp:
                 s += self.generate(tnode.exp, indent, extra_indent)
             s += '\n'
+            
+        elif isinstance(tnode, ast.GotoStmt):
+            if tnode.getLabel(): s += tnode.getLabel() + ' '
+            s += indent
+            if tnode.target:
+                s += 'goto ' + tnode.target + '\n'
 
         elif isinstance(tnode, ast.CompStmt):
             s += indent + '\n'
+            if tnode.getLabel(): s += tnode.getLabel() + ' '
             for stmt in tnode.stmts:
                 s += self.generate(stmt, indent + extra_indent, extra_indent)
             s += indent + '\n'
 
         elif isinstance(tnode, ast.IfStmt):
+            if tnode.getLabel(): s += tnode.getLabel() + ' '
             s += indent + 'if (' + self.generate(tnode.test, indent, extra_indent) + ') then \n'
             if isinstance(tnode.true_stmt, ast.CompStmt):
                 tstmt_s = self.generate(tnode.true_stmt, indent, extra_indent)
@@ -356,6 +374,7 @@ class CodeGen_F(CodeGen):
             s += indent + 'end if\n'
 
         elif isinstance(tnode, ast.ForStmt):
+            if tnode.getLabel(): s += tnode.getLabel() + ' '
             s += indent + 'do ' 
             if tnode.init:
                 s += self.generate(tnode.init, indent, extra_indent)
