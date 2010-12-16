@@ -56,7 +56,10 @@ class Transformation:
             if tnode.exp:
                 tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
             return tnode
-    
+        
+        elif isinstance(tnode, orio.module.loop.ast.GotoStmt):
+            return tnode    
+        
         elif isinstance(tnode, orio.module.loop.ast.CompStmt):
             tnode.stmts = [self.__addIdentWithExp(s, index_name, exp) for s in tnode.stmts]
             return tnode
