@@ -258,7 +258,7 @@ class ExpStmt(Stmt):
 
     def __init__(self, exp, line_no = '', label=None):
         '''Create an expression statement'''
-        Stmt.__init__(self, line_no)
+        Stmt.__init__(self, line_no, label)
         self.exp = exp         # may be null
 
     def replicate(self):
@@ -269,9 +269,9 @@ class ExpStmt(Stmt):
         return ExpStmt(r_e, self.line_no, self.label)
 
 class GotoStmt(Stmt):
-    def __init__(self, target, line_no = ''):
+    def __init__(self, target, line_no = '', label=None):
         '''Create an expression statement'''
-        Stmt.__init__(self, line_no)
+        Stmt.__init__(self, line_no, label)
         self.target = target
 
     def replicate(self):
@@ -284,9 +284,9 @@ class GotoStmt(Stmt):
 
 class CompStmt(Stmt):
 
-    def __init__(self, stmts, line_no = ''):
+    def __init__(self, stmts, line_no = '', label=None):
         '''Create a compound statement'''
-        Stmt.__init__(self, line_no)
+        Stmt.__init__(self, line_no, label)
         self.stmts = stmts
 
     def replicate(self):
@@ -299,9 +299,9 @@ class CompStmt(Stmt):
 
 class IfStmt(Stmt):
 
-    def __init__(self, test, true_stmt, false_stmt = None, line_no = ''):
+    def __init__(self, test, true_stmt, false_stmt = None, line_no = '', label=None):
         '''Create an if statement'''
-        Stmt.__init__(self, line_no)
+        Stmt.__init__(self, line_no, label)
         self.test = test
         self.true_stmt = true_stmt
         self.false_stmt = false_stmt           # may be null
@@ -319,9 +319,9 @@ class IfStmt(Stmt):
 
 class ForStmt(Stmt):
 
-    def __init__(self, init, test, iter, stmt, line_no = ''):
+    def __init__(self, init, test, iter, stmt, line_no = '', label=None):
         '''Create a for-loop statement'''
-        Stmt.__init__(self, line_no)
+        Stmt.__init__(self, line_no, label)
         self.init = init      # may be null
         self.test = test      # may be null
         self.iter = iter      # may be null
@@ -346,9 +346,9 @@ class ForStmt(Stmt):
 
 class TransformStmt(Stmt):
 
-    def __init__(self, name, args, stmt, line_no = ''):
+    def __init__(self, name, args, stmt, line_no = '', label=None):
         '''Create a transformation statement'''
-        Stmt.__init__(self, line_no)
+        Stmt.__init__(self, line_no, label)
         self.name = name
         self.args = args
         self.stmt = stmt
