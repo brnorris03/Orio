@@ -34,7 +34,10 @@ class Transformation:
             if tnode.exp:
                 tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
             return tnode
-    
+ 
+        if isinstance(tnode, orio.module.loop.ast.GotoStmt):
+            return tnode
+            
         elif isinstance(tnode, orio.module.loop.ast.CompStmt):
             tnode.stmts = [self.__addIdentWithExp(s, index_name, exp) for s in tnode.stmts]
             return tnode
@@ -80,7 +83,7 @@ class Transformation:
             return tnode
         
         elif isinstance(tnode, orio.module.loop.ast.FunCallExp):
-            tnode.exp = self.__addIdentWithExp(tnode.exps, index_name, exp)
+            tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
             tnode.args = [self.__addIdentWithExp(a, index_name, exp) for a in tnode.args]
             return tnode
 

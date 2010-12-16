@@ -40,6 +40,9 @@ class Transformation:
  
         if isinstance(stmt, ast.ExpStmt):
             return stmt
+        
+        if isinstance(stmt, ast.GotoStmt):
+            return stmt
 
         elif isinstance(stmt, ast.CompStmt):
             stmt.stmts = [self.__transformStmt(s) for s in stmt.stmts]

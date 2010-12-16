@@ -241,6 +241,13 @@ class Stmt(AST):
     def __init__(self, line_no = ''):
         '''Create a statement'''
         AST.__init__(self, line_no)
+        self.label = None
+    
+    def setLabel(self, label):
+        self.label = label
+    
+    def getLabel(self):
+        return self.label
 
 #-----------------------------------------------
 # Expression Statement
@@ -260,6 +267,16 @@ class ExpStmt(Stmt):
             r_e = r_e.replicate()
         return ExpStmt(r_e, self.line_no)
 
+class GotoStmt(Stmt):
+    def __init__(self, target, line_no = ''):
+        '''Create an expression statement'''
+        Stmt.__init__(self, line_no)
+        self.target = target
+
+    def replicate(self):
+        '''Replicate this abstract syntax tree node'''
+        return GotoStmt(self.target, self.line_no)
+     
 #-----------------------------------------------
 # Compound Statement
 #-----------------------------------------------

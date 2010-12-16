@@ -44,6 +44,9 @@ class ConstFolder:
             stmt.exp = self.__constantFoldExp(stmt.exp)
             return stmt
 
+        if isinstance(stmt, orio.module.loop.ast.GotoStmt):
+            return stmt
+        
         elif isinstance(stmt, orio.module.loop.ast.CompStmt):
             stmt.stmts = [self.__constantFoldStmt(s) for s in stmt.stmts]
             return stmt
