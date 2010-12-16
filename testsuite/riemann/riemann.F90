@@ -3,7 +3,7 @@
   { 
     #arg build_command = 'icc -O3 -openmp -I/usr/local/icc/include -lm'; 
     arg build_command = 'gfortran  -O3';
-    arg libs = '-lm';
+    arg libs = '-lm -lrt';
   } 
     
   def performance_counter          
@@ -171,7 +171,7 @@
         pstar[i]  = max (hy_smallp, pstar[i]);
 
         pres_err = abs(pstar[i]-pstar2[i]) / pstar[i];
-        if (pres_err < hy_riemanTol) break;
+        if (pres_err < hy_riemanTol) goto 10;
 
         pstar1[i] = pstar2[i];
         pstar2[i] = pstar[i];
@@ -182,7 +182,7 @@
 
      }
 
-     if (pres_err >= hy_riemanTol) rieman_err(i);
+10:     if (pres_err >= hy_riemanTol) rieman_err(i);
   }
 
 
