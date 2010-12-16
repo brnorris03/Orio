@@ -52,13 +52,13 @@ class Transformation:
         if isinstance(exp, orio.module.loop.ast.NumLitExp) and exp.val == 0:
             return tnode
         
-        if isinstance(tnode, orio.module.loop.ast.ExpStmt):
+        elif isinstance(tnode, orio.module.loop.ast.ExpStmt):
             if tnode.exp:
                 tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
             return tnode
         
         elif isinstance(tnode, orio.module.loop.ast.GotoStmt):
-            return tnode    
+            return tnode
         
         elif isinstance(tnode, orio.module.loop.ast.CompStmt):
             tnode.stmts = [self.__addIdentWithExp(s, index_name, exp) for s in tnode.stmts]
