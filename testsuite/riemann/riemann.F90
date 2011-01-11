@@ -20,6 +20,9 @@
     param U4[] = range(1,6);
     param U5[] = range(1,6);
     param U6[] = range(1,6);
+    param U7[] = range(1,6);
+    param U8[] = range(1,6);
+    param U9[] = range(1,6);
 
     param IVEC1[] = [True,False];
     param SCREP[] = [True,False];
@@ -184,6 +187,97 @@
      }
      n = n - 1;
 
+  }
+
+  transform UnrollJam(ufactor=U7)
+  for (i = 5; i<=numIntCells5; i++) {
+
+     scrch3[i] = hy_ulft [i] - (pstar[i] -  hy_plft[i]) /  wlft[i];
+     scrch4[i] = hy_urght[i] + (pstar[i] - hy_prght[i]) / wrght[i];
+     ustar[i]  = 0.5e0 * (scrch3[i] + scrch4[i]);
+
+     urell[i]   = ustar[i] - ugrdl[i];
+     scrch1[i]  = sign (1.e0, urell[i]);
+
+     scrch2[i] = 0.5e0 * ( 1.e0 + scrch1[i]);
+     scrch3[i] = 0.5e0 * ( 1.e0 - scrch1[i]);
+
+     ps[i]    = hy_plft[i]   * scrch2[i] + hy_prght[i]  * scrch3[i];
+     us[i]    = hy_ulft[i]   * scrch2[i] + hy_urght[i]  * scrch3[i];
+     uts[i]   = hy_utlft[i]  * scrch2[i] + hy_utrght[i] * scrch3[i];
+     utts[i]  = hy_uttlft[i] * scrch2[i] + hy_uttrgt[i] * scrch3[i];
+     vs[i]    = hy_vlft[i]   * scrch2[i] + hy_vrght[i]  * scrch3[i];
+     games[i] = hy_gmelft[i] * scrch2[i] + hy_gmergt[i] * scrch3[i];
+     gamcs[i] = hy_gmclft[i] * scrch2[i] + hy_gmcrgt[i] * scrch3[i];
+
+     rhos[i]  = 1.e0 / vs[i];
+     rhos[i]  = max (hy_smlrho, rhos[i]);
+
+     vs[i]    = 1.e0 / rhos[i;
+     ws[i]    = wlft[i] * scrch2[i] + wrght[i] * scrch3[i];
+     ces[i]   = sqrt (gamcs[i] * ps[i] * vs[i]);
+
+     vstar[i]  = vs[i] - (pstar[i] - ps[i]) / ws[i] / ws[i]);
+     rhostr[i] = 1.e0 / vstar[i];
+     cestar[i] = sqrt (gamcs[i] * pstar[i] * vstar[i]);
+
+     wes[i]    = ces[i]    - scrch1[i] * us[i];
+     westar[i] = cestar[i] - scrch1[i] * ustar[i];
+
+     scrch4[i] = ws[i] * vs[i] - scrch1[i] * us[i];
+
+
+     if (pstar[i] - ps[i] > 0.0) {
+        wes[i]    = scrch4[i];
+        westar[i] = scrch4[i];
+     }
+
+     wes[i]    = wes[i]    + scrch1[i] * ugrdl[i];
+     westar[i] = westar[i] + scrch1[i] * ugrdl[i];
+
+     gamfac[i] = (1.e0 - games[i] / gamcs[i]) * (games[i] - 1.e0);
+     gmstar[i] = gamfac[i] * (pstar[i] - ps[i]);
+     gmstar[i] = games[i] + 2.e0 * gmstar[i] / (pstar[i] + ps[i]);
+     gmstar[i] = max (gmin[i], min (gmax[i], gmstar[i]));
+  }
+
+  transform UnrollJam(ufactor=U8)
+  for (i = 5; i<=numIntCells5; i++) {
+  	for (n = 1; n<=hy_numXn; n++) {
+        xnav[i][n] = hy_xnlft[i][n] * scrch2[i] + hy_xnrght[i][n] * scrch3[i];
+	 }
+  }
+
+  transform UnrollJam(ufactor=U9)
+  for (i = 5; i<=numIntCells5; i++) {
+     scrch1[i] = max (wes[i] - westar[i], wes[i] + westar[i], hy_smallu);
+     scrch1[i] =     (wes[i] + westar[i]) / scrch1[i];
+
+     scrch1[i] = 0.5e0 * (1.e0 + scrch1[i]);
+     scrch2[i] =          1.e0 - scrch1[i];
+
+     rhoav[i]  = scrch1[i] * rhostr[i] + scrch2[i] * rhos [i];
+     uav  [i]  = scrch1[i] * ustar[i]  + scrch2[i] * us[i];
+     utav [i]  = uts[i];
+     uttav[i]  = utts[i];
+     pav   [i] = scrch1[i] * pstar[i]  + scrch2[i] * ps[i];
+     gameav[i] = scrch1[i] * gmstar[i] + scrch2[i] * games[i];
+
+     if (westar[i] > 0.0) {
+        rhoav[i]  = rhostr[i];
+        uav[i]    = ustar[i];
+        pav[i]    = pstar[i];
+        gameav[i] = gmstar[i];
+     }
+
+     if (wes[i] < 0.0) {
+        rhoav[i]  = rhos[i];
+        uav[i]    = us[i];
+        pav[i]    = ps[i];
+        gameav[i] = games[i];
+     }
+
+     urell[i] = uav[i] - ugrdl[i];
   }
 
 
