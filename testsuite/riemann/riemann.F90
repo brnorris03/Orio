@@ -118,71 +118,70 @@
   	regtile = (['n'],[Rn]),
   	vector = (IVEC1, ['ivdep','vector always']))
     for (n = 1; n<=hy_nriem; n++) {
+		if (pres_err >= hy_riemanTol) rieman_err(i);
+		if (pres_err < hy_riemanTol) {
+	        gmstrl[i] = gamfac[i] * (pstar2[i] - hy_plft[i]);
+	        gmstrl[i] = hy_gmelft[i] + 2.0 * gmstrl[i] / (pstar2[i] + hy_plft[i]);
 
-        gmstrl[i] = gamfac[i] * (pstar2[i] - hy_plft[i]);
-        gmstrl[i] = hy_gmelft[i] + 2.0 * gmstrl[i] / (pstar2[i] + hy_plft[i]);
+	        gmstrr[i] = gamfac[i] * (pstar2[i] - hy_prght[i]);
+	        gmstrr[i] = hy_gmergt[i] + 2.0 * gmstrr[i] / (pstar2[i] + hy_prght[i]);
 
-        gmstrr[i] = gamfac[i] * (pstar2[i] - hy_prght[i]);
-        gmstrr[i] = hy_gmergt[i] + 2.0 * gmstrr[i] / (pstar2[i] + hy_prght[i]);
+	        gmstrl[i] = max (gmin[i], min (gmax[i], gmstrl[i]));
+	        gmstrr[i] = max (gmin[i], min (gmax[i], gmstrr[i]));
 
-        gmstrl[i] = max (gmin[i], min (gmax[i], gmstrl[i]));
-        gmstrr[i] = max (gmin[i], min (gmax[i], gmstrr[i]));
+	        scrch1[i] = pstar2[i] - (gmstrl[i] - 1.0) * hy_plft[i] / (hy_gmelft[i] - 1.0);
+	        if (scrch1[i] == 0.0) scrch1[i] = hy_smallp;
 
-        scrch1[i] = pstar2[i] - (gmstrl[i] - 1.0) * hy_plft[i] / (hy_gmelft[i] - 1.0);
-        if (scrch1[i] == 0.0) scrch1[i] = hy_smallp;
+	        wlft[i]   = pstar2[i] + 0.5 * (gmstrl[i] - 1.0) * (pstar2[i] + hy_plft[i]);
+	        wlft[i]   = (pstar2[i] - hy_plft[i]) * wlft[i] / (hy_vlft[i] * scrch1[i]);
+	        wlft[i]   = sqrt(abs(wlft[i]));
 
-        wlft[i]   = pstar2[i] + 0.5 * (gmstrl[i] - 1.0) * (pstar2[i] + hy_plft[i]);
-        wlft[i]   = (pstar2[i] - hy_plft[i]) * wlft[i] / (hy_vlft[i] * scrch1[i]);
-        wlft[i]   = sqrt(abs(wlft[i]));
+	        scrch2[i] = pstar2[i] - (gmstrr[i] - 1.0) * hy_prght[i] /(hy_gmergt[i] - 1.0);
 
-        scrch2[i] = pstar2[i] - (gmstrr[i] - 1.0) * hy_prght[i] /(hy_gmergt[i] - 1.0);
+	        if (scrch2[i] == 0.0) scrch2[i] = hy_smallp;
 
-        if (scrch2[i] == 0.0) scrch2[i] = hy_smallp;
+	        wrght[i]  = pstar2[i] + 0.5 * (gmstrr[i] - 1.0) * (pstar2[i] + hy_prght[i]);
+	        wrght[i]  = (pstar2[i] - hy_prght[i]) * wrght[i] / (hy_vrght[i] * scrch2[i]);
+	        wrght[i]  = sqrt(abs(wrght[i]));
 
-        wrght[i]  = pstar2[i] + 0.5 * (gmstrr[i] - 1.0) * (pstar2[i] + hy_prght[i]);
-        wrght[i]  = (pstar2[i] - hy_prght[i]) * wrght[i] / (hy_vrght[i] * scrch2[i]);
-        wrght[i]  = sqrt(abs(wrght[i]));
+	        if (abs (pstar2[i] - hy_plft[i]) < small_dp*(pstar2[i] + hy_plft[i]))
+	        	wlft[i] = hy_clft[i];
+	        wlft[i]  = max (wlft[i], aux[i] * hy_clft[i]);
 
-        if (abs (pstar2[i] - hy_plft[i]) < small_dp*(pstar2[i] + hy_plft[i]))
-        	wlft[i] = hy_clft[i];
-        wlft[i]  = max (wlft[i], aux[i] * hy_clft[i]);
+	        if (abs (pstar2[i] - hy_prght[i]) < small_dp*(pstar2[i] + hy_prght[i])) wrght[i] = hy_crght[i];
+	        wrght[i] = max (wrght[i], aux[i] * hy_crght[i]);
 
-        if (abs (pstar2[i] - hy_prght[i]) < small_dp*(pstar2[i] + hy_prght[i])) wrght[i] = hy_crght[i];
-        wrght[i] = max (wrght[i], aux[i] * hy_crght[i]);
+	        ustrl1    =  hy_ulft[i] - (pstar1[i] -  hy_plft[i]) /  wlft1[i];
+	        ustrr1    = hy_urght[i] + (pstar1[i] - hy_prght[i]) / wrght1[i];
+	        ustrl2    =  hy_ulft[i] - (pstar2[i] -  hy_plft[i]) /   wlft[i];
+	        ustrr2    = hy_urght[i] + (pstar2[i] - hy_prght[i]) /  wrght[i];
 
-        ustrl1    =  hy_ulft[i] - (pstar1[i] -  hy_plft[i]) /  wlft1[i];
-        ustrr1    = hy_urght[i] + (pstar1[i] - hy_prght[i]) / wrght1[i];
-        ustrl2    =  hy_ulft[i] - (pstar2[i] -  hy_plft[i]) /   wlft[i];
-        ustrr2    = hy_urght[i] + (pstar2[i] - hy_prght[i]) /  wrght[i];
+	        delu1     = ustrl1 - ustrr1;
+	        delu2     = ustrl2 - ustrr2;
+	        scrch1[i] = delu2  - delu1;
 
-        delu1     = ustrl1 - ustrr1;
-        delu2     = ustrl2 - ustrr2;
-        scrch1[i] = delu2  - delu1;
+	        if (abs(pstar2[i]-pstar1[i]) <= hy_smallp) scrch1[i] = 0.0;
 
-        if (abs(pstar2[i]-pstar1[i]) <= hy_smallp) scrch1[i] = 0.0;
+	        if (abs(scrch1[i]) < hy_smallu)
+	        {
+	           delu2 = 0.0;
+	           scrch1[i] = 1.0;
+	        }
 
-        if (abs(scrch1[i]) < hy_smallu) 
-        {
-           delu2 = 0.0;
-           scrch1[i] = 1.0;
-        }
+	        pstar[i]  = pstar2[i] - delu2 * (pstar2[i] - pstar1[i]) / scrch1[i];
+	        pstar[i]  = max (hy_smallp, pstar[i]);
 
-        pstar[i]  = pstar2[i] - delu2 * (pstar2[i] - pstar1[i]) / scrch1[i];
-        pstar[i]  = max (hy_smallp, pstar[i]);
+	        pres_err = abs(pstar[i]-pstar2[i]) / pstar[i];
 
-        pres_err = abs(pstar[i]-pstar2[i]) / pstar[i];
-        if (pres_err < hy_riemanTol) goto 10;
+	        pstar1[i] = pstar2[i];
+	        pstar2[i] = pstar[i];
+	        hy_pstor[n+2] = pstar[i];
 
-        pstar1[i] = pstar2[i];
-        pstar2[i] = pstar[i];
-        hy_pstor[n+2] = pstar[i];
-
-        wlft1[i]  = wlft[i];
-        wrght1[i] = wrght[i];
-
+	        wlft1[i]  = wlft[i];
+	        wrght1[i] = wrght[i];
+		}
      }
 
-10:     if (pres_err >= hy_riemanTol) rieman_err(i);
   }
 
 
