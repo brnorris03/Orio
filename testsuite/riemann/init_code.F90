@@ -15,6 +15,7 @@
 	pstar2(:) = 0.0
 	pstar(:) = 0.0
 	hy_pstor(:) = 0.0
+    pres_err = 0.0
 	call random_number(hy_gmelft)
 	call random_number(hy_gmergt)
 	call random_number(hy_gmclft)
