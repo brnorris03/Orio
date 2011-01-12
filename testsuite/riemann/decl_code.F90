@@ -10,7 +10,7 @@ real(double), dimension (N) :: aux, game, gmin, gmax, gamfac, &
 
 real(double), dimension(2) :: hy_pstor
 
-real(double) ge, gc, hy_smallp, small_dp, hy_smallu, hy_smlrho  &
+real(double) ge, gc, hy_smallp, small_dp, hy_smallu, hy_smlrho,  &
 				& ustrr1, ustrr2, ustrl1, ustrl2, delu1, delu2, hy_riemanTol, pres_err
 
 
