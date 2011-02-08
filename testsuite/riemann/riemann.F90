@@ -37,7 +37,7 @@
    
   def input_params 
   {
-    param N[] = [100];
+    param N[] = [1000];
   }
 
   def input_vars
@@ -213,11 +213,11 @@
      rhos[i]  = 1.e0 / vs[i];
      rhos[i]  = max (hy_smlrho, rhos[i]);
 
-     vs[i]    = 1.e0 / rhos[i;
+     vs[i]    = 1.e0 / rhos[i];
      ws[i]    = wlft[i] * scrch2[i] + wrght[i] * scrch3[i];
      ces[i]   = sqrt (gamcs[i] * ps[i] * vs[i]);
 
-     vstar[i]  = vs[i] - (pstar[i] - ps[i]) / ws[i] / ws[i]);
+     vstar[i]  = vs[i] - (pstar[i] - ps[i]) / ws[i] / ws[i];
      rhostr[i] = 1.e0 / vstar[i];
      cestar[i] = sqrt (gamcs[i] * pstar[i] * vstar[i]);
 
