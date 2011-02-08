@@ -5,8 +5,9 @@ real(double), dimension (N) :: aux, game, gmin, gmax, gamfac, &
 				& scrch1, scrch2, wlft1, wrght1, hy_vrght, hy_vlft, &
 				& pstar2, wlft, wrght, pstar, &
 				& scrch3, scrch4, ustar, urell, ugrdl, &
-				& ps, us, uts, utts, hy_utlft, hy_utrght, hy_uttlft, hy_uttrigt, &
-				& vs, ws, games, gamcs, rhos, ces, vstar, rhostr, cestar, wes
+				& ps, us, uts, utts, hy_utlft, hy_utrght, hy_uttlft, hy_uttrgt, &
+				& vs, ws, games, gamcs, rhos, ces, vstar, rhostr, cestar, wes, &
+				& westar, gmstar,
 
 real(double), dimension(2) :: hy_pstor
 
@@ -14,7 +15,7 @@ real(double) ge, gc, hy_smallp, small_dp, hy_smallu, hy_smlrho,  &
 				& ustrr1, ustrr2, ustrl1, ustrl2, delu1, delu2, hy_riemanTol, pres_err
 
 
-integer i, n, numintcells5, hy_nriem
+integer i, n, numintcells5, hy_nriem, hy_numXn
 
 
 #define rieman_err(i) n = n - 1
