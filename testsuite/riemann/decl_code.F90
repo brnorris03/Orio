@@ -7,7 +7,7 @@ real(double), dimension (N) :: aux, game, gmin, gmax, gamfac, &
 				& scrch3, scrch4, ustar, urell, ugrdl, &
 				& ps, us, uts, utts, hy_utlft, hy_utrght, hy_uttlft, hy_uttrgt, &
 				& vs, ws, games, gamcs, rhos, ces, vstar, rhostr, cestar, wes, &
-				& westar, gmstar,
+				& westar, gmstar
 
 real(double), dimension(2) :: hy_pstor
 

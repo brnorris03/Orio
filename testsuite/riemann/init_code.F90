@@ -27,7 +27,7 @@
 	hy_utlft(:) = 0.0
 	hy_utrght(:) = 0.0
 	hy_uttlft(:) = 0.0
-	hy_uttrigt(:) = 0.0
+	hy_uttrgt(:) = 0.0
 	vs(:) = 0.0
 	ws(:) = 0.0
 	games(:) = 0.0
@@ -41,6 +41,7 @@
 
     pres_err = 0.0
 
+	! Inputs
 	call random_number(hy_gmelft)
 	call random_number(hy_gmergt)
 	call random_number(hy_gmclft)
