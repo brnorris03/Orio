@@ -53,6 +53,7 @@
 	call random_number(hy_urght)
 	call random_number(hy_vrght)
 	call random_number(hy_vlft)
+	call random_number(hy_numXn)
 
 	ge = 0.0
 	gc = 0.0
