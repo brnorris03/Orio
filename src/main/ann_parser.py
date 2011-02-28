@@ -120,7 +120,7 @@ class AnnParser:
 
                 # if a trailer annotation
                 else:
-                    err('orio.main.ann_parser: %s: no matching leader annotation exists' % code_line_no)
+                    err('orio.main.ann_parser: %s: no matching leader annotation exists in \n%s' % (code_line_no,code))
 
             # if a non-annotation
             else:

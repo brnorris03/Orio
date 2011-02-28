@@ -405,6 +405,7 @@ class PerfTestSkeletonCode:
     __PROLOGUE_TAG = r'/\*@\s*prologue\s*@\*/'
     __EPILOGUE_TAG = r'/\*@\s*epilogue\s*@\*/'
     __TCODE_TAG = r'/\*@\s*tested\s+code\s*@\*/'
+    __VALIDATION_TAG = r'/\*@\s*validation\s+code\s*@\*/'
     __COORD_TAG = r'/\*@\s*coordinate\s*@\*/'
     __BEGIN_SWITCHBODY_TAG = r'/\*@\s*begin\s+switch\s+body\s*@\*/'
     __END_SWITCHBODY_TAG = r'/\*@\s*end\s+switch\s+body\s*@\*/'
@@ -447,6 +448,10 @@ class PerfTestSkeletonCode:
         if not match_obj:
             err('main.tuner.skeleton_code:  missing "tested code" tag in the skeleton code')
 
+        match_obj = re.search(self.__VALIDATION_TAG, code)
+        if not match_obj:
+            err('main.tuner.skeleton_code:  missing "validation code" tag in the skeleton code')
+
         match_obj = re.search(self.__COORD_TAG, code)
         if not match_obj:
             err('main.tuner.skeleton_code:  missing "coordinate" tag in the skeleton code')
@@ -470,6 +475,10 @@ class PerfTestSkeletonCode:
             match_obj = re.search(self.__TCODE_TAG, switch_body_code)
             if not match_obj:
                 err('main.tuner.skeleton_code:  missing "tested code" tag in the switch body statement')
+            
+            match_obj = re.search(self.__VALIDATION_TAG, switch_body_code)
+            if not match_obj:
+                err('main.tuner.skeleton_code:  missing "validation code" tag in the switch body statement')
             
             match_obj = re.search(self.__COORD_TAG, switch_body_code)
             if not match_obj:
@@ -523,6 +532,9 @@ class PerfTestSkeletonCode:
             code = re.sub(self.__COORD_TAG, coord_key, code)
             code = re.sub(self.__TCODE_TAG, tcode, code)
 
+        # TODO: validation code from user (or generated)
+        validation_code = ''
+        code = re.sub(self.__VALIDATION_TAG, validation_code, code)
         # return the performance-testing code
         return code
   
