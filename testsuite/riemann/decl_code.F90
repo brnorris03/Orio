@@ -24,4 +24,6 @@ integer i, n, numCells, numIntCells5, numIntCells, hy_nriem, hy_numXn, array_len
 integer ii, nn, iii, nnn
 
 
-#define rieman_err(i) 
+#define goto10(i) 
+
+#define abortcode()

@@ -42,6 +42,7 @@ class Annealing(orio.main.tuner.search.search.Search):
         self.final_temp_ratio = 0.05
         self.trials_limit = 100
         self.moves_limit = 20
+        self.bignum = 13124314.0
 
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
@@ -104,7 +105,7 @@ class Annealing(orio.main.tuner.search.search.Search):
             best_coord = coord
             best_perf_cost = perf_cost
             
-            info('\n(run %s) initial coord: %s, cost: %s' % (runs+1, coord, perf_cost))
+            info('\n(run %s) initial coord: %s, cost: %e' % (runs+1, coord, perf_cost))
             
             # the annealing loop
             while temperature > final_temperature:
@@ -131,21 +132,21 @@ class Annealing(orio.main.tuner.search.search.Search):
                     new_perf_cost = self.getPerfCost(new_coord)
                     
                     # compare to the best result so far
-                    if new_perf_cost < best_perf_cost:
+                    if new_perf_cost < best_perf_cost and new_perf_cost > 0.0:
                         best_coord = new_coord
                         best_perf_cost = new_perf_cost
-                        info('--> best annealing coordinate found: %s, cost: %s' %
+                        info('--> best annealing coordinate found: %s, cost: %e' %
                              (best_coord, best_perf_cost))
 
                     # calculate the performance cost difference
                     delta = new_perf_cost - perf_cost
                         
                     # if the new coordinate has a better performance cost
-                    if delta < 0:
+                    if delta < 0 and new_perf_cost > 0.0:
                         coord = new_coord
                         perf_cost = new_perf_cost
                         good_moves += 1
-                        info('--> move to BETTER coordinate: %s, cost: %s' %
+                        info('--> move to BETTER coordinate: %s, cost: %e' %
                              (coord, perf_cost))
 
                     # compute the acceptance probability (i.e. the Boltzmann probability or
@@ -155,12 +156,13 @@ class Annealing(orio.main.tuner.search.search.Search):
                     else:
 
                         # count the probability of moving to the new coordinate
+                        delta = self.bignum
                         p = math.exp(-delta / temperature)
                         if self.getRandomReal(0,1) < p:
                             coord = new_coord
                             perf_cost = new_perf_cost
                             good_moves += 1
-                            info('--> move to WORSE coordinate: %s, cost: %s' % (coord, perf_cost))
+                            info('--> move to WORSE coordinate: %s, cost: %e' % (coord, perf_cost))
 
                     # check if the maximum limit of the good moves is reached
                     if good_moves > self.moves_limit:
@@ -177,7 +179,7 @@ class Annealing(orio.main.tuner.search.search.Search):
                 if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
                     break
 
-            info('-> best annealing coordinate: %s, cost: %s' % (best_coord, best_perf_cost))
+            info('-> best annealing coordinate: %s, cost: %e' % (best_coord, best_perf_cost))
 
             # record the current best performance cost
             old_best_perf_cost = best_perf_cost
