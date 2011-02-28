@@ -106,15 +106,6 @@ class Simplex(orio.main.tuner.search.search.Search):
 
             while True:
 
-                # remove bogus values (0 time)
-                try: i= perf_costs.index(0.0)
-                except: i = None
-                while i: 
-                    del perf_costs[i]
-                    del simplex[i]
-                    try: i= perf_costs.index(0.0)
-                    except: i = None
-
                 # sort the simplex coordinates in an increasing order of performance costs
                 sorted_simplex_cost = zip(simplex, perf_costs)
                 sorted_simplex_cost.sort(lambda x,y: cmp(x[1],y[1]))
@@ -123,6 +114,13 @@ class Simplex(orio.main.tuner.search.search.Search):
                 simplex, perf_costs = zip(*sorted_simplex_cost)
                 simplex = list(simplex)
                 perf_costs = list(perf_costs)
+
+                # remove bogus values (0 time)
+                for i in range(0,len(perf_costs)):
+                    if perf_costs[i] > 0.0: continue
+                    else:
+                        del perf_costs[i]
+                        del simplex[i]
                 
                 info('-> simplex: %s' % simplex)
 
