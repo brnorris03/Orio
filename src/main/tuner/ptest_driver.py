@@ -132,6 +132,7 @@ class PerfTestDriver:
         # (indexed by the string representation of the search coordinates)
         # e.g., {'[0,1]':0.2, '[1,1]':0.3}
         perf_costs = {}
+        output = None
 
         # execute the search process in parallel
         if self.use_parallel_search:

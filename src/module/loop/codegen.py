@@ -245,6 +245,7 @@ class CodeGen_F(CodeGen):
                 prevtmpnode = tmpnode
                 tmpnode = tmpnode.exp
             
+            indices.reverse()
             s += self.generate(prevtmpnode.exp, indent, extra_indent)  # the variable name
             s += '(' + ','.join([self.generate(x, indent, extra_indent) for x in indices]) + ')'
 
@@ -394,8 +395,8 @@ class CodeGen_F(CodeGen):
             s += self.generate(tnode.test.rhs, indent, extra_indent)
             
             # Check whether we need to change the bound
-            if tnode.test.op_type == tnode.test.LE: s += ' + 1'
-            if tnode.test.op_type == tnode.test.GE: s += ' - 1'
+            #if tnode.test.op_type == tnode.test.LE: s += ' + 1'
+            #if tnode.test.op_type == tnode.test.GE: s += ' - 1'
             
             s += ', '
             # Generate the loop increment/decrement step
