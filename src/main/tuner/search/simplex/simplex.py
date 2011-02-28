@@ -235,7 +235,7 @@ class Simplex(orio.main.tuner.search.search.Search):
             best_simplex_perf_cost = perf_costs[0]
             old_best_simplex_perf_cost = best_simplex_perf_cost
 
-            info('-> best simplex coordinate: %s, cost: %s' %
+            info('-> best simplex coordinate: %s, cost: %e' %
                  (best_simplex_coord, best_simplex_perf_cost))
             
             # check if the time is not up yet
@@ -248,14 +248,14 @@ class Simplex(orio.main.tuner.search.search.Search):
                 
                 # if the neighboring coordinate has a better performance cost
                 if best_simplex_perf_cost < old_best_simplex_perf_cost:
-                    info('---> better neighbor found: %s, cost: %s' %
+                    info('---> better neighbor found: %s, cost: %e' %
                          (best_simplex_coord, best_simplex_perf_cost))
 
             # compare to the global best coordinate and its performance cost
             if best_simplex_perf_cost < best_global_perf_cost:
                 best_global_coord = best_simplex_coord
                 best_global_perf_cost = best_simplex_perf_cost
-                info('>>>> best coordinate found: %s, cost: %s' %
+                info('>>>> best coordinate found: %s, cost: %e' %
                      (best_global_coord, best_global_perf_cost))
 
             # increment the number of runs
@@ -274,7 +274,7 @@ class Simplex(orio.main.tuner.search.search.Search):
                                                                      
         info('----- end simplex search -----')
         info('----- begin summary -----')
-        info(' best coordinate: %s, cost: %s' %
+        info(' best coordinate: %s, cost: %e' %
               (best_global_coord, best_global_perf_cost))
         info(' total search time: %.2f seconds' % search_time)
         info(' total completed runs: %s' % runs)
