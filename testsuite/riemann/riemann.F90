@@ -34,11 +34,19 @@
 
     #param IVEC1[] = [True,False];
     #param SCREP[] = [True,False];  # cannot do in fortran yet because vars must be declared
-    param PAR[] = [True,False];
+    param PAR[] = [False];
 
     constraint tileI = ((T2_I == 1) or (T2_I % T1_I == 0));
     constraint tileJ = ((T2_N == 1) or (T2_N % T1_N == 0));
     constraint unrollN = ((U_N == 1) or (U_N % 2 == 0));
+    constraint unrollU1 = ((U1 == 1) or (U1 % 2 == 0));
+    constraint unrollU2 = ((U2 == 1) or (U2 % 2 == 0));
+    constraint unrollU3 = ((U3 == 1) or (U3 % 2 == 0));
+    constraint unrollU4 = ((U4 == 1) or (U4 % 2 == 0));
+    constraint unrollU5 = ((U5 == 1) or (U5 % 2 == 0));
+    constraint unrollU7 = ((U7 == 1) or (U7 % 2 == 0));
+    constraint unrollU8 = ((U8 == 1) or (U8 % 2 == 0));
+    constraint unrollU9 = ((U9 == 1) or (U9 % 2 == 0));
 
   }
 
