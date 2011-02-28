@@ -214,6 +214,7 @@ class CodeGen_F(CodeGen):
     def __init__(self):
         '''To instantiate a code generator'''
         self.ftypes = {'int':'integer', 
+                       'register int': 'integer',  
                        'long': 'integer*4', 
                        'float': 'real(single)', 
                        'double': 'real(double)'}
