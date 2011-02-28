@@ -116,11 +116,14 @@ class Simplex(orio.main.tuner.search.search.Search):
                 perf_costs = list(perf_costs)
 
                 # remove bogus values (0 time)
+                indicestoremove = []
                 for i in range(0,len(perf_costs)):
                     if perf_costs[i] > 0.0: continue
-                    else:
-                        del perf_costs[i]
-                        del simplex[i]
+                    else: indicestoremove.append(i)
+
+                for i in indicestoremove:
+                    del perf_costs[i]
+                    del simplex[i]
                 
                 info('-> simplex: %s' % simplex)
 
