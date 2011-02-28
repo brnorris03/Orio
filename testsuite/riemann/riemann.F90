@@ -2,7 +2,7 @@
   def build 
   { 
     #arg build_command = 'icc -O3 -openmp -I/usr/local/icc/include -lm'; 
-    arg build_command = 'gfortran -g -O3';
+    arg build_command = 'gfortran -fopenmp -O3';
     arg libs = '-lm -lrt';
   } 
     
@@ -34,7 +34,7 @@
 
     #param IVEC1[] = [True,False];
     #param SCREP[] = [True,False];  # cannot do in fortran yet because vars must be declared
-    param PAR[] = [False];
+    param PAR[] = [True,False];
 
     constraint tileI = ((T2_I == 1) or (T2_I % T1_I == 0));
     constraint tileJ = ((T2_N == 1) or (T2_N % T1_N == 0));
@@ -52,10 +52,10 @@
 
   def search 
   { 
-#    arg algorithm = 'Exhaustive'; 
-    arg algorithm = 'Simplex'; 
-    arg total_runs = 100;
-    arg time_limit = 10000;
+    arg algorithm = 'Randomsearch'; 
+#    arg algorithm = 'Simplex'; 
+#    arg total_runs = 1000;
+    arg time_limit = 10;
   } 
    
   def input_params 
@@ -147,8 +147,6 @@
     hy_pstor[2] = pstar2[i];
 
     for (n = 1; n <= hy_nriem; n++) {
-	  if (pres_err >= hy_riemanTol) rieman_err(i);
-	  if (pres_err < hy_riemanTol) {
         gmstrl[i] = gamfac[i] * (pstar2[i] - hy_plft[i]);
         gmstrl[i] = hy_gmelft[i] + 2.0 * gmstrl[i] / (pstar2[i] + hy_plft[i]);
 
@@ -201,6 +199,8 @@
         pstar[i]  = max (hy_smallp, pstar[i]);
 
         pres_err = abs(pstar[i]-pstar2[i]) / pstar[i];
+        if (pres_err < hy_riemanTol) 
+            goto10(i);
 
         wlft1[i]  = wlft[i];
         wrght1[i] = wrght[i];
@@ -209,11 +209,11 @@
         pstar2[i] = pstar[i];
         hy_pstor[n+2] = pstar[i];
 
-	   }
      }
+  n = n-1;
+  abortcode();
 
   }
-  n = n-1;
 
   transform UnrollJam(ufactor=U7)
   for (i = 5; i<=numIntCells5; i++) {

@@ -94,11 +94,11 @@ class Randomsearch(orio.main.tuner.search.search.Search):
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
             for i, (coord_str, perf_cost) in enumerate(pcost_items):
                 coord_val = eval(coord_str)
-                info('(run %s) coordinate: %s, cost: %s' % (runs+i+1, coord_val, perf_cost))
-                if perf_cost < best_perf_cost:
+                info('(run %s) coordinate: %s, cost: %e' % (runs+i+1, coord_val, perf_cost))
+                if perf_cost < best_perf_cost and perf_cost > 0.0:
                     best_coord = coord_val
                     best_perf_cost = perf_cost
-                    info('>>>> best coordinate found: %s, cost: %s' % (coord_val, perf_cost))
+                    info('>>>> best coordinate found: %s, cost: %e' % (coord_val, perf_cost))
 
             # if a better coordinate is found, explore the neighboring coordinates
             if old_perf_cost != best_perf_cost:
@@ -121,7 +121,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
         
         info('----- end random search -----')
         info('----- begin summary -----')
-        info(' best coordinate: %s, cost: %s' % (best_coord, best_perf_cost))
+        info(' best coordinate: %s, cost: %e' % (best_coord, best_perf_cost))
         info(' total search time: %.2f seconds' % search_time)
         info(' total completed runs: %s' % runs)
         info('----- end summary -----')
