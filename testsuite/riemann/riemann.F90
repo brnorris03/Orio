@@ -1,14 +1,14 @@
-/*@ begin PerfTuning (         
+/*@ begin PerfTuning (  
   def build 
   { 
     #arg build_command = 'icc -O3 -openmp -I/usr/local/icc/include -lm'; 
-    arg build_command = 'gfortran  -O3';
+    arg build_command = 'gfortran -g -O3';
     arg libs = '-lm -lrt';
   } 
     
   def performance_counter          
   { 
-    arg repetitions = 11;
+    arg repetitions = 1;
   }
 
   def performance_params 
@@ -19,13 +19,22 @@
     param U3[] = range(1,6);
     param U4[] = range(1,6);
     param U5[] = range(1,6);
-    param U6[] = range(1,6);
+    param U6[] = range(1,4);
+    param U6a[] = range(1,12);
     param U7[] = range(1,6);
     param U8[] = range(1,6);
     param U9[] = range(1,6);
 
+    param T1_I[] = [1,16,32,64,128,256];
+    param T1_N[] = [1,16,32,64,128,256,521];
+
     param IVEC1[] = [True,False];
     param SCREP[] = [True,False];
+    param PAR6[] = [False];
+
+    #constraint tileI = ((T2_I == 1) or (T2_I % T1_I == 0));
+    #constraint tileJ = ((T2_N == 1) or (T2_N % T1_N == 0));
+
   }
 
   def search 
@@ -37,7 +46,9 @@
    
   def input_params 
   {
-    param N[] = [1000];
+    param N[] = [520];
+    param NUMINTCELLS[] = [512];
+    param HY_NUMXN[] = [0];
   }
 
   def input_vars
@@ -49,6 +60,7 @@
 
 
 /*@ begin Loop (
+
   transform UnrollJam(ufactor=U1)
   for (i = 5; i<=numIntCells5; i++) {
      aux[i]    = sqrt (0.5 * (game[i] - 1.0) / game[i]);
@@ -110,18 +122,20 @@
      pstar2[i] = max (hy_smallp, pstar2[i]);
   }
   
-  transform UnrollJam(ufactor=U6)
+  transform Composite(
+   scalarreplace = (SCREP, 'double'),
+   vector = (IVEC1, ['ivdep','vector always'])
+  )
+  transform UnrollJam(ufactor=U6, parallelize=PAR6)
   for (i = 5; i<=numIntCells5; i++) {
 
     hy_pstor[1] = pstar1[i];
     hy_pstor[2] = pstar2[i];
 
-  	transform Composite (
-  	scalarreplace = (SCREP, 'double'),
-  	vector = (IVEC1, ['ivdep','vector always']))
-
-	if (pres_err >= hy_riemanTol) rieman_err(i);
-	if (pres_err < hy_riemanTol) {
+    transform UnrollJam(ufactor=U6a)
+    for (n = 1; n <= hy_nriem; n++) {
+	  if (pres_err >= hy_riemanTol) rieman_err(i);
+	  if (pres_err < hy_riemanTol) {
         gmstrl[i] = gamfac[i] * (pstar2[i] - hy_plft[i]);
         gmstrl[i] = hy_gmelft[i] + 2.0 * gmstrl[i] / (pstar2[i] + hy_plft[i]);
 
@@ -175,19 +189,18 @@
 
         pres_err = abs(pstar[i]-pstar2[i]) / pstar[i];
 
+        wlft1[i]  = wlft[i];
+        wrght1[i] = wrght[i];
+
         pstar1[i] = pstar2[i];
         pstar2[i] = pstar[i];
         hy_pstor[n+2] = pstar[i];
 
-        wlft1[i]  = wlft[i];
-        wrght1[i] = wrght[i];
-	 }
-	 for (n = 1; n<=hy_nriem; n++) {
-	    if (pres_err < hy_riemanTol) hy_pstor[n+2] = pstar[i];
+	   }
      }
-     n = n - 1;
 
   }
+  n = n-1;
 
   transform UnrollJam(ufactor=U7)
   for (i = 5; i<=numIntCells5; i++) {
@@ -197,7 +210,7 @@
      ustar[i]  = 0.5e0 * (scrch3[i] + scrch4[i]);
 
      urell[i]   = ustar[i] - ugrdl[i];
-     scrch1[i]  = sign (1.e0, urell[i]);
+     scrch1[i]  = sign (one, urell[i]);
 
      scrch2[i] = 0.5e0 * ( 1.e0 + scrch1[i]);
      scrch3[i] = 0.5e0 * ( 1.e0 - scrch1[i]);
@@ -242,8 +255,8 @@
   }
 
   transform UnrollJam(ufactor=U8)
-  for (i = 5; i<=numIntCells5; i++) {
-  	for (n = 1; n<=hy_numXn; n++) {
+  for (n = 1; n<=hy_numXn; n++) {
+     for (i = 5; i<=numIntCells5; i++) {
         xnav[i][n] = hy_xnlft[i][n] * scrch2[i] + hy_xnrght[i][n] * scrch3[i];
 	 }
   }
@@ -509,7 +522,7 @@
 
   do i = 5, numIntCells5
      urell(i)   = ustar(i) - ugrdl(i)
-     scrch1(i)  = sign (1.e0, urell(i))
+     scrch1(i)  = sign (one, urell(i))
   enddo
 
 ! decide which state is located at the zone iterface based on the values 
