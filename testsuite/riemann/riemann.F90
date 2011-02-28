@@ -8,40 +8,46 @@
     
   def performance_counter          
   { 
-    arg repetitions = 1;
+    arg repetitions = 11;
   }
 
   def performance_params 
   {
     param Rn[] = [1,4,8];
-    param U1[] = range(1,6);
-    param U2[] = range(1,6);
-    param U3[] = range(1,6);
-    param U4[] = range(1,6);
-    param U5[] = range(1,6);
-    param U6[] = range(1,4);
-    param U6a[] = range(1,12);
-    param U7[] = range(1,6);
-    param U8[] = range(1,6);
-    param U9[] = range(1,6);
+    param U1[] = range(1,8);
+    param U2[] = range(1,8);
+    param U3[] = range(1,8);
+    param U4[] = range(1,8);
+    param U5[] = range(1,8);
+    param U7[] = range(1,8);
+    param U8[] = range(1,8);
+    param U9[] = range(1,8);
 
     param T1_I[] = [1,16,32,64,128,256];
     param T1_N[] = [1,16,32,64,128,256,521];
+    param T2_I[] = [1,64,128,256,512,1024,2048];
+    param T2_N[] = [1,64,128,256,512,1024,2048];
+    param U_I[] = range(1,8);
+    param U_N[] = range(1,12);
+    
 
-    param IVEC1[] = [True,False];
-    param SCREP[] = [True,False];
-    param PAR6[] = [False];
 
-    #constraint tileI = ((T2_I == 1) or (T2_I % T1_I == 0));
-    #constraint tileJ = ((T2_N == 1) or (T2_N % T1_N == 0));
+    #param IVEC1[] = [True,False];
+    #param SCREP[] = [True,False];  # cannot do in fortran yet because vars must be declared
+    param PAR[] = [True,False];
+
+    constraint tileI = ((T2_I == 1) or (T2_I % T1_I == 0));
+    constraint tileJ = ((T2_N == 1) or (T2_N % T1_N == 0));
+    constraint unrollN = ((U_N == 1) or (U_N % 2 == 0));
 
   }
 
   def search 
   { 
-    arg algorithm = 'Exhaustive'; 
-#    arg algorithm = 'Simplex'; 
-#    arg total_runs = 1;
+#    arg algorithm = 'Exhaustive'; 
+    arg algorithm = 'Simplex'; 
+    arg total_runs = 100;
+    arg time_limit = 10000;
   } 
    
   def input_params 
@@ -123,16 +129,15 @@
   }
   
   transform Composite(
-   scalarreplace = (SCREP, 'double'),
-   vector = (IVEC1, ['ivdep','vector always'])
+   tile = [('i',T1_I,'ii'),('n',T1_N,'nn'), 
+           (('ii','i'),T2_I,'iii'),(('nn','n'),T2_N,'nnn')],
+   unrolljam = (['n','i'], [U_N, U_I])
   )
-  transform UnrollJam(ufactor=U6, parallelize=PAR6)
   for (i = 5; i<=numIntCells5; i++) {
 
     hy_pstor[1] = pstar1[i];
     hy_pstor[2] = pstar2[i];
 
-    transform UnrollJam(ufactor=U6a)
     for (n = 1; n <= hy_nriem; n++) {
 	  if (pres_err >= hy_riemanTol) rieman_err(i);
 	  if (pres_err < hy_riemanTol) {
