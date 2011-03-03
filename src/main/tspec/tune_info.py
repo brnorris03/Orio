@@ -18,7 +18,7 @@ class TuningInfo:
         '''To instantiate the tuning information'''
 
         # unpack all information
-        build_cmd, batch_cmd, status_cmd, num_procs, libs, cc, timer_file = build_info
+        build_cmd, batch_cmd, status_cmd, num_procs, libs, cc, fc, timer_file = build_info
         pcount_method, pcount_reps, random_seed, timing_array_size = pcount_info
         search_algo, search_time_limit, search_total_runs, search_opts = search_info
         pparam_params, pparam_constraints = pparam_info
@@ -169,6 +169,7 @@ class TuningInfoGen:
         # all expected build information
         build_cmd = None
         cc = 'gcc'          # default C compiler, needed for timer routine
+        fc = 'gfortran'
         libs = ''
         batch_cmd = None
         status_cmd = None
@@ -210,7 +211,13 @@ class TuningInfoGen:
                     err('orio.main.tspec.tune_info: %s: C compiler in build section (CC variable) must be a string' % rhs_line_no)
                     
                 cc = rhs
-                
+
+            elif id_name == FC:
+                if not isinstance(rhs, str): 
+                    err('orio.main.tspec.tune_info: %s: Fortran compiler in build section (FC variable) must be a string' % rhs_line_no)
+                    
+                fc = rhs
+               
             # evaluate the libs 
             elif id_name == LIBS:
                 if not isinstance(rhs, str):
@@ -248,7 +255,7 @@ class TuningInfoGen:
                     
 
         # return all build information
-        return (build_cmd, batch_cmd, status_cmd, num_procs, libs, cc, timer_file)
+        return (build_cmd, batch_cmd, status_cmd, num_procs, libs, cc, fc, timer_file)
 
     #-----------------------------------------------------------
 
@@ -690,7 +697,7 @@ class TuningInfoGen:
             # build definition
             if dname == BUILD:
                 (build_cmd, batch_cmd, status_cmd,
-                 num_procs, libs, cc, timer_file) = self.__genBuildInfo(body_stmt_seq, line_no)
+                 num_procs, libs, cc, fc, timer_file) = self.__genBuildInfo(body_stmt_seq, line_no)
                 if build_cmd == None:
                     err('orio.main.tspec.tune_info: %s: missing build command in the build section' % line_no)
                     
@@ -703,7 +710,7 @@ class TuningInfoGen:
                     warn(('orio.main.tspec.tune_info: %s: number of processors in build section must be greater than ' +
                             'one for non-batch (or non-parallel) search') % line_no)
                     
-                build_info = (build_cmd, batch_cmd, status_cmd, num_procs, libs, cc, timer_file)
+                build_info = (build_cmd, batch_cmd, status_cmd, num_procs, libs, cc, fc, timer_file)
 
             # performance counter definition
             elif dname == PERF_COUNTER:
