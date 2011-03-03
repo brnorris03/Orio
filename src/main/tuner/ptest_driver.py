@@ -37,15 +37,23 @@ class PerfTestDriver:
 
         global counter
         counter += 1
+        self.language = language
         if language == 'c': 
             self.src_name = self.__PTEST_FNAME + str(counter) + '.c'
         else:
             self.src_name = self.__PTEST_FNAME + str(counter) + '.F90'
         self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
         self.original_exe_name = self.__PTEST_FNAME + str(counter) + '_original.exe'
+
+
+        if not self.tinfo.timer_file: 
+            if self.language == 'c': self.timer_file = 'timer_cpu.c'
+            else: self.timer_file = 'timer_cpu.F90'
+        else: self.timer_file = self.tinfo.timer_file
         
         self.timer_code = timing_code
-
+        if language == 'fortran':  self.timer_code = '' # timer routine is embedded in F90 driver
+        
         if self.tinfo.pcount_method not in (self.__PCOUNT_BASIC, self.__PCOUNT_BGP):
             err('orio.main.tuner.ptest_driver:  unknown performance-counting method: "%s"' % self.tinfo.pcount_method)
 
@@ -61,10 +69,10 @@ class PerfTestDriver:
         except:
             err('orio.main.tuner.ptest_driver:  cannot open file for writing: %s' % self.src_name)
             
-        if not self.tinfo.timer_file and not os.path.exists('timer_cpu.c'):
+        if not self.tinfo.timer_file and not (os.path.exists(self.timer_file)):
             # Generate the timing routine file
             try: 
-                f = open('timer_cpu.c', 'w')
+                f = open(self.timer_file, 'w')
                 f.write(self.timer_code)
                 f.close()
             except:
@@ -86,15 +94,16 @@ class PerfTestDriver:
         extra_compiler_opts += ' -DORIO_TIMES_ARRAY_SIZE=%s' % self.tinfo.timing_array_size
             
         # compile the timing code (if needed)
-        if not self.tinfo.timer_file: timer_file = 'timer_cpu.c'
-        else: timer_file = self.tinfo.timer_file
-        timer_objfile = timer_file[:timer_file.rfind('.')] + '.o'
-        
+        if self.timer_file:
+            timer_objfile = self.timer_file[:self.timer_file.rfind('.')] + '.o'
+        else: 
+            timer_objfile = None
+            
         if self.use_parallel_search: timer_objfile = ''
         
         if timer_objfile and not os.path.exists(timer_objfile):  
-            # Too crude, need to make sure object is newer than source
-            cmd = ('%s -O0 -c -o %s %s' % (self.tinfo.cc, timer_objfile, timer_file))
+            # TODO: Too crude, need to make sure object is newer than source
+            cmd = ('%s -O0 -c -o %s %s' % (self.tinfo.build_cmd, timer_objfile, self.timer_file))
             info(' compiling:\n\t' + cmd)
             status = os.system(cmd)
             if status or not os.path.exists(timer_objfile):
@@ -102,9 +111,15 @@ class PerfTestDriver:
             
         # compile the original code if needed
         if not os.path.exists(self.original_exe_name):
-            cmd = ('%s %s -DORIGINAL -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+            if timer_objfile and os.path.exists(timer_objfile):
+                cmd = ('%s %s -DORIGINAL -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
                                                         self.original_exe_name, self.src_name, 
                                                         timer_objfile, self.tinfo.libs))
+            else:
+                cmd = ('%s %s -DORIGINAL -o %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+                                                        self.original_exe_name, self.src_name, 
+                                                        self.tinfo.libs))
+                
             info(' compiling:\n\t' + cmd)
             status = os.system(cmd)
             if status:
