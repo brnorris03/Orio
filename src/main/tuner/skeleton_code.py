@@ -450,7 +450,7 @@ class PerfTestSkeletonCode:
 
         match_obj = re.search(self.__VALIDATION_TAG, code)
         if not match_obj:
-            err('main.tuner.skeleton_code:  missing "validation code" tag in the skeleton code')
+            warn('main.tuner.skeleton_code:  missing "validation code" tag in the skeleton code')
 
         match_obj = re.search(self.__COORD_TAG, code)
         if not match_obj:
