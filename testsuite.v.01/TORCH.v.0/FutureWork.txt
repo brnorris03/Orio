@@ -1,0 +1,64 @@
+Future Work for Example Implementations.  
+
+
+
+Started: Alex Kaiser, LBNL, 10/4/2010. 
+
+Modified: Alex Kaiser, LBNL, 10/19/2010.
+
+
+
+General:
+
+- Command line control?   
+	- Usage guides at command line / print usage when C code is run. 
+
+- List where tested etc
+
+
+
+Dense Linear Algebra:
+
+- Consider data structure update for tridiagonal matrices in QR. 
+
+- Update LU verification to solve system and calculate residual. 
+
+
+
+Monte Carlo: 
+
+
+
+
+
+N Body: 
+
+- check values for cutoff, in force dimension depends on L2 dist to nearest, in cutoff on x component only
+
+
+Sort: 
+
+- Consider separating into headers / generators etc. 
+
+
+
+Sparse Linear Algebra:
+
+- Consider C GMRES
+     
+
+
+Spectral Methods:
+
+- Consider expanding complex arithmetic routines' comments. 
+
+
+
+Structured Grid:
+
+- Consider adding more mathematically rigorous checks of convergence rates 
+	and norm calculators for PDE solvers. 
+
+- Scrambling / permuting of input data for heat equations with explicit methods
+
+
