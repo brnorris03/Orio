@@ -1,0 +1,42 @@
+To Do for example implementations.  
+
+Only includes remaining things to do for current version. 
+
+
+Started: Alex Kaiser, LBNL, 9/13/2010. 
+
+Modified: Alex Kaiser, LBNL, 10/19/2010.
+
+
+
+General:
+
+- Move to clean CVS repo and fix names. 
+
+- Print headers with "LBNL" or something throughout
+
+- README s 
+
+
+
+Dense Linear Algebra:
+
+Monte Carlo: 
+
+N Body: 
+
+Sort: 
+
+Sparse Linear Algebra:
+
+Spectral Methods:
+
+Structured Grid:
+
+
+
+
+
+
+
+

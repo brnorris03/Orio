@@ -1,0 +1,57 @@
+/*
+ * Kernel Reference Testbed: version X
+ * parallelmotifs.org
+ * 
+ * Last Modified: September 2010
+ *
+ * Include License
+ *
+ * Authors:
+ *
+ * 
+ */
+
+About the motifs and kernels:
+=============================
+
+In the current release (version X), we include X "kernels" that span 
+eight different "computational motifs".  
+
+Kernels are problem definitions, and we provide a reference implementation
+(one particular solution) for each kernel. The kernels are organized by the
+primary motif they belong to, and so there are eight motif directories.
+
+The reference implementations are either in C or MATLAB (in some cases, 
+both). All MATLAB routines corresponding to kernels for a motif are under  
+sub-directories named MATLAB.
+
+Building the C implementations:
+===============================
+
+1. Set the C compiler and flags in Makefile.in.
+
+2. Execute "make" in the top directory to build all the kernel
+implementations. Alternately, execute a make in any sub-directory
+to build the kernel implementations corresponding to that motif.
+
+Execution:
+==========
+
+See the README files in each sub-directory for instructions on 
+problem generation, kernel execution, and verification.
+
+Just executing the kernel without any command-line arguments 
+prints out usage details.
+
+References:
+===========
+
+Included in the doc directory.
+
+Cite
+1. Tech Report
+2. HotPar'10 paper
+
+Contact:
+========
+

@@ -1,0 +1,84 @@
+
+Tasks completed for example implementations.  
+Moved from to do list. 
+
+
+Started: Alex Kaiser, LBNL, 9/14/2010. 
+
+Modified: Alex Kaiser, LBNL, 10/19/2010.
+
+
+
+General:
+- Add timers throughout. 
+- Remove other random number generators and substitute BCNRand throughout C version.
+- Update build and run tools 
+- Cite HotPar paper and other paper in tech report
+- update table in code to better match rest of document, check document throughout
+- Cite bcnRand in tech report  
+
+
+Dense Linear Algebra:
+- Write rigorous generator for LU factorization in C and Matlab. 
+- Look at "SymmetricQRStep" in both versions for possible bug / extraneous calculation
+	with sub-sub-diagonal. 
+  Problem is noted in C code, but doesn't seem to be breaking code. 
+
+
+
+
+Monte Carlo: 
+
+- fix comments C.
+- Check for memory leaks in qMCIntegrate
+- Clean up matlab and add comments. Check that scaling works as desired. 
+
+
+N Body: 
+  C: 
+- Redo organization and add comments and makefile. 
+- Add comparisons to naive / verification for all cases. 
+  Matlab: 
+- Organization, verification and comments. 
+
+
+Sort: 
+- Update generators, add more rigorous description of
+
+
+
+Sparse Linear Algebra:
+- update matlab GMRES to properly handle preconditioners 
+- consider non-symmetric generator for GMRES
+- C matrix powers
+- Add a laplacian computation for verification of spmv
+- matlab SpMV verification
+- update C checks with an "all passed" 
+- clean up I/O
+- remove poor quality of check matrix powers in matlab 
+
+Spectral Methods:
+- Comments for C
+- Check table usage for C->R fft, new exponential factors being set in loop. 
+- remove remnants of NAS pde solver in matlab version
+	also kill: generate data
+		rmsErr2d
+		time3FFTs
+		naiveDFT
+		2d fft
+		checkCTfft
+- Update check scripts in Matlab. Add a third script to include ct, stock, 4step
+- Fix spelling of Cooley Tukey in matlab and fix CVS
+- Comments Matlab 
+
+
+Structured Grid:
+- Consider using matrix powers for explicit vector heat equation solve
+- More broad / rigorous dataset generators for differential operators
+- Add new differential ops to Matlab version. 
+- Update makefile to build spectral and spLA kernels if not already built. 
+- Update comments for consistency considering new typing system
+
+
+
+
