@@ -1,0 +1,5 @@
+
+MAKE = make
+CC = gcc
+CFLAGS = -g -Wall -O2 -std=c99 -lm
+CLIBS =

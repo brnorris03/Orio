@@ -1,0 +1,50 @@
+**************************
+"Graph Computations" motif
+**************************
+
+Last updated
+============
+September 2, 2010
+
+Included kernels
+================
+Breadth-First Search   C (breadth_first_search)
+Betweenness Centrality C (betweenness_centrality)
+
+Usage
+=====
+1. Problem Generation
+./graph_gen <input file>
+
+2. Kernel Execution
+./breadth_first_search   <input file>
+./betweenness_centrality <input file>
+
+3. Verification
+./graph_gen -verify_bfs <input file>
+./breadth_first_search -verify <input file>
+
+./graph_gen -verify_bc <input file>
+./betweenness_centrality -verify <input file>
+
+Implementation Notes, Limitations
+=================================
+1. We utilize 32-bit unsigned integers by default to represent vertex 
+and edge identifiers. Hence the maximum number of vertices and edges 
+are limited to 2^32-1. Change graph_int_t to 64-bit unsigned integers for
+working with larger graphs (see graph.h). Also, enable 64-bit compilation 
+when generating large graphs.
+
+2. Note that there's a possibility of an integer overflow of path counts 
+in case of betweenness computation. However, this is unlikely to occur for
+the graph families included in this motif.
+
+3. Graph generation and kernel execution are limited by the amount of 
+available physical memory. We have tested the current implementations on 
+graphs of size X (requires X GB disk space to write graph), on a 
+system with X GB of memory.
+
+4. Note that the betweenness kernel only performs an "approximate" 
+computation by default, by picking a small subset of randomly sampled 
+vertices. This can be modified in graph.h.
+
