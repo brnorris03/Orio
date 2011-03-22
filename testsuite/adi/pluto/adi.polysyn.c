@@ -1,8 +1,7 @@
 /*@ begin PerfTuning (
   def build
   {
-  arg command = 'icc';
-  arg options = '-fast -openmp -I/usr/local/icc/include -lm';
+  arg build_command = 'icc -fast -openmp  -lm';
   }
 
   def performance_counter
@@ -63,10 +62,18 @@
   {
   param T[] = [512];
   param N[] = [4096]; 
-  decl in static double X[N][N+20] = random;
-  decl in static double A[N][N+20] = random;
-  decl out static double B[N][N+20] = random;
+  
   }
+
+
+  def input_vars
+  {
+  decl  static double X[N][N+20] = random;
+  decl  static double A[N][N+20] = random;
+  decl  static double B[N][N+20] = random;
+  }
+
+
 ) @*/   
 
 register int i,j,k,t;  
