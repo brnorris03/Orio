@@ -1,0 +1,4 @@
+
+rm *~ *.out *.o base_* pluto_* orio_* out* opt*
+
+
