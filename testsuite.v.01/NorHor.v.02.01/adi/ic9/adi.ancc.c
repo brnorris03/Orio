@@ -12,27 +12,17 @@
   
   def performance_params
   {  
-    param T1_1[] = [1,4,8,16,32,64,128,256,512];
-    param T1_2[] = [1,4,8,16,32,64,128,256,512];
-    param T1_3[] = [1,4,8,16,32,64,128,256,512];
-    param T2_1[] = [1,4,8,16,32,64,128,256,512];
-    param T2_2[] = [1,4,8,16,32,64,128,256,512];
+    param T1_1[] = [1,4,8,16,32];
+    param T1_2[] = [1,4,8,16,32];
+    param T1_3[] = [1,4,8,16,32];
+    param T2_1[] = [1,4,8,16,32];
+    param T2_2[] = [1,4,8,16,32];
 
     param UF1[] = range(1,31);
     param UF2[] = range(1,31);
     param UF3[] = range(1,31);
     param UF4[] = range(1,31);
     param UF5[] = range(1,31);
-
-    param PERM1[] = [
-      ['i1','i2'],
-      ['i2','i1'],
-    ];
-
-    param PERM2[] = [
-      ['i1','i2'],
-      ['i2','i1'],
-    ];
 
     param PAR1[] = [False,True];
     param PAR2[] = [False,True];
