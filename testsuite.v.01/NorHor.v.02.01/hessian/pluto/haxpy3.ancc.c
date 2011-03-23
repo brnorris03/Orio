@@ -7,7 +7,7 @@
 
   def performance_counter         
   {
-    arg repetitions = 4;
+    arg repetitions = 35;
   }
   
   let RANGE = 5000;
@@ -25,19 +25,13 @@
     param ACOPY_X1[] = [False];
     param ACOPY_X2[] = [False];
 
-    param U_I[] = [1];
-    param U_J[] = [1];
+    param U1i[] = [1];
+    param U1j[] = [1];
 
     param SCREP[] = [True];
     param VEC[] = [True];
     param OMP[] = [True];
 
-    param PERMUTS[] = [
-		       (['ii'],['jj'],'i','j'),
-		       #(['jj'],['ii'],'i','j'),
-		       #(['ii'],['jj'],'j','i'),
-		       #(['jj'],['ii'],'j','i'),
-		       ];
 
     constraint reg_capacity = (4*U_I*U_J + 3*U_I + 3*U_J <= 128);
 
@@ -54,9 +48,8 @@
 
   def search
   {
-    arg algorithm = 'Exhaustive';
-#    arg time_limit = 5;
-#    arg total_runs = 2;
+    arg algorithm = 'Randomsearch';
+    arg total_runs = 20;
   }
   
   def input_params
@@ -86,19 +79,19 @@ int i,j,ii,jj,iii,jjj;
 
 /*@ begin Loop(
   transform Composite(
+    regtile = (['i','j'],[T_I,T_J]), 
     tile = [('i',T_I,'ii'),('j',T_J,'jj')],
-    permut = [PERMUTS],
     arrcopy = [(ACOPY_Y,'Y[i][j]',[(T_I if T_I>1 else R),(T_J if T_J>1 else R)],'_copy'),
                (ACOPY_X0,'X0[i][j]',[(T_I if T_I>1 else R),(T_J if T_J>1 else R)],'_copy'),
                (ACOPY_X1,'X1[i][j]',[(T_I if T_I>1 else R),(T_J if T_J>1 else R)],'_copy'),
                (ACOPY_X2,'X2[i][j]',[(T_I if T_I>1 else R),(T_J if T_J>1 else R)],'_copy')],
-    unrolljam = [('j',U_J),('i',U_I)],
     scalarreplace = (SCREP, 'double', 'scv_'),
     vector = (VEC, ['ivdep','vector always']),
     openmp = (OMP, 'omp parallel for private(i,j,ii,jj,iii,jjj,Y_copy,X0_copy,X1_copy,X2_copy)')
   )
-
+transform UnrollJam(ufactor=U1i, parallelize=PAR1i)
 for (i=0; i<=N-1; i++)
+ transform UnrollJam(ufactor=U1j, parallelize=PAR1j)
   for (j=0; j<=N-1; j++) 
     {
       Y[i][j]=a0*X0[i][j] + a1*X1[i][j] + a2*X2[i][j]
