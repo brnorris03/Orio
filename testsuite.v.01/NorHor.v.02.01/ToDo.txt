@@ -1,0 +1,6 @@
+adi/ic9/adi.ancc.c			loop permutation and reg tiling?
+atax/cookieatax2.src2.c			loop permutation and reg tiling?
+bicgkernel/cookie/bicgkernel.src2.c	loop permutation and reg tiling?
+dgemv3/bto/dgemv3.ancc.c		loop permutation? Lot of parameters;pruning needed.
+fdtd/cookie/fdtd-2d.src2.c		loop permutation? 
+gemver/cookie/gemver.src2.c		loop permutation?  
