@@ -1,5 +1,5 @@
 adi/ic9/adi.ancc.c			loop permutation and reg tiling?
-atax/cookieatax2.src2.c			loop permutation and reg tiling?
+atax/cookie/atax2.src2.c			loop permutation and reg tiling?
 bicgkernel/cookie/bicgkernel.src2.c	loop permutation and reg tiling?
 dgemv3/bto/dgemv3.ancc.c		loop permutation? Lot of parameters;pruning needed.
 fdtd/cookie/fdtd-2d.src2.c		loop permutation? 
@@ -8,11 +8,9 @@ gesummv/cookie/gesummv.src2.c		loop permutation?
 hessian/pluto/haxpy3.ancc.c		complete error! Orio could not parse this file!!!
 jacobi/pluto/jacobi-1d.ancc.c		loop permutation? or any other transformations?
 lu/cookie/lu.src2.c			other transformations??
-/mm/pluto/mm.ancc.c			compilation issue--running for infinite time, loop permutation?
+mm/pluto/mm.ancc.c			compilation issue--running for infinite time, loop permutation?
 mvt/pluto/mvt.ancc.c			loop permutation? other issues!
 seidel/cookie/seidel.src.c		loop permutation? other transformations??
 stencil3d/pluto/stencil3d.ancc.c	loop permutation? other transformations?
 tensor-contraction/pluto/fdtd-2d.src2.c loop permuation? other transformations?
 trmm/pluto/trmm.ancc.c			loop permuation? other transformations?
-
- 
