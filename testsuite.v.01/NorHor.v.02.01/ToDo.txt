@@ -9,4 +9,8 @@ hessian/pluto/haxpy3.ancc.c		complete error! Orio could not parse this file!!!
 jacobi/pluto/jacobi-1d.ancc.c		loop permutation? or any other transformations?
 lu/cookie/lu.src2.c			other transformations??
 /mm/pluto/mm.ancc.c			compilation issue--running for infinite time, loop permutation?
+mvt/pluto/mvt.ancc.c			loop permutation? other issues!
+seidel/cookie/seidel.src.c		loop permutation? other transformations??
+
+
  
