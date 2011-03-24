@@ -2,13 +2,12 @@
 /*@ begin PerfTuning (        
   def build
   {
-    arg build_command = 'icc -DDYNAMIC -fast -openmp -I/usr/local/icc/include -lm';
+    arg build_command = 'icc -DDYNAMIC  -openmp -I/usr/local/icc/include -lm';
   }
    
   def performance_counter         
   {
-    arg method = 'basic timer';
-    arg repetitions = 5;
+    arg repetitions = 35;
   }
   
   let VR = 1500;
@@ -29,11 +28,17 @@
     param ACOPY_R[]  = [True,False]; 
     param ACOPY_T[]  = [True,False]; 
 
-    param U_O1[] = [1,2,3,4];
-    param U_O2[] = [1,2,3,4];
-    param U_OX[] = [1,2,3,4];
-    param U_V1[] = [1,2,3,4];
-    param U_V2[] = [1,2,3,4];
+    param U_O1[] = range(1,31);
+    param U_O2[] = range(1,31);
+    param U_OX[] = range(1,31);
+    param U_V1[] = range(1,31);
+    param U_V2[] = range(1,31);
+
+    param PARV1[] = [False,True];
+    param PARV2[] = [False,True];
+    param PARO1[] = [False,True];
+    param PARO2[] = [False,True];
+    param PAROX[] = [False,True];
 
     param SCREP[] = [False,True];
     param VEC[]   = [False,True];
@@ -44,8 +49,8 @@
       [['tv1'],['tv2'],['to1'],['to2'],['tox'],'v1','ox','o1','o2','v2'],
     ];
 
-    constraint reg_capacity = (U_V1*U_V2*U_O1*U_O2 +  U_V1*U_OX*U_O1*U_O2 + U_V2*U_OX <= 130);
-    constraint unroll_limit = ((U_V1==1) or (U_V2==1) or (U_O1==1) or (U_O2==1) or (U_OX==1));
+#    constraint reg_capacity = (U_V1*U_V2*U_O1*U_O2 +  U_V1*U_OX*U_O1*U_O2 + U_V2*U_OX <= 130);
+#    constraint unroll_limit = ((U_V1==1) or (U_V2==1) or (U_O1==1) or (U_O2==1) or (U_OX==1));
 
     constraint copyR = ((not ACOPY_R) or (ACOPY_R and 
                          (T_V1 if T_V1>1 else VRANGE)*(T_V2 if T_V2>1 else VRANGE)*
@@ -60,9 +65,8 @@
 
   def search
   {
-    arg algorithm = 'Simplex';
-    arg time_limit = 10;
-    arg total_runs = 1;
+    arg algorithm = 'Randomsearch';
+    arg total_runs = 20;
   }
 
   def input_params
@@ -98,12 +102,11 @@ int tv1,tv2,to1,to2,tox;
              (T_O2 if T_O2>1 else ORANGE)],'_copy'), 
            (ACOPY_A2,'A2[v2][ox]',
             [(T_V2 if T_V2>1 else VRANGE),(T_OX if T_OX>1 else ORANGE)],'_copy')], 
-    unrolljam = [('v1','v2','o1','o2','ax'),(U_V1,U_V2,U_O1,U_O2,U_OX)],
     scalarreplace = (SCREP, 'double', 'scv_'),
     vector = (VEC, ['ivdep','vector always']),
     openmp = (OMP, 'omp parallel for private(tv1,tv2,to1,to2,tox,v1,v2,o1,o2,ox,R_copy,A2_copy,T_copy)')
   )
-
+  
   for(v1=0; v1<=V-1; v1++) 
     for(v2=0; v2<=V-1; v2++) 
       for(o1=0; o1<=O-1; o1++) 
@@ -113,10 +116,17 @@ int tv1,tv2,to1,to2,tox;
 
 ) @*/
 
+
+
+transform UnrollJam(ufactor=U_V1, parallelize=PARV1)
 for(v1=0; v1<=V-1; v1++) 
+  transform UnrollJam(ufactor=U_V2, parallelize=PARV2)
   for(v2=0; v2<=V-1; v2++) 
+    transform UnrollJam(ufactor=U_O1, parallelize=PARO1)
     for(o1=0; o1<=O-1; o1++) 
+      transform UnrollJam(ufactor=U_O2, parallelize=PARO2)
       for(o2=0; o2<=O-1; o2++) 
+	transform UnrollJam(ufactor=U_OX, parallelize=PAROX)
 	for(ox=0; ox<=O-1; ox++) 
 	  R[v1][v2][o1][o2] = R[v1][v2][o1][o2] + T[v1][ox][o1][o2] * A2[v2][ox];
 

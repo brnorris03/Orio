@@ -11,6 +11,8 @@ lu/cookie/lu.src2.c			other transformations??
 /mm/pluto/mm.ancc.c			compilation issue--running for infinite time, loop permutation?
 mvt/pluto/mvt.ancc.c			loop permutation? other issues!
 seidel/cookie/seidel.src.c		loop permutation? other transformations??
-
+stencil3d/pluto/stencil3d.ancc.c	loop permutation? other transformations?
+tensor-contraction/pluto/fdtd-2d.src2.c loop permuation? other transformations?
+trmm/pluto/trmm.ancc.c			loop permuation? other transformations?
 
  
