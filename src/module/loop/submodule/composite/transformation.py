@@ -99,7 +99,7 @@ class Transformation:
     def __unrollJam(self, stmt, tinfos):
         '''To apply loop unroll/jamming'''
         
-        debug('orio.module.loop.submodule.composite.transformation: entering __unrollJam, stmt: %s' % (stmt))
+        #debug('orio.module.loop.submodule.composite.transformation: entering __unrollJam, stmt %s: %s' % (stmt.__class__.__name__, stmt))
         if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             return (stmt, [])
 
@@ -155,10 +155,10 @@ class Transformation:
             err('orio.module.loop.submodule.composite.transformation internal error: unprocessed transform statement')            
 
         elif isinstance(stmt, orio.module.loop.ast.NewAST):
-            return (stmt, False)
+            return (stmt, [])
         
         elif isinstance(stmt, orio.module.loop.ast.Comment):
-            return stmt
+            return (stmt, [])
 
         else:
             err('orio.module.loop.submodule.composite.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)            
