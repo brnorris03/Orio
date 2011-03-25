@@ -401,68 +401,119 @@ class Transformation:
         self.counter = 1
         
         # apply loop tiling
-        for loop_id, tsize, tindex in self.tiles:
-            all_lids = self.flib.getLoopIndexNames(tstmt)
-            lid = self.__searchLoopId(all_lids, loop_id)
-            if lid != None:
-                tinfo = (lid, tsize, tindex)
-                tstmt = self.__tile(tstmt, tinfo)
+        try:
+            for loop_id, tsize, tindex in self.tiles:
+                all_lids = self.flib.getLoopIndexNames(tstmt)
+                lid = self.__searchLoopId(all_lids, loop_id)
+                if lid != None:
+                    tinfo = (lid, tsize, tindex)
+                    tstmt = self.__tile(tstmt, tinfo)
+        except Exception, e:
+            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'loop tiling: "%s"\ntiling annotation: %s\n --> %s: %s') \
+                 % (self.stmt.line_no, self.tile_smod.__class__.__name__, self.tiles, e.__class__.__name__, e))
 
         # apply loop permutation/interchange
-        for seq in self.permuts:
-            tstmt = self.perm_smod.permute(seq, tstmt)
+        try: 
+            for seq in self.permuts:
+                tstmt = self.perm_smod.permute(seq, tstmt)
+        except Exception, e:
+            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'loop permutations: "%s"\npermutation annotation: %s\n --> %s: %s') \
+                 % (self.stmt.line_no, self.perm_smod.__class__.__name__, self.permuts, e.__class__.__name__, e))
 
         # apply array-copy optimization
-        for do_acopy, aref, suffix, dtype, dimsizes in self.arrcopy:
-            if not do_acopy:
-                dimsizes = [1] * len(dimsizes)
-            tstmt = self.acop_smod.optimizeArrayCopy(aref, suffix, dtype, dimsizes, tstmt)
+        try: 
+            for do_acopy, aref, suffix, dtype, dimsizes in self.arrcopy:
+                if not do_acopy:
+                    dimsizes = [1] * len(dimsizes)
+                tstmt = self.acop_smod.optimizeArrayCopy(aref, suffix, dtype, dimsizes, tstmt)
+        except Exception, e:
+            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'array copy: "%s"\narray copy annotation: %s\n --> %s: %s') \
+                 % (self.stmt.line_no, self.acop_smod.__class__.__name__, self.arrcopy, e.__class__.__name__, e))
 
         # apply register tiling
-        loops, ufactors = self.regtiles
-        if len(loops) > 0:
-            tstmt = self.regt_smod.tileForRegs(loops, ufactors, tstmt)
+        try:
+            loops, ufactors = self.regtiles
+            if len(loops) > 0:
+                tstmt = self.regt_smod.tileForRegs(loops, ufactors, tstmt)
+        except Exception, e:
+            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'register tiling: "%s"\nregtile annotation: %s\n --> %s: %s') \
+                 % (self.stmt.line_no, self.regt_smod.__class__.__name__, self.regtiles, e.__class__.__name__, e))
+                  
 
         # apply unroll/jamming
-        loops, ufactors = self.ujams
-        tinfos = []
-        for loop_id, ufactor in zip(loops, ufactors):
-            all_lids = self.flib.getLoopIndexNames(tstmt)
-            lid = self.__searchLoopId(all_lids, (False, loop_id))
-            if lid != None and ufactor > 1:
-                tinfos.append((lid, ufactor))
-        if len(tinfos) > 0:
-            tstmt,_ = self.__unrollJam(tstmt, tinfos)
+        try:
+           loops, ufactors = self.ujams
+           tinfos = []
+           for loop_id, ufactor in zip(loops, ufactors):
+               all_lids = self.flib.getLoopIndexNames(tstmt)
+               lid = self.__searchLoopId(all_lids, (False, loop_id))
+               if lid != None and ufactor > 1:
+                   tinfos.append((lid, ufactor))
+           if len(tinfos) > 0:
+               tstmt,_ = self.__unrollJam(tstmt, tinfos)
+        except Exception, e:
+            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'loop unrolling/jamming: "%s"\nunroll/jam annotation: %s\n --> %s: %s') \
+                 % (self.stmt.line_no, self.ujam_smod.__class__.__name__, self.ujams, e.__class__.__name__, e))
 
         # apply scalar replacement
-        do_scalarrep, dtype, prefix = self.scalarrep
-        if do_scalarrep:
-            tstmt = self.srep_smod.replaceScalars(dtype, prefix, tstmt)
+        try:
+            do_scalarrep, dtype, prefix = self.scalarrep
+            if do_scalarrep:
+                tstmt = self.srep_smod.replaceScalars(dtype, prefix, tstmt)
+        except Exception, e:
+            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'scalar replacement: "%s"\nscalar replacement annotation: %s\n --> %s: %s') \
+                 % (self.stmt.line_no, self.srep_smod.__class__.__name__, self.scalarrep, e.__class__.__name__, e))
         
         # apply bound replacement
-        do_boundrep, lprefix, uprefix = self.boundrep
-        if do_boundrep:
-            tstmt = self.brep_smod.replaceBounds(lprefix, uprefix, tstmt)
+        try:
+            do_boundrep, lprefix, uprefix = self.boundrep
+            if do_boundrep:
+                tstmt = self.brep_smod.replaceBounds(lprefix, uprefix, tstmt)
+        except Exception, e:
+            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'bound replacement: "%s"\nbounds annotation: %s\n --> %s: %s') \
+                 % (self.stmt.line_no, self.srep_smod.__class__.__name__, self.boundrep, e.__class__.__name__, e))
 
         # insert pragma directives
-        for loop_id, pragmas in self.pragma:
-            all_lids = self.flib.getLoopIndexNames(tstmt)
-            lid = self.__searchLoopId(all_lids, loop_id)
-            if lid != None:
-                tinfo = (lid, pragmas)
-                tstmt = self.__insertPragmas(tstmt, tinfo)
+        try:
+            for loop_id, pragmas in self.pragma:
+                all_lids = self.flib.getLoopIndexNames(tstmt)
+                lid = self.__searchLoopId(all_lids, loop_id)
+                if lid != None:
+                    tinfo = (lid, pragmas)
+                    tstmt = self.__insertPragmas(tstmt, tinfo)
+        except Exception, e:
+            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'pragma directives: "%s"\npragma annotation: %s\n --> %s: %s') \
+                 % (self.stmt.line_no, self.srep_smod.__class__.__name__, self.pragma, e.__class__.__name__, e))
 
         # insert openmp directives (apply only on outermost loops)
-        do_openmp, pragmas = self.openmp
-        if do_openmp:
-            tinfo = (pragmas, )
-            tstmt = self.__insertOpenMPPragmas(tstmt, tinfo)
+        try:
+            do_openmp, pragmas = self.openmp
+            if do_openmp:
+                tinfo = (pragmas, )
+                tstmt = self.__insertOpenMPPragmas(tstmt, tinfo)
+        except Exception, e:
+            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'openmp directives: "%s"\nopenmp annotation: %s\n --> %s: %s') \
+                 % (self.stmt.line_no, self.srep_smod.__class__.__name__, self.openmp, e.__class__.__name__, e))
 
         # insert vectorization directives (apply only on innermost loops)
-        do_vector, pragmas = self.vector
-        if do_vector:
-            tinfo = (pragmas, )
-            tstmt = self.__insertVectorPragmas(tstmt, tinfo)
+        try:
+            do_vector, pragmas = self.vector
+            if do_vector:
+                tinfo = (pragmas, )
+                tstmt = self.__insertVectorPragmas(tstmt, tinfo)
+        except Exception, e:
+            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'vectorization: "%s"\nvector annotation: %s\n --> %s: %s') \
+                 % (self.stmt.line_no, self.srep_smod.__class__.__name__, self.vector, e.__class__.__name__, e))
             
         # return the transformed statement
         return tstmt

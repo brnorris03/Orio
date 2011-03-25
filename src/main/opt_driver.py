@@ -107,7 +107,7 @@ class OptDriver:
                 class_name = cfrag.leader_ann.mod_name
                 mod_name = '.'.join([TMOD_NAME, class_name.lower(), class_name.lower()])
                 
-                debug('about to load module.class %s.%s corresponding to annoation %s' % (mod_name,class_name,class_name))
+                debug('about to load module.class %s.%s corresponding to annotation %s' % (mod_name,class_name,class_name))
                 try:
                     mod_class = self.dloader.loadClass(mod_name, class_name)
                 except Exception, e:
