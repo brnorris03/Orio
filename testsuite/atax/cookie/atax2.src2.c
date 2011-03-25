@@ -21,8 +21,8 @@
     param T2_K[] = [1,64,128,256,512,1024,2048];
 
     # Array copy
-    param ACOPY_x[] = [False,True];
-    param ACOPY_y[] = [False,True];
+    #param ACOPY_x[] = [False,True];
+    #param ACOPY_y[] = [False,True];
 
     # Unroll-jam 
     param U1_I[] = [1,4,8,12,16];
@@ -97,13 +97,11 @@ double* tmp=(double*) malloc(nx*sizeof(double));
   transform Composite(
     tile = [('i',T1_I,'ii'),('j',T1_J,'jj'),('k',T1_K,'kk'),
             (('ii','i'),T2_I,'iii'),(('jj','j'),T2_J,'jjj'),(('kk','k'),T2_K,'kkk')],
-    arrcopy = [(ACOPY_y, 'y[k]', [(T1_K if T1_K>1 else T2_K)],'_copy'),
-               (ACOPY_x, 'x[j]', [(T1_J if T1_J>1 else T2_J)],'_copy')],
     unrolljam = (['k','j','i'],[U_K,U_J,U_I]),
     scalarreplace = (SCR, 'double'),
     regtile = (['i','j','k'],[RT_I,RT_J,RT_K]),
     vector = (VEC2, ['ivdep','vector always']),
-    openmp = (OMP, 'omp parallel for private(iii,jjj,kkk,ii,jj,kk,i,j,k,y_copy,x_copy)')
+    openmp = (OMP, 'omp parallel for private(iii,jjj,kkk,ii,jj,kk,i,j,k)')
   )
   for (i = 0; i<=nx-1; i++) {
     tmp[i] = 0;
