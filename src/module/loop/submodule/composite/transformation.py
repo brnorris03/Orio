@@ -99,6 +99,7 @@ class Transformation:
     def __unrollJam(self, stmt, tinfos):
         '''To apply loop unroll/jamming'''
         
+        debug('orio.module.loop.submodule.composite.transformation: entering __unrollJam, stmt: %s' % (stmt))
         if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             return (stmt, [])
 
@@ -446,15 +447,15 @@ class Transformation:
 
         # apply unroll/jamming
         try:
-           loops, ufactors = self.ujams
-           tinfos = []
-           for loop_id, ufactor in zip(loops, ufactors):
-               all_lids = self.flib.getLoopIndexNames(tstmt)
-               lid = self.__searchLoopId(all_lids, (False, loop_id))
-               if lid != None and ufactor > 1:
-                   tinfos.append((lid, ufactor))
-           if len(tinfos) > 0:
-               tstmt,_ = self.__unrollJam(tstmt, tinfos)
+            loops, ufactors = self.ujams
+            tinfos = []
+            for loop_id, ufactor in zip(loops, ufactors):
+                all_lids = self.flib.getLoopIndexNames(tstmt)
+                lid = self.__searchLoopId(all_lids, (False, loop_id))
+                if lid != None and ufactor > 1:
+                    tinfos.append((lid, ufactor))
+            if len(tinfos) > 0:
+                tstmt,_ = self.__unrollJam(tstmt, tinfos)
         except Exception, e:
             err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
                  'loop unrolling/jamming: "%s"\nunroll/jam annotation: %s\n --> %s: %s') \

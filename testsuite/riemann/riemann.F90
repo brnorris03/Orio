@@ -52,10 +52,10 @@
 
   def search 
   { 
-    arg algorithm = 'Randomsearch'; 
-#    arg algorithm = 'Simplex'; 
-#    arg total_runs = 1000;
-    arg time_limit = 10;
+#    arg algorithm = 'Randomsearch'; 
+    arg algorithm = 'Simplex'; 
+    arg total_runs = 1000;
+    arg time_limit = 100;
   } 
    
   def input_params 

@@ -84,6 +84,8 @@ class UnrollJam(orio.module.loop.submodule.submodule.SubModule):
 
     def unrollAndJam(self, ufactor, do_jamming, stmt, parallelize):
         '''To apply unroll-and-jam transformation'''
+        
+        debug('orio.module.loop.submodule.unrolljam.UnrollJam: starting unrollAndJam')
 
         # perform the unroll-and-jam transformation
         t = transformation.Transformation(ufactor, do_jamming, stmt, parallelize)
