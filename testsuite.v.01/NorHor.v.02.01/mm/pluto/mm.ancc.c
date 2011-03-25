@@ -2,7 +2,8 @@
 /*@ begin PerfTuning (        
   def build
   {
-    arg build_command = 'icc -fast -openmp -I/usr/local/icc/include -lm';
+    arg build_command = 'icc -fast -openmp ';
+    arg libs = '-lm -lrt';
   }
    
   def performance_counter         
@@ -102,7 +103,7 @@
   def search
   {
     arg algorithm = 'Randomsearch';
-    arg total_runs = 10;
+    arg total_runs = 1000;
 
   }
   
