@@ -34,7 +34,8 @@ class PerfTestDriver:
 
         self.tinfo = tinfo
         self.use_parallel_search = use_parallel_search
-
+        self.compile_time=0
+        
         global counter
         counter += 1
         self.language = language
@@ -130,7 +131,15 @@ class PerfTestDriver:
                                          self.exe_name, self.src_name, 
                                          timer_objfile, self.tinfo.libs))
         info(' compiling:\n\t' + cmd)
+
+        self.compile_time=0
+        start=time.time()
+
         status = os.system(cmd)
+
+        elapsed=time.time()-start
+        self.compile_time=elapsed
+        
         if status:
             err('orio.main.tuner.ptest_driver:  failed to compile the testing code: "%s"' % cmd)
 
@@ -190,17 +199,25 @@ class PerfTestDriver:
                 err('orio.main.tuner.ptest_driver: failed to execute the testing code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
                 
             try:
-                if out: 
+                if out:
+                    #info('out: %s' % out)
+                    perf_costs={}
+                    perf_costs_reps=[]
                     for line in out: 
                         if line.strip().startswith('{'): 
                             output = line.strip()
-                            break
-                if output: perf_costs = eval(str(output))
+                            rep=eval(str(output))
+                            key=rep.keys()[0]
+                            val=rep[key]
+                            perf_costs_reps.append(val)
+                            perf_costs[key]=perf_costs_reps
+                            #break
+                #if output: perf_costs = eval(str(output))
             except Exception, e:
                 err('orio.main.tuner.ptest_driver: failed to process test result, command was "%s", output: "%s\n --> %s: %s' %
                       (cmd,perf_costs,e.__class__.__name__,e))
 
-
+        #exit()        
         # check if the performance cost is already acquired
         if not perf_costs:
             err('orio.main.tuner.ptest_driver:  performance testing failed: "%s"' % cmd)

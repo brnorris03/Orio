@@ -69,17 +69,21 @@ class Exhaustive(orio.main.tuner.search.search.Search):
 
             # determine the performance cost of all chosen coordinates
             perf_costs = self.getPerfCosts(coords)
-
+                        
             # compare to the best result
             pcost_items = perf_costs.items()
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
             for coord_str, perf_cost in pcost_items:
                 coord_val = eval(coord_str)
-                info('coordinate: %s, cost: %e' % (coord_val, perf_cost))
-                if perf_cost < best_perf_cost and perf_cost > 0.0:
+                info('cost: %s' % (perf_cost))
+                floatNums = [float(x) for x in perf_cost]
+                mean_perf_cost=sum(floatNums) / len(perf_cost)
+                info('coordinate: %s, cost: %s' % (coord_val, perf_cost))
+                
+                if mean_perf_cost < best_perf_cost and perf_cost > 0.0:
                     best_coord = coord_val
-                    best_perf_cost = perf_cost
-                    info('>>>> best coordinate found: %s, cost: %e' % (coord_val, perf_cost))
+                    best_perf_cost = mean_perf_cost
+                    info('>>>> best coordinate found: %s, cost: %e' % (coord_val, mean_perf_cost))
 
             # check if the time is up
             if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:

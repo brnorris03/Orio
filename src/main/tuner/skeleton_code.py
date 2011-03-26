@@ -89,11 +89,14 @@ int main(int argc, char *argv[])
 
     orio_t_end = getClock();
     orio_t = orio_t_end - orio_t_start;
+    printf("{'/*@ coordinate @*/' : %g}\n", orio_t);
     if (orio_t < orio_t_min) orio_t_min = orio_t;
   }
   
+  /*
   printf("{'/*@ coordinate @*/' : %g}", orio_t_min);
-
+  */
+  
   /*@ epilogue @*/
 
   return 0;
