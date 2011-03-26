@@ -3,6 +3,8 @@
 #
 
 import sys, time
+import math
+import random
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
 
@@ -26,6 +28,8 @@ class Randomsearch(orio.main.tuner.search.search.Search):
     def __init__(self, params):
         '''To instantiate a random search engine'''
 
+        random.seed(1)
+        
         orio.main.tuner.search.search.Search.__init__(self, params)
 
         # set all algorithm-specific arguments to their default values
@@ -87,26 +91,45 @@ class Randomsearch(orio.main.tuner.search.search.Search):
                 break
 
             # determine the performance cost of all chosen coordinates
-            perf_costs = self.getPerfCosts(coords)
+            #perf_costs = self.getPerfCosts(coords)
+
+            perf_costs={}
+            # determine the performance cost of all chosen coordinates
+            try:
+                perf_costs = self.getPerfCosts(coords)
+            except:
+                perf_costs[str(coords[0])]=[self.MAXFLOAT]
+                info('FAILED')
 
             # compare to the best result
             pcost_items = perf_costs.items()
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
             for i, (coord_str, perf_cost) in enumerate(pcost_items):
                 coord_val = eval(coord_str)
-                info('(run %s) coordinate: %s, cost: %e' % (runs+i+1, coord_val, perf_cost))
-                if perf_cost < best_perf_cost and perf_cost > 0.0:
+                #info('%s %s' % (coord_val,perf_cost))
+                perf_params = self.coordToPerfParams(coord_val)
+                try:
+                    floatNums = [float(x) for x in perf_cost]
+                    mean_perf_cost=sum(floatNums) / len(perf_cost)
+                except:
+                    mean_perf_cost=perf_cost
+                    
+                transform_time=self.getTransformTime()
+                compile_time=self.getCompileTime()    
+                info('(run %s) coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs+i+1, coord_val, perf_params, transform_time, compile_time,perf_cost))
+                if mean_perf_cost < best_perf_cost and mean_perf_cost > 0.0:
                     best_coord = coord_val
-                    best_perf_cost = perf_cost
-                    info('>>>> best coordinate found: %s, cost: %e' % (coord_val, perf_cost))
+                    best_perf_cost = mean_perf_cost
+                    info('>>>> best coordinate found: %s, cost: %e' % (coord_val, mean_perf_cost))
 
             # if a better coordinate is found, explore the neighboring coordinates
-            if old_perf_cost != best_perf_cost:
+            if False and old_perf_cost != best_perf_cost:
                 neigh_coords.extend(self.getNeighbors(best_coord, self.local_distance))
                 old_perf_cost = best_perf_cost
 
             # increment the number of runs
-            runs += len(perf_costs)
+            if not math.isinf(mean_perf_cost):
+                runs += 1 #len(mean_perf_cost)
                         
             # check if the time is up
             if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
@@ -155,6 +178,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
     def __getNextCoord(self, coord_records, neigh_coords):
         '''Get the next coordinate to be empirically tested'''
 
+        #info('neighcoords: %s' % neigh_coords)
         # check if all coordinates have been explored
         if len(coord_records) >= self.space_size:
             return None

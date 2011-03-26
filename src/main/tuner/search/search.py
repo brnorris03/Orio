@@ -1,7 +1,7 @@
 #
 # The search engine used for search space exploration
 #
-import sys, math
+import sys, math,time
 from orio.main.util.globals import *
 
 
@@ -59,7 +59,8 @@ class Search:
         
         self.verbose = Globals().verbose
         self.perf_cost_records = {}
-        
+        self.transform_time=0
+        self.compile_time=0
     #----------------------------------------------------------
 
     def searchBestCoord(self):
@@ -125,6 +126,15 @@ class Search:
         [perf_cost,] = perf_costs.values()
         return perf_cost
 
+    def getTransformTime(self):
+        trans_time = self.transform_time
+        return trans_time
+    
+    def getCompileTime(self):
+        compile_time = self.compile_time
+        return compile_time
+    
+    
     #----------------------------------------------------------
 
     def getPerfCosts(self, coords):
@@ -148,7 +158,7 @@ class Search:
                     is_out = True
                     break
             if is_out:
-                perf_costs[coord_key] = self.MAXFLOAT
+                perf_costs[coord_key] = [self.MAXFLOAT]
                 continue
 
             # if the given coordinate has been computed before
@@ -167,7 +177,7 @@ class Search:
 
             # if invalid performance parameters
             if not is_valid:
-                perf_costs[coord_key] = self.MAXFLOAT
+                perf_costs[coord_key] = [self.MAXFLOAT]
                 continue
 
             # store all unevaluated coordinates
@@ -182,7 +192,17 @@ class Search:
         for coord in uneval_coords:
             coord_key = str(coord)
             perf_params = self.coordToPerfParams(coord)
+            #info('transformation time = %e',time.time())
+            self.transform_time=0
+            start = time.time()
+            
             transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
+
+            elapsed = (time.time() - start)
+            self.transform_time=elapsed
+
+            #info('transformation time = %e' % self.transform_time)
+            
             if len(transformed_code_seq) != 1:
                 err('internal error: the optimized annotation code cannot contain multiple versions')
                 sys.exit(1)
@@ -199,6 +219,10 @@ class Search:
 
         # merge the newly obtained performance costs
         perf_costs.update(new_perf_costs.items())
+
+        # also take the compile time
+        self.compile_time=self.ptdriver.compile_time
+
         
         # return the performance cost
         return perf_costs
