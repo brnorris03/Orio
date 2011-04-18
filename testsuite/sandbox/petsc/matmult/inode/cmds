@@ -1,0 +1,3 @@
+
+gcc -O -I/disks/fast/papi/include -L/disks/fast/papi/lib -lpapi -DREPS=100 spmv.base.c
+
