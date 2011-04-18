@@ -1,0 +1,79 @@
+
+====== START ORIO ======
+
+----- begin reading the source file: axpy5.c -----
+----- finished reading the source file -----
+
+----- begin parsing annotations -----
+----- finished parsing annotations -----
+
+----- begin optimizations -----
+
+----- begin empirical tuning for problem size -----
+ N = 1000000
+
+----- begin random search -----
+ compiling:
+	gcc -O3  -DREPS=35 -o _orio_perftest1.exe _orio_perftest1.c
+ running:
+	 ./_orio_perftest1.exe
+(run 1) coordinate: [449], cost: 0.0100165
+>>>> best coordinate found: [449], cost: 0.0100165
+ compiling:
+	gcc -O3  -DREPS=35 -o _orio_perftest1.exe _orio_perftest1.c
+ running:
+	 ./_orio_perftest1.exe
+(run 2) coordinate: [787], cost: 0.0111697
+ compiling:
+	gcc -O3  -DREPS=35 -o _orio_perftest1.exe _orio_perftest1.c
+ running:
+	 ./_orio_perftest1.exe
+(run 3) coordinate: [93], cost: 0.00977791
+>>>> best coordinate found: [93], cost: 0.00977791
+ compiling:
+	gcc -O3  -DREPS=35 -o _orio_perftest1.exe _orio_perftest1.c
+ running:
+	 ./_orio_perftest1.exe
+(run 4) coordinate: [761], cost: 0.0112445
+ compiling:
+	gcc -O3  -DREPS=35 -o _orio_perftest1.exe _orio_perftest1.c
+ running:
+	 ./_orio_perftest1.exe
+(run 5) coordinate: [25], cost: 0.00691446
+>>>> best coordinate found: [25], cost: 0.00691446
+ compiling:
+	gcc -O3  -DREPS=35 -o _orio_perftest1.exe _orio_perftest1.c
+ running:
+	 ./_orio_perftest1.exe
+(run 6) coordinate: [421], cost: 0.00996257
+ compiling:
+	gcc -O3  -DREPS=35 -o _orio_perftest1.exe _orio_perftest1.c
+ running:
+	 ./_orio_perftest1.exe
+(run 7) coordinate: [29], cost: 0.00723425
+ compiling:
+	gcc -O3  -DREPS=35 -o _orio_perftest1.exe _orio_perftest1.c
+ running:
+	 ./_orio_perftest1.exe
+(run 8) coordinate: [221], cost: 0.0103709
+ compiling:
+	gcc -O3  -DREPS=35 -o _orio_perftest1.exe _orio_perftest1.c
+ running:
+	 ./_orio_perftest1.exe
+(run 9) coordinate: [437], cost: 0.0100118
+ compiling:
+	gcc -O3  -DREPS=35 -o _orio_perftest1.exe _orio_perftest1.c
+ running:
+	 ./_orio_perftest1.exe
+(run 10) coordinate: [495], cost: 0.0100912
+----- end random search -----
+----- begin summary -----
+ best coordinate: [25], cost: 0.00691446
+ total search time: 57.38 seconds
+ total completed runs: 10
+----- end summary -----
+----- the obtained best performance parameters -----
+ UF = 26
+----- finish optimizations -----
+
+====== END ORIO ======
