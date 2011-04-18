@@ -1,3 +1,0 @@
-
-gcc -O -I/disks/fast/papi/include -L/disks/fast/papi/lib -lpapi -DORIO_REPS=100 spmv.base.c
-
