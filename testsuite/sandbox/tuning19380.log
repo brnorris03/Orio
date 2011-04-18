@@ -1,0 +1,32 @@
+
+====== START ORIO ======
+
+----- begin reading the source file: ptune.c -----
+----- finished reading the source file -----
+
+----- begin parsing annotations -----
+----- finished parsing annotations -----
+
+----- begin optimizations -----
+orio.main.tuner.tuner: 8: undefined specification: "unrolljam_mm_mul"
+  File "/home/pbalapra/Libs/bin/orcc", line 24, in <module>
+    orio.main.orio_main.start(sys.argv, orio.main.orio_main.C_CPP)
+
+  File "/fusion/gpfs/home/pbalapra/Libs/lib/python2.6/site-packages/orio/main/orio_main.py", line 97, in start
+    optimized_code_seq = odriver.optimizeCodeFrags(cfrags,{}, False)
+
+  File "/fusion/gpfs/home/pbalapra/Libs/lib/python2.6/site-packages/orio/main/opt_driver.py", line 168, in optimizeCodeFrags
+    cur_seq = self.__optimizeCodeFrag(cf, perf_params)
+
+  File "/fusion/gpfs/home/pbalapra/Libs/lib/python2.6/site-packages/orio/main/opt_driver.py", line 91, in __optimizeCodeFrag
+    cfrag.cfrags)
+
+  File "/fusion/gpfs/home/pbalapra/Libs/lib/python2.6/site-packages/orio/main/tuner/tuner.py", line 45, in tune
+    tinfo = self.__extractTuningInfo(module_body_code, line_no)
+
+  File "/fusion/gpfs/home/pbalapra/Libs/lib/python2.6/site-packages/orio/main/tuner/tuner.py", line 193, in __extractTuningInfo
+    err('orio.main.tuner.tuner: %s: undefined specification: "%s"' % (spec_name_line_no, spec_name))
+
+  File "/fusion/gpfs/home/pbalapra/Libs/lib/python2.6/site-packages/orio/main/util/globals.py", line 169, in err
+    Globals().logger.error(errmsg + '\n' + '\n'.join(traceback.format_stack()))
+
