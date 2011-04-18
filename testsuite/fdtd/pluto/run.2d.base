@@ -1,6 +1,0 @@
-
-
-icc -fast -I/usr/local/icc/include 2d.base.c -DORIO_REPS=1 -DTVAL=500 -DNXVAL=1000 -DNYVAL=1000
-./a.out
-rm a.out
-

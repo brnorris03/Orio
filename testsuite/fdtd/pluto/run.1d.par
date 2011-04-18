@@ -1,8 +1,0 @@
-
-
-export OMP_NUM_THREADS=4
-
-icc -fast -openmp -I/usr/local/icc/include -lm 1d.tuned-par.512.c -DORIO_REPS=1 -DTVAL=10000 -DNVAL=1000000
-./a.out
-rm a.out
-
