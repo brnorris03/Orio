@@ -1,7 +1,0 @@
-
-mpixlc_r -O -qsmp=omp:noauto -qstrict -DORIO_REPS=10 -BGP_COUNTER spmv.c
-
-qsub -n 32 -t 5 -q short EXEFILE
-
-qstat JOBID
-
