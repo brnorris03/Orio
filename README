@@ -61,7 +61,7 @@ export PATH=$PATH:/home/username/bin
 After making sure that the orcc executable is in your path, you can 
 try some of the examples included in the testsuite subdirectory, e.g.:
 
- > cd testsuite/axpy/simple
+ > cd testsuite/sandbox/axpy/simple
  > orcc -v axpy5.c
 
 If Orio reports problems building the code, adjust the compiler settings in 
