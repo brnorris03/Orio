@@ -1,5 +1,0 @@
-0.1->0.2:
-Changed all_pair_sp to all_pairs_sp.
-Fixed bug in vertex deletion.
-Misc. other pychecker fixes.
-
