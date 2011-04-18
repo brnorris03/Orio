@@ -1,7 +1,0 @@
-This directory contains code that implements pure loop unrolling,
-meaning that there is no need to jam/fuse the unrolled loop body.
-
-This code transformation submodule utilizes the unroll-and-jam
-submodule. Please read the README file of the unroll-and-jam submodule
-for further details.
-
