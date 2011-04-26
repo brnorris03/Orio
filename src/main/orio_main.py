@@ -28,7 +28,6 @@ def start(argv, lang):
         sys.stderr.write('orio.main.main:  Language not supported at this time.')
         sys.exit(1)
 
-
     # import other required Python packages
     import ann_parser, cmd_line_opts, opt_driver, tspec.tspec
 
