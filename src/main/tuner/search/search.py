@@ -1,7 +1,7 @@
 #
 # The search engine used for search space exploration
 #
-import sys, math,time
+import sys, math, time
 from orio.main.util.globals import *
 
 
@@ -15,6 +15,11 @@ class Search:
     def __init__(self, params):
         '''To instantiate a search engine'''
 
+        #print params
+        #print 'done'
+
+        self.params=params
+
         # the class variables that are essential to know when developing a new search engine subclass
         if 'search_time_limit' in params.keys(): self.time_limit = params['search_time_limit']
         else: self.time_limit = -1
@@ -22,24 +27,23 @@ class Search:
         else: self.total_runs = -1
         if 'search_opts' in params.keys(): self.search_opts = params['search_opts']
         else: self.search_opts = {}
+
         if 'axis_names' in params.keys(): 
             self.total_dims = len(params['axis_names'])
         else: 
             err('the search space was not defined correctly, missing axis_names parameter')
         if 'axis_val_ranges' in params.keys(): 
             self.dim_uplimits = [len(r) for r in params['axis_val_ranges']]
-            #print [r for r in params['axis_val_ranges']]
-            num_bins=len([r for r in self.dim_uplimits if r==2])
         else: 
             err('the search space was not defined correctly, missing axis_val_ranges parameter')
-            
+
         self.space_size = 0
         if self.total_dims > 0:
             self.space_size = reduce(lambda x,y: x*y, self.dim_uplimits, 1)
 
-        print self.dim_uplimits    
-        res='Space %d %d %1.3e' % (self.total_dims-num_bins,num_bins,self.space_size)        
-        info(res)
+        #print self.dim_uplimits    
+        #res='Space %d %d %1.3e' % (self.total_dims-num_bins,num_bins,self.space_size)        
+        #info(res)
         #sys.exit()
         
         if 'use_parallel_search' in params.keys(): self.use_parallel_search = params['use_parallel_search']
@@ -98,13 +102,17 @@ class Search:
             err ('the search cannot find a valid set of performance parameters. ' +
                  'the search time limit might be too short, or the performance parameter ' +
                  'constraints might prune out the entire search space.')
-           
 
-        # get the performance cost of the best parameters
-        best_perf_cost = self.getPerfCost(best_coord)
-
-        # convert the coordinate to the corresponding performance parameters
-        best_perf_params = self.coordToPerfParams(best_coord)
+                
+        if not Globals().extern:    
+            # get the performance cost of the best parameters
+            best_perf_cost = self.getPerfCost(best_coord)
+            # convert the coordinate to the corresponding performance parameters
+            best_perf_params = self.coordToPerfParams(best_coord)
+        else:
+            best_perf_cost=0
+            best_perf_params=Globals().config
+        
 
         # return the best performance parameters
         return (best_perf_params, best_perf_cost)
@@ -153,6 +161,7 @@ class Search:
 
         # initialize the performance costs mapping
         perf_costs = {}
+        
 
         # filter out all invalid coordinates and previously evaluated coordinates
         uneval_coords = []
@@ -176,7 +185,8 @@ class Search:
 
             # get the performance parameters
             perf_params = self.coordToPerfParams(coord)
-        
+
+            
             # test if the performance parameters are valid
             try:
                 is_valid = eval(self.constraint, perf_params)
@@ -200,43 +210,115 @@ class Search:
         for coord in uneval_coords:
             coord_key = str(coord)
             perf_params = self.coordToPerfParams(coord)
+            #print perf_params
             #info('transformation time = %e',time.time())
             self.transform_time=0
             start = time.time()
-            
-            transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
+            #print perf_params
+            #print self.getPerfCostConfig(coord_key,perf_params)
 
+            transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
+            #print perf_params
             elapsed = (time.time() - start)
             self.transform_time=elapsed
-
             #info('transformation time = %e' % self.transform_time)
-            
             if len(transformed_code_seq) != 1:
                 err('internal error: the optimized annotation code cannot contain multiple versions')
                 sys.exit(1)
             transformed_code, _ = transformed_code_seq[0]
             code_map[coord_key] = transformed_code
-        debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
-
+        #debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)
         new_perf_costs = self.ptdriver.run(test_code)
-
+        #new_perf_costs = self.getPerfCostConfig(coord_key,perf_params)
         # remember the performance cost of previously evaluated coordinate
         self.perf_cost_records.update(new_perf_costs.items())
-
         # merge the newly obtained performance costs
         perf_costs.update(new_perf_costs.items())
-
         # also take the compile time
         self.compile_time=self.ptdriver.compile_time
 
-        
-        # return the performance cost
+        #sys.exit()
+
+        #return the performance cost
+
         return perf_costs
 
     #----------------------------------------------------------
 
+    def getPerfCostConfig(self, coord_key,param_config):
+        '''
+        Empirically evaluate the performance costs of the codes corresponding the given coordinates
+        @param coords:  all search space coordinates
+        '''
+
+        is_valid=False
+
+        
+        # test if the performance parameters are valid
+        try:
+            is_valid = eval(self.constraint, param_config)
+        except Exception, e:
+            err('failed to evaluate the constraint expression: "%s"\n%s %s' % (self.constraint,e.__class__.__name__, e))
+
+            
+        # if invalid performance parameters
+        if not is_valid:
+            perf_costs[coord_key] = [self.MAXFLOAT]
+            return perf_costs
+
+
+        config=Globals().config
+        params=self.params['axis_names']
+        vals=self.params['axis_val_ranges']
+
+
+        is_out=False
+        for i, p in enumerate(params):
+            min_val=min(vals[i])
+            max_val=max(vals[i])
+            #print p, min_val,max_val
+            if param_config[p] < min_val or param_config[p] > max_val:
+                is_out=True
+                break
+                
+        if is_out:
+            perf_costs[coord_key] = [self.MAXFLOAT]
+            return perf_costs
+            
+
+        code_map = {}
+        self.transform_time=0
+        start = time.time()
+        transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, param_config)
+
+
+        elapsed = (time.time() - start)
+        self.transform_time=elapsed
+        if len(transformed_code_seq) != 1:
+            err('internal error: the optimized annotation code cannot contain multiple versions')
+            sys.exit(1)
+
+        #coord_key='param'    
+        transformed_code, _ = transformed_code_seq[0]
+        code_map[coord_key] = transformed_code
+        #debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
+        # evaluate the performance costs for all coordinates
+        test_code = self.ptcodegen.generate(code_map)
+        new_perf_costs = self.ptdriver.run(test_code)
+        self.compile_time=self.ptdriver.compile_time
+        
+        #print new_perf_costs
+        #print perf_params.keys()
+
+        #sys.exit()
+
+        return new_perf_costs
+
+    #----------------------------------------------------------
+
+    
     def factorial(self, n):
         '''Return the factorial value of the given number'''
         return reduce(lambda x,y: x*y, range(1, n+1), 1)
