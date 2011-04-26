@@ -97,6 +97,8 @@ class Randomsearch(orio.main.tuner.search.search.Search):
 
             perf_costs={}
             # determine the performance cost of all chosen coordinates
+            #perf_costs = self.getPerfCosts(coords)
+            #sys.exit()
             try:
                 perf_costs = self.getPerfCosts(coords)
             except:
@@ -138,7 +140,6 @@ class Randomsearch(orio.main.tuner.search.search.Search):
             if not math.isinf(mean_perf_cost):
                 sruns +=1
                 info('(run %s) sruns: %s, fruns: %s, coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs+i, sruns, fruns, coord_val, perf_params, transform_time, compile_time,perf_cost))        
-                
             
             
             # check if the time is up

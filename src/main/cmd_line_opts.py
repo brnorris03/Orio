@@ -28,6 +28,8 @@ Options:
                                  files to be the same as those that would result from compiling
                                  the original source code
   -s <file>, --spec=<file>       read tuning specifications from <file>
+  -x, --external                 run orio in external mode
+  --config=<p1:v1,p2:v2,..>      configurations for external mode 
   -v, --verbose                  verbosely show details of the results of the running program
 
 environment variables: 
@@ -113,10 +115,12 @@ class CmdParser:
 
         # get all options
         try:
+            print orioargv
             opts, args = getopt.getopt(orioargv,
-                                       'c:ehko:p:rs:v',
-                                       ['pre-command=', 'erase-annot', 'help', 'keep-temps',' output=', 
-                                       'output-prefix=', 'rename-objects', 'spec=', 'verbose'])
+                                       'c:ehko:p:rs:vx',
+                                       ['pre-command=', 'config=', 'erase-annot', 'help', 'keep-temps',' output=', 
+                                       'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern'])
+
         except Exception, e:
             sys.stderr.write('Orio command-line error: %s' % e)
             sys.stderr.write(USAGE_MSG + '\n')
@@ -124,6 +128,8 @@ class CmdParser:
 
         cmdline = {}
         # evaluate all options
+        #print opts
+        
         for opt, arg in opts:
             if opt in ('-c', '--pre-command'):
                 cmdline['pre_cmd'] = arg
@@ -144,7 +150,15 @@ class CmdParser:
                 cmdline['spec_filename'] = arg
             elif opt in ('-v', '--verbose'):
                 cmdline['verbose'] = True
-
+            elif opt in ('-x','--extern'):
+                cmdline['extern'] = True
+                #print cmdline.get('extern')
+            elif opt in ('--config'):
+                cmdline['config'] = arg
+                
+        #print cmdline.get('config')        
+        #sys.exit()
+            
         # check on the arguments
         if len(srcfiles) < 1:
             if otherargv: 

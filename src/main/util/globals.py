@@ -34,6 +34,17 @@ class Globals:
                 self.verbose = cmdline['verbose']
             else:
                 self.verbose = False
+
+            if 'extern' in cmdline.keys():
+                self.extern = cmdline['extern']
+            else:
+                self.extern = False
+
+            if 'config' in cmdline.keys():
+                self.config = cmdline['config']
+            else:
+                self.config = ''
+                
             
             if 'out_prefix' in cmdline.keys():
                 self.out_prefix = cmdline['out_prefix']
