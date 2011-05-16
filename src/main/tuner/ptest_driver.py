@@ -20,6 +20,7 @@ class PerfTestDriver:
     to get the performance cost
     '''
 
+
     # the file names of the testing code (i.e. source and executable)
     __PTEST_FNAME = '_orio_perftest'
 
@@ -39,6 +40,12 @@ class PerfTestDriver:
         global counter
         counter += 1
         self.language = language
+
+        #print 'Coming here'
+        #print Globals().out_prefix
+
+        self.__PTEST_FNAME=Globals().out_prefix+self.__PTEST_FNAME
+
         if language == 'c': 
             self.src_name = self.__PTEST_FNAME + str(counter) + '.c'
         else:

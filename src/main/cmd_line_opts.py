@@ -29,7 +29,8 @@ Options:
                                  the original source code
   -s <file>, --spec=<file>       read tuning specifications from <file>
   -x, --external                 run orio in external mode
-  --config=<p1:v1,p2:v2,..>      configurations for external mode 
+  --config=<p1:v1,p2:v2,..>      configurations for external mode
+  --configfile=filename          configuration filename 
   -v, --verbose                  verbosely show details of the results of the running program
 
 environment variables: 
@@ -115,10 +116,10 @@ class CmdParser:
 
         # get all options
         try:
-            print orioargv
+            #print orioargv
             opts, args = getopt.getopt(orioargv,
                                        'c:ehko:p:rs:vx',
-                                       ['pre-command=', 'config=', 'erase-annot', 'help', 'keep-temps',' output=', 
+                                       ['pre-command=', 'config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=', 
                                        'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern'])
 
         except Exception, e:
@@ -127,7 +128,7 @@ class CmdParser:
             sys.exit(1)
 
         cmdline = {}
-        # evaluate all options
+        #evaluate all options
         #print opts
         
         for opt, arg in opts:
@@ -155,6 +156,8 @@ class CmdParser:
                 #print cmdline.get('extern')
             elif opt in ('--config'):
                 cmdline['config'] = arg
+            elif opt in ('--configfile'):
+                cmdline['configfile'] = arg
                 
         #print cmdline.get('config')        
         #sys.exit()
