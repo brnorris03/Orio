@@ -79,8 +79,8 @@ class Extern(orio.main.tuner.search.search.Search):
         perf_costs={}
         # execute the randomized search method
         while True:
-
             config=Globals().config
+            configfile=Globals().configfile
             params=self.params['axis_names']
             vals=self.params['axis_val_ranges']
 
@@ -89,29 +89,44 @@ class Extern(orio.main.tuner.search.search.Search):
             
             for token in config.split(','):
                 param_val=token.split(':')
-
-                if len(param_val)>1:
-                    param=param_val[0]
-                    val=param_val[1]
-                    if val=='False':
-                        param_config[param]=False
-                    elif val=='True':
-                        param_config[param]=True
-                    else:
-                        param_config[param]=float(val) if '.' in val else int(val)
-
-            
-
+            if len(param_val)>1:
+                param=param_val[0]
+                val=param_val[1]
+                if val=='False':
+                    param_config[param]=False
+                elif val=='True':
+                    param_config[param]=True
+                else:
+                    param_config[param]=float(val) if '.' in val else int(val)
+                        
             Globals().config=param_config
+
+            if configfile != '':
+                f = open(configfile, 'r') 
+                for line in f:
+                    param_val=''.join(line)
+                    param_val=param_val.strip()
+                    param_val=param_val.replace('\n','')
+                    break
+                f.close()
+
+                param_val=param_val.split(' ')
+
+                #print param_val
+
+                for i, p in enumerate(params):
+                    if i < len(param_val):
+                        param_config[p]=vals[i][int(param_val[i])]
+
+                #print param_config
+                    
             
             
             n=len(param_config.keys())
             s = range(n)
             coord=[0*x for x in s]
             coord_key=str(coord)
-
             pf = param_config.copy()
-
 
             try:
                 perf_costs=self.getPerfCostConfig(coord_key,param_config)
@@ -119,6 +134,7 @@ class Extern(orio.main.tuner.search.search.Search):
                 perf_costs[coord_key]=[self.MAXFLOAT]
                 info('FAILED')
                 fruns +=1
+                sys.stderr.write('FAILED\n')
 
             perf_cost=perf_costs.get(coord_key)
 
@@ -143,12 +159,13 @@ class Extern(orio.main.tuner.search.search.Search):
             break
             
 
-        # compute the total search time
         search_time = time.time() - start_time
         
         info('----- end extern eval -----')
 
-
+        count=0
+        if (transform_time>0.0):
+         count=1
         #info('----- begin summary -----')
         #info(' best coordinate: %s, cost: %e' % (best_coord, best_perf_cost))
         #info(' total search time: %.2f seconds' % search_time)
@@ -156,7 +173,19 @@ class Extern(orio.main.tuner.search.search.Search):
         #info(' total successful runs: %s' % sruns)
         #info(' total failed runs: %s' % fruns)
         #info('----- end summary -----')
-        
+        if configfile != '':
+            res=('%1.8f' % (best_perf_cost))
+            print res, count, perf_cost
+            outstring=('%s %d %s\n'%(res, count, perf_cost))
+            outfile=Globals().configfile+'.out'
+            f = open(outfile, 'w')
+            f.write(outstring)
+            f.close
+            #print res, count, perf_cost
+            #sys.stderr.write(outfile+'\n')
+            result=('%s %d\n'%(res, count))
+            sys.stderr.write(result)
+            #sys.stderr.write('%s\n'%pf)
         # return the best coordinate
         return best_coord
    
