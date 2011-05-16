@@ -37,6 +37,9 @@ def start(argv, lang):
 
     g = Globals(cmdline)
     Globals().language = language
+
+    #print 'Globals'
+    #print g.out_prefix
     
     # Simply pass through command  (Orio won't do anything)
     if g.disable_orio and g.external_command:

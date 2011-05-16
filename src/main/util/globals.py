@@ -44,8 +44,19 @@ class Globals:
                 self.config = cmdline['config']
             else:
                 self.config = ''
+
+            if 'configfile' in cmdline.keys():
+                self.configfile = cmdline['configfile']
+                #f = open(self.configfile, 'r')
+                #k=f.read()
+                #sys.stderr.write(k)
+                #f.close()
+
+            else:
+                self.configfile = ''
+
                 
-            
+                
             if 'out_prefix' in cmdline.keys():
                 self.out_prefix = cmdline['out_prefix']
             else:

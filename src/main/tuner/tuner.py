@@ -76,6 +76,10 @@ class PerfTuner:
         # get the axis names and axis value ranges to represent the search space
         axis_names, axis_val_ranges = self.__buildCoordSystem(tinfo.pparam_params)
 
+        info('%s' % axis_names)
+        info('%s' % axis_val_ranges)
+        
+
         # combine the performance parameter constraints
         pparam_constraint = 'True'
         for vname, rhs in tinfo.pparam_constraints:
@@ -305,22 +309,82 @@ class PerfTuner:
         self.num_bin=0
         self.num_int=self.num_params
 
+        ptype=[]
         for vals in axis_val_ranges:
-            #print len(vals)
+            #print min(vals)
             self.num_configs=self.num_configs*len(vals)
+            ptype.append('I')
             if len(vals)==2:
                 #print vals
                 if False in vals or True in vals:
                     self.num_bin=self.num_bin+1
+                    ptype[len(ptype)-1]=('B')
 
         self.num_int=self.num_int-self.num_bin
+
+        min_vals=[min(v) for v in axis_val_ranges]
+        min_vals=[min(v)-min(v) for v in axis_val_ranges]
+        min_val_str="%s" % min_vals
+        min_val_str=min_val_str.replace('False','0')
+        min_val_str=min_val_str.replace('[','')
+        min_val_str=min_val_str.replace(']','')
+        min_val_str=min_val_str.replace(',','')
+        
+
+        max_vals=[len(v)-1 for v in axis_val_ranges]
+        max_val_str="%s" % max_vals
+        max_val_str=max_val_str.replace('True','1')
+        max_val_str=max_val_str.replace('[','')
+        max_val_str=max_val_str.replace(']','')
+        max_val_str=max_val_str.replace(',','')
+        
 
         info('Search_Space         = %1.3e' % self.num_configs)
         info('Number_of_Parameters = %02d' % self.num_params)
         info('Numeric_Parameters   = %02d' % self.num_int)
         info('Binary_Parameters    = %02d' % self.num_bin)
         
+        srcfilename=Globals().src_filenames.keys()[0]
+        nomadfile=srcfilename+'.nomad'
+        nomadfileobj=srcfilename+'.nomad.obj.exe'
+
         
+        spec_string=''
+        spec_string=spec_string+"DIMENSION      %02d\n" % (self.num_params)
+        spec_string=spec_string+"BB_EXE         %s\n"% nomadfileobj 
+        spec_string=spec_string+"BB_INPUT_TYPE  ( %s )\n" % ' '.join(ptype)
+        spec_string=spec_string+"BB_OUTPUT_TYPE OBJ CNT_EVAL \n"
+        spec_string=spec_string+"X0             ( %s )\n" % min_val_str
+        spec_string=spec_string+"LOWER_BOUND    ( %s )\n" % min_val_str
+        spec_string=spec_string+"UPPER_BOUND    ( %s )\n" % max_val_str
+        spec_string=spec_string+"MAX_BB_EVAL    %s\n" % 1000
+        spec_string=spec_string+"DISPLAY_STATS  BBE OBJ EVAL\n"
+        spec_string=spec_string+"SEED    1\n" 
+
+        nomadfile=srcfilename+'.nomad'
+        nomadfileobj=srcfilename+'.nomad.obj.exe'
+        sys.stderr.write('%s\n'% Globals().configfile)   
+        
+        if Globals().configfile=='':
+         f = open(nomadfile, 'w')
+         f.write(spec_string)
+         f.close()
+
+         scriptstr="#!/bin/bash\n"
+         scriptstr=scriptstr+"orcc -x %s --configfile=$1\n" % srcfilename
+        
+        
+         f = open(nomadfileobj, 'w')
+         f.write(scriptstr)
+         f.close()
+         #system()
+
+         os.system("chmod +x %s" % nomadfileobj)
+
+        #print '-------------------'
+        #print axis_val_ranges
+        #print '-------------------'
+
 
         return (axis_names, axis_val_ranges)
         
