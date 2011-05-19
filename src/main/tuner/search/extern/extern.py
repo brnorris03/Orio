@@ -166,6 +166,7 @@ class Extern(orio.main.tuner.search.search.Search):
         count=0
         if (transform_time>0.0):
          count=1
+        #count=1 
         #info('----- begin summary -----')
         #info(' best coordinate: %s, cost: %e' % (best_coord, best_perf_cost))
         #info(' total search time: %.2f seconds' % search_time)
