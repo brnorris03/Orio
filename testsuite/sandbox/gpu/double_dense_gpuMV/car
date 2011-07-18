@@ -1,0 +1,7 @@
+#!/bin/bash
+
+rm profile.txt
+make clean
+make
+./main $1 > profile.txt
+cat profile.txt
