@@ -1,7 +1,8 @@
 /*@ begin PerfTuning (  
   def build
   {
-  arg build_command = 'icc -O3 -openmp -lm -DDYNAMIC'; 
+  arg build_command = 'icc -O3 -openmp -DDYNAMIC'; 
+  arg libs = '-lm -lrt';
   }
   
   def performance_counter  
