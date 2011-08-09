@@ -21,7 +21,7 @@ out
 
 import sys
 import tool.ply.lex
-from orio.main.util.globals import err
+#from orio.main.util.globals import err
 
 #------------------------------------------------
 
@@ -114,7 +114,7 @@ reserved_map = {}
 for r in reserved:
     reserved_map[r.lower()] = r
 
-# identifiers
+# identifiersa
 def t_ID(t):
     r'[A-Za-z_]([_\.\w]*[_\w]+)*'
     t.type = reserved_map.get(t.value,'ID')
@@ -137,6 +137,9 @@ def t_NEWLINE(t):
     r'\n+'
     t.lineno += t.value.count('\n')
     
+def err(s):
+    sys.stderr.write(s)
+    
 # syntactical error
 def t_error(t):
     err('orio.module.loop.parser: %s: syntactical error: "%s"' % ((t.lineno + __start_line_no - 1), t.value[0]))
@@ -154,5 +157,10 @@ if __name__ == "__main__":
         f.close()
         # print "Contents of %s: %s" % (sys.argv[i], s)
         if s == '' or s.isspace(): sys.exit(0)
-        l.test(s)
+        # Test the lexer; just print out all tokens founds
+        l.input(s)
+        while 1:
+            tok = l.token()
+            if not tok: break
+            print tok
 
