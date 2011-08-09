@@ -1,5 +1,5 @@
 
-void axpy_5(int N, double *y, 
+void axpy_4(int N, double *y, 
 	    double a1, double *x1, double a2, double *x2, 
 	    double a3, double *x3, double a4, double *x4,
 	    double a5, double *x5) {
@@ -7,18 +7,18 @@ void axpy_5(int N, double *y,
 /*@ begin PerfTuning (
  def build {
    arg build_command = 'gcc -O3';
-   arg lib = '-lrt'
+   arg libs = '-lrt';
  } 
  def performance_counter {
    #arg method = 'bgp counter';
-   arg repetitions = 35;
+   arg repetitions = 3;
  }
  def performance_params {  
-   param UF[] = range(1,1000);
-   constraint divisible_by_two = (UF % 2 == 0);
+   param UF[] = range(1,11);
+   #constraint divisible_by_two = (UF % 2 == 0);
  }
  def input_params {
-   param N[] = [1000000];
+   param N[] = [100000];
  }
  def input_vars {
    decl dynamic double x1[N] = random;
@@ -34,9 +34,7 @@ void axpy_5(int N, double *y,
    decl double a5 = random;
  }
  def search {
-   arg algorithm = 'Randomsearch';
-   arg total_runs = 10;   
-   #arg time_limit = 5000000;
+   arg algorithm = 'Exhaustive';
  }
 ) @*/
 
