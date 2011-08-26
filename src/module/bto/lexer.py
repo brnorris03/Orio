@@ -20,7 +20,7 @@ out
 '''
 
 import sys
-import tool.ply.lex
+import orio.tool.ply.lex
 #from orio.main.util.globals import err
 
 #------------------------------------------------
@@ -58,7 +58,7 @@ tokens = reserved + [
     'LPAREN', 'RPAREN',
     'LBRACKET', 'RBRACKET',
     'LBRACE', 'RBRACE',
-    'COMMA', 'SEMI', 'COLON', 'PERIOD',
+    'COMMA', 'SEMI', 'COLON', 'PERIOD', 'SQUOTE',
     'LINECOMMENT'
     ]
 
@@ -81,6 +81,7 @@ t_LE               = r'<='
 t_GE               = r'>='
 t_EQ               = r'=='
 t_NE               = r'!='
+t_SQUOTE            = r'\''
 
 # assignment operators
 t_EQUALS           = r'='
@@ -130,7 +131,7 @@ t_FCONST     = r'((\d+)(\.\d*)([eE](\+|-)?(\d+))? | (\d+)[eE](\+|-)?(\d+))'
 t_SCONST_D   = r'\"([^\\\n]|(\\.))*?\"'
 
 # string literal (with single quotes)
-t_SCONST_S   = r'\'([^\\\n]|(\\.))*?\''
+#t_SCONST_S   = r'\'([^\\\n]|(\\.))*?\''
 
 # newlines
 def t_NEWLINE(t):
@@ -149,7 +150,7 @@ if __name__ == "__main__":
     #lex.runmain(lexer)
     # Build the lexer and try it out
     # Build the lexer 
-    l = tool.ply.lex.lex(debug=1,optimize=0) 
+    l = orio.tool.ply.lex.lex(debug=1,optimize=0) 
     for i in range(1, len(sys.argv)):
         print "About to lex %s" % sys.argv[i]
         f = open(sys.argv[i],"r")
