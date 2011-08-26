@@ -5,13 +5,14 @@ Created on Aug 26, 2011
 '''
 
 
-import sys,os
+import sys,os,re
 import orio.tool.ply.lex, orio.tool.ply.yacc
 #from orio.module.bto.ast import *
 from orio.module.bto.lexer import *
 from orio.main.util.globals import *
 
 vars = {}
+scalar_name_re = re.compile(r'[a-n]\w*')
 
 # input
 def p_prog_1(p):
@@ -26,6 +27,11 @@ def p_prog_2(p):
     '''
     p[0] = p[1]
     # TODO
+    
+def p_prog_3(p):
+    'prog : stmt_list'
+    # Accept partial programs, do type inference
+    p[0] = p[1]
     
 def p_param_list(p):
     '''param_list : param
@@ -94,7 +100,7 @@ def p_expr_3(p):
             | expr SQUOTE
             | LPAREN expr RPAREN
             '''
-            
+    
     if len(p) > 3:
         expressions = [p[1],p[3]]
     elif p[1] == '\'':
@@ -111,7 +117,12 @@ def p_expr_3(p):
                     type = 'matrix'
                     orientation = 'row' # default
                 else:
-                    type = 'vector'
+                    # Use Fortran implicit rules to decide whether variable 
+                    # is scalar or vector -- a-n scalar, o-z vector
+                    if scalar_name_re.match(var):
+                        type = 'scalar'
+                    else:
+                        type = 'vector'
                     orientation = None
                 vars[exp[0]] = (type,orientation)
     p[0] = [] # TODO: eventually may want to store expressions
