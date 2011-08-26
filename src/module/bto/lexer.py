@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #
 # Contain syntax and grammar specifications of the BTO annotations language
 #
