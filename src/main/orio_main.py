@@ -109,7 +109,7 @@ def start(argv, lang):
                         suffix = ''
                         for pname, pval in input_params:
                             suffix += '_%s_%s' % (pname, pval)
-                        if Globals.out_filename: out_filename = Globals.out_filename
+                        if g.out_filename: out_filename = g.out_filename
                         else: out_filename = ('%s%s' % (path_name, suffix)) + ext
                     info('--> writing output to: %s' % out_filename)
                     try:
