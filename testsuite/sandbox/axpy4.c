@@ -2,7 +2,10 @@
  def build {
   arg build_command = 'gcc -O0';
  }
-
+ def performance_counter {
+  arg method = 'basic timer';
+  arg repetitions = 10;
+ }
  def performance_params {
   param UF[] = range(1,33);
  }
