@@ -11,6 +11,9 @@ SEQ_TIMER = '''
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#ifdef __APPLE__
+#include <sys/time.h>
+#endif
 
 #ifdef BGP_COUNTER
 #define SPRN_TBRL 0x10C // Time Base Read Lower Register (user & sup R/O)
