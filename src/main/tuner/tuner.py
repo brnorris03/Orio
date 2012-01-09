@@ -59,6 +59,11 @@ class PerfTuner:
                 c = orio.main.tuner.ptest_codegen.PerfTestCodeGen(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
                                                                   tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
                                                                   tinfo.random_seed, use_parallel_search)
+            elif self.odriver.lang == 'cuda':
+                c = orio.main.tuner.ptest_codegen.PerfTestCodeGenCUDA(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
+                                                                  tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
+                                                                  tinfo.random_seed, use_parallel_search)
+
             elif self.odriver.lang == 'fortran':
                 c = orio.main.tuner.ptest_codegen.PerfTestCodeGenFortran(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
                                                                          tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
