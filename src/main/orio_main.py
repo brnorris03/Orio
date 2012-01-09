@@ -10,6 +10,7 @@ from orio.main.util.globals import *
 # source language types
 C_CPP = 1
 FORTRAN = 2
+CUDA = 3
 
 #----------------------------------------------
 
@@ -24,6 +25,8 @@ def start(argv, lang):
         sys.stderr.write('WARNING: Fortran support is limited\n')
     elif lang == C_CPP:
         language = 'c'
+    elif lang == CUDA:
+        language = 'cuda'
     else:
         sys.stderr.write('orio.main.main:  Language not supported at this time.')
         sys.exit(1)
