@@ -310,7 +310,13 @@ class PerfTestCodeGen:
             return ''     
         
 # --------------------------------------------------------------------------------------
+class PerfTestCodeGenCUDA(PerfTestCodeGen):
 
+    def foo(self):
+        pass
+     
+
+# --------------------------------------------------------------------------------------
 
 class PerfTestCodeGenFortran:
     '''
