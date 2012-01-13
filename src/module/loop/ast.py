@@ -25,6 +25,7 @@
 #   +-- NewAST 
 #        |
 #        +-- VarDecl 
+#        +-- FunDecl
 #        +-- Pragma 
 #        +-- Container
 #
@@ -382,6 +383,25 @@ class VarDecl(NewAST):
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
         return VarDecl(self.type_name, self.var_names[:], self.line_no)
+
+#-----------------------------------------------
+# Function Declaration
+#-----------------------------------------------
+
+class FunDecl(NewAST):
+
+    def __init__(self, name, return_type, modifiers, arguments, body, line_no = ''):
+        '''Create a function declaration'''
+        NewAST.__init__(self, line_no)
+        self.name = name
+        self.return_type = return_type
+        self.modifiers = modifiers
+        self.arguments = arguments
+        self.body = body
+
+    def replicate(self):
+        '''Replicate this abstract syntax tree node'''
+        return FunDecl(self.fun_name, self.return_type, self.modifiers[:], self.arguments[:], self.body, self.line_no)
 
 #-----------------------------------------------
 # Pragma Directive
