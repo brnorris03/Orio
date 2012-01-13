@@ -3,15 +3,15 @@
 #
 
 import sys
-import orio.module.loop.submodule.submodule
+import orio.module.loop.submodule.submodule, orio.module.loop.ast_lib.forloop_lib
 
 #---------------------------------------------------------------------
 
 class CUDA(orio.module.loop.submodule.submodule.SubModule):
-    '''The unrolling transformation submodule.'''
+    '''The cuda transformation submodule.'''
     
     def __init__(self, perf_params = None, transf_args = None, stmt = None, language='cuda'):
-        '''To instantiate an unrolling transformation submodule.'''
+        '''To instantiate the transformation submodule.'''
         
         orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
 
@@ -22,26 +22,104 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
 
     def readTransfArgs(self, perf_params, transf_args):
         '''Process the given transformation arguments'''
-        # TODO (e.g., see unrolljam transformation in the CPU submodules)
-        return 
+
+        # all expected argument names
+        THREADCOUNT = 'threadCount'
+        MAXBLOCKS = 'maxBlocks'
+
+        # all expected transformation arguments
+        threadCount = None
+        maxBlocks = None
+
+        # iterate over all transformation arguments
+        for aname, rhs, line_no in transf_args:
+
+            # evaluate the RHS expression
+            try:
+                rhs = eval(rhs, perf_params)
+            except Exception, e:
+                err('orio.module.loop.submodule.cuda.cuda: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
+                
+            # thread count
+            if aname == THREADCOUNT:
+                threadCount = (rhs, line_no)
+    
+            # max number of blocks
+            elif aname == MAXBLOCKS:
+                maxBlocks = (rhs, line_no)
+    
+            # unknown argument name
+            else:
+                err('orio.module.loop.submodule.cuda.cuda: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
+
+        # check for initialization of mandatory transformation arguments
+        if threadCount == None:
+            err('orio.module.loop.submodule.cuda.cuda: %s: missing threadCount argument' % self.__class__.__name__)
+        elif maxBlocks == None:
+            err('orio.module.loop.submodule.cuda.cuda: %s: missing maxBlocks argument' % self.__class__.__name__)
+
+        # check semantics of the transformation arguments
+        threadCount, maxBlocks = self.checkTransfArgs(threadCount, maxBlocks)
+
+        # return information about the transformation arguments
+        return (threadCount, maxBlocks)
 
     #-----------------------------------------------------------------
 
-    def cuda(self, ufactor, stmt, parallelize):
+    def checkTransfArgs(self, threadCount, maxBlocks):
+        '''Check the semantics of the given transformation arguments'''
+        
+        # sanity check
+        rhs, line_no = threadCount
+        if not isinstance(rhs, int) or rhs <= 0:
+            err('orio.module.loop.submodule.cuda.cuda: %s: threadCount must be a positive integer: %s' % (line_no, rhs))
+        threadCount = rhs
+
+        # sanity check
+        rhs, line_no = maxBlocks
+        if not isinstance(rhs, int) or rhs <= 0:
+            err('orio.module.loop.submodule.cuda.cuda: %s: maxBlocks must be a positive integer: %s' % (line_no, rhs))
+        maxBlocks = rhs
+
+        # return information about the transformation arguments
+        return (threadCount, maxBlocks)
+
+    #-----------------------------------------------------------------
+
+    def cuda(self, stmt, threadCount, blockCount):
         '''Apply CUDA transformations'''
-        # TODO
-        return 
+        
+        # get rid of compound statement that contains only a single statement
+        while isinstance(stmt.stmt, orio.module.loop.ast.CompStmt) and len(stmt.stmt.stmts) == 1:
+            stmt.stmt = stmt.stmt.stmts[0]
+        
+        # extract for-loop structure
+        for_loop_info = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(stmt)
+        index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
+
+
+        # generate the transformed statement
+        arg1 = orio.module.loop.ast.VarDecl('double*', ['orcuda_arg']) # Fixme: parameterize data types, add counters to var names
+        body = orio.module.loop.ast.Comment('placeholder')
+        dev_kernel = orio.module.loop.ast.FunDecl('orcuda_kern',
+                                                  'void',
+                                                  ['__global__'],
+                                                  [arg1],
+                                                  body)
+        
+        transformed_stmt = orio.module.loop.ast.CompStmt([dev_kernel])
+
+        return transformed_stmt
     
     #-----------------------------------------------------------------
 
     def transform(self):
         '''The implementation of the abstract transform method for CUDA'''
 
-        # TODO
-        # 1. Read all transformation arguments
+        # read all transformation arguments
+        threadCount, blockCount = self.readTransfArgs(self.perf_params, self.transf_args)
         
-        # 2. Perform the transformation of the statement
+        # perform the transformation of the statement
+        transformed_stmt = self.cuda(self.stmt, threadCount, blockCount)
         
-        # 3. Return the transformed statement
-                                                      
-        return
+        return transformed_stmt

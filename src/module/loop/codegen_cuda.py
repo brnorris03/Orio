@@ -171,6 +171,14 @@ class CodeGen_CUDA (CodeGen_C):
             s += ', '.join(tnode.var_names)
             s += ';\n'
 
+        elif isinstance(tnode, ast.FunDecl):
+            s += indent + ' '.join(tnode.modifiers) + ' '
+            s += tnode.return_type + ' '
+            s += tnode.name + '('
+            s += self.generate(tnode.arguments[0]) + ') {\n' #TODO
+            s += self.generate(tnode.body, indent + extra_indent, extra_indent) + '\n'
+            s += '}\n'
+
         elif isinstance(tnode, ast.Pragma):
             s += '#pragma ' + str(tnode.pstring) + '\n'
 
