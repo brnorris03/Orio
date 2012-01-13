@@ -20,11 +20,13 @@
 #   |    +-- CompStmt 
 #   |    +-- IfStmt 
 #   |    +-- ForStmt 
+#   |    +-- AssignStmt
 #   |    +-- TransformStmt 
 #   |
 #   +-- NewAST 
 #        |
-#        +-- VarDecl 
+#        +-- VarDecl
+#        +-- FieldDecl 
 #        +-- FunDecl
 #        +-- Pragma 
 #        +-- Container
@@ -342,6 +344,22 @@ class ForStmt(Stmt):
         return ForStmt(r_in, r_t, r_it, self.stmt.replicate(), self.line_no, self.label)
 
 #-----------------------------------------------
+# Assignment
+#-----------------------------------------------
+
+class AssignStmt(Stmt):
+
+    def __init__(self, var, exp, line_no = '', label=None):
+        '''Create a statement'''
+        Stmt.__init__(self, line_no, label)
+        self.var = var
+        self.exp = exp
+
+    def replicate(self):
+        '''Replicate this node'''
+        return AssignStmt(self.var, self.exp.replicate(), self.line_no, self.label)
+
+#-----------------------------------------------
 # Transformation
 #-----------------------------------------------
 
@@ -385,23 +403,39 @@ class VarDecl(NewAST):
         return VarDecl(self.type_name, self.var_names[:], self.line_no)
 
 #-----------------------------------------------
+# Field Declaration
+#-----------------------------------------------
+
+class FieldDecl(NewAST):
+
+    def __init__(self, ty, name, line_no = ''):
+        '''Create a field declaration'''
+        NewAST.__init__(self, line_no)
+        self.ty = ty
+        self.name = name
+
+    def replicate(self):
+        '''Replicate this abstract syntax tree node'''
+        return FieldDecl(self.ty, self.name, self.line_no)
+
+#-----------------------------------------------
 # Function Declaration
 #-----------------------------------------------
 
 class FunDecl(NewAST):
 
-    def __init__(self, name, return_type, modifiers, arguments, body, line_no = ''):
+    def __init__(self, name, return_type, modifiers, params, body, line_no = ''):
         '''Create a function declaration'''
         NewAST.__init__(self, line_no)
         self.name = name
         self.return_type = return_type
         self.modifiers = modifiers
-        self.arguments = arguments
-        self.body = body
+        self.params = params
+        self.body = body # a body should be a compound stmt
 
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
-        return FunDecl(self.fun_name, self.return_type, self.modifiers[:], self.arguments[:], self.body, self.line_no)
+        return FunDecl(self.fun_name, self.return_type, self.modifiers[:], self.params[:], self.body.replicate(), self.line_no)
 
 #-----------------------------------------------
 # Pragma Directive

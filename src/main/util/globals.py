@@ -130,6 +130,10 @@ class Globals:
             else: 
                 self.debug = False
                 self.logger.setLevel(logging.INFO)
+            
+            # counters
+            self.counter = 0
+            
             pass
 
 
@@ -155,6 +159,11 @@ class Globals:
     def __setattr__(self, attr, value):
         """ Delegate access to implementation """
         return setattr(self.__single, attr, value)
+
+    def getcounter(self):
+        """ Increments the global counter and returns the new value """
+        self.counter += 1
+        return self.counter
 
 # ---------------------------------------------------------------------------------
 """ 
