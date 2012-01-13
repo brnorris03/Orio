@@ -163,6 +163,12 @@ class CodeGen_CUDA (CodeGen_C):
                 s += '\n'
                 s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
 
+        elif isinstance(tnode, ast.AssignStmt):
+            if tnode.getLabel(): s += tnode.getLabel() + ':'
+            s += indent + tnode.var + ' = '
+            s += self.generate(tnode.exp, indent, extra_indent)
+            s += ';\n'
+            
         elif isinstance(tnode, ast.TransformStmt):
             err('orio.module.loop.codegen internal error: a transformation statement is never generated as an output')
 
@@ -171,13 +177,16 @@ class CodeGen_CUDA (CodeGen_C):
             s += ', '.join(tnode.var_names)
             s += ';\n'
 
+        elif isinstance(tnode, ast.FieldDecl):
+            s += tnode.ty + ' '
+            s += tnode.name
+
         elif isinstance(tnode, ast.FunDecl):
             s += indent + ' '.join(tnode.modifiers) + ' '
             s += tnode.return_type + ' '
             s += tnode.name + '('
-            s += self.generate(tnode.arguments[0]) + ') {\n' #TODO
-            s += self.generate(tnode.body, indent + extra_indent, extra_indent) + '\n'
-            s += '}\n'
+            s += ', '.join(map(self.generate, tnode.params)) + ') '
+            s += self.generate(tnode.body, indent, extra_indent)
 
         elif isinstance(tnode, ast.Pragma):
             s += '#pragma ' + str(tnode.pstring) + '\n'
