@@ -4,6 +4,8 @@
 
 import sys
 import orio.module.loop.submodule.submodule, orio.module.loop.ast_lib.forloop_lib
+from orio.main.util.globals import *
+from orio.module.loop.ast import *
 
 #---------------------------------------------------------------------
 
@@ -96,18 +98,36 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         # extract for-loop structure
         for_loop_info = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(stmt)
         index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
-
+        
 
         # generate the transformed statement
-        arg1 = orio.module.loop.ast.VarDecl('double*', ['orcuda_arg']) # Fixme: parameterize data types, add counters to var names
-        body = orio.module.loop.ast.Comment('placeholder')
-        dev_kernel = orio.module.loop.ast.FunDecl('orcuda_kern',
-                                                  'void',
-                                                  ['__global__'],
-                                                  [arg1],
-                                                  body)
+        arg_prefix = 'orcuda_arg_'
+        args = [
+                # TODO: parse loop body, tie every id to its type, declare every id as a pointer-based arg
+                FieldDecl('double*', arg_prefix+str(Globals().getcounter())),
+                FieldDecl('double*', arg_prefix+str(Globals().getcounter()))
+                ]
+        tid = 'tid'
+        decl_tid = VarDecl('int', [tid])
+        assign_tid = AssignStmt(tid,
+                                BinOpExp(BinOpExp(IdentExp('blockIdx.x'), # constant
+                                                  IdentExp('blockDim.x'), # constant
+                                                  BinOpExp.MUL),
+                                         IdentExp('threadIdx.x'),         # constant
+                                         BinOpExp.ADD)
+                                )
+        if_stmt = IfStmt(BinOpExp(IdentExp(tid), ubound_exp, BinOpExp.LE),
+                         # TODO: traverse the loop and replace all indices with tid
+                         loop_body
+                         )
+        # TODO: pull this FunDecl out of the enclosing FunDecl and make it a sibling, instead of a child
+        dev_kernel = FunDecl('orcuda_kern_'+str(Globals().getcounter()),
+                              'void',
+                              ['__global__'],
+                              args,
+                              CompStmt([decl_tid,assign_tid,if_stmt]))
         
-        transformed_stmt = orio.module.loop.ast.CompStmt([dev_kernel])
+        transformed_stmt = dev_kernel
 
         return transformed_stmt
     
