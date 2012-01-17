@@ -8,8 +8,7 @@
 #-----------------------------------------------------------------
 import re
 
-import ply.yacc
-
+from orio.tool.ply import yacc
 from . import c_ast
 from .c_lexer import CLexer
 from .plyparser import PLYParser, Coord, ParseError
@@ -92,7 +91,7 @@ class CParser(PLYParser):
         for rule in rules_with_opt:
             self._create_opt_rule(rule)
         
-        self.cparser = ply.yacc.yacc(
+        self.cparser = yacc.yacc(
             module=self, 
             start='translation_unit',
             debug=yacc_debug,

@@ -10,8 +10,8 @@
 import re
 import sys
 
-import ply.lex
-from ply.lex import TOKEN
+import orio.tool.ply as ply
+from orio.tool.ply.lex import TOKEN
 
 
 class CLexer(object):
