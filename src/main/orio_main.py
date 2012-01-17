@@ -32,7 +32,7 @@ def start(argv, lang):
         sys.exit(1)
 
     # import other required Python packages
-    import ann_parser, cmd_line_opts, opt_driver, tspec.tspec
+    import ann_parser, cmd_line_opts, opt_driver, tspec.tspec, st_builder
 
     # process the command line
     cmdline = cmd_line_opts.CmdParser().parse(argv)
@@ -67,6 +67,10 @@ def start(argv, lang):
                 err('orio.main.main: cannot open file for reading: %s' % srcfile)
             info('----- finished reading the source file -----')
     
+            # parse the source file and build a symbol table
+            stbuilder = st_builder.STBuilder(srcfile)
+            #symtab = stbuilder.build_st()
+            
             # obtain the mapping for performance tuning specifications
             specs_map = {}
             if g.spec_filename:
