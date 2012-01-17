@@ -1,7 +1,7 @@
 #
 # A module to build a symbol table from a C source file.
 #
-from pycparser import c_ast, parse_file
+from parsers.pycparser import c_parser, c_ast, parse_file
 
 
 class STBuilder(c_ast.NodeVisitor):
