@@ -57,7 +57,7 @@ class CodeGen_CUDA (CodeGen_C):
             elif tnode.op_type == tnode.POST_DEC:
                 s = s + '-- '
             else:
-                err('orio.module.loop.codegen internal error: unknown unary operator type: %s' % tnode.op_type)
+                err('orio.module.loop.codegen_cuda internal error: unknown unary operator type: %s' % tnode.op_type)
 
         elif isinstance(tnode, ast.BinOpExp):
             s += self.generate(tnode.lhs, indent, extra_indent)
@@ -92,7 +92,7 @@ class CodeGen_CUDA (CodeGen_C):
             elif tnode.op_type == tnode.EQ_ASGN:
                 s += '='
             else:
-                err('orio.module.loop.codegen internal error: unknown binary operator type: %s' % tnode.op_type)
+                err('orio.module.loop.codegen_cuda internal error: unknown binary operator type: %s' % tnode.op_type)
             s += self.generate(tnode.rhs, indent, extra_indent)
 
         elif isinstance(tnode, ast.ParenthExp):
@@ -170,7 +170,7 @@ class CodeGen_CUDA (CodeGen_C):
             s += ';\n'
             
         elif isinstance(tnode, ast.TransformStmt):
-            err('orio.module.loop.codegen internal error: a transformation statement is never generated as an output')
+            err('orio.module.loop.codegen_cuda internal error: a transformation statement is never generated as an output')
 
         elif isinstance(tnode, ast.VarDecl):
             s += indent + str(tnode.type_name) + ' '
@@ -195,7 +195,7 @@ class CodeGen_CUDA (CodeGen_C):
             s += self.generate(tnode.ast, indent, extra_indent)
 
         else:
-            err('orio.module.loop.codegen internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
+            err('orio.module.loop.codegen_cuda internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
 
         return s
 

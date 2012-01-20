@@ -3,7 +3,7 @@
 #
 
 import sys
-import orio.module.loop.submodule.submodule, orio.module.loop.ast_lib.forloop_lib
+import orio.module.loop.submodule.submodule, orio.module.loop.ast_lib.forloop_lib, orio.module.loop.ast_lib.common_lib
 from orio.main.util.globals import *
 from orio.module.loop.ast import *
 
@@ -98,11 +98,14 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         # extract for-loop structure
         for_loop_info = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(stmt)
         index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
+        ubound_ids = orio.module.loop.ast_lib.common_lib.CommonLib().collectIdents(ubound_exp)
+        # assuming all ids in ubound_exp are int's
+        ubound_id_decls = [FieldDecl('int*', x) for x in ubound_ids]
         
 
         # generate the transformed statement
         arg_prefix = 'orcuda_arg_'
-        args = [
+        args = ubound_id_decls + [
                 # TODO: parse loop body, tie every id to its type, declare every id as a pointer-based arg
                 FieldDecl('double*', arg_prefix+str(Globals().getcounter())),
                 FieldDecl('double*', arg_prefix+str(Globals().getcounter()))
