@@ -96,21 +96,44 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
             stmt.stmt = stmt.stmt.stmts[0]
         
         # extract for-loop structure
-        for_loop_info = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(stmt)
-        index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
-        ubound_ids = orio.module.loop.ast_lib.common_lib.CommonLib().collectIdents(ubound_exp)
-        # assuming all ids in ubound_exp are int's
-        ubound_id_decls = [FieldDecl('int*', x) for x in ubound_ids]
+        index_id, _, ubound_exp, _, loop_body = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(stmt)
+
+        loop_lib = orio.module.loop.ast_lib.common_lib.CommonLib()
         
+        # collect all identifiers from the loop's upper bound expression
+        collectIdents = lambda n: [n.name] if isinstance(n, IdentExp) else []
+        ubound_ids = loop_lib.collectNode(collectIdents, ubound_exp)
+        
+        # create decls for ubound_exp id's, assuming all ids are int's
+        ubound_id_decls = [FieldDecl('int*', x) for x in ubound_ids]
+
+        # add dereferences to all id's in the ubound_exp
+        addDerefs = lambda n: ParenthExp(UnaryExp(n, UnaryExp.DEREF)) if isinstance(n, IdentExp) else n
+        loop_lib.rewriteNode(addDerefs, ubound_exp)
+        
+        # collect all identifiers from the loop body
+        loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
+        lbi = filter(lambda x: x != index_id.name, loop_body_ids)
+        
+        # create decls for loop body id's
+        lbi_decls = [FieldDecl('double*', x) for x in set(lbi)]
+        
+        # add dereferences to all non-array id's in the loop body
+        collectArrayIdents = lambda n: [n.exp.name] if (isinstance(n, ArrayRefExp) and isinstance(n.exp, IdentExp)) else []
+        array_ids = loop_lib.collectNode(collectArrayIdents, loop_body)
+        non_array_ids = list(set(lbi).difference(set(array_ids)))
+        print non_array_ids
+        addDerefs2 = lambda n: ParenthExp(UnaryExp(n, UnaryExp.DEREF)) if (isinstance(n, IdentExp) and n.name in non_array_ids) else n
+        loop_body2 = loop_lib.rewriteNode(addDerefs2, loop_body)
+
+        # replace all array indices with thread id
+        tid = 'tid'
+        rewriteToTid = lambda x: IdentExp(tid) if isinstance(x, IdentExp) else x
+        rewriteArrayIndices = lambda n: ArrayRefExp(n.exp, loop_lib.rewriteNode(rewriteToTid, n.sub_exp)) if isinstance(n, ArrayRefExp) else n
+        loop_body3 = loop_lib.rewriteNode(rewriteArrayIndices, loop_body2)
 
         # generate the transformed statement
-        arg_prefix = 'orcuda_arg_'
-        args = ubound_id_decls + [
-                # TODO: parse loop body, tie every id to its type, declare every id as a pointer-based arg
-                FieldDecl('double*', arg_prefix+str(Globals().getcounter())),
-                FieldDecl('double*', arg_prefix+str(Globals().getcounter()))
-                ]
-        tid = 'tid'
+        # temp_id = FieldDecl('double*', 'orcuda_arg_'+str(Globals().getcounter())),
         decl_tid = VarDecl('int', [tid])
         assign_tid = AssignStmt(tid,
                                 BinOpExp(BinOpExp(IdentExp('blockIdx.x'), # constant
@@ -119,18 +142,18 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                                          IdentExp('threadIdx.x'),         # constant
                                          BinOpExp.ADD)
                                 )
-        if_stmt = IfStmt(BinOpExp(IdentExp(tid), ubound_exp, BinOpExp.LE),
-                         # TODO: traverse the loop and replace all indices with tid
-                         loop_body
-                         )
-        # TODO: pull this FunDecl out of the enclosing FunDecl and make it a sibling, instead of a child
+        if_stmt = IfStmt(BinOpExp(IdentExp(tid), ubound_exp, BinOpExp.LE), loop_body3)
+
         dev_kernel = FunDecl('orcuda_kern_'+str(Globals().getcounter()),
                               'void',
                               ['__global__'],
-                              args,
+                              ubound_id_decls + lbi_decls,
                               CompStmt([decl_tid,assign_tid,if_stmt]))
         
-        transformed_stmt = dev_kernel
+        # TODO: refactor, make this more graceful
+        Globals().cunit_declarations += codegen.CodeGen('cuda').generator.generate(dev_kernel, '', '  ')
+
+        transformed_stmt = Comment('placeholder for cuda resource marshaling code')
 
         return transformed_stmt
     

@@ -164,6 +164,8 @@ class UnaryExp(Exp):
     PRE_DEC = 5
     POST_INC = 6
     POST_DEC = 7
+    DEREF = 8
+    ADDRESSOF = 9
 
     def __init__(self, exp, op_type, line_no = ''):
         '''Create a unary operation expression'''
