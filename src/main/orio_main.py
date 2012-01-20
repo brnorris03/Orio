@@ -68,7 +68,7 @@ def start(argv, lang):
             info('----- finished reading the source file -----')
     
             # parse the source file and build a symbol table
-            stbuilder = st_builder.STBuilder(srcfile)
+            #stbuilder = st_builder.STBuilder(srcfile)
             #symtab = stbuilder.build_st()
             
             # obtain the mapping for performance tuning specifications
@@ -122,6 +122,7 @@ def start(argv, lang):
                     try:
                         f = open(out_filename, 'w')
                         f.write(optimized_code)
+                        f.write(reduce(lambda x,y: x + y, g.cunit_declarations)) # cuda kernel functions
                         f.close()
                     except:
                         err('orio.main.main:  cannot open file for writing: %s' % g.out_filename)

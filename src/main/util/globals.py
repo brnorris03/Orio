@@ -134,6 +134,11 @@ class Globals:
             # counters
             self.counter = 0
             
+            # function definitions of a C compilation unit
+            # these definitions are generated during CUDA C Loop transformations
+            # TODO: refactor this after getting a global AST view
+            self.cunit_declarations = [] 
+            
             pass
 
 

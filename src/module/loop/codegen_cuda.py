@@ -56,6 +56,10 @@ class CodeGen_CUDA (CodeGen_C):
                 s = s + '++ '
             elif tnode.op_type == tnode.POST_DEC:
                 s = s + '-- '
+            elif tnode.op_type == tnode.DEREF:
+                s = '*' + s
+            elif tnode.op_type == tnode.ADDRESSOF:
+                s = '&' + s
             else:
                 err('orio.module.loop.codegen_cuda internal error: unknown unary operator type: %s' % tnode.op_type)
 
