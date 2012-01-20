@@ -4,7 +4,7 @@
 
 import sys
 import orio.module.loop.ast, orio.module.loop.oost
-from orio.main.util.globals import *
+import orio.main.util.globals as g
 
 #-----------------------------------------------------------
  
@@ -81,7 +81,7 @@ class CommonLib:
             return tnode
 
         elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
-            err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
+            g.err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
         
         elif isinstance(tnode, orio.module.loop.ast.NewAST):
             return tnode
@@ -90,7 +90,7 @@ class CommonLib:
             return tnode
 
         else:
-            err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
+            g.err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % tnode.__class__.__name__)
         
     #-------------------------------------------------------
 
@@ -136,7 +136,7 @@ class CommonLib:
             return False
 
         else:
-            err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % exp.__class__.__name__)
+            g.err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % exp.__class__.__name__)
             
     #-------------------------------------------------------
 
@@ -180,48 +180,164 @@ class CommonLib:
             return False
 
         else:
-            err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % exp.__class__.__name__)
+            g.err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % exp.__class__.__name__)
+            
+    #------------------------------------------------------------------------------------------------------------------
+
+    def collectNode(self, f, n):
+        ''' Collect within the given node a list using the given function: pre-order traversal. '''
+        
+        if isinstance(n, orio.module.loop.ast.NumLitExp):
+            return f(n)
+        
+        elif isinstance(n, orio.module.loop.ast.StringLitExp):
+            return f(n)
+        
+        elif isinstance(n, orio.module.loop.ast.IdentExp):
+            return f(n)
+        
+        elif isinstance(n, orio.module.loop.ast.ArrayRefExp):
+            return f(n) + self.collectNode(f, n.exp) + self.collectNode(f, n.sub_exp)
+
+        elif isinstance(n, orio.module.loop.ast.FunCallExp):
+            return reduce(lambda x,y: x + y,
+                          [self.collectNode(f, a) for a in n.args],
+                          f(n))
+        
+        elif isinstance(n, orio.module.loop.ast.UnaryExp):
+            return f(n) + self.collectNode(f, n.exp)
+        
+        elif isinstance(n, orio.module.loop.ast.BinOpExp):
+            return f(n) + self.collectNode(f, n.lhs) + self.collectNode(f, n.rhs)
+        
+        elif isinstance(n, orio.module.loop.ast.ParenthExp):
+            return f(n) + self.collectNode(f, n.exp)
+        
+        elif isinstance(n, orio.module.loop.ast.Comment):
+            return f(n) + self.collectNode(f, n.text)
+        
+        elif isinstance(n, orio.module.loop.ast.ExpStmt):
+            return f(n) + self.collectNode(f, n.exp)
+        
+        elif isinstance(n, orio.module.loop.ast.GotoStmt):
+            return f(n) + self.collectNode(f, n.target)
+        
+        elif isinstance(n, orio.module.loop.ast.CompStmt):
+            return reduce(lambda x,y: x + y,
+                          [self.collectNode(f, a) for a in n.stmts],
+                          f(n))
+        
+        elif isinstance(n, orio.module.loop.ast.IfStmt):
+            result = self.collectNode(f, n.test) + self.collectNode(f, n.true_stmt)
+            if n.false_stmt:
+                result += self.collectNode(f, n.false_stmt)
+            return result
+        
+        elif isinstance(n, orio.module.loop.ast.ForStmt):
+            result = []
+            if n.init:
+                result += self.collectNode(f, n.init)
+            if n.test:
+                result += self.collectNode(f, n.test)
+            if n.iter:
+                result += self.collectNode(f, n.iter)
+            result += self.collectNode(f, n.stmt)
+            return result
+        
+        elif isinstance(n, orio.module.loop.ast.AssignStmt):
+            return f(n) + self.collectNode(f, n.var) + self.collectNode(f, n.exp)
+        
+        elif isinstance(n, orio.module.loop.ast.TransformStmt):
+            return f(n) + self.collectNode(f, n.name) + self.collectNode(f, n.args) + self.collectNode(f, n.stmt)
+
+        else:
+            g.err('orio.module.loop.ast_lib.common_lib.collectNode: unexpected AST type: "%s"' % n.__class__.__name__)
             
     #-------------------------------------------------------
 
-    def collectIdents(self, exp):
-        '''
-        To collect all identifiers within the given expression.
-        '''
+    def rewriteNode(self, r, n):
+        ''' Rewrite the given node with the given rewrite function: post-order traversal, in-place update. '''
         
-        if isinstance(exp, orio.module.loop.ast.NumLitExp):
-            return []
+        if isinstance(n, orio.module.loop.ast.NumLitExp):
+            return r(n)
         
-        elif isinstance(exp, orio.module.loop.ast.StringLitExp):
-            return []
+        elif isinstance(n, orio.module.loop.ast.StringLitExp):
+            return r(n)
         
-        elif isinstance(exp, orio.module.loop.ast.IdentExp):
-            return [exp.name]
+        elif isinstance(n, orio.module.loop.ast.IdentExp):
+            return r(n)
         
-        elif isinstance(exp, orio.module.loop.ast.ArrayRefExp):
-            return self.collectIdents(exp.exp) + self.collectIdents(exp.sub_exp)
+        elif isinstance(n, orio.module.loop.ast.ArrayRefExp):
+            n.exp = self.rewriteNode(r, n.exp)
+            n.sub_exp = self.rewriteNode(r, n.sub_exp)
+            return r(n)
 
-        elif isinstance(exp, orio.module.loop.ast.FunCallExp):
-            ids = reduce(lambda x,y: x + y,
-                         [self.collectIdents(a) for a in exp.args],
-                         [])
-            return ids
+        elif isinstance(n, orio.module.loop.ast.FunCallExp):
+            n.exp = self.rewriteNode(r, n.exp)
+            n.args = map(lambda x: self.rewriteNode(r, x), n.args)
+            return r(n)
         
-        elif isinstance(exp, orio.module.loop.ast.UnaryExp):
-            return self.collectIdents(exp.exp)
+        elif isinstance(n, orio.module.loop.ast.UnaryExp):
+            n.exp = self.rewriteNode(r, n.exp)
+            return r(n)
         
-        elif isinstance(exp, orio.module.loop.ast.BinOpExp):
-            return self.collectIdents(exp.lhs) + self.collectIdents(exp.rhs)
+        elif isinstance(n, orio.module.loop.ast.BinOpExp):
+            n.lhs = self.rewriteNode(r, n.lhs)
+            n.rhs = self.rewriteNode(r, n.rhs)
+            return r(n)
         
-        elif isinstance(exp, orio.module.loop.ast.ParenthExp):
-            return self.collectIdents(exp.exp)
+        elif isinstance(n, orio.module.loop.ast.ParenthExp):
+            n.exp = self.rewriteNode(r, n.exp)
+            return r(n)
+        
+        elif isinstance(n, orio.module.loop.ast.Comment):
+            n.text = self.rewriteNode(r, n.text)
+            return r(n)
+        
+        elif isinstance(n, orio.module.loop.ast.ExpStmt):
+            n.exp = self.rewriteNode(r, n.exp)
+            return r(n)
+        
+        elif isinstance(n, orio.module.loop.ast.GotoStmt):
+            n.target = self.rewriteNode(r, n.target)
+            return r(n)
+        
+        elif isinstance(n, orio.module.loop.ast.CompStmt):
+            n.stmts = map(lambda x: self.rewriteNode(r, x), n.stmts)
+            return r(n)
+        
+        elif isinstance(n, orio.module.loop.ast.IfStmt):
+            n.test = self.rewriteNode(r, n.test)
+            n.true_stmt = self.rewriteNode(r, n.true_stmt)
+            if n.false_stmt:
+                n.false_stmt = self.rewriteNode(r, n.false_stmt)
+            return r(n)
+        
+        elif isinstance(n, orio.module.loop.ast.ForStmt):
+            if n.init:
+                n.init = self.rewriteNode(r, n.init)
+            if n.test:
+                n.test = self.rewriteNode(r, n.test)
+            if n.iter:
+                n.iter = self.rewriteNode(r, n.iter)
+            n.stmt = self.rewriteNode(r, n.stmt)
+            return r(n)
+        
+        elif isinstance(n, orio.module.loop.ast.AssignStmt):
+            n.var = self.rewriteNode(r, n.var)
+            n.exp = self.rewriteNode(r, n.exp)
+            return r(n)
+        
+        elif isinstance(n, orio.module.loop.ast.TransformStmt):
+            n.name = self.rewriteNode(r, n.name)
+            n.args = self.rewriteNode(r, n.args)
+            n.stmt = self.rewriteNode(r, n.stmt)
+            return r(n)
         
         else:
-            err('orio.module.loop.ast_lib.common_lib.collectIdents: unexpected AST type: "%s"' % exp.__class__.__name__)
-            
-            
-    #-------------------------------------------------------
+            g.err('orio.module.loop.ast_lib.common_lib.rewriteNode: unexpected AST type: "%s"' % n.__class__.__name__)
 
+#-----------------------------------------------------------------------------------------------------------------------
 
 class NodeMapper(orio.module.loop.oost.NodeVisitor):
     """ A node visitor that applies a given function to every node in the tree

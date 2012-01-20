@@ -83,6 +83,10 @@ class CodeGen_C (CodeGen):
                 s = s + '++ '
             elif tnode.op_type == tnode.POST_DEC:
                 s = s + '-- '
+            elif tnode.op_type == tnode.DEREF:
+                s = '*' + s
+            elif tnode.op_type == tnode.ADDRESSOF:
+                s = '&' + s
             else:
                 err('orio.module.loop.codegen internal error: unknown unary operator type: %s' % tnode.op_type)
 
