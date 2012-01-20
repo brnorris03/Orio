@@ -57,7 +57,11 @@ class ForLoopLib:
                 while isinstance(stmt.test, orio.module.loop.ast.ParenthExp):
                     stmt.test = stmt.test.exp
                 if (isinstance(stmt.test, orio.module.loop.ast.BinOpExp) and
-                    stmt.test.op_type == orio.module.loop.ast.BinOpExp.LE):
+                    #(
+                     stmt.test.op_type == orio.module.loop.ast.BinOpExp.LE
+                     # TODO: relax this restriction
+                     #or stmt.test.op_type == orio.module.loop.ast.BinOpExp.LT)
+                    ):
                     while isinstance(stmt.test.lhs, orio.module.loop.ast.ParenthExp):
                         stmt.test.lhs = stmt.test.lhs.exp
                     while isinstance(stmt.test.rhs, orio.module.loop.ast.ParenthExp):
