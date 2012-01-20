@@ -3,7 +3,7 @@
 #
 
 import sys
-import orio.module.loop.ast
+import orio.module.loop.ast, orio.module.loop.oost
 from orio.main.util.globals import *
 
 #-----------------------------------------------------------
@@ -182,6 +182,60 @@ class CommonLib:
         else:
             err('orio.module.loop.ast_lib.common_lib internal error:  unexpected AST type: "%s"' % exp.__class__.__name__)
             
+    #-------------------------------------------------------
+
+    def collectIdents(self, exp):
+        '''
+        To collect all identifiers within the given expression.
+        '''
+        
+        if isinstance(exp, orio.module.loop.ast.NumLitExp):
+            return []
+        
+        elif isinstance(exp, orio.module.loop.ast.StringLitExp):
+            return []
+        
+        elif isinstance(exp, orio.module.loop.ast.IdentExp):
+            return [exp.name]
+        
+        elif isinstance(exp, orio.module.loop.ast.ArrayRefExp):
+            return self.collectIdents(exp.exp) + self.collectIdents(exp.sub_exp)
+
+        elif isinstance(exp, orio.module.loop.ast.FunCallExp):
+            ids = reduce(lambda x,y: x + y,
+                         [self.collectIdents(a) for a in exp.args],
+                         [])
+            return ids
+        
+        elif isinstance(exp, orio.module.loop.ast.UnaryExp):
+            return self.collectIdents(exp.exp)
+        
+        elif isinstance(exp, orio.module.loop.ast.BinOpExp):
+            return self.collectIdents(exp.lhs) + self.collectIdents(exp.rhs)
+        
+        elif isinstance(exp, orio.module.loop.ast.ParenthExp):
+            return self.collectIdents(exp.exp)
+        
+        else:
+            err('orio.module.loop.ast_lib.common_lib.collectIdents: unexpected AST type: "%s"' % exp.__class__.__name__)
             
             
-            
+    #-------------------------------------------------------
+
+
+class NodeMapper(orio.module.loop.oost.NodeVisitor):
+    """ A node visitor that applies a given function to every node in the tree
+    """
+    def __init__(self, fun):
+        self.fun = fun
+
+    def visit(self, node):
+        method = 'visit_' + node.__class__.__name__
+        visitor = getattr(self, method, self.generic_visit)
+        return visitor(node)
+        
+    def generic_visit(self, node):
+        self.fun(node)
+        for c in node.kids:
+            self.visit(c)
+
