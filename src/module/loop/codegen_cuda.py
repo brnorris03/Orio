@@ -2,9 +2,8 @@
 # The code generator (i.e. unparser) for the AST classes for CUDA
 #
 
-import sys
 import ast
-from orio.main.util.globals import *
+import orio.main.util.globals as g
 from orio.module.loop.codegen import CodeGen_C
 
 class CodeGen_CUDA (CodeGen_C):
@@ -61,7 +60,7 @@ class CodeGen_CUDA (CodeGen_C):
             elif tnode.op_type == tnode.ADDRESSOF:
                 s = '&' + s
             else:
-                err('orio.module.loop.codegen_cuda internal error: unknown unary operator type: %s' % tnode.op_type)
+                g.err('orio.module.loop.codegen_cuda internal error: unknown unary operator type: %s' % tnode.op_type)
 
         elif isinstance(tnode, ast.BinOpExp):
             s += self.generate(tnode.lhs, indent, extra_indent)
@@ -96,7 +95,7 @@ class CodeGen_CUDA (CodeGen_C):
             elif tnode.op_type == tnode.EQ_ASGN:
                 s += '='
             else:
-                err('orio.module.loop.codegen_cuda internal error: unknown binary operator type: %s' % tnode.op_type)
+                g.err('orio.module.loop.codegen_cuda internal error: unknown binary operator type: %s' % tnode.op_type)
             s += self.generate(tnode.rhs, indent, extra_indent)
 
         elif isinstance(tnode, ast.ParenthExp):
@@ -174,7 +173,7 @@ class CodeGen_CUDA (CodeGen_C):
             s += ';\n'
             
         elif isinstance(tnode, ast.TransformStmt):
-            err('orio.module.loop.codegen_cuda internal error: a transformation statement is never generated as an output')
+            g.err('orio.module.loop.codegen_cuda internal error: a transformation statement is never generated as an output')
 
         elif isinstance(tnode, ast.VarDecl):
             s += indent + str(tnode.type_name) + ' '
@@ -198,8 +197,17 @@ class CodeGen_CUDA (CodeGen_C):
         elif isinstance(tnode, ast.Container):
             s += self.generate(tnode.ast, indent, extra_indent)
 
+        elif isinstance(tnode, ast.WhileStmt):
+            s += indent + 'while (' + self.generate(tnode.test, indent, extra_indent)
+            s += ')\n'
+            s += self.generate(tnode.stmt, indent, extra_indent)
+
+        elif isinstance(tnode, ast.CastExpr):
+            s += '(' + tnode.ctype + ')'
+            s += self.generate(tnode.expr, indent, extra_indent)
+        
         else:
-            err('orio.module.loop.codegen_cuda internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
+            g.err('orio.module.loop.codegen_cuda internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
 
         return s
 
