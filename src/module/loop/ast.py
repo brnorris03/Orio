@@ -35,7 +35,6 @@
 #   simplify the input language.
 #
 
-import sys
 import codegen
 
 #-----------------------------------------------
@@ -324,12 +323,12 @@ class IfStmt(Stmt):
 
 class ForStmt(Stmt):
 
-    def __init__(self, init, test, iter, stmt, line_no = '', label=None):
+    def __init__(self, init, test, itr, stmt, line_no = '', label=None):
         '''Create a for-loop statement'''
         Stmt.__init__(self, line_no, label)
         self.init = init      # may be null
         self.test = test      # may be null
-        self.iter = iter      # may be null
+        self.iter = itr      # may be null
         self.stmt = stmt
 
     def replicate(self):
@@ -469,5 +468,32 @@ class Container(NewAST):
         '''Replicate this abstract syntax tree node'''
         return Container(self.ast.replicate(), self.line_no)
 
+#-----------------------------------------------
+# While Loop
+#-----------------------------------------------
+
+class WhileStmt(NewAST):
+
+    def __init__(self, test, stmt, line_no = ''):
+        NewAST.__init__(self, line_no)
+        self.test = test
+        self.stmt = stmt
+    
+    def replicate(self):
+        return WhileStmt(self.test.replicate(), self.stmt.replicate(), self.line_no)
+
+#-----------------------------------------------
+# Cast expression
+#-----------------------------------------------
+
+class CastExpr(NewAST):
+
+    def __init__(self, ty, expr, line_no = ''):
+        NewAST.__init__(self, line_no)
+        self.ctype = ty
+        self.expr = expr
+    
+    def replicate(self):
+        return CastExpr(self.ctype, self.expr.replicate(), self.line_no)
 
 
