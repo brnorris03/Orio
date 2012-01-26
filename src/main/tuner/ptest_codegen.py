@@ -2,14 +2,14 @@
 # The basic code generator for performance-testing code
 #
 
-import random, re, sys
+import random, re
 import skeleton_code
 from orio.main.util.globals import *
 from main.tuner.skeleton_code import SEQ_TIMER
 
 #-----------------------------------------------------
 
-class PerfTestCodeGen:
+class PerfTestCodeGen(object):
     '''The code generator used to produce a performance-testing code'''
 
     # function names
@@ -37,7 +37,7 @@ class PerfTestCodeGen:
         self.__checkDeclFile()
         self.__checkInitFile()
         scode = self.__checkSkeletonCodeFile()
-        self.ptest_skeleton_code = skeleton_code.PerfTestSkeletonCode(scode, use_parallel_search)
+        self.ptest_skeleton_code = skeleton_code.PerfTestSkeletonCode(scode, use_parallel_search, language)
         
     #-----------------------------------------------------
 
@@ -312,8 +312,10 @@ class PerfTestCodeGen:
 # --------------------------------------------------------------------------------------
 class PerfTestCodeGenCUDA(PerfTestCodeGen):
 
-    def foo(self):
-        pass
+    def __init__(self, input_params, input_decls, decl_file, init_file, skeleton_code_file, language='cuda',
+                 random_seed=None, use_parallel_search=False):
+        super(PerfTestCodeGenCUDA, self).__init__(input_params, input_decls, decl_file, init_file, skeleton_code_file, language,
+                 random_seed, use_parallel_search)
      
 
 # --------------------------------------------------------------------------------------

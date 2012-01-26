@@ -159,7 +159,8 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         # -- double* dev_X, *dev_Y, *dev_alpha;
         dev = 'dev_'
         dev_lbi = map(lambda x: dev+x, list(lbi))
-        dev_double_decls = ast.VarDecl('double*', dev_lbi)
+        dev_lbi2 = map(lambda x: '*'+x, dev_lbi)
+        dev_double_decls = ast.VarDecl('double', dev_lbi2)
         # -- int *dev_arraysize;
         dev_ubounds = map(lambda x: dev+x, ubound_ids)
         dev_int_decls = ast.VarDecl('int*', dev_ubounds)

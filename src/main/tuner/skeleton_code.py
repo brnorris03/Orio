@@ -2,7 +2,7 @@
 # The skeleton code used for performance testing
 #
 
-import os, re, sys
+import re, sys
 from orio.main.util.globals import *
 
 #-----------------------------------------------------
@@ -399,8 +399,52 @@ program main
     !@ epilogue @!
 
 end program main
-
 '''
+
+#----------------------------------------------------------------------------------------------------------------------
+SEQ_DEFAULT_CUDA = r'''
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <limits.h>
+#include <time.h>
+#include <cuda.h>
+
+/*@ global @*/
+
+extern double getClock(); 
+
+int main(int argc, char *argv[])
+{
+  /*@ prologue @*/
+
+  double orio_t_start, orio_t_end, orio_t, orio_t_min = (double)LONG_MAX;
+  double orio_times[ORIO_TIMES_ARRAY_SIZE];
+  int orio_i;
+
+  for (orio_i=0; orio_i<ORIO_REPS; orio_i++)
+  {
+    orio_t_start = getClock();
+    
+    /*@ tested code @*/
+
+    orio_t_end = getClock();
+    orio_t = orio_t_end - orio_t_start;
+    printf("{'/*@ coordinate @*/' : %g}\n", orio_t);
+    if (orio_t < orio_t_min) orio_t_min = orio_t;
+  }
+  
+  /*
+  printf("{'/*@ coordinate @*/' : %g}", orio_t_min);
+  */
+  
+  /*@ epilogue @*/
+
+  return 0;
+}
+'''
+#----------------------------------------------------------------------------------------------------------------------
+
 #-----------------------------------------------------
 
 class PerfTestSkeletonCode:
@@ -419,17 +463,21 @@ class PerfTestSkeletonCode:
 
     #-----------------------------------------------------
     
-    def __init__(self, code, use_parallel_search):
+    def __init__(self, code, use_parallel_search, language='c'):
         '''To instantiate the skeleton code for the performance testing'''
 
         if code == None:
             if use_parallel_search:
                 code = PAR_DEFAULT
             else:
-                code = SEQ_DEFAULT
+                if language == 'c':
+                    code = SEQ_DEFAULT
+                else:
+                    code = SEQ_DEFAULT_CUDA
 
         self.code = code
         self.use_parallel_search = use_parallel_search
+        self.language = language
 
         self.__checkSkeletonCode(self.code)
 
@@ -513,6 +561,11 @@ class PerfTestSkeletonCode:
         # initialize the performance-testing code
         code = self.code
 
+        # add cuda kernel definitions if any
+        g = Globals()
+        if self.language == 'cuda' and len(g.cunit_declarations) > 0:
+            global_code += reduce(lambda x,y: x + y, g.cunit_declarations)
+        
         # insert global definitions, prologue, and epilogue codes
         code = re.sub(self.__GLOBAL_TAG, global_code, code)
         code = re.sub(self.__PROLOGUE_TAG, prologue_code, code)
@@ -542,6 +595,7 @@ class PerfTestSkeletonCode:
         validation_code = ''
         code = re.sub(self.__VALIDATION_TAG, validation_code, code)
         # return the performance-testing code
+        
         return code
   
 
