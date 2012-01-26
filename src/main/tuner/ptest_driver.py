@@ -2,10 +2,9 @@
 # To compile and execute the performance-testing code to get the performance cost
 #
 
-import os, sys, time, random, re
+import os, time
 
 from orio.main.util.globals import *
-from orio.main.tuner.skeleton_code import SEQ_TIMER
 
 #-----------------------------------------------------
 
@@ -39,25 +38,32 @@ class PerfTestDriver:
         
         global counter
         counter += 1
-        self.language = language
 
-        #print 'Coming here'
-        #print Globals().out_prefix
+        if not (language == 'c' or language == 'fortran' or language == 'cuda'):
+            err('orio.main.tuner.ptest_driver: unknown output language specified: %s' % language)
+        self.language = language
 
         self.__PTEST_FNAME=Globals().out_prefix+self.__PTEST_FNAME
 
         if language == 'c': 
             self.src_name = self.__PTEST_FNAME + str(counter) + '.c'
+        elif language == 'cuda':
+            self.src_name = self.__PTEST_FNAME + str(counter) + '.cu'
         else:
             self.src_name = self.__PTEST_FNAME + str(counter) + '.F90'
+        
         self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
         self.original_exe_name = self.__PTEST_FNAME + str(counter) + '_original.exe'
+        if self.language == 'cuda':
+            self.obj_name = self.__PTEST_FNAME + str(counter) + '.o'
+            self.original_obj_name = self.__PTEST_FNAME + str(counter) + '_original.o'
 
-
-        if not self.tinfo.timer_file: 
+        if not self.tinfo.timer_file:
             if self.language == 'c': self.timer_file = 'timer_cpu.c'
+            elif self.language == 'cuda': self.timer_file = 'timer_cpu.cu'
             else: self.timer_file = 'timer_cpu.F90'
-        else: self.timer_file = self.tinfo.timer_file
+        else:
+            self.timer_file = self.tinfo.timer_file
         
         self.timer_code = timing_code
         if language == 'fortran':  self.timer_code = '' # timer routine is embedded in F90 driver
@@ -112,32 +118,54 @@ class PerfTestDriver:
         if timer_objfile and not os.path.exists(timer_objfile):  
             # TODO: Too crude, need to make sure object is newer than source
             cmd = ('%s -O0 -c -o %s %s' % (self.tinfo.build_cmd, timer_objfile, self.timer_file))
-            info(' compiling:\n\t' + cmd)
+            info(' compiling timer:\n\t' + cmd)
             status = os.system(cmd)
             if status or not os.path.exists(timer_objfile):
                 err('orio.main.tuner.ptest_driver:  failed to compile the timer code: "%s"' % cmd)
             
         # compile the original code if needed
         if not os.path.exists(self.original_exe_name):
-            if timer_objfile and os.path.exists(timer_objfile):
-                cmd = ('%s %s -DORIGINAL -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
-                                                        self.original_exe_name, self.src_name, 
-                                                        timer_objfile, self.tinfo.libs))
-            else:
+            if self.language == 'cuda':
+                cmd = ('%s %s -DORIGINAL -o %s -c %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+                                                         self.original_obj_name, self.src_name))
+                info(' building the original code:\n\t' + cmd)
+                status = os.system(cmd)
+                if status:
+                    err('orio.main.tuner.ptest_driver: failed to compile the original version of cuda code: "%s"' % cmd)
                 cmd = ('%s %s -DORIGINAL -o %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
-                                                        self.original_exe_name, self.src_name, 
-                                                        self.tinfo.libs))
+                                                            self.original_exe_name, timer_objfile,
+                                                            self.original_obj_name))
+            else:
+                if timer_objfile and os.path.exists(timer_objfile):
+                    cmd = ('%s %s -DORIGINAL -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+                                                            self.original_exe_name, self.src_name, 
+                                                            timer_objfile, self.tinfo.libs))
+                else:
+                    cmd = ('%s %s -DORIGINAL -o %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+                                                            self.original_exe_name, self.src_name, 
+                                                            self.tinfo.libs))
                 
-            info(' compiling:\n\t' + cmd)
+            info(' compiling the original code:\n\t' + cmd)
             status = os.system(cmd)
             if status:
                 err('orio.main.tuner.ptest_driver:  failed to compile the original version of the code: "%s"' % cmd)
             
         # compile the testing code
-        cmd = ('%s %s -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
-                                         self.exe_name, self.src_name, 
-                                         timer_objfile, self.tinfo.libs))
-        info(' compiling:\n\t' + cmd)
+        if self.language == 'cuda':
+            cmd = ('%s %s -o %s -c %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+                                          self.obj_name, self.src_name))
+            info(' building the original code:\n\t' + cmd)
+            status = os.system(cmd)
+            if status:
+                err('orio.main.tuner.ptest_driver: failed to compile the testing cuda code: "%s"' % cmd)
+            cmd = ('%s %s -o %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+                                          self.exe_name, timer_objfile,
+                                          self.obj_name))
+        else:
+            cmd = ('%s %s -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+                                             self.exe_name, self.src_name, 
+                                             timer_objfile, self.tinfo.libs))
+        info(' compiling test:\n\t' + cmd)
 
         self.compile_time=0
         start=time.time()
@@ -168,7 +196,7 @@ class PerfTestDriver:
         # execute the search process in parallel
         if self.use_parallel_search:
             cmd = '%s %s' % (self.tinfo.batch_cmd, self.exe_name)
-            info(' running:\n\t' + cmd)
+            info(' running test:\n\t' + cmd)
             # TODO: redo this to take output file name
             try:
                 f = os.popen(cmd)    
@@ -197,7 +225,7 @@ class PerfTestDriver:
         # execute the search sequentially
         else:
             cmd = '%s ./%s' % (Globals().pre_cmd,self.exe_name)
-            info(' running:\n\t' + cmd)
+            info(' running test:\n\t' + cmd)
             try:
                 f = os.popen(cmd)
                 out = f.readlines()

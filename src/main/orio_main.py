@@ -32,7 +32,7 @@ def start(argv, lang):
         sys.exit(1)
 
     # import other required Python packages
-    import ann_parser, cmd_line_opts, opt_driver, tspec.tspec, st_builder
+    import ann_parser, cmd_line_opts, opt_driver, tspec.tspec#, st_builder
 
     # process the command line
     cmdline = cmd_line_opts.CmdParser().parse(argv)
@@ -122,7 +122,8 @@ def start(argv, lang):
                     try:
                         f = open(out_filename, 'w')
                         f.write(optimized_code)
-                        f.write(reduce(lambda x,y: x + y, g.cunit_declarations)) # cuda kernel functions
+                        if len(g.cunit_declarations) > 0:
+                            f.write(reduce(lambda x,y: x + y, g.cunit_declarations)) # cuda kernel functions
                         f.close()
                     except:
                         err('orio.main.main:  cannot open file for writing: %s' % g.out_filename)
