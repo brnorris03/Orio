@@ -124,6 +124,7 @@ def start(argv, lang):
                         f.write(optimized_code)
                         if len(g.cunit_declarations) > 0:
                             f.write(reduce(lambda x,y: x + y, g.cunit_declarations)) # cuda kernel functions
+                            g.cunit_declarations = []
                         f.close()
                     except:
                         err('orio.main.main:  cannot open file for writing: %s' % g.out_filename)

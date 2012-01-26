@@ -154,7 +154,7 @@ class PerfTestDriver:
         if self.language == 'cuda':
             cmd = ('%s %s -o %s -c %s' % (self.tinfo.build_cmd, extra_compiler_opts,
                                           self.obj_name, self.src_name))
-            info(' building the original code:\n\t' + cmd)
+            info(' building test code:\n\t' + cmd)
             status = os.system(cmd)
             if status:
                 err('orio.main.tuner.ptest_driver: failed to compile the testing cuda code: "%s"' % cmd)
@@ -266,7 +266,7 @@ class PerfTestDriver:
         '''Delete all the generated files'''
 
         if Globals().keep_temps: return
-        for fname in [self.exe_name, self.src_name, 'cpu_timer.c']:
+        for fname in [self.exe_name, self.src_name, self.timer_file]:
             try:
                 if os.path.exists(fname):
                     os.unlink(fname)
