@@ -2,7 +2,7 @@
 # The tuner class to initiate the empirical performance tuning process
 #
 
-import re, sys
+import re, sys, os
 
 from orio.main.util.globals import *
 import orio.main.dyn_loader, orio.main.tspec.tspec, orio.main.tuner.ptest_codegen, orio.main.tuner.ptest_driver
@@ -57,16 +57,16 @@ class PerfTuner:
         for prob_size in self.__getProblemSizes(tinfo.iparam_params, tinfo.iparam_constraints):
             if self.odriver.lang == 'c':
                 c = orio.main.tuner.ptest_codegen.PerfTestCodeGen(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
-                                                                  tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
+                                                                  tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                   tinfo.random_seed, use_parallel_search)
             elif self.odriver.lang == 'cuda':
                 c = orio.main.tuner.ptest_codegen.PerfTestCodeGenCUDA(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
-                                                                  tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
+                                                                  tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                   tinfo.random_seed, use_parallel_search)
 
             elif self.odriver.lang == 'fortran':
                 c = orio.main.tuner.ptest_codegen.PerfTestCodeGenFortran(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
-                                                                         tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file,
+                                                                         tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                          tinfo.random_seed, use_parallel_search)
             else:
                 err('main.tuner.tuner:  unknown output language specified: %s' % self.odriver.lang)
@@ -281,7 +281,7 @@ class PerfTuner:
 
         # check if the new problem sizes is empty
         if len(prob_sizes) == 0:
-            err ('orio.main.tuner.tuner: no valid problem sizes exist. please check the input parameter ' +
+            err('orio.main.tuner.tuner: no valid problem sizes exist. please check the input parameter ' +
                    'constraints')
         
         # return all possible combinations of problem sizes
@@ -371,20 +371,19 @@ class PerfTuner:
         sys.stderr.write('%s\n'% Globals().configfile)   
         
         if Globals().configfile=='':
-         f = open(nomadfile, 'w')
-         f.write(spec_string)
-         f.close()
+            f = open(nomadfile, 'w')
+            f.write(spec_string)
+            f.close()
 
-         scriptstr="#!/bin/bash\n"
-         scriptstr=scriptstr+"orcc -x %s --configfile=$1\n" % srcfilename
+            scriptstr="#!/bin/bash\n"
+            scriptstr=scriptstr+"orcc -x %s --configfile=$1\n" % srcfilename
         
-        
-         f = open(nomadfileobj, 'w')
-         f.write(scriptstr)
-         f.close()
-         #system()
+            f = open(nomadfileobj, 'w')
+            f.write(scriptstr)
+            f.close()
+            #system()
 
-         os.system("chmod +x %s" % nomadfileobj)
+        os.system("chmod +x %s" % nomadfileobj)
 
         #print '-------------------'
         #print axis_val_ranges

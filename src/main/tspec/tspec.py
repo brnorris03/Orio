@@ -2,7 +2,6 @@
 # TSpec (Tuning Specifier) class
 # 
 
-import sys
 import eval, parser, tune_info
 
 #-----------------------------------------------
