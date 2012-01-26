@@ -565,6 +565,7 @@ class PerfTestSkeletonCode:
         g = Globals()
         if self.language == 'cuda' and len(g.cunit_declarations) > 0:
             global_code += reduce(lambda x,y: x + y, g.cunit_declarations)
+            g.cunit_declarations = []
         
         # insert global definitions, prologue, and epilogue codes
         code = re.sub(self.__GLOBAL_TAG, global_code, code)

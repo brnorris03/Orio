@@ -5,15 +5,13 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
     
     /*@ begin PerfTuning (
           def performance_params {
-            param TC = 1024;
+            param TC[] = range(1,1024);
           }
           def build {
             arg build_command = 'nvcc -arch=sm_20';
           }
           def input_params {
             param N[] = [1000];
-            param MAXBLOCKS = 65535;
-            param THREADCOUNT = 1024;
           }
           def input_vars {
             decl static double y[N] = 0;
@@ -38,7 +36,7 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
 
     /*@ begin Loop (
           transform CUDA(
-            threadCount=1024,
+            threadCount=TC,
             maxBlocks=65535
           )
         for (i=0; i<=n-1; i++)
