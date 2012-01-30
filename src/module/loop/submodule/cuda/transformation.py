@@ -63,10 +63,10 @@ class Transformation:
         # temp_id = FieldDecl('double*', 'orcuda_arg_'+str(Globals().getcounter())),
         decl_tid = ast.VarDecl('int', [tid])
         assign_tid = ast.AssignStmt(tid,
-                                    ast.BinOpExp(ast.BinOpExp(ast.IdentExp('blockIdx.x'), # constant
-                                                 ast.IdentExp('blockDim.x'),              # constant
+                                    ast.BinOpExp(ast.BinOpExp(ast.IdentExp('blockIdx.x'),
+                                                 ast.IdentExp('blockDim.x'),
                                                  ast.BinOpExp.MUL),
-                                         ast.IdentExp('threadIdx.x'),                     # constant
+                                         ast.IdentExp('threadIdx.x'),
                                          ast.BinOpExp.ADD)
                                     )
         if_stmt = ast.IfStmt(ast.BinOpExp(ast.IdentExp(tid), ubound_exp, ast.BinOpExp.LE), loop_body3)
@@ -111,10 +111,12 @@ class Transformation:
                                                     ]))
         # -- dimBlock.x=THREADCOUNT;
         init_bsize = ast.AssignStmt(blocx, ast.IdentExp(tcount))
-        calc_dev_dims = ast.WhileStmt(ast.BinOpExp(ast.IdentExp(gridx), ast.IdentExp(str(self.blockCount)), ast.BinOpExp.GT),
-                                      ast.CompStmt([ast.AssignStmt(gridx, ast.BinOpExp(ast.IdentExp(gridx), ast.NumLitExp(2,ast.NumLitExp.INT), ast.BinOpExp.DIV)),
-                                                    ast.AssignStmt(blocx, ast.BinOpExp(ast.IdentExp(blocx), ast.NumLitExp(2,ast.NumLitExp.INT), ast.BinOpExp.MUL))
-                                                    ]))
+
+        #calc_dev_dims = ast.WhileStmt(ast.BinOpExp(ast.IdentExp(gridx), ast.IdentExp(str(self.blockCount)), ast.BinOpExp.GT),
+        #                              ast.CompStmt([ast.AssignStmt(gridx, ast.BinOpExp(ast.IdentExp(gridx), ast.NumLitExp(2,ast.NumLitExp.INT), ast.BinOpExp.DIV)),
+        #                                            ast.AssignStmt(blocx, ast.BinOpExp(ast.IdentExp(blocx), ast.NumLitExp(2,ast.NumLitExp.INT), ast.BinOpExp.MUL))
+        #                                            ]))
+
         # allocate device memory
         # copy data from host to device
         # -- cudaMalloc((void**)&dev_arraysize,sizeof(int));
@@ -217,7 +219,7 @@ class Transformation:
                              ast.Comment('calculate device dimensions'),
                              init_gsize,
                              init_bsize,
-                             calc_dev_dims,
+                             #calc_dev_dims,
                              ast.Comment('allocate device memory'),
                              malloc_ubound
                              ] +
