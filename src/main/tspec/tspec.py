@@ -2,7 +2,7 @@
 # TSpec (Tuning Specifier) class
 # 
 
-import eval, parser, tune_info
+import eval, pparser, tune_info
 
 #-----------------------------------------------
 
@@ -19,7 +19,7 @@ class TSpec:
         '''To parse the given specification body code and to return its tuning information'''
 
         # parse and evaluate the specification statement
-        stmt_seq = parser.TSpecParser().parseSpec(spec_code, line_no)
+        stmt_seq = pparser.TSpecParser().parseSpec(spec_code, line_no)
         stmt_seq = eval.TSpecEvaluator().evaluate(stmt_seq)
 
         # generate tuning information
@@ -34,7 +34,7 @@ class TSpec:
         '''To parse the entire tuning specification code and to return its tuning information'''
 
         # parse and evaluate the entire code
-        stmt_seq = parser.TSpecParser().parseProgram(prog_code)
+        stmt_seq = pparser.TSpecParser().parseProgram(prog_code)
         stmt_seq = eval.TSpecEvaluator().evaluate(stmt_seq)
 
         # create a generator for performance tuning information
