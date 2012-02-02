@@ -10,7 +10,7 @@ import orio.main.util.globals as g
 # reserved keywords
 keywords = [
     'def', 'arg', 'param', 'decl', 'let', 'spec', 'constraint',
-    'build', 'build_command', 'batch_command', 'status_command', 'num_procs',
+    'build', 'build_command', 'batch_command', 'status_command', 'num_procs', 'libs',
     'input_params', 'input_vars', 'static', 'dynamic', 'void', 'char', 'short', 'int', 'long', 'float', 'double',
     'performance_params', 'performance_counter', 'method', 'repetitions',
     'search', 'time_limit', 'algorithm'
@@ -178,6 +178,7 @@ def p_arg_type(p):
                 | REPETITIONS
                 | ALGORITHM
                 | TIME_LIMIT
+                | LIBS
     '''
     p[0] = (p[1], p.lineno(1))
 
