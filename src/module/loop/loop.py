@@ -30,7 +30,7 @@ class Loop(Module):
         stmts = parser.getParser(self.line_no).parse(self.module_body_code)
 
         # apply transformations
-        t = transformation.Transformation(self.perf_params, self.verbose)
+        t = transformation.Transformation(self.perf_params, self.verbose, self.language)
         transformed_stmts = t.transform(stmts)
         
         # generate code for the transformed ASTs
