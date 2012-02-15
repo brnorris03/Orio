@@ -11,11 +11,12 @@ import orio.module.loop.ast as ast
 class Transformation:
     '''Code transformation'''
 
-    def __init__(self, stmt, threadCount, blockCount):
+    def __init__(self, stmt, threadCount, blockCount, devProps):
         '''Instantiate a code transformation object'''
         self.stmt        = stmt
         self.threadCount = threadCount
         self.blockCount  = blockCount
+        self.devProps    = devProps
 
     def transform(self):
         '''Transform the enclosed for-loop'''
