@@ -25,7 +25,7 @@ class CodeGen_CUDA (CodeGen_C):
             s += str(tnode.val)
 
         elif isinstance(tnode, ast.StringLitExp):
-            s += str(tnode.val)
+            s += '"' + str(tnode.val) + '"'
 
         elif isinstance(tnode, ast.IdentExp):
             s += str(tnode.name)

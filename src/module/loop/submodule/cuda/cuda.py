@@ -56,7 +56,7 @@ int main( void ) {
         fprintf( fp, "'clockRate',%d\n", 1147000 );
         fprintf( fp, "'deviceOverlap',%d\n", 1 );
         fprintf( fp, "'kernelExecTimeoutEnabled',%d\n", 0 );
-        fprintf( fp, "'totalGlobalMem',%lld\n", 5636292608 );
+        fprintf( fp, "'totalGlobalMem',%ld\n", 5636292608 );
         fprintf( fp, "'totalConstMem',%d\n", 65536 );
         fprintf( fp, "'memPitch',%d\n", 2147483647 );
         fprintf( fp, "'textureAlignment',%d\n", 512 );
@@ -195,7 +195,6 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                 eline = ast.literal_eval(line)
                 props[eline[0]] = eline[1]
             f.close()
-            print(props)
         except:
             g.err('orio.module.loop.submodule.cuda.cuda: cannot open query output file for reading: %s' % qout)
 
