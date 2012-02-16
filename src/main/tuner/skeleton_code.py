@@ -419,7 +419,6 @@ int main(int argc, char *argv[])
   /*@ prologue @*/
 
   double orio_t_start, orio_t_end, orio_t, orio_t_min = (double)LONG_MAX;
-  double orio_times[ORIO_TIMES_ARRAY_SIZE];
   int orio_i;
 
   for (orio_i=0; orio_i<ORIO_REPS; orio_i++)

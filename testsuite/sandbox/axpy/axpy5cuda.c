@@ -5,7 +5,7 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
     
     /*@ begin PerfTuning (
           def performance_params {
-            param TC[] = range(1,1024);
+            param TC[] = range(32,1025,32);
           }
           def build {
             arg build_command = 'nvcc -arch=sm_20';

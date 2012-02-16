@@ -29,6 +29,7 @@ class Transformation:
 
         loop_lib = orio.module.loop.ast_lib.common_lib.CommonLib()
         tcount = str(self.threadCount)
+        int0 = ast.NumLitExp(0,ast.NumLitExp.INT)
 
         # begin rewrite the loop body        
         # collect all identifiers from the loop's upper bound expression
@@ -118,7 +119,6 @@ class Transformation:
             #  __syncthreads();
             # i/=2;
             #}
-            int0 = ast.NumLitExp(0,ast.NumLitExp.INT)
             reducts += [ast.WhileStmt(ast.BinOpExp(idxId, int0, ast.BinOpExp.NE),
                                       ast.CompStmt([ast.IfStmt(ast.BinOpExp(ast.IdentExp('threadIdx.x'), idxId, ast.BinOpExp.LT),
                                                                ast.AssignStmt('cache[threadIdx.x]',
@@ -263,7 +263,6 @@ class Transformation:
                                                              ast.FunCallExp(ast.IdentExp('sizeof'),[ast.IdentExp('double')]),
                                                              ast.BinOpExp.MUL)
                                                 ])))]
-        
         # invoke device kernel function:
         # -- kernelFun<<<numOfBlocks,numOfThreads>>>(dev_vars, ..., dev_result);
         args = map(lambda x: ast.IdentExp(x), dev_ubounds + dev_lbi)
@@ -325,6 +324,39 @@ class Transformation:
             free_vars += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('free'), [ast.IdentExp(hvar)]))]
         # end marshal resources
         
+        # cuda timing calls
+        timeEventsDecl  = ast.VarDecl('cudaEvent_t', ['start', 'stop'])
+        timeElapsedDecl = ast.VarDecl('float', ['orcuda_elapsedTime'])
+        timeFileDecl    = ast.VarDecl('FILE*', ['orcuda_fp'])
+        createStart = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventCreate'),
+                                                 [ast.UnaryExp(ast.IdentExp('start'), ast.UnaryExp.ADDRESSOF)]))
+        createStop  = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventCreate'),
+                                                 [ast.UnaryExp(ast.IdentExp('stop'),  ast.UnaryExp.ADDRESSOF)]))
+        recordStart = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventRecord'),
+                                                 [ast.IdentExp('start'), int0]))
+        recordStop  = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventRecord'),
+                                                 [ast.IdentExp('stop'), int0]))
+        syncStop    = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventSynchronize'),
+                                                 [ast.IdentExp('stop')]))
+        calcElapsed = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventElapsedTime'),
+                                                 [ast.UnaryExp(ast.IdentExp('orcuda_elapsedTime'), ast.UnaryExp.ADDRESSOF),
+                                                  ast.IdentExp('start'), ast.IdentExp('stop')]))
+        timeFileOpen= ast.AssignStmt('orcuda_fp',
+                                     ast.FunCallExp(ast.IdentExp('fopen'),
+                                                 [ast.StringLitExp('orcuda_time.out'),
+                                                  ast.StringLitExp('a')]))
+        printElapsed= ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fprintf'),
+                                                 [ast.IdentExp('orcuda_fp'),
+                                                  ast.StringLitExp('Kernel time @rep[%d]: %f ms'),
+                                                  ast.IdentExp('orio_i'),
+                                                  ast.IdentExp('orcuda_elapsedTime')]))
+        destroyStart= ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventDestroy'),
+                                                 [ast.IdentExp('start')]))
+        destroyStop = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventDestroy'),
+                                                 [ast.IdentExp('stop')]))
+        destroyTimeFP=ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fclose'),
+                                                 [ast.IdentExp('orcuda_fp')]))
+        
         transformed_stmt = \
                ast.CompStmt([ast.Comment('declare device variables'),
                              dev_double_decls,
@@ -342,9 +374,16 @@ class Transformation:
                              memcpy_ubound] +
                             memcopy_scalars +
                             memcpy_arrays +
+                            [timeEventsDecl, timeElapsedDecl, timeFileDecl,
+                             createStart, createStop, recordStart
+                             ] +
                             [ast.Comment('invoke device kernel function'),
-                             kernell_call,
-                             ast.Comment('copy data from devices to host')] +
+                             kernell_call
+                             ] +
+                            [recordStop, syncStop, calcElapsed, timeFileOpen, printElapsed,
+                             destroyStart, destroyStop, destroyTimeFP
+                             ] +
+                            [ast.Comment('copy data from devices to host')] +
                              memcpy_result +
                              [ast.Comment('post-processing on the host')] +
                              pp +
