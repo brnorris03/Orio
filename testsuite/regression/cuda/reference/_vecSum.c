@@ -1,7 +1,6 @@
 void VecSum(int n, double *x, double s) {
 
     register int i;
-    int s = 0; // identity for summation
 
     /*@ begin Loop (
           transform CUDA(threadCount=1024, maxBlocks=65535)

@@ -11,11 +11,10 @@ import orio.module.loop.ast as ast
 class Transformation:
     '''Code transformation'''
 
-    def __init__(self, stmt, threadCount, blockCount, devProps):
+    def __init__(self, stmt, threadCount, devProps):
         '''Instantiate a code transformation object'''
         self.stmt        = stmt
         self.threadCount = threadCount
-        self.blockCount  = blockCount
         self.devProps    = devProps
 
     def transform(self):
@@ -31,7 +30,7 @@ class Transformation:
         tcount = str(self.threadCount)
         int0 = ast.NumLitExp(0,ast.NumLitExp.INT)
 
-        # begin rewrite the loop body        
+        # begin rewrite the loop body
         # collect all identifiers from the loop's upper bound expression
         collectIdents = lambda n: [n.name] if isinstance(n, ast.IdentExp) else []
         ubound_ids = loop_lib.collectNode(collectIdents, ubound_exp)
@@ -47,9 +46,6 @@ class Transformation:
         loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
         lbi = set(filter(lambda x: x != index_id.name, loop_body_ids))
         
-        # create decls for loop body id's
-        lbi_decls = [ast.FieldDecl('double*', x) for x in lbi]
-        
         # collect all LHS identifiers within the loop body
         def collectLhsIds(n):
             if isinstance(n, ast.BinOpExp) and n.op_type == ast.BinOpExp.EQ_ASGN:
@@ -64,9 +60,22 @@ class Transformation:
         # collect all array and non-array idents in the loop body
         collectArrayIdents = lambda n: [n.exp.name] if (isinstance(n, ast.ArrayRefExp) and isinstance(n.exp, ast.IdentExp)) else []
         array_ids = loop_lib.collectNode(collectArrayIdents, loop_body)
-        non_array_ids = list(lbi.difference(set(array_ids)))
         loop_lhs_array_ids = list(set(loop_lhs_ids).intersection(set(array_ids)))
         isReduction = len(loop_lhs_array_ids) == 0
+
+        # create decls for loop body id's
+        if isReduction:
+            lbi = lbi.difference(set(loop_lhs_ids))
+        lbi_decls = [ast.FieldDecl('double*', x) for x in lbi]
+        non_array_ids = list(lbi.difference(set(array_ids)))
+        
+        kernel_temps = []
+        if isReduction:
+            for lhsi in loop_lhs_ids:
+                temp = 'orcuda_var_'+str(g.Globals().getcounter())
+                kernel_temps += [temp]
+                rrLhs = lambda n: ast.IdentExp(temp) if (isinstance(n, ast.IdentExp) and n.name == lhsi) else n
+                loop_body = loop_lib.rewriteNode(rrLhs, loop_body)
 
         # add dereferences to all non-array id's in the loop body
         addDerefs2 = lambda n: ast.ParenthExp(ast.UnaryExp(n, ast.UnaryExp.DEREF)) if (isinstance(n, ast.IdentExp) and n.name in non_array_ids) else n
@@ -92,6 +101,11 @@ class Transformation:
                                          ast.IdentExp('threadIdx.x'),
                                          ast.BinOpExp.ADD)
                                     )
+        reduction_temps = []
+        if isReduction:
+            reduction_temps += [ast.VarDecl('double', kernel_temps)]
+            for temp in kernel_temps:
+                reduction_temps += [ast.AssignStmt(temp, int0)]
         if_stmt = ast.IfStmt(ast.BinOpExp(ast.IdentExp(tid), ubound_exp, ast.BinOpExp.LE), loop_body3)
         
         # begin reduction statements
@@ -121,14 +135,13 @@ class Transformation:
             #}
             reducts += [ast.WhileStmt(ast.BinOpExp(idxId, int0, ast.BinOpExp.NE),
                                       ast.CompStmt([ast.IfStmt(ast.BinOpExp(ast.IdentExp('threadIdx.x'), idxId, ast.BinOpExp.LT),
-                                                               ast.AssignStmt('cache[threadIdx.x]',
-                                                                              ast.BinOpExp(ast.ArrayRefExp(ast.IdentExp('cache'),
-                                                                                                           ast.IdentExp('threadIdx.x')),
-                                                                                           ast.ArrayRefExp(ast.IdentExp('cache'),
-                                                                                                           ast.BinOpExp(ast.IdentExp('threadIdx.x'),
-                                                                                                                        idxId,
-                                                                                                                        ast.BinOpExp.ADD)),
-                                                                                           ast.BinOpExp.ADD))
+                                                               ast.ExpStmt(ast.BinOpExp(ast.ArrayRefExp(ast.IdentExp('cache'),
+                                                                                                        ast.IdentExp('threadIdx.x')),
+                                                                                        ast.ArrayRefExp(ast.IdentExp('cache'),
+                                                                                                        ast.BinOpExp(ast.IdentExp('threadIdx.x'),
+                                                                                                                     idxId,
+                                                                                                                     ast.BinOpExp.ADD)),
+                                                                                        ast.BinOpExp.ASGN_ADD))
                                                                ),
                                                     ast.ExpStmt(ast.FunCallExp(ast.IdentExp('__syncthreads'),[])),
                                                     ast.AssignStmt(idx,ast.BinOpExp(idxId, int2, ast.BinOpExp.DIV))
@@ -150,7 +163,7 @@ class Transformation:
                                  'void',
                                  ['__global__'],
                                  ubound_id_decls + lbi_decls + block_reduct_decl,
-                                 ast.CompStmt([decl_tid,assign_tid,if_stmt] + reducts))
+                                 ast.CompStmt([decl_tid,assign_tid]+reduction_temps+[if_stmt] + reducts))
         
         
         # TODO: refactor, make this more graceful
@@ -308,12 +321,11 @@ class Transformation:
         if isReduction:
             pp += [ast.VarDecl('int', ['i'])]
             pp += [ast.ForStmt(ast.BinOpExp(ast.IdentExp('i'), int0, ast.BinOpExp.EQ_ASGN),
-                              ast.BinOpExp(ast.IdentExp('i'), ast.IdentExp(gridx), ast.BinOpExp.LT),
-                              ast.UnaryExp(ast.IdentExp('i'), ast.UnaryExp.POST_INC),
-                              ast.AssignStmt(loop_lhs_ids[0],
-                                             ast.BinOpExp(ast.IdentExp(loop_lhs_ids[0]),
-                                                          ast.ArrayRefExp(ast.IdentExp(block_r), ast.IdentExp('i')),
-                                                          ast.BinOpExp.ADD)))]
+                               ast.BinOpExp(ast.IdentExp('i'), ast.IdentExp(gridx), ast.BinOpExp.LT),
+                               ast.UnaryExp(ast.IdentExp('i'), ast.UnaryExp.POST_INC),
+                               ast.ExpStmt(ast.BinOpExp(ast.IdentExp(loop_lhs_ids[0]),
+                                                        ast.ArrayRefExp(ast.IdentExp(block_r), ast.IdentExp('i')),
+                                                        ast.BinOpExp.ASGN_ADD)))]
 
         # free allocated variables
         dev_vars = dev_ubounds + dev_lbi
@@ -347,7 +359,7 @@ class Transformation:
                                                   ast.StringLitExp('a')]))
         printElapsed= ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fprintf'),
                                                  [ast.IdentExp('orcuda_fp'),
-                                                  ast.StringLitExp('Kernel time @rep[%d]: %f ms'),
+                                                  ast.StringLitExp('Kernel_time@rep[%d]:%fms. '),
                                                   ast.IdentExp('orio_i'),
                                                   ast.IdentExp('orcuda_elapsedTime')]))
         destroyStart= ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventDestroy'),
