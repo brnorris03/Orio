@@ -100,11 +100,9 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
 
         # all expected argument names
         THREADCOUNT = 'threadCount'
-        MAXBLOCKS = 'maxBlocks'
 
         # all expected transformation arguments
         threadCount = None
-        maxBlocks = None
 
         # iterate over all transformation arguments
         for aname, rhs, line_no in transf_args:
@@ -119,10 +117,6 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
             if aname == THREADCOUNT:
                 threadCount = (rhs, line_no)
     
-            # max number of blocks
-            elif aname == MAXBLOCKS:
-                maxBlocks = (rhs, line_no)
-    
             # unknown argument name
             else:
                 g.err('orio.module.loop.submodule.cuda.cuda: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
@@ -130,18 +124,16 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         # check for initialization of mandatory transformation arguments
         if threadCount == None:
             g.err('orio.module.loop.submodule.cuda.cuda: %s: missing threadCount argument' % self.__class__.__name__)
-        elif maxBlocks == None:
-            g.err('orio.module.loop.submodule.cuda.cuda: %s: missing maxBlocks argument' % self.__class__.__name__)
 
         # check semantics of the transformation arguments
-        threadCount, maxBlocks = self.checkTransfArgs(threadCount, maxBlocks)
+        threadCount = self.checkTransfArgs(threadCount)
 
         # return information about the transformation arguments
-        return (threadCount, maxBlocks)
+        return threadCount
 
     #-----------------------------------------------------------------
 
-    def checkTransfArgs(self, threadCount, maxBlocks):
+    def checkTransfArgs(self, threadCount):
         '''Check the semantics of the given transformation arguments'''
         
         # sanity check
@@ -150,14 +142,8 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
             g.err('orio.module.loop.submodule.cuda.cuda: %s: threadCount must be a positive integer: %s' % (line_no, rhs))
         threadCount = rhs
 
-        # sanity check
-        rhs, line_no = maxBlocks
-        if not isinstance(rhs, int) or rhs <= 0:
-            g.err('orio.module.loop.submodule.cuda.cuda: %s: maxBlocks must be a positive integer: %s' % (line_no, rhs))
-        maxBlocks = rhs
-
         # return information about the transformation arguments
-        return (threadCount, maxBlocks)
+        return threadCount
 
     #-----------------------------------------------------------------
 
@@ -198,18 +184,23 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         except:
             g.err('orio.module.loop.submodule.cuda.cuda: cannot open query output file for reading: %s' % qout)
 
+        # clean up
+        os.remove(qsrc)
+        os.remove(qexec)
+        os.remove(qout)
+        
         # return queried device props
         return props
 
     #-----------------------------------------------------------------
 
-    def cudify(self, stmt, threadCount, blockCount, props):
+    def cudify(self, stmt, threadCount, props):
         '''Apply CUDA transformations'''
         
         g.debug('orio.module.loop.submodule.cuda.CUDA: starting CUDA transformations')
 
         # perform transformation
-        t = transformation.Transformation(stmt, threadCount, blockCount, props)
+        t = transformation.Transformation(stmt, threadCount, props)
         transformed_stmt = t.transform()
 
         # return the transformed statement
@@ -221,12 +212,12 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         '''The implementation of the abstract transform method for CUDA'''
 
         # read all transformation arguments
-        threadCount, blockCount = self.readTransfArgs(self.perf_params, self.transf_args)
+        threadCount = self.readTransfArgs(self.perf_params, self.transf_args)
         
         # read device properties
         props = self.getDeviceProps()
         
         # perform the transformation of the statement
-        transformed_stmt = self.cudify(self.stmt, threadCount, blockCount, props)
+        transformed_stmt = self.cudify(self.stmt, threadCount, props)
         
         return transformed_stmt
