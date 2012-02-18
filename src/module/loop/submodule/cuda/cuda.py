@@ -98,11 +98,13 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
     def readTransfArgs(self, perf_params, transf_args):
         '''Process the given transformation arguments'''
 
-        # all expected argument names
+        # expected argument names
         THREADCOUNT = 'threadCount'
+        CB = 'cacheBlocks'
 
-        # all expected transformation arguments
+        # default argument values
         threadCount = None
+        cacheBlocks = None
 
         # iterate over all transformation arguments
         for aname, rhs, line_no in transf_args:
@@ -112,28 +114,27 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                 rhs = eval(rhs, perf_params)
             except Exception, e:
                 g.err('orio.module.loop.submodule.cuda.cuda: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
-                
-            # thread count
+            
             if aname == THREADCOUNT:
                 threadCount = (rhs, line_no)
-    
-            # unknown argument name
+            elif aname == CB:
+                cacheBlocks = (rhs, line_no)
             else:
                 g.err('orio.module.loop.submodule.cuda.cuda: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check for initialization of mandatory transformation arguments
-        if threadCount == None:
-            g.err('orio.module.loop.submodule.cuda.cuda: %s: missing threadCount argument' % self.__class__.__name__)
+        if threadCount == None or cacheBlocks == None:
+            g.err('orio.module.loop.submodule.cuda.cuda: %s: missing argument' % self.__class__.__name__)
 
         # check semantics of the transformation arguments
-        threadCount = self.checkTransfArgs(threadCount)
+        threadCount, cacheBlocks = self.checkTransfArgs(threadCount, cacheBlocks)
 
         # return information about the transformation arguments
-        return threadCount
+        return (threadCount, cacheBlocks)
 
     #-----------------------------------------------------------------
 
-    def checkTransfArgs(self, threadCount):
+    def checkTransfArgs(self, threadCount, cacheBlocks):
         '''Check the semantics of the given transformation arguments'''
         
         # sanity check
@@ -142,8 +143,13 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
             g.err('orio.module.loop.submodule.cuda.cuda: %s: threadCount must be a positive integer: %s' % (line_no, rhs))
         threadCount = rhs
 
+        rhs, line_no = cacheBlocks
+        if not isinstance(rhs, bool):
+            g.err('orio.module.loop.submodule.cuda.cuda: %s: cacheBlocks must be a boolean: %s' % (line_no, rhs))
+        cacheBlocks = rhs
+
         # return information about the transformation arguments
-        return threadCount
+        return (threadCount, cacheBlocks)
 
     #-----------------------------------------------------------------
 
@@ -194,13 +200,13 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
 
     #-----------------------------------------------------------------
 
-    def cudify(self, stmt, threadCount, props):
+    def cudify(self, stmt, props, threadCount, cacheBlocks):
         '''Apply CUDA transformations'''
         
         g.debug('orio.module.loop.submodule.cuda.CUDA: starting CUDA transformations')
 
         # perform transformation
-        t = transformation.Transformation(stmt, threadCount, props)
+        t = transformation.Transformation(stmt, props, threadCount, cacheBlocks)
         transformed_stmt = t.transform()
 
         # return the transformed statement
@@ -212,12 +218,12 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         '''The implementation of the abstract transform method for CUDA'''
 
         # read all transformation arguments
-        threadCount = self.readTransfArgs(self.perf_params, self.transf_args)
+        threadCount, cacheBlocks = self.readTransfArgs(self.perf_params, self.transf_args)
         
         # read device properties
         props = self.getDeviceProps()
         
         # perform the transformation of the statement
-        transformed_stmt = self.cudify(self.stmt, threadCount, props)
+        transformed_stmt = self.cudify(self.stmt, props, threadCount, cacheBlocks)
         
         return transformed_stmt
