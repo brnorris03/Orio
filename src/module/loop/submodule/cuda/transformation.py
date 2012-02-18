@@ -11,11 +11,12 @@ import orio.module.loop.ast as ast
 class Transformation:
     '''Code transformation'''
 
-    def __init__(self, stmt, threadCount, devProps):
+    def __init__(self, stmt, devProps, threadCount, cacheBlocks):
         '''Instantiate a code transformation object'''
         self.stmt        = stmt
-        self.threadCount = threadCount
         self.devProps    = devProps
+        self.threadCount = threadCount
+        self.cacheBlocks = cacheBlocks
 
     def transform(self):
         '''Transform the enclosed for-loop'''
@@ -30,13 +31,14 @@ class Transformation:
         tcount = str(self.threadCount)
         int0 = ast.NumLitExp(0,ast.NumLitExp.INT)
 
+        #--------------------------------------------------------------------------------------------------------------
         # begin rewrite the loop body
         # collect all identifiers from the loop's upper bound expression
         collectIdents = lambda n: [n.name] if isinstance(n, ast.IdentExp) else []
         ubound_ids = loop_lib.collectNode(collectIdents, ubound_exp)
         
         # create decls for ubound_exp id's, assuming all ids are int's
-        ubound_id_decls = [ast.FieldDecl('int*', x) for x in ubound_ids]
+        kernelParams = [ast.FieldDecl('int*', x) for x in ubound_ids]
 
         # add dereferences to all id's in the ubound_exp
         addDerefs = lambda n: ast.ParenthExp(ast.UnaryExp(n, ast.UnaryExp.DEREF)) if isinstance(n, ast.IdentExp) else n
@@ -55,30 +57,31 @@ class Transformation:
                     return [n.lhs.exp.name]
                 else: return []
             else: return []
-        loop_lhs_ids = loop_lib.collectNode(collectLhsIds, loop_body)
+        lhs_ids = loop_lib.collectNode(collectLhsIds, loop_body)
 
         # collect all array and non-array idents in the loop body
         collectArrayIdents = lambda n: [n.exp.name] if (isinstance(n, ast.ArrayRefExp) and isinstance(n.exp, ast.IdentExp)) else []
-        array_ids = loop_lib.collectNode(collectArrayIdents, loop_body)
-        loop_lhs_array_ids = list(set(loop_lhs_ids).intersection(set(array_ids)))
-        isReduction = len(loop_lhs_array_ids) == 0
+        array_ids = set(loop_lib.collectNode(collectArrayIdents, loop_body))
+        lhs_array_ids = list(set(lhs_ids).intersection(array_ids))
+        rhs_array_ids = list(array_ids.difference(lhs_array_ids))
+        isReduction = len(lhs_array_ids) == 0
 
         # create decls for loop body id's
         if isReduction:
-            lbi = lbi.difference(set(loop_lhs_ids))
-        lbi_decls = [ast.FieldDecl('double*', x) for x in lbi]
-        non_array_ids = list(lbi.difference(set(array_ids)))
+            lbi = lbi.difference(set(lhs_ids))
+        kernelParams += [ast.FieldDecl('double*', x) for x in lbi]
+        scalar_ids = list(lbi.difference(array_ids))
         
         kernel_temps = []
         if isReduction:
-            for lhsi in loop_lhs_ids:
-                temp = 'orcuda_var_'+str(g.Globals().getcounter())
+            for var in lhs_ids:
+                temp = 'orcuda_var_' + str(g.Globals().getcounter())
                 kernel_temps += [temp]
-                rrLhs = lambda n: ast.IdentExp(temp) if (isinstance(n, ast.IdentExp) and n.name == lhsi) else n
+                rrLhs = lambda n: ast.IdentExp(temp) if (isinstance(n, ast.IdentExp) and n.name == var) else n
                 loop_body = loop_lib.rewriteNode(rrLhs, loop_body)
 
         # add dereferences to all non-array id's in the loop body
-        addDerefs2 = lambda n: ast.ParenthExp(ast.UnaryExp(n, ast.UnaryExp.DEREF)) if (isinstance(n, ast.IdentExp) and n.name in non_array_ids) else n
+        addDerefs2 = lambda n: ast.ParenthExp(ast.UnaryExp(n, ast.UnaryExp.DEREF)) if (isinstance(n, ast.IdentExp) and n.name in scalar_ids) else n
         loop_body2 = loop_lib.rewriteNode(addDerefs2, loop_body)
 
         collectLhsExprs = lambda n: [n.lhs] if isinstance(n, ast.BinOpExp) and n.op_type == ast.BinOpExp.EQ_ASGN else []
@@ -90,55 +93,96 @@ class Transformation:
         rewriteArrayIndices = lambda n: ast.ArrayRefExp(n.exp, loop_lib.rewriteNode(rewriteToTid, n.sub_exp)) if isinstance(n, ast.ArrayRefExp) else n
         loop_body3 = loop_lib.rewriteNode(rewriteArrayIndices, loop_body2)
         # end rewrite the loop body
+        #--------------------------------------------------------------------------------------------------------------
 
 
+        #--------------------------------------------------------------------------------------------------------------
         # begin generate the kernel
-        decl_tid = ast.VarDecl('int', [tid])
-        assign_tid = ast.AssignStmt(tid,
-                                    ast.BinOpExp(ast.BinOpExp(ast.IdentExp('blockIdx.x'),
-                                                 ast.IdentExp('blockDim.x'),
-                                                 ast.BinOpExp.MUL),
-                                         ast.IdentExp('threadIdx.x'),
-                                         ast.BinOpExp.ADD)
-                                    )
-        reduction_temps = []
+        kernelStmts = []
+        blockIdx  = ast.IdentExp('blockIdx.x')
+        blockSize = ast.IdentExp('blockDim.x')
+        threadIdx = ast.IdentExp('threadIdx.x')
+        kernelStmts += [
+            ast.VarDeclInit('int', tid, ast.BinOpExp(ast.BinOpExp(blockIdx, blockSize, ast.BinOpExp.MUL),
+                                                     threadIdx,
+                                                     ast.BinOpExp.ADD))
+        ]
+        cacheReads  = []
+        cacheWrites = []
+        if self.cacheBlocks:
+            for var in array_ids:
+                sharedVar = 'shared_' + var
+                kernelStmts += [
+                    # __shared__ double shared_var[threadCount];
+                    ast.VarDecl('__shared__ double', [sharedVar + '[' + tcount + ']'])
+                ]
+                sharedVarExp = ast.ArrayRefExp(ast.IdentExp(sharedVar), threadIdx)
+                varExp       = ast.ArrayRefExp(ast.IdentExp(var), ast.IdentExp(tid))
+                
+                # cache reads
+                if var in rhs_array_ids:
+                    cacheReads += [
+                        # shared_var[threadIdx.x]=var[tid];
+                        ast.ExpStmt(ast.BinOpExp(sharedVarExp, varExp, ast.BinOpExp.EQ_ASGN))
+                    ]
+                # var[tid] -> shared_var[threadIdx.x]
+                rrToShared = lambda n: sharedVarExp \
+                                if isinstance(n, ast.ArrayRefExp) and \
+                                   isinstance(n.exp, ast.IdentExp) and \
+                                   n.exp.name == var \
+                                else n
+                rrRhsExprs = lambda n: ast.BinOpExp(n.lhs, loop_lib.rewriteNode(rrToShared, n.rhs), n.op_type) \
+                                if isinstance(n, ast.BinOpExp) and \
+                                   n.op_type == ast.BinOpExp.EQ_ASGN \
+                                else n
+                loop_body3 = loop_lib.rewriteNode(rrRhsExprs, loop_body3)
+
+                # cache writes also
+                if var in lhs_array_ids:
+                    rrLhsExprs = lambda n: ast.BinOpExp(loop_lib.rewriteNode(rrToShared, n.lhs), n.rhs, n.op_type) \
+                                    if isinstance(n, ast.BinOpExp) and \
+                                       n.op_type == ast.BinOpExp.EQ_ASGN \
+                                    else n
+                    loop_body3 = loop_lib.rewriteNode(rrLhsExprs, loop_body3)
+                    cacheWrites += [ast.ExpStmt(ast.BinOpExp(varExp, sharedVarExp, ast.BinOpExp.EQ_ASGN))]
+
         if isReduction:
-            reduction_temps += [ast.VarDecl('double', kernel_temps)]
             for temp in kernel_temps:
-                reduction_temps += [ast.AssignStmt(temp, int0)]
-        if_stmt = ast.IfStmt(ast.BinOpExp(ast.IdentExp(tid), ubound_exp, ast.BinOpExp.LE), loop_body3)
+                kernelStmts += [ast.VarDeclInit('double', temp, int0)]
+
+        kernelStmts += [
+            ast.IfStmt(ast.BinOpExp(ast.IdentExp(tid), ubound_exp, ast.BinOpExp.LE),
+                       ast.CompStmt(cacheReads + [loop_body3] + cacheWrites))
+        ]
         
         # begin reduction statements
-        reducts = []
-        block_reduct_decl = []
         block_r = 'block_r'
         if isReduction:
-            reducts += [ast.Comment('reduce single-thread results within a block')]
+            kernelStmts += [ast.Comment('reduce single-thread results within a block')]
             # declare the array shared by threads within a block
-            reducts += [ast.VarDecl('__shared__ double', ['cache['+tcount+']'])]
+            kernelStmts += [ast.VarDecl('__shared__ double', ['cache['+tcount+']'])]
             # store the lhs/computed values into the shared array
-            reducts += [ast.AssignStmt('cache[threadIdx.x]',loop_lhs_exprs[0])]
+            kernelStmts += [ast.AssignStmt('cache[threadIdx.x]',loop_lhs_exprs[0])]
             # sync threads prior to reduction
-            reducts += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('__syncthreads'),[]))];
+            kernelStmts += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('__syncthreads'),[]))];
             # at each step, divide the array into two halves and sum two corresponding elements
             # int i = blockDim.x/2;
             idx = 'i'
             idxId = ast.IdentExp(idx)
             int2 = ast.NumLitExp(2,ast.NumLitExp.INT)
-            reducts += [ast.VarDecl('int', [idx])]
-            reducts += [ast.AssignStmt(idx, ast.BinOpExp(ast.IdentExp('blockDim.x'), int2, ast.BinOpExp.DIV))]
+            kernelStmts += [ast.VarDecl('int', [idx])]
+            kernelStmts += [ast.AssignStmt(idx, ast.BinOpExp(ast.IdentExp('blockDim.x'), int2, ast.BinOpExp.DIV))]
             #while(i!=0){
             #  if(threadIdx.x<i)
             #    cache[threadIdx.x]+=cache[threadIdx.x+i];
             #  __syncthreads();
             # i/=2;
             #}
-            reducts += [ast.WhileStmt(ast.BinOpExp(idxId, int0, ast.BinOpExp.NE),
-                                      ast.CompStmt([ast.IfStmt(ast.BinOpExp(ast.IdentExp('threadIdx.x'), idxId, ast.BinOpExp.LT),
-                                                               ast.ExpStmt(ast.BinOpExp(ast.ArrayRefExp(ast.IdentExp('cache'),
-                                                                                                        ast.IdentExp('threadIdx.x')),
+            kernelStmts += [ast.WhileStmt(ast.BinOpExp(idxId, int0, ast.BinOpExp.NE),
+                                      ast.CompStmt([ast.IfStmt(ast.BinOpExp(threadIdx, idxId, ast.BinOpExp.LT),
+                                                               ast.ExpStmt(ast.BinOpExp(ast.ArrayRefExp(ast.IdentExp('cache'), threadIdx),
                                                                                         ast.ArrayRefExp(ast.IdentExp('cache'),
-                                                                                                        ast.BinOpExp(ast.IdentExp('threadIdx.x'),
+                                                                                                        ast.BinOpExp(threadIdx,
                                                                                                                      idxId,
                                                                                                                      ast.BinOpExp.ADD)),
                                                                                         ast.BinOpExp.ASGN_ADD))
@@ -148,29 +192,24 @@ class Transformation:
                                                     ])
                                       )]
             # the first thread within a block stores the results for the entire block
-            block_reduct_decl += [ast.FieldDecl('double*', block_r)]
-            #if(threadIdx.x==0)  block_r[blockIdx.x]=cache[0];
-            reducts += [ast.IfStmt(ast.BinOpExp(ast.IdentExp('threadIdx.x'),
-                                                ast.NumLitExp(0, ast.NumLitExp.INT),
-                                                ast.BinOpExp.EQ),
-                                   ast.AssignStmt('block_r[blockIdx.x]',ast.ArrayRefExp(ast.IdentExp('cache'),
-                                                                                        int0)))
-                        ]
+            kernelParams += [ast.FieldDecl('double*', block_r)]
+            # if(threadIdx.x==0) block_r[blockIdx.x]=cache[0];
+            kernelStmts += [
+                ast.IfStmt(ast.BinOpExp(threadIdx, int0, ast.BinOpExp.EQ),
+                           ast.AssignStmt('block_r[blockIdx.x]',ast.ArrayRefExp(ast.IdentExp('cache'), int0)))
+            ]
         # end reduction statements
 
         dev_kernel_name = 'orcuda_kern_'+str(g.Globals().getcounter())
-        dev_kernel = ast.FunDecl(dev_kernel_name,
-                                 'void',
-                                 ['__global__'],
-                                 ubound_id_decls + lbi_decls + block_reduct_decl,
-                                 ast.CompStmt([decl_tid,assign_tid]+reduction_temps+[if_stmt] + reducts))
+        dev_kernel = ast.FunDecl(dev_kernel_name, 'void', ['__global__'], kernelParams, ast.CompStmt(kernelStmts))
         
-        
-        # TODO: refactor, make this more graceful
+        # after getting interprocedural AST, make this a sub to that AST
         g.Globals().cunit_declarations += orio.module.loop.codegen.CodeGen('cuda').generator.generate(dev_kernel, '', '  ')
         # end generate the kernel
+        #--------------------------------------------------------------------------------------------------------------
         
         
+        #--------------------------------------------------------------------------------------------------------------
         # begin marshal resources
         # declare device variables
         dev = 'dev_'
@@ -214,7 +253,7 @@ class Transformation:
                                                     ast.FunCallExp(ast.IdentExp('sizeof'), [ast.IdentExp('int')]),
                                                     ast.IdentExp('cudaMemcpyHostToDevice')
                                                     ]))
-        dev_scalar_ids = map(lambda x: (x,dev+x), non_array_ids)
+        dev_scalar_ids = map(lambda x: (x,dev+x), scalar_ids)
         malloc_scalars = []
         memcopy_scalars = []
         for sid,dsid in dev_scalar_ids:
@@ -235,7 +274,7 @@ class Transformation:
                                                     ast.IdentExp('cudaMemcpyHostToDevice')
                                                     ]))]
 
-        dev_array_ids = map(lambda x: (x,dev+x), set(array_ids))
+        dev_array_ids = map(lambda x: (x,dev+x), array_ids)
         malloc_arrays = []
         memcpy_arrays = []
         for aid,daid in dev_array_ids:
@@ -250,15 +289,16 @@ class Transformation:
                                                     ]))]
             # memcopy in the form of:
             # -- cudaMemcpy(dev_X,host_X,host_arraysize*sizeof(double),cudaMemcpyHostToDevice);
-            memcpy_arrays += [
-                        ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
-                                                   [ast.IdentExp(daid),
-                                                    ast.IdentExp(aid),
-                                                    ast.BinOpExp(ast.IdentExp(host_arraysize),
-                                                                 ast.FunCallExp(ast.IdentExp('sizeof'),[ast.IdentExp('double')]),
-                                                                 ast.BinOpExp.MUL),
-                                                    ast.IdentExp('cudaMemcpyHostToDevice')
-                                                    ]))]
+            if aid in rhs_array_ids:
+                memcpy_arrays += [
+                            ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
+                                                       [ast.IdentExp(daid),
+                                                        ast.IdentExp(aid),
+                                                        ast.BinOpExp(ast.IdentExp(host_arraysize),
+                                                                     ast.FunCallExp(ast.IdentExp('sizeof'),[ast.IdentExp('double')]),
+                                                                     ast.BinOpExp.MUL),
+                                                        ast.IdentExp('cudaMemcpyHostToDevice')
+                                                        ]))]
         # malloc block-level result var
         if isReduction:
             malloc_arrays += [
@@ -285,7 +325,7 @@ class Transformation:
         # -- cudaMemcpy(host_Y,dev_Y,host_arraysize*sizeof(double),cudaMemcpyDeviceToHost);
         memcpy_res_scl = []
         memcpy_res_arr = []
-        for result_id in loop_lhs_ids:
+        for result_id in lhs_ids:
             res_scalar_ids = filter(lambda x: x[1] == (dev+result_id), dev_scalar_ids)
             for res_scalar_id,dres_scalar_id in res_scalar_ids:
                 memcpy_res_scl += [ast.ExpStmt(  ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
@@ -323,7 +363,7 @@ class Transformation:
             pp += [ast.ForStmt(ast.BinOpExp(ast.IdentExp('i'), int0, ast.BinOpExp.EQ_ASGN),
                                ast.BinOpExp(ast.IdentExp('i'), ast.IdentExp(gridx), ast.BinOpExp.LT),
                                ast.UnaryExp(ast.IdentExp('i'), ast.UnaryExp.POST_INC),
-                               ast.ExpStmt(ast.BinOpExp(ast.IdentExp(loop_lhs_ids[0]),
+                               ast.ExpStmt(ast.BinOpExp(ast.IdentExp(lhs_ids[0]),
                                                         ast.ArrayRefExp(ast.IdentExp(block_r), ast.IdentExp('i')),
                                                         ast.BinOpExp.ASGN_ADD)))]
 
@@ -335,7 +375,10 @@ class Transformation:
         for hvar in host_ids:
             free_vars += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('free'), [ast.IdentExp(hvar)]))]
         # end marshal resources
+        #--------------------------------------------------------------------------------------------------------------
         
+        
+        #--------------------------------------------------------------------------------------------------------------
         # cuda timing calls
         timeEventsDecl  = ast.VarDecl('cudaEvent_t', ['start', 'stop'])
         timeElapsedDecl = ast.VarDecl('float', ['orcuda_elapsedTime'])
@@ -368,6 +411,7 @@ class Transformation:
                                                  [ast.IdentExp('stop')]))
         destroyTimeFP=ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fclose'),
                                                  [ast.IdentExp('orcuda_fp')]))
+        #--------------------------------------------------------------------------------------------------------------
         
         transformed_stmt = \
                ast.CompStmt([ast.Comment('declare device variables'),
