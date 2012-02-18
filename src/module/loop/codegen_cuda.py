@@ -9,7 +9,7 @@ from orio.module.loop.codegen import CodeGen_C
 class CodeGen_CUDA (CodeGen_C):
     '''The code generator for the AST classes'''
 
-    def __init__(self):
+    def __init__(self, language='cuda'):
         '''To instantiate a code generator'''
         self.arrayref_level = 0
         pass
@@ -180,6 +180,11 @@ class CodeGen_CUDA (CodeGen_C):
         elif isinstance(tnode, ast.VarDecl):
             s += indent + str(tnode.type_name) + ' '
             s += ', '.join(tnode.var_names)
+            s += ';\n'
+
+        elif isinstance(tnode, ast.VarDeclInit):
+            s += indent + str(tnode.type_name) + ' ' + str(tnode.var_name)
+            s += '=' + self.generate(tnode.init_exp, indent, extra_indent)
             s += ';\n'
 
         elif isinstance(tnode, ast.FieldDecl):
