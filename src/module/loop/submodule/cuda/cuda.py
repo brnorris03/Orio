@@ -1,5 +1,5 @@
 #
-# Loop transformation submodule.that implements CUDA kernel generation
+# Loop transformation submodule that implements CUDA kernel generation
 #
 
 import os, ast
@@ -93,20 +93,23 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         # TODO: future transformations here, e.g., 
         #self.cudastream_smod = orio.module.loop.submodule.cudastream.cudastream.CudaStream()
         
-    #-----------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------------------
 
     def readTransfArgs(self, perf_params, transf_args):
         '''Process the given transformation arguments'''
 
         # expected argument names
         THREADCOUNT = 'threadCount'
-        CB = 'cacheBlocks'
+        CB          = 'cacheBlocks'
+        PHM         = 'pinHostMem'
 
         # default argument values
-        threadCount = None
-        cacheBlocks = None
+        threadCount = 16
+        cacheBlocks = False
+        pinHost     = False
 
         # iterate over all transformation arguments
+        errors = ''
         for aname, rhs, line_no in transf_args:
 
             # evaluate the RHS expression
@@ -116,42 +119,30 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                 g.err('orio.module.loop.submodule.cuda.cuda: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
             
             if aname == THREADCOUNT:
-                threadCount = (rhs, line_no)
+                if not isinstance(rhs, int) or rhs <= 0:
+                    errors += 'line %s: %s must be a positive integer: %s\n' % (line_no, aname, rhs)
+                else:
+                    threadCount = rhs
             elif aname == CB:
-                cacheBlocks = (rhs, line_no)
+                if not isinstance(rhs, bool):
+                    errors += 'line %s: %s must be a boolean: %s\n' % (line_no, aname, rhs)
+                else:
+                    cacheBlocks = rhs
+            elif aname == PHM:
+                if not isinstance(rhs, bool):
+                    errors += 'line %s: %s must be a boolean: %s\n' % (line_no, aname, rhs)
+                else:
+                    pinHost = rhs
             else:
                 g.err('orio.module.loop.submodule.cuda.cuda: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
-        # check for initialization of mandatory transformation arguments
-        if threadCount == None or cacheBlocks == None:
-            g.err('orio.module.loop.submodule.cuda.cuda: %s: missing argument' % self.__class__.__name__)
+        if not errors == '':
+            g.err('orio.module.loop.submodule.cuda.cuda: errors evaluating transformation args:\n%s' % errors)
 
-        # check semantics of the transformation arguments
-        threadCount, cacheBlocks = self.checkTransfArgs(threadCount, cacheBlocks)
+        # return evaluated transformation arguments
+        return (threadCount, cacheBlocks, pinHost)
 
-        # return information about the transformation arguments
-        return (threadCount, cacheBlocks)
-
-    #-----------------------------------------------------------------
-
-    def checkTransfArgs(self, threadCount, cacheBlocks):
-        '''Check the semantics of the given transformation arguments'''
-        
-        # sanity check
-        rhs, line_no = threadCount
-        if not isinstance(rhs, int) or rhs <= 0:
-            g.err('orio.module.loop.submodule.cuda.cuda: %s: threadCount must be a positive integer: %s' % (line_no, rhs))
-        threadCount = rhs
-
-        rhs, line_no = cacheBlocks
-        if not isinstance(rhs, bool):
-            g.err('orio.module.loop.submodule.cuda.cuda: %s: cacheBlocks must be a boolean: %s' % (line_no, rhs))
-        cacheBlocks = rhs
-
-        # return information about the transformation arguments
-        return (threadCount, cacheBlocks)
-
-    #-----------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------------------
 
     def getDeviceProps(self):
         '''Get device properties'''
@@ -198,32 +189,32 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         # return queried device props
         return props
 
-    #-----------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------------------
 
-    def cudify(self, stmt, props, threadCount, cacheBlocks):
+    def cudify(self, stmt, props, targs):
         '''Apply CUDA transformations'''
         
         g.debug('orio.module.loop.submodule.cuda.CUDA: starting CUDA transformations')
 
         # perform transformation
-        t = transformation.Transformation(stmt, props, threadCount, cacheBlocks)
+        t = transformation.Transformation(stmt, props, targs)
         transformed_stmt = t.transform()
 
         # return the transformed statement
         return transformed_stmt
 
-    #-----------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------------------
 
     def transform(self):
         '''The implementation of the abstract transform method for CUDA'''
 
         # read all transformation arguments
-        threadCount, cacheBlocks = self.readTransfArgs(self.perf_params, self.transf_args)
+        targs = self.readTransfArgs(self.perf_params, self.transf_args)
         
         # read device properties
         props = self.getDeviceProps()
         
         # perform the transformation of the statement
-        transformed_stmt = self.cudify(self.stmt, props, threadCount, cacheBlocks)
+        transformed_stmt = self.cudify(self.stmt, props, targs)
         
         return transformed_stmt

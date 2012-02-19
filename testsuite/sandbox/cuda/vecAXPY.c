@@ -6,6 +6,7 @@ void VecAXPY(int n, double a, double *x, double *y) {
           def performance_params {
             param TC[] = range(16,513,16);
             param CB[] = [True, False];
+            param PHM[] = [False];
           }
           def build {
             arg build_command = 'nvcc -arch=sm_20';
@@ -27,7 +28,7 @@ void VecAXPY(int n, double a, double *x, double *y) {
     int n=N;
 
     /*@ begin Loop (
-          transform CUDA(threadCount=TC, cacheBlocks=CB)
+          transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM)
         for (i=0; i<=n-1; i++)
           y[i]=a*x[i]+y[i];
     ) @*/

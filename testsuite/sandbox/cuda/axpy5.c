@@ -7,6 +7,7 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
           def performance_params {
             param TC[] = range(16,513,16);
             param CB[] = [True, False];
+            param PHM[] = [False];
           }
           def build {
             arg build_command = 'nvcc -arch=sm_20';
@@ -36,7 +37,7 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
     int n=N;
 
     /*@ begin Loop (
-          transform CUDA(threadCount=TC, cacheBlocks=CB)
+          transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM)
         for (i=0; i<=n-1; i++)
           y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i]+a5*x5[i];
     ) @*/
