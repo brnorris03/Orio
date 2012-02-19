@@ -6,6 +6,7 @@ void VecDot(int n, double *x, double *y, double r) {
           def performance_params {
             param TC[] = range(16,513,16);
             param CB[] = [True, False];
+            param PHM[] = [False];
           }
           def build {
             arg build_command = 'nvcc -arch=sm_20';
@@ -27,7 +28,7 @@ void VecDot(int n, double *x, double *y, double r) {
     int n=N;
 
     /*@ begin Loop (
-          transform CUDA(threadCount=TC, cacheBlocks=CB)
+          transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM)
         for (i=0; i<=n-1; i++)
           r=r+x[i]*y[i];
     ) @*/
