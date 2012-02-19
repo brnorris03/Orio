@@ -11,13 +11,12 @@ import orio.module.loop.ast as ast
 class Transformation:
     '''Code transformation'''
 
-    def __init__(self, stmt, devProps, threadCount, cacheBlocks):
+    def __init__(self, stmt, devProps, targs):
         '''Instantiate a code transformation object'''
         self.stmt        = stmt
         self.devProps    = devProps
-        self.threadCount = threadCount
-        self.cacheBlocks = cacheBlocks
-
+        self.threadCount, self.cacheBlocks, self.pinHostMem = targs
+        
     def transform(self):
         '''Transform the enclosed for-loop'''
         # get rid of compound statement that contains only a single statement
@@ -38,12 +37,8 @@ class Transformation:
         ubound_ids = loop_lib.collectNode(collectIdents, ubound_exp)
         
         # create decls for ubound_exp id's, assuming all ids are int's
-        kernelParams = [ast.FieldDecl('int*', x) for x in ubound_ids]
+        kernelParams = [ast.FieldDecl('int', x) for x in ubound_ids]
 
-        # add dereferences to all id's in the ubound_exp
-        addDerefs = lambda n: ast.ParenthExp(ast.UnaryExp(n, ast.UnaryExp.DEREF)) if isinstance(n, ast.IdentExp) else n
-        loop_lib.rewriteNode(addDerefs, ubound_exp)
-        
         # collect all identifiers from the loop body
         loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
         lbi = set(filter(lambda x: x != index_id.name, loop_body_ids))
@@ -103,9 +98,8 @@ class Transformation:
         blockSize = ast.IdentExp('blockDim.x')
         threadIdx = ast.IdentExp('threadIdx.x')
         kernelStmts += [
-            ast.VarDeclInit('int', tid, ast.BinOpExp(ast.BinOpExp(blockIdx, blockSize, ast.BinOpExp.MUL),
-                                                     threadIdx,
-                                                     ast.BinOpExp.ADD))
+            ast.VarDeclInit('int', tid,
+                            ast.BinOpExp(ast.BinOpExp(blockIdx, blockSize, ast.BinOpExp.MUL), threadIdx, ast.BinOpExp.ADD))
         ]
         cacheReads  = []
         cacheWrites = []
@@ -120,11 +114,10 @@ class Transformation:
                 varExp       = ast.ArrayRefExp(ast.IdentExp(var), ast.IdentExp(tid))
                 
                 # cache reads
-                if var in rhs_array_ids:
-                    cacheReads += [
-                        # shared_var[threadIdx.x]=var[tid];
-                        ast.ExpStmt(ast.BinOpExp(sharedVarExp, varExp, ast.BinOpExp.EQ_ASGN))
-                    ]
+                cacheReads += [
+                    # shared_var[threadIdx.x]=var[tid];
+                    ast.ExpStmt(ast.BinOpExp(sharedVarExp, varExp, ast.BinOpExp.EQ_ASGN))
+                ]
                 # var[tid] -> shared_var[threadIdx.x]
                 rrToShared = lambda n: sharedVarExp \
                                 if isinstance(n, ast.ArrayRefExp) and \
@@ -217,236 +210,205 @@ class Transformation:
         dev_block_r = dev + block_r
         host_ids = []
         if isReduction:
-            dev_lbi += [dev_block_r]
+            dev_lbi  += [dev_block_r]
             host_ids += [block_r]
-        dev_ubounds = map(lambda x: dev+x, ubound_ids)
-        dev_double_decls = ast.VarDecl('double', map(lambda x: '*'+x, dev_lbi + host_ids))
-        dev_int_decls = ast.VarDecl('int*', dev_ubounds)
+        hostDecls  = [ast.Comment('declare variables')]
+        hostDecls += [ast.VarDecl('double', map(lambda x: '*'+x, dev_lbi + host_ids))]
         
         # calculate device dimensions
-        dev_dim_decls = ast.VarDecl('dim3', ['dimGrid', 'dimBlock'])
-        gridx = 'dimGrid.x'
-        blocx = 'dimBlock.x'
+        hostDecls += [ast.VarDecl('dim3', ['dimGrid', 'dimBlock'])]
+        gridxIdent = ast.IdentExp('dimGrid.x')
         host_arraysize = ubound_ids[0]
-        dev_arraysize = dev + host_arraysize
         # initialize grid size
-        init_gsize = ast.AssignStmt(gridx,
-                                    ast.FunCallExp(ast.IdentExp('ceil'),
-                                                   [ast.BinOpExp(ast.CastExpr('float', ast.IdentExp(host_arraysize)),
-                                                                 ast.CastExpr('float', ast.IdentExp(tcount)),
-                                                                 ast.BinOpExp.DIV)
-                                                    ]))
+        deviceDims  = [ast.Comment('calculate device dimensions')]
+        deviceDims += [
+            ast.ExpStmt(ast.BinOpExp(gridxIdent,
+                                     ast.FunCallExp(ast.IdentExp('ceil'),
+                                                    [ast.BinOpExp(ast.CastExpr('float', ast.IdentExp(host_arraysize)),
+                                                                  ast.CastExpr('float', ast.IdentExp(tcount)),
+                                                                  ast.BinOpExp.DIV)
+                                                    ]),
+                                     ast.BinOpExp.EQ_ASGN))]
         # initialize block size
-        init_bsize = ast.AssignStmt(blocx, ast.IdentExp(tcount))
+        deviceDims += [ast.ExpStmt(ast.BinOpExp(ast.IdentExp('dimBlock.x'), ast.IdentExp(tcount), ast.BinOpExp.EQ_ASGN))]
 
         # allocate device memory
         # copy data from host to device
-        # -- cudaMalloc((void**)&dev_arraysize,sizeof(int));
-        malloc_ubound = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMalloc'),
-                                                   [ast.CastExpr('void**', ast.UnaryExp(ast.IdentExp(dev_arraysize), ast.UnaryExp.ADDRESSOF)),
-                                                    ast.FunCallExp(ast.IdentExp('sizeof'), [ast.IdentExp('int')])
-                                                    ]))
-        # -- cudaMemcpy(dev_arraysize,&host_arraysize,sizeof(int),cudaMemcpyHostToDevice);
-        memcpy_ubound = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
-                                                   [ast.IdentExp(dev_arraysize),
-                                                    ast.UnaryExp(ast.IdentExp(host_arraysize), ast.UnaryExp.ADDRESSOF),
-                                                    ast.FunCallExp(ast.IdentExp('sizeof'), [ast.IdentExp('int')]),
-                                                    ast.IdentExp('cudaMemcpyHostToDevice')
-                                                    ]))
+        mallocs  = [ast.Comment('allocate device memory')]
+        h2dcopys = [ast.Comment('copy data from host to device')]
+        dblIdent    = ast.IdentExp('double')
+        sizeofIdent = ast.IdentExp('sizeof')
         dev_scalar_ids = map(lambda x: (x,dev+x), scalar_ids)
-        malloc_scalars = []
-        memcopy_scalars = []
         for sid,dsid in dev_scalar_ids:
             # malloc scalars in the form of:
             # -- cudaMalloc((void**)&dev_alpha,sizeof(double));
-            malloc_scalars += [
-                        ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMalloc'),
-                                                   [ast.CastExpr('void**', ast.UnaryExp(ast.IdentExp(dsid), ast.UnaryExp.ADDRESSOF)),
-                                                    ast.FunCallExp(ast.IdentExp('sizeof'), [ast.IdentExp('double')])
-                                                    ]))]
+            mallocs += [
+                ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMalloc'),
+                                           [ast.CastExpr('void**', ast.UnaryExp(ast.IdentExp(dsid), ast.UnaryExp.ADDRESSOF)),
+                                            ast.FunCallExp(sizeofIdent, [dblIdent])
+                                            ]))]
             # memcopy scalars in the form of:
             # -- cudaMemcpy(dev_alpha,&host_alpha,sizeof(double),cudaMemcpyHostToDevice);
-            memcopy_scalars += [
-                        ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
-                                                   [ast.IdentExp(dsid),
-                                                    ast.UnaryExp(ast.IdentExp(sid), ast.UnaryExp.ADDRESSOF),
-                                                    ast.FunCallExp(ast.IdentExp('sizeof'), [ast.IdentExp('double')]),
-                                                    ast.IdentExp('cudaMemcpyHostToDevice')
-                                                    ]))]
-
+            h2dcopys += [
+                ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
+                                           [ast.IdentExp(dsid), ast.UnaryExp(ast.IdentExp(sid), ast.UnaryExp.ADDRESSOF),
+                                            ast.FunCallExp(sizeofIdent, [dblIdent]),
+                                            ast.IdentExp('cudaMemcpyHostToDevice')
+                                            ]))]
         dev_array_ids = map(lambda x: (x,dev+x), array_ids)
-        malloc_arrays = []
-        memcpy_arrays = []
         for aid,daid in dev_array_ids:
             # malloc arrays in the form of:
             # -- cudaMalloc((void**)&dev_X,host_arraysize*sizeof(double));
-            malloc_arrays += [
-                        ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMalloc'),
-                                                   [ast.CastExpr('void**', ast.UnaryExp(ast.IdentExp(daid), ast.UnaryExp.ADDRESSOF)),
-                                                    ast.BinOpExp(ast.IdentExp(host_arraysize),
-                                                                 ast.FunCallExp(ast.IdentExp('sizeof'),[ast.IdentExp('double')]),
-                                                                 ast.BinOpExp.MUL)
-                                                    ]))]
+            mallocs += [
+                ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMalloc'),
+                                           [ast.CastExpr('void**', ast.UnaryExp(ast.IdentExp(daid), ast.UnaryExp.ADDRESSOF)),
+                                            ast.BinOpExp(ast.IdentExp(host_arraysize),
+                                                         ast.FunCallExp(sizeofIdent,[dblIdent]),
+                                                         ast.BinOpExp.MUL)
+                                            ]))]
             # memcopy in the form of:
             # -- cudaMemcpy(dev_X,host_X,host_arraysize*sizeof(double),cudaMemcpyHostToDevice);
             if aid in rhs_array_ids:
-                memcpy_arrays += [
-                            ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
-                                                       [ast.IdentExp(daid),
-                                                        ast.IdentExp(aid),
-                                                        ast.BinOpExp(ast.IdentExp(host_arraysize),
-                                                                     ast.FunCallExp(ast.IdentExp('sizeof'),[ast.IdentExp('double')]),
-                                                                     ast.BinOpExp.MUL),
-                                                        ast.IdentExp('cudaMemcpyHostToDevice')
-                                                        ]))]
+                h2dcopys += [
+                    ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
+                                               [ast.IdentExp(daid),
+                                                ast.IdentExp(aid),
+                                                ast.BinOpExp(ast.IdentExp(host_arraysize),
+                                                             ast.FunCallExp(sizeofIdent,[dblIdent]),
+                                                             ast.BinOpExp.MUL),
+                                                ast.IdentExp('cudaMemcpyHostToDevice')
+                                                ]))]
         # malloc block-level result var
         if isReduction:
-            malloc_arrays += [
-                    ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMalloc'),
-                                               [ast.CastExpr('void**', ast.UnaryExp(ast.IdentExp(dev_block_r), ast.UnaryExp.ADDRESSOF)),
-                                                ast.BinOpExp(ast.IdentExp(gridx),
-                                                             ast.FunCallExp(ast.IdentExp('sizeof'),[ast.IdentExp('double')]),
-                                                             ast.BinOpExp.MUL)
-                                                ]))]
-            malloc_arrays += [
-                    ast.AssignStmt(block_r,
-                                   ast.CastExpr('double*',
-                                                ast.FunCallExp(ast.IdentExp('malloc'),
-                                               [ast.BinOpExp(ast.IdentExp(gridx),
-                                                             ast.FunCallExp(ast.IdentExp('sizeof'),[ast.IdentExp('double')]),
-                                                             ast.BinOpExp.MUL)
-                                                ])))]
+            mallocs += [
+                ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMalloc'),
+                                           [ast.CastExpr('void**', ast.UnaryExp(ast.IdentExp(dev_block_r), ast.UnaryExp.ADDRESSOF)),
+                                            ast.BinOpExp(gridxIdent,
+                                                         ast.FunCallExp(sizeofIdent,[dblIdent]),
+                                                         ast.BinOpExp.MUL)
+                                            ]))]
+            for var in host_ids:
+                if self.pinHostMem:
+                    mallocs += [
+                        ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaHostAlloc'),
+                                                   [ast.CastExpr('void**', ast.UnaryExp(ast.IdentExp(var), ast.UnaryExp.ADDRESSOF)),
+                                                    ast.BinOpExp(ast.IdentExp(host_arraysize),
+                                                                 ast.FunCallExp(sizeofIdent,[dblIdent]),
+                                                                 ast.BinOpExp.MUL),
+                                                    ast.IdentExp('cudaHostAllocDefault')
+                                                    ]))]
+                else:
+                    mallocs += [
+                        ast.AssignStmt(var,
+                                       ast.CastExpr('double*',
+                                                    ast.FunCallExp(ast.IdentExp('malloc'),
+                                                   [ast.BinOpExp(gridxIdent,
+                                                                 ast.FunCallExp(sizeofIdent,[dblIdent]),
+                                                                 ast.BinOpExp.MUL)
+                                                    ])))]
         # invoke device kernel function:
         # -- kernelFun<<<numOfBlocks,numOfThreads>>>(dev_vars, ..., dev_result);
-        args = map(lambda x: ast.IdentExp(x), dev_ubounds + dev_lbi)
+        args = map(lambda x: ast.IdentExp(x), [host_arraysize] + dev_lbi)
         kernell_call = ast.ExpStmt(ast.FunCallExp(ast.IdentExp(dev_kernel_name+'<<<dimGrid,dimBlock>>>'), args))
         
         # copy data from devices to host
         # -- cudaMemcpy(host_Y,dev_Y,host_arraysize*sizeof(double),cudaMemcpyDeviceToHost);
-        memcpy_res_scl = []
-        memcpy_res_arr = []
-        for result_id in lhs_ids:
-            res_scalar_ids = filter(lambda x: x[1] == (dev+result_id), dev_scalar_ids)
-            for res_scalar_id,dres_scalar_id in res_scalar_ids:
-                memcpy_res_scl += [ast.ExpStmt(  ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
-                                                   [ast.IdentExp(res_scalar_id),
-                                                    ast.IdentExp(dres_scalar_id),
-                                                    ast.FunCallExp(ast.IdentExp('sizeof'),[ast.IdentExp('double')]),
+        d2hcopys = [ast.Comment('copy data from device to host')]
+        for var in lhs_ids:
+            res_scalar_ids = filter(lambda x: x[1] == (dev+var), dev_scalar_ids)
+            for rsid,drsid in res_scalar_ids:
+                d2hcopys += [
+                    ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
+                                                   [ast.IdentExp(rsid), ast.IdentExp(drsid),
+                                                    ast.FunCallExp(sizeofIdent,[dblIdent]),
                                                     ast.IdentExp('cudaMemcpyDeviceToHost')
                                                     ]))]
-            res_array_ids  = filter(lambda x: x[1] == (dev+result_id), dev_array_ids)
-            for res_array_id,dres_array_id in res_array_ids:
-                memcpy_res_arr += [ast.ExpStmt(  ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
-                                                   [ast.IdentExp(res_array_id),
-                                                    ast.IdentExp(dres_array_id),
+            res_array_ids  = filter(lambda x: x[1] == (dev+var), dev_array_ids)
+            for raid,draid in res_array_ids:
+                d2hcopys += [
+                    ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
+                                                   [ast.IdentExp(raid), ast.IdentExp(draid),
                                                     ast.BinOpExp(ast.IdentExp(host_arraysize),
-                                                                 ast.FunCallExp(ast.IdentExp('sizeof'),[ast.IdentExp('double')]),
+                                                                 ast.FunCallExp(sizeofIdent,[dblIdent]),
                                                                  ast.BinOpExp.MUL),
                                                     ast.IdentExp('cudaMemcpyDeviceToHost')
                                                     ]))]
         # memcpy block-level result var
         if isReduction:
-            memcpy_res_arr += [ast.ExpStmt(  ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
-                                                   [ast.IdentExp(block_r),
-                                                    ast.IdentExp(dev_block_r),
-                                                    ast.BinOpExp(ast.IdentExp(gridx),
-                                                                 ast.FunCallExp(ast.IdentExp('sizeof'),[ast.IdentExp('double')]),
+            d2hcopys += [
+                    ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
+                                                   [ast.IdentExp(block_r), ast.IdentExp(dev_block_r),
+                                                    ast.BinOpExp(gridxIdent,
+                                                                 ast.FunCallExp(sizeofIdent,[dblIdent]),
                                                                  ast.BinOpExp.MUL),
                                                     ast.IdentExp('cudaMemcpyDeviceToHost')
                                                     ]))]
-        memcpy_result = memcpy_res_scl + memcpy_res_arr
-        
         # reduce block-level results
-        pp = []
+        pp = [ast.Comment('post-processing on the host')]
         if isReduction:
             pp += [ast.VarDecl('int', ['i'])]
             pp += [ast.ForStmt(ast.BinOpExp(ast.IdentExp('i'), int0, ast.BinOpExp.EQ_ASGN),
-                               ast.BinOpExp(ast.IdentExp('i'), ast.IdentExp(gridx), ast.BinOpExp.LT),
+                               ast.BinOpExp(ast.IdentExp('i'), gridxIdent, ast.BinOpExp.LT),
                                ast.UnaryExp(ast.IdentExp('i'), ast.UnaryExp.POST_INC),
                                ast.ExpStmt(ast.BinOpExp(ast.IdentExp(lhs_ids[0]),
                                                         ast.ArrayRefExp(ast.IdentExp(block_r), ast.IdentExp('i')),
                                                         ast.BinOpExp.ASGN_ADD)))]
 
         # free allocated variables
-        dev_vars = dev_ubounds + dev_lbi
-        free_vars = []
-        for dvar in dev_vars:
+        free_vars = [ast.Comment('free allocated memory')]
+        for dvar in dev_lbi:
             free_vars += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaFree'), [ast.IdentExp(dvar)]))]
         for hvar in host_ids:
-            free_vars += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('free'), [ast.IdentExp(hvar)]))]
+            if self.pinHostMem:
+                free_vars += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaFreeHost'), [ast.IdentExp(hvar)]))]
+            else:
+                free_vars += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('free'), [ast.IdentExp(hvar)]))]
         # end marshal resources
         #--------------------------------------------------------------------------------------------------------------
         
         
         #--------------------------------------------------------------------------------------------------------------
         # cuda timing calls
-        timeEventsDecl  = ast.VarDecl('cudaEvent_t', ['start', 'stop'])
-        timeElapsedDecl = ast.VarDecl('float', ['orcuda_elapsedTime'])
-        timeFileDecl    = ast.VarDecl('FILE*', ['orcuda_fp'])
-        createStart = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventCreate'),
-                                                 [ast.UnaryExp(ast.IdentExp('start'), ast.UnaryExp.ADDRESSOF)]))
-        createStop  = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventCreate'),
-                                                 [ast.UnaryExp(ast.IdentExp('stop'),  ast.UnaryExp.ADDRESSOF)]))
-        recordStart = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventRecord'),
-                                                 [ast.IdentExp('start'), int0]))
-        recordStop  = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventRecord'),
-                                                 [ast.IdentExp('stop'), int0]))
-        syncStop    = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventSynchronize'),
-                                                 [ast.IdentExp('stop')]))
-        calcElapsed = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventElapsedTime'),
-                                                 [ast.UnaryExp(ast.IdentExp('orcuda_elapsedTime'), ast.UnaryExp.ADDRESSOF),
-                                                  ast.IdentExp('start'), ast.IdentExp('stop')]))
-        timeFileOpen= ast.AssignStmt('orcuda_fp',
-                                     ast.FunCallExp(ast.IdentExp('fopen'),
-                                                 [ast.StringLitExp('orcuda_time.out'),
-                                                  ast.StringLitExp('a')]))
-        printElapsed= ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fprintf'),
-                                                 [ast.IdentExp('orcuda_fp'),
-                                                  ast.StringLitExp('Kernel_time@rep[%d]:%fms. '),
-                                                  ast.IdentExp('orio_i'),
-                                                  ast.IdentExp('orcuda_elapsedTime')]))
-        destroyStart= ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventDestroy'),
-                                                 [ast.IdentExp('start')]))
-        destroyStop = ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventDestroy'),
-                                                 [ast.IdentExp('stop')]))
-        destroyTimeFP=ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fclose'),
-                                                 [ast.IdentExp('orcuda_fp')]))
+        timerDecls = [
+            ast.VarDecl('cudaEvent_t', ['start', 'stop']),
+            ast.VarDecl('float', ['orcuda_elapsed']),
+            ast.VarDecl('FILE*', ['orcuda_fp'])
+        ]
+        timerStart = [
+            ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventCreate'), [ast.UnaryExp(ast.IdentExp('start'), ast.UnaryExp.ADDRESSOF)])),
+            ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventCreate'), [ast.UnaryExp(ast.IdentExp('stop'),  ast.UnaryExp.ADDRESSOF)])),
+            ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventRecord'), [ast.IdentExp('start'), int0]))
+        ]
+        timerStop  = [
+            ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventRecord'), [ast.IdentExp('stop'), int0])),
+            ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventSynchronize'), [ast.IdentExp('stop')])),
+            ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventElapsedTime'),
+                                       [ast.UnaryExp(ast.IdentExp('orcuda_elapsed'), ast.UnaryExp.ADDRESSOF),
+                                        ast.IdentExp('start'), ast.IdentExp('stop')])),
+            ast.AssignStmt('orcuda_fp',
+                        ast.FunCallExp(ast.IdentExp('fopen'), [ast.StringLitExp('orcuda_time.out'), ast.StringLitExp('a')])),
+            ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fprintf'),
+                                       [ast.IdentExp('orcuda_fp'),
+                                        ast.StringLitExp('Kernel_time@rep[%d]:%fms. '),
+                                        ast.IdentExp('orio_i'),
+                                        ast.IdentExp('orcuda_elapsed')])),
+            ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fclose'), [ast.IdentExp('orcuda_fp')])),
+            ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventDestroy'), [ast.IdentExp('start')])),
+            ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventDestroy'), [ast.IdentExp('stop')]))
+        ]
         #--------------------------------------------------------------------------------------------------------------
         
-        transformed_stmt = \
-               ast.CompStmt([ast.Comment('declare device variables'),
-                             dev_double_decls,
-                             dev_int_decls,
-                             dev_dim_decls,
-                             ast.Comment('calculate device dimensions'),
-                             init_gsize,
-                             init_bsize,
-                             ast.Comment('allocate device memory'),
-                             malloc_ubound
-                             ] +
-                            malloc_scalars +
-                            malloc_arrays +
-                            [ast.Comment('copy data from host to devices'),
-                             memcpy_ubound] +
-                            memcopy_scalars +
-                            memcpy_arrays +
-                            [timeEventsDecl, timeElapsedDecl, timeFileDecl,
-                             createStart, createStop, recordStart
-                             ] +
-                            [ast.Comment('invoke device kernel function'),
-                             kernell_call
-                             ] +
-                            [recordStop, syncStop, calcElapsed, timeFileOpen, printElapsed,
-                             destroyStart, destroyStop, destroyTimeFP
-                             ] +
-                            [ast.Comment('copy data from devices to host')] +
-                             memcpy_result +
-                             [ast.Comment('post-processing on the host')] +
-                             pp +
-                             [ast.Comment('free device memory')] +
-                            free_vars
-                            )
-        
+        transformed_stmt = ast.CompStmt(
+            hostDecls + deviceDims + mallocs + h2dcopys
+            +
+            timerDecls + timerStart
+            +
+            [ast.Comment('invoke device kernel function'), kernell_call]
+            +
+            timerStop
+            +
+            d2hcopys + pp + free_vars
+        )
         return transformed_stmt
     
 
