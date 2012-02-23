@@ -26,6 +26,7 @@ int main( void ) {
         fprintf( fp, "'minor',%d\n", prop.minor );
         fprintf( fp, "'clockRate',%d\n", prop.clockRate );
         fprintf( fp, "'deviceOverlap',%d\n", prop.deviceOverlap );
+        fprintf( fp, "'asyncEngineCount',%d\n", prop.asyncEngineCount );
         fprintf( fp, "'kernelExecTimeoutEnabled',%d\n", prop.kernelExecTimeoutEnabled );
         fprintf( fp, "'totalGlobalMem',%ld\n", prop.totalGlobalMem );
         fprintf( fp, "'totalConstMem',%ld\n", prop.totalConstMem );
@@ -55,6 +56,7 @@ int main( void ) {
         fprintf( fp, "'minor',%d\n", 0 );
         fprintf( fp, "'clockRate',%d\n", 1147000 );
         fprintf( fp, "'deviceOverlap',%d\n", 1 );
+        fprintf( fp, "'asyncEngineCount',%d\n", 2 );
         fprintf( fp, "'kernelExecTimeoutEnabled',%d\n", 0 );
         fprintf( fp, "'totalGlobalMem',%ld\n", 5636292608 );
         fprintf( fp, "'totalConstMem',%d\n", 65536 );
@@ -102,11 +104,13 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         THREADCOUNT = 'threadCount'
         CB          = 'cacheBlocks'
         PHM         = 'pinHostMem'
+        STREAMCOUNT = 'streamCount'
 
         # default argument values
         threadCount = 16
         cacheBlocks = False
         pinHost     = False
+        streamCount = 1
 
         # iterate over all transformation arguments
         errors = ''
@@ -133,6 +137,11 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                     errors += 'line %s: %s must be a boolean: %s\n' % (line_no, aname, rhs)
                 else:
                     pinHost = rhs
+            elif aname == STREAMCOUNT:
+                if not isinstance(rhs, int) or rhs <= 0:
+                    errors += 'line %s: %s must be a positive integer: %s\n' % (line_no, aname, rhs)
+                else:
+                    streamCount = rhs
             else:
                 g.err('orio.module.loop.submodule.cuda.cuda: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
@@ -140,7 +149,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
             g.err('orio.module.loop.submodule.cuda.cuda: errors evaluating transformation args:\n%s' % errors)
 
         # return evaluated transformation arguments
-        return (threadCount, cacheBlocks, pinHost)
+        return (threadCount, cacheBlocks, pinHost, streamCount)
 
     #------------------------------------------------------------------------------------------------------------------
 

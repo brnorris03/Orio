@@ -7,6 +7,7 @@ void VecScaleMult(int n, double a, double *x) {
             param TC[] = range(16,513,16);
             param CB[] = [True, False];
             param PHM[] = [False];
+            param SC[] = range(1,3);
           }
           def build {
             arg build_command = 'nvcc -arch=sm_20';
@@ -27,7 +28,7 @@ void VecScaleMult(int n, double a, double *x) {
     int n=N;
 
     /*@ begin Loop (
-          transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM)
+          transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM, streamCount=SC)
         for (i=0; i<=n-1; i++)
           x[i]=a*x[i];
     ) @*/
