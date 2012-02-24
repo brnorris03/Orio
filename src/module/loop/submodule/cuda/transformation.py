@@ -36,6 +36,8 @@ class Transformation:
         loop_lib = orio.module.loop.ast_lib.common_lib.CommonLib()
         tcount = str(self.threadCount)
         int0 = ast.NumLitExp(0,ast.NumLitExp.INT)
+        int1 = ast.NumLitExp(1,ast.NumLitExp.INT)
+        int2 = ast.NumLitExp(2,ast.NumLitExp.INT)
 
         #--------------------------------------------------------------------------------------------------------------
         # begin rewrite the loop body
@@ -105,14 +107,20 @@ class Transformation:
 
         #--------------------------------------------------------------------------------------------------------------
         # begin generate the kernel
-        kernelStmts = []
+        kernelStmts   = []
+        redKernStmts  = []
         blockIdx  = ast.IdentExp('blockIdx.x')
         blockSize = ast.IdentExp('blockDim.x')
         threadIdx = ast.IdentExp('threadIdx.x')
-        kernelStmts += [
-            ast.VarDeclInit('int', tid,
+        idx        = 'orcu_i'
+        idxIdent   = ast.IdentExp(idx)
+        size       = 'orcu_n'
+        sizeIdent  = ast.IdentExp(size)
+        tidVarDecl = ast.VarDeclInit('int', tid,
                             ast.BinOpExp(ast.BinOpExp(blockIdx, blockSize, ast.BinOpExp.MUL), threadIdx, ast.BinOpExp.ADD))
-        ]
+        kernelStmts  += [tidVarDecl]
+        redKernStmts += [tidVarDecl]
+        redkernParams = []
         cacheReads  = []
         cacheWrites = []
         if self.cacheBlocks:
@@ -162,54 +170,83 @@ class Transformation:
         ]
         
         # begin reduction statements
-        block_r = 'block_r'
+        reducts      = 'reducts'
+        reductsIdent = ast.IdentExp(reducts)
+        blkdata      = 'orcu_vec'+str(g.Globals().getcounter())
+        blkdataIdent = ast.IdentExp(blkdata)
         if isReduction:
             kernelStmts += [ast.Comment('reduce single-thread results within a block')]
             # declare the array shared by threads within a block
-            kernelStmts += [ast.VarDecl('__shared__ double', ['cache['+tcount+']'])]
+            kernelStmts += [ast.VarDecl('__shared__ double', [blkdata+'['+tcount+']'])]
             # store the lhs/computed values into the shared array
-            kernelStmts += [ast.AssignStmt('cache[threadIdx.x]',loop_lhs_exprs[0])]
+            kernelStmts += [ast.ExpStmt(ast.BinOpExp(ast.ArrayRefExp(blkdataIdent, threadIdx),
+                                                     loop_lhs_exprs[0],
+                                                     ast.BinOpExp.EQ_ASGN))]
             # sync threads prior to reduction
             kernelStmts += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('__syncthreads'),[]))];
             # at each step, divide the array into two halves and sum two corresponding elements
-            # int i = blockDim.x/2;
-            idx = 'orcu_i'
-            idxId = ast.IdentExp(idx)
-            int2 = ast.NumLitExp(2,ast.NumLitExp.INT)
-            kernelStmts += [ast.VarDeclInit('int', idx, ast.BinOpExp(ast.IdentExp('blockDim.x'), int2, ast.BinOpExp.DIV))]
-            #while(i!=0){
-            #  if(threadIdx.x<i)
-            #    cache[threadIdx.x]+=cache[threadIdx.x+i];
-            #  __syncthreads();
-            # i/=2;
-            #}
-            kernelStmts += [ast.WhileStmt(ast.BinOpExp(idxId, int0, ast.BinOpExp.NE),
-                                      ast.CompStmt([ast.IfStmt(ast.BinOpExp(threadIdx, idxId, ast.BinOpExp.LT),
-                                                               ast.ExpStmt(ast.BinOpExp(ast.ArrayRefExp(ast.IdentExp('cache'), threadIdx),
-                                                                                        ast.ArrayRefExp(ast.IdentExp('cache'),
-                                                                                                        ast.BinOpExp(threadIdx,
-                                                                                                                     idxId,
-                                                                                                                     ast.BinOpExp.ADD)),
-                                                                                        ast.BinOpExp.ASGN_ADD))
-                                                               ),
-                                                    ast.ExpStmt(ast.FunCallExp(ast.IdentExp('__syncthreads'),[])),
-                                                    ast.AssignStmt(idx,ast.BinOpExp(idxId, int2, ast.BinOpExp.DIV))
-                                                    ])
-                                      )]
+            kernelStmts += [ast.VarDecl('int', [idx])]
+            kernelStmts += [
+                ast.ForStmt(ast.BinOpExp(idxIdent, ast.BinOpExp(ast.IdentExp('blockDim.x'), int2, ast.BinOpExp.DIV), ast.BinOpExp.EQ_ASGN),
+                            ast.BinOpExp(idxIdent, int0, ast.BinOpExp.GT),
+                            ast.BinOpExp(idxIdent, int1, ast.BinOpExp.ASGN_SHR),
+                            ast.CompStmt([ast.IfStmt(ast.BinOpExp(threadIdx, idxIdent, ast.BinOpExp.LT),
+                                                     ast.ExpStmt(ast.BinOpExp(ast.ArrayRefExp(blkdataIdent, threadIdx),
+                                                                              ast.ArrayRefExp(blkdataIdent,
+                                                                                              ast.BinOpExp(threadIdx, idxIdent, ast.BinOpExp.ADD)),
+                                                                              ast.BinOpExp.ASGN_ADD))
+                                                     ),
+                                          ast.ExpStmt(ast.FunCallExp(ast.IdentExp('__syncthreads'),[]))]))
+            ]
             # the first thread within a block stores the results for the entire block
-            kernelParams += [ast.FieldDecl('double*', block_r)]
-            # if(threadIdx.x==0) block_r[blockIdx.x]=cache[0];
+            kernelParams += [ast.FieldDecl('double*', reducts)]
             kernelStmts += [
                 ast.IfStmt(ast.BinOpExp(threadIdx, int0, ast.BinOpExp.EQ),
-                           ast.AssignStmt('block_r[blockIdx.x]',ast.ArrayRefExp(ast.IdentExp('cache'), int0)))
+                           ast.ExpStmt(ast.BinOpExp(ast.ArrayRefExp(reductsIdent, blockIdx),
+                                                    ast.ArrayRefExp(blkdataIdent, int0),
+                                                    ast.BinOpExp.EQ_ASGN)))
             ]
         # end reduction statements
+        
+        # reduction kernel
+        if isReduction:
+          redkernParams += [ast.FieldDecl('int', size), ast.FieldDecl('double*', reducts)]
+          redKernStmts += [ast.VarDecl('__shared__ double', [blkdata+'['+tcount+']'])]
+          redKernStmts += [ast.IfStmt(ast.BinOpExp(ast.IdentExp(tid), sizeIdent, ast.BinOpExp.LT),
+                                      ast.ExpStmt(ast.BinOpExp(ast.ArrayRefExp(blkdataIdent, threadIdx),
+                                                               ast.ArrayRefExp(reductsIdent,ast.IdentExp(tid)),
+                                                               ast.BinOpExp.EQ_ASGN)))]
+          redKernStmts += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('__syncthreads'),[]))]
+          redKernStmts += [ast.VarDecl('int', [idx])]
+          redKernStmts += [ast.ForStmt(
+            ast.BinOpExp(idxIdent, ast.BinOpExp(ast.IdentExp('blockDim.x'), int2, ast.BinOpExp.DIV), ast.BinOpExp.EQ_ASGN),
+            ast.BinOpExp(idxIdent, int0, ast.BinOpExp.GT),
+            ast.BinOpExp(idxIdent, int1, ast.BinOpExp.ASGN_SHR),
+            ast.CompStmt([ast.IfStmt(ast.BinOpExp(threadIdx, idxIdent, ast.BinOpExp.LT),
+                                     ast.ExpStmt(ast.BinOpExp(ast.ArrayRefExp(blkdataIdent, threadIdx),
+                                                              ast.ArrayRefExp(blkdataIdent,
+                                                                              ast.BinOpExp(threadIdx, idxIdent, ast.BinOpExp.ADD)),
+                                                              ast.BinOpExp.ASGN_ADD))
+                                     ),
+                          ast.ExpStmt(ast.FunCallExp(ast.IdentExp('__syncthreads'),[]))])
+          )]
+          redKernStmts += [
+            ast.IfStmt(ast.BinOpExp(threadIdx, int0, ast.BinOpExp.EQ),
+                       ast.ExpStmt(ast.BinOpExp(ast.ArrayRefExp(reductsIdent, blockIdx),
+                                                ast.ArrayRefExp(blkdataIdent, int0),
+                                                ast.BinOpExp.EQ_ASGN)))
+          ]
 
         dev_kernel_name = 'orcu_kernel'+str(g.Globals().getcounter())
         dev_kernel = ast.FunDecl(dev_kernel_name, 'void', ['__global__'], kernelParams, ast.CompStmt(kernelStmts))
         
+        dev_redkern_name = 'orcu_blksum'+str(g.Globals().getcounter())
+        dev_redkern = ast.FunDecl(dev_redkern_name, 'void', ['__global__'], redkernParams, ast.CompStmt(redKernStmts))
+        
         # after getting interprocedural AST, make this a sub to that AST
         g.Globals().cunit_declarations += orio.module.loop.codegen.CodeGen('cuda').generator.generate(dev_kernel, '', '  ')
+        if isReduction:
+          g.Globals().cunit_declarations += '\n' + orio.module.loop.codegen.CodeGen('cuda').generator.generate(dev_redkern, '', '  ')
         # end generate the kernel
         #--------------------------------------------------------------------------------------------------------------
         
@@ -219,11 +256,11 @@ class Transformation:
         # declare device variables
         dev = 'dev_'
         dev_lbi = map(lambda x: dev+x, list(lbi))
-        dev_block_r = dev + block_r
+        dev_block_r = dev + reducts
         host_ids = []
         if isReduction:
             dev_lbi  += [dev_block_r]
-            host_ids += [block_r]
+            host_ids += [reducts]
         hostDecls  = [ast.Comment('declare variables')]
         hostDecls += [ast.VarDecl('double', map(lambda x: '*'+x, dev_lbi + host_ids))]
         
@@ -265,30 +302,28 @@ class Transformation:
         
         # -------------------------------------------------
         # if streaming, divide vectors into chunks and asynchronously overlap copy-copy and copy-exec ops
-        sidx           = 'orcu_i'
-        sidxIdent      = ast.IdentExp(sidx)
         soffset        = 'orcu_soff'
         soffsetIdent   = ast.IdentExp(soffset)
         boffset        = 'orcu_boff'
         boffsetIdent   = ast.IdentExp(boffset)
         calc_offset    = []
         calc_boffset   = []
-        hostDecls     += [ast.VarDecl('int', [sidx])]
+        hostDecls     += [ast.VarDecl('int', [idx, size])]
         if self.streamCount > 1:
             # declare and create streams
             hostDecls += [ast.VarDecl('cudaStream_t', ['stream[' + str(self.streamCount) + ']'])]
             hostDecls += [ast.VarDecl('int', [soffset, boffset])]
             mallocs   += [
-              ast.ForStmt(ast.BinOpExp(sidxIdent, int0, ast.BinOpExp.EQ_ASGN),
-                          ast.BinOpExp(sidxIdent, streamCountNumLit, ast.BinOpExp.LT),
-                          ast.UnaryExp(sidxIdent, ast.UnaryExp.POST_INC),
+              ast.ForStmt(ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
+                          ast.BinOpExp(idxIdent, streamCountNumLit, ast.BinOpExp.LT),
+                          ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
                           ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaStreamCreate'),
-                                                     [ast.UnaryExp(ast.IdentExp('stream[' + sidx + ']'),
+                                                     [ast.UnaryExp(ast.IdentExp('stream[' + idx + ']'),
                                                                    ast.UnaryExp.ADDRESSOF)])))
             ]
             calc_offset = [
               ast.ExpStmt(ast.BinOpExp(soffsetIdent,
-                                       ast.BinOpExp(sidxIdent,
+                                       ast.BinOpExp(idxIdent,
                                                     ast.ParenthExp(ast.BinOpExp(scSizeIdent,
                                                                                 streamCountNumLit,
                                                                                 ast.BinOpExp.DIV)),
@@ -297,7 +332,7 @@ class Transformation:
             ]
             calc_boffset = [
               ast.ExpStmt(ast.BinOpExp(boffsetIdent,
-                                       ast.BinOpExp(sidxIdent,
+                                       ast.BinOpExp(idxIdent,
                                                     ast.ParenthExp(ast.BinOpExp(gridxIdent,
                                                                                 streamCountNumLit,
                                                                                 ast.BinOpExp.DIV)),
@@ -350,7 +385,7 @@ class Transformation:
                                                     ast.BinOpExp(ast.IdentExp(aid),  soffsetIdent, ast.BinOpExp.ADD),
                                                     ast.BinOpExp(scSizeIdent, streamCountNumLit, ast.BinOpExp.DIV),
                                                     ast.IdentExp('cudaMemcpyHostToDevice'),
-                                                    ast.ArrayRefExp(ast.IdentExp('stream'), sidxIdent)
+                                                    ast.ArrayRefExp(ast.IdentExp('stream'), idxIdent)
                                                     ]))]
                 else:
                     h2dcopys += [
@@ -363,9 +398,9 @@ class Transformation:
         # for-loop over streams
         if self.streamCount > 1:
             h2dcopys += [
-              ast.ForStmt(ast.BinOpExp(sidxIdent, int0, ast.BinOpExp.EQ_ASGN),
-                          ast.BinOpExp(sidxIdent, streamCountNumLit, ast.BinOpExp.LT),
-                          ast.UnaryExp(sidxIdent, ast.UnaryExp.POST_INC),
+              ast.ForStmt(ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
+                          ast.BinOpExp(idxIdent, streamCountNumLit, ast.BinOpExp.LT),
+                          ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
                           ast.CompStmt(calc_offset + h2dasyncs))]
         # -------------------------------------------------
         # malloc block-level result var
@@ -422,12 +457,40 @@ class Transformation:
                     args += [ast.BinOpExp(ast.IdentExp(arg), boffsetIdent, ast.BinOpExp.ADD)]
                 else:
                     args += [ast.IdentExp(arg)]
-            kernell_call = ast.ExpStmt(ast.FunCallExp(ast.IdentExp(dev_kernel_name+'<<<dimGrid,dimBlock,0,stream['+sidx+']>>>'), args))
+            kernell_call = ast.ExpStmt(ast.FunCallExp(ast.IdentExp(dev_kernel_name+'<<<dimGrid,dimBlock,0,stream['+idx+']>>>'), args))
             kernell_calls += [ast.ForStmt(
-                               ast.BinOpExp(sidxIdent, int0, ast.BinOpExp.EQ_ASGN),
-                               ast.BinOpExp(sidxIdent, streamCountNumLit, ast.BinOpExp.LT),
-                               ast.UnaryExp(sidxIdent, ast.UnaryExp.POST_INC),
+                               ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
+                               ast.BinOpExp(idxIdent, streamCountNumLit, ast.BinOpExp.LT),
+                               ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
                                ast.CompStmt(calc_offset+calc_boffset+[kernell_call]))]
+        
+        # -------------------------------------------------
+        # iteratively keep block-summing, until nothing more to sum
+        stageReds = []
+        stageBlocks = 'orcu_blks'
+        stageBlocksIdent = ast.IdentExp(stageBlocks)
+        bodyStmts = []
+        maxThreadsPerBlock = self.devProps['maxThreadsPerBlock']
+        maxThreadsPerBlockNumLit = ast.NumLitExp(str(maxThreadsPerBlock), ast.NumLitExp.INT)
+        maxThreadsPerBlockM1 = ast.NumLitExp(str(str(maxThreadsPerBlock - 1)), ast.NumLitExp.INT)
+        if isReduction:
+            # orcu_sum<<<dimGrid.x/1024,1024>>>(dimGrid.x,dev_reducts,dev_reducts2)
+            stageReds += [ast.VarDeclInit('int', stageBlocks, gridxIdent)]
+            bodyStmts += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaDeviceSynchronize'), []))]
+            bodyStmts += [ast.ExpStmt(ast.BinOpExp(sizeIdent, stageBlocksIdent, ast.BinOpExp.EQ_ASGN))]
+            bodyStmts += [
+              ast.ExpStmt(
+                          ast.BinOpExp(stageBlocksIdent,
+                                       ast.BinOpExp(ast.ParenthExp(ast.BinOpExp(stageBlocksIdent,
+                                                                              maxThreadsPerBlockM1,
+                                                                              ast.BinOpExp.ADD)),
+                                                    maxThreadsPerBlockNumLit,
+                                                    ast.BinOpExp.DIV),
+                                       ast.BinOpExp.EQ_ASGN))]
+            args = [sizeIdent, ast.IdentExp(dev_block_r)]
+            bodyStmts += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp(dev_redkern_name+'<<<'+stageBlocks+',1024>>>'), args))]
+            stageReds += [ast.WhileStmt(ast.BinOpExp(stageBlocksIdent, int1, ast.BinOpExp.GT),
+                                        ast.CompStmt(bodyStmts))]
         
         # -------------------------------------------------
         # copy data from devices to host
@@ -451,7 +514,7 @@ class Transformation:
                                                     ast.BinOpExp(ast.IdentExp(draid), soffsetIdent, ast.BinOpExp.ADD),
                                                     ast.BinOpExp(scSizeIdent, streamCountNumLit, ast.BinOpExp.DIV),
                                                     ast.IdentExp('cudaMemcpyDeviceToHost'),
-                                                    ast.ArrayRefExp(ast.IdentExp('stream'), sidxIdent)
+                                                    ast.ArrayRefExp(ast.IdentExp('stream'), idxIdent)
                                                     ]))]
                 else:
                     d2hcopys += [
@@ -464,49 +527,27 @@ class Transformation:
         # -------------------------------------------------
         # memcpy block-level result var
         if isReduction:
-            if self.streamCount > 1:
-                d2hasyncs += [
-                    ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpyAsync'),
-                                               [ast.BinOpExp(ast.IdentExp(block_r),     boffsetIdent, ast.BinOpExp.ADD),
-                                                ast.BinOpExp(ast.IdentExp(dev_block_r), boffsetIdent, ast.BinOpExp.ADD),
-                                                ast.BinOpExp(scSizeIdent, streamCountNumLit, ast.BinOpExp.DIV),
-                                                ast.IdentExp('cudaMemcpyDeviceToHost'),
-                                                ast.ArrayRefExp(ast.IdentExp('stream'), sidxIdent)
-                                                ]))]
-            else:
-                d2hcopys += [
-                        ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
-                                                       [ast.IdentExp(block_r), ast.IdentExp(dev_block_r),
-                                                        ast.BinOpExp(gridxIdent,
-                                                                     ast.FunCallExp(sizeofIdent,[dblIdent]),
-                                                                     ast.BinOpExp.MUL),
-                                                        ast.IdentExp('cudaMemcpyDeviceToHost')
-                                                        ]))]
+          d2hcopys += [
+                  ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
+                                                 [ast.UnaryExp(ast.IdentExp(lhs_ids[0]),ast.UnaryExp.ADDRESSOF),
+                                                  ast.IdentExp(dev_block_r),
+                                                  ast.FunCallExp(sizeofIdent,[dblIdent]),
+                                                  ast.IdentExp('cudaMemcpyDeviceToHost')
+                                                  ]))]
         # -------------------------------------------------
-        if self.streamCount > 1:
+        if self.streamCount > 1 and not isReduction:
             d2hcopys   += [ast.ForStmt(
-                               ast.BinOpExp(sidxIdent, int0, ast.BinOpExp.EQ_ASGN),
-                               ast.BinOpExp(sidxIdent, streamCountNumLit, ast.BinOpExp.LT),
-                               ast.UnaryExp(sidxIdent, ast.UnaryExp.POST_INC),
+                               ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
+                               ast.BinOpExp(idxIdent, streamCountNumLit, ast.BinOpExp.LT),
+                               ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
                                ast.CompStmt(calc_boffset + d2hasyncs))]
             # synchronize
             d2hcopys   += [ast.ForStmt(
-                               ast.BinOpExp(sidxIdent, int0, ast.BinOpExp.EQ_ASGN),
-                               ast.BinOpExp(sidxIdent, streamCountNumLit, ast.BinOpExp.LT),
-                               ast.UnaryExp(sidxIdent, ast.UnaryExp.POST_INC),
+                               ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
+                               ast.BinOpExp(idxIdent, streamCountNumLit, ast.BinOpExp.LT),
+                               ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
                                ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaStreamSynchronize'),
-                                                          [ast.ArrayRefExp(ast.IdentExp('stream'), sidxIdent)])))]
-        # -------------------------------------------------
-        # reduce block-level results
-        pp = []
-        if isReduction:
-            pp += [ast.Comment('post-processing on the host')]
-            pp += [ast.ForStmt(ast.BinOpExp(sidxIdent, int0, ast.BinOpExp.EQ_ASGN),
-                               ast.BinOpExp(sidxIdent, gridxIdent, ast.BinOpExp.LT),
-                               ast.UnaryExp(sidxIdent, ast.UnaryExp.POST_INC),
-                               ast.ExpStmt(ast.BinOpExp(ast.IdentExp(lhs_ids[0]),
-                                                        ast.ArrayRefExp(ast.IdentExp(block_r), sidxIdent),
-                                                        ast.BinOpExp.ASGN_ADD)))]
+                                                          [ast.ArrayRefExp(ast.IdentExp('stream'), idxIdent)])))]
         # -------------------------------------------------
         # free allocated memory and resources
         free_vars = [ast.Comment('free allocated memory')]
@@ -516,11 +557,11 @@ class Transformation:
                 free_vars += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaHostUnregister'), [ast.IdentExp(var)]))]
             # destroy streams
             free_vars += [ast.ForStmt(
-                               ast.BinOpExp(sidxIdent, int0, ast.BinOpExp.EQ_ASGN),
-                               ast.BinOpExp(sidxIdent, streamCountNumLit, ast.BinOpExp.LT),
-                               ast.UnaryExp(sidxIdent, ast.UnaryExp.POST_INC),
+                               ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
+                               ast.BinOpExp(idxIdent, streamCountNumLit, ast.BinOpExp.LT),
+                               ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
                                ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaStreamDestroy'),
-                                                          [ast.ArrayRefExp(ast.IdentExp('stream'), sidxIdent)])))]
+                                                          [ast.ArrayRefExp(ast.IdentExp('stream'), idxIdent)])))]
         for var in dev_lbi:
             free_vars += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaFree'), [ast.IdentExp(var)]))]
         for var in host_ids:
@@ -570,14 +611,12 @@ class Transformation:
         
         transformed_stmt = ast.CompStmt(
             hostDecls + deviceDims + mallocs + h2dcopys
-            +
-            timerDecls + timerStart
-            +
-            kernell_calls
-            +
-            timerStop
-            +
-            d2hcopys + pp + free_vars
+          + timerDecls + timerStart
+          + kernell_calls
+          + timerStop
+          + stageReds
+          + d2hcopys
+          + free_vars
         )
         return transformed_stmt
     
