@@ -58,7 +58,7 @@ int main( void ) {
         fprintf( fp, "'deviceOverlap',%d\n", 1 );
         fprintf( fp, "'asyncEngineCount',%d\n", 2 );
         fprintf( fp, "'kernelExecTimeoutEnabled',%d\n", 0 );
-        fprintf( fp, "'totalGlobalMem',%ld\n", 5636292608 );
+        fprintf( fp, "'totalGlobalMem',%lld\n", 5636292608 );
         fprintf( fp, "'totalConstMem',%d\n", 65536 );
         fprintf( fp, "'memPitch',%d\n", 2147483647 );
         fprintf( fp, "'textureAlignment',%d\n", 512 );
