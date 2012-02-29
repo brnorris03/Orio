@@ -47,10 +47,13 @@ class PerfTestDriver:
 
         if language == 'c': 
             self.src_name = self.__PTEST_FNAME + str(counter) + '.c'
+            self.original_src_name = self.__PTEST_FNAME + str(counter) + '_original.c'
         elif language == 'cuda':
             self.src_name = self.__PTEST_FNAME + str(counter) + '.cu'
+            self.original_src_name = self.__PTEST_FNAME + str(counter) + '_original.cu'
         else:
             self.src_name = self.__PTEST_FNAME + str(counter) + '.F90'
+            self.original_src_name = self.__PTEST_FNAME + str(counter) + '_original.F90'
         
         self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
         self.original_exe_name = self.__PTEST_FNAME + str(counter) + '_original.exe'
@@ -91,7 +94,15 @@ class PerfTestDriver:
                 f.close()
             except:
                 err('orio.main.tuner.ptest_driver:  cannot open file for writing: timer_cpu.c')
-                
+
+        if not os.path.exists(self.original_src_name):
+            try:
+                f = open(self.original_src_name, 'w')
+                f.write(test_code)
+                f.close()
+            except:
+                err('orio.main.tuner.ptest_driver:  cannot open file for writing: %s' % self.original_src_name)
+            
         return
                 
 
@@ -256,6 +267,14 @@ class PerfTestDriver:
         # check if the performance cost is already acquired
         if not perf_costs:
             err('orio.main.tuner.ptest_driver:  performance testing failed: "%s"' % cmd)
+
+        # compare original and transformed codes' results
+        if Globals().validationMode and Globals().executedOriginal:
+          cmd = 'diff ./newexec.out ./origexec.out'
+          info(' running diff:\n\t' + cmd)
+          status = os.system(cmd)
+          if status:
+            err('orio.main.tuner.ptest_driver: results of transformed code differ from the original: "%s"' % status)
 
         # return the performance costs dictionary
         return perf_costs

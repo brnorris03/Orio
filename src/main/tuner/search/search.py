@@ -205,6 +205,16 @@ class Search:
         if len(uneval_coords) == 0:
             return perf_costs
 
+        # execute the original code and obtain results for validation
+        if Globals().validationMode and not Globals().executedOriginal:
+          validation_map = {}
+          transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
+          transformed_code, _ = transformed_code_seq[0]
+          validation_map['original'] = transformed_code
+          instrumented_code = self.ptcodegen.generate(validation_map)
+          _ = self.ptdriver.run(instrumented_code)
+          Globals().executedOriginal = True
+        
         # get the transformed code for each corresponding coordinate
         code_map = {}
         for coord in uneval_coords:
