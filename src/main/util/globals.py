@@ -139,6 +139,13 @@ class Globals:
             # TODO: refactor this after getting a global AST view
             self.cunit_declarations = [] 
             
+            # Enable validation of transformed vs. original code execution results 
+            if 'validate' in cmdline.keys():
+                self.validationMode = cmdline['validate']
+            else:
+                self.validationMode = False
+            self.executedOriginal = False
+            
             pass
 
 

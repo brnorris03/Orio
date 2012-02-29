@@ -33,24 +33,20 @@ class Transformation:
         # extract for-loop structure
         index_id, _, ubound_exp, _, loop_body = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(self.stmt)
 
+        # abbreviations
         loop_lib = orio.module.loop.ast_lib.common_lib.CommonLib()
         tcount = str(self.threadCount)
         int0 = ast.NumLitExp(0,ast.NumLitExp.INT)
         int1 = ast.NumLitExp(1,ast.NumLitExp.INT)
         int2 = ast.NumLitExp(2,ast.NumLitExp.INT)
 
+        maxThreadsPerBlock       = self.devProps['maxThreadsPerBlock']
+        maxThreadsPerBlockNumLit = ast.NumLitExp(str(maxThreadsPerBlock), ast.NumLitExp.INT)
+
         #--------------------------------------------------------------------------------------------------------------
-        # begin rewrite the loop body
+        # analysis
         # collect all identifiers from the loop's upper bound expression
         collectIdents = lambda n: [n.name] if isinstance(n, ast.IdentExp) else []
-        ubound_ids = loop_lib.collectNode(collectIdents, ubound_exp)
-        
-        # create decls for ubound_exp id's, assuming all ids are int's
-        kernelParams = [ast.FieldDecl('int', x) for x in ubound_ids]
-
-        # collect all identifiers from the loop body
-        loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
-        lbi = set(filter(lambda x: x != index_id.name, loop_body_ids))
         
         # collect all LHS identifiers within the loop body
         def collectLhsIds(n):
@@ -75,6 +71,44 @@ class Transformation:
         rhs_array_ids = list(set(rhs_ids).intersection(array_ids))
         isReduction = len(lhs_array_ids) == 0
 
+        #--------------------------------------------------------------------------------------------------------------
+        # in validation mode, output original code's results and (later on) compare against transformed code's results
+        if g.Globals().validationMode and not g.Globals().executedOriginal:
+          original = self.stmt.replicate()
+          results  = []
+          printFp  = 'fp'
+          printFunIdent = ast.IdentExp('fprintf')
+          printFpIdent  = ast.IdentExp(printFp)
+          results += [
+            ast.VarDeclInit('FILE*', printFp, ast.FunCallExp(ast.IdentExp('fopen'),
+                                                             [ast.StringLitExp('origexec.out'), ast.StringLitExp('w')]))
+          ]
+          results += [original]
+          for var in lhs_ids:
+            if var in array_ids:
+              bodyStmts = [original.stmt]
+              bodyStmts += [ast.ExpStmt(ast.FunCallExp(printFunIdent,
+                [printFpIdent, ast.StringLitExp("\'"+var+"[%d]\',%f; "), index_id, ast.ArrayRefExp(ast.IdentExp(var), index_id)])
+              )]
+              original.stmt = ast.CompStmt(bodyStmts)
+            else:
+              results += [ast.ExpStmt(
+                ast.FunCallExp(printFunIdent, [printFpIdent, ast.StringLitExp("\'"+var+"\',%f"), ast.IdentExp(var)])
+              )]
+          results += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fclose'), [printFpIdent]))]
+      
+          return ast.CompStmt(results)
+        
+        #--------------------------------------------------------------------------------------------------------------
+        # begin rewrite the loop body
+        # create decls for ubound_exp id's, assuming all ids are int's
+        ubound_ids = loop_lib.collectNode(collectIdents, ubound_exp)
+        kernelParams = [ast.FieldDecl('int', x) for x in ubound_ids]
+
+        # collect all identifiers from the loop body
+        loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
+        lbi = set(filter(lambda x: x != index_id.name, loop_body_ids))
+        
         # create decls for loop body id's
         if isReduction:
             lbi = lbi.difference(set(lhs_ids))
@@ -208,10 +242,12 @@ class Transformation:
             ]
         # end reduction statements
         
-        # reduction kernel
+        # begin multi-stage reduction kernel
+        blkdata      = 'orcu_vec'+str(g.Globals().getcounter())
+        blkdataIdent = ast.IdentExp(blkdata)
         if isReduction:
           redkernParams += [ast.FieldDecl('int', size), ast.FieldDecl('double*', reducts)]
-          redKernStmts += [ast.VarDecl('__shared__ double', [blkdata+'['+tcount+']'])]
+          redKernStmts += [ast.VarDecl('__shared__ double', [blkdata+'['+str(maxThreadsPerBlock)+']'])]
           redKernStmts += [ast.IfStmt(ast.BinOpExp(ast.IdentExp(tid), sizeIdent, ast.BinOpExp.LT),
                                       ast.ExpStmt(ast.BinOpExp(ast.ArrayRefExp(blkdataIdent, threadIdx),
                                                                ast.ArrayRefExp(reductsIdent,ast.IdentExp(tid)),
@@ -222,7 +258,11 @@ class Transformation:
             ast.BinOpExp(idxIdent, ast.BinOpExp(ast.IdentExp('blockDim.x'), int2, ast.BinOpExp.DIV), ast.BinOpExp.EQ_ASGN),
             ast.BinOpExp(idxIdent, int0, ast.BinOpExp.GT),
             ast.BinOpExp(idxIdent, int1, ast.BinOpExp.ASGN_SHR),
-            ast.CompStmt([ast.IfStmt(ast.BinOpExp(threadIdx, idxIdent, ast.BinOpExp.LT),
+            ast.CompStmt([ast.IfStmt(ast.BinOpExp(ast.BinOpExp(threadIdx, idxIdent, ast.BinOpExp.LT),
+                                                  ast.BinOpExp(ast.BinOpExp(threadIdx, idxIdent, ast.BinOpExp.ADD),
+                                                               sizeIdent,
+                                                               ast.BinOpExp.LT),
+                                                  ast.BinOpExp.LAND),
                                      ast.ExpStmt(ast.BinOpExp(ast.ArrayRefExp(blkdataIdent, threadIdx),
                                                               ast.ArrayRefExp(blkdataIdent,
                                                                               ast.BinOpExp(threadIdx, idxIdent, ast.BinOpExp.ADD)),
@@ -236,6 +276,7 @@ class Transformation:
                                                 ast.ArrayRefExp(blkdataIdent, int0),
                                                 ast.BinOpExp.EQ_ASGN)))
           ]
+        # end multi-stage reduction kernel
 
         dev_kernel_name = 'orcu_kernel'+str(g.Globals().getcounter())
         dev_kernel = ast.FunDecl(dev_kernel_name, 'void', ['__global__'], kernelParams, ast.CompStmt(kernelStmts))
@@ -467,30 +508,33 @@ class Transformation:
         # -------------------------------------------------
         # iteratively keep block-summing, until nothing more to sum
         stageReds = []
-        stageBlocks = 'orcu_blks'
-        stageBlocksIdent = ast.IdentExp(stageBlocks)
+        stageBlocks  = 'orcu_blks'
+        stageThreads = 'orcu_trds'
+        stageBlocksIdent  = ast.IdentExp(stageBlocks)
+        stageThreadsIdent = ast.IdentExp(stageThreads)
         bodyStmts = []
-        maxThreadsPerBlock = self.devProps['maxThreadsPerBlock']
-        maxThreadsPerBlockNumLit = ast.NumLitExp(str(maxThreadsPerBlock), ast.NumLitExp.INT)
-        maxThreadsPerBlockM1 = ast.NumLitExp(str(str(maxThreadsPerBlock - 1)), ast.NumLitExp.INT)
+        maxThreadsPerBlockM1 = ast.NumLitExp(str(maxThreadsPerBlock - 1), ast.NumLitExp.INT)
         if isReduction:
-            # orcu_sum<<<dimGrid.x/1024,1024>>>(dimGrid.x,dev_reducts,dev_reducts2)
-            stageReds += [ast.VarDeclInit('int', stageBlocks, gridxIdent)]
+            stageReds += [ast.VarDeclInit('int', stageBlocks,  gridxIdent)]
+            stageReds += [ast.VarDeclInit('int', stageThreads, int1)]
             bodyStmts += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaDeviceSynchronize'), []))]
             bodyStmts += [ast.ExpStmt(ast.BinOpExp(sizeIdent, stageBlocksIdent, ast.BinOpExp.EQ_ASGN))]
             bodyStmts += [
-              ast.ExpStmt(
-                          ast.BinOpExp(stageBlocksIdent,
+              ast.ExpStmt(ast.BinOpExp(stageBlocksIdent,
                                        ast.BinOpExp(ast.ParenthExp(ast.BinOpExp(stageBlocksIdent,
-                                                                              maxThreadsPerBlockM1,
-                                                                              ast.BinOpExp.ADD)),
+                                                                                maxThreadsPerBlockM1,
+                                                                                ast.BinOpExp.ADD)),
                                                     maxThreadsPerBlockNumLit,
                                                     ast.BinOpExp.DIV),
                                        ast.BinOpExp.EQ_ASGN))]
-            args = [sizeIdent, ast.IdentExp(dev_block_r)]
-            bodyStmts += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp(dev_redkern_name+'<<<'+stageBlocks+',1024>>>'), args))]
-            stageReds += [ast.WhileStmt(ast.BinOpExp(stageBlocksIdent, int1, ast.BinOpExp.GT),
-                                        ast.CompStmt(bodyStmts))]
+            bodyStmts += [ast.IfStmt(ast.BinOpExp(sizeIdent, maxThreadsPerBlockNumLit, ast.BinOpExp.LT),
+                                     ast.WhileStmt(ast.BinOpExp(stageThreadsIdent, sizeIdent, ast.BinOpExp.LT),
+                                                   ast.ExpStmt(ast.BinOpExp(stageThreadsIdent, int1, ast.BinOpExp.ASGN_SHL))),
+                                     ast.ExpStmt(ast.BinOpExp(stageThreadsIdent, maxThreadsPerBlockNumLit, ast.BinOpExp.EQ_ASGN)))
+            ]
+            bodyStmts += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp(dev_redkern_name+'<<<'+stageBlocks+','+stageThreads+'>>>'),
+                                                     [sizeIdent, ast.IdentExp(dev_block_r)]))]
+            stageReds += [ast.WhileStmt(ast.BinOpExp(stageBlocksIdent, int1, ast.BinOpExp.GT), ast.CompStmt(bodyStmts))]
         
         # -------------------------------------------------
         # copy data from devices to host
@@ -607,8 +651,34 @@ class Transformation:
                 ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventDestroy'), [ast.IdentExp('start')])),
                 ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaEventDestroy'), [ast.IdentExp('stop')]))
             ]
+
         #--------------------------------------------------------------------------------------------------------------
-        
+        # in validation mode, compare original and transformed codes' results
+        if g.Globals().validationMode:
+          results  = []
+          printFp  = 'fp'
+          printFunIdent = ast.IdentExp('fprintf')
+          printFpIdent  = ast.IdentExp(printFp)
+          results += [
+            ast.VarDeclInit('FILE*', printFp, ast.FunCallExp(ast.IdentExp('fopen'),
+                                                             [ast.StringLitExp('newexec.out'), ast.StringLitExp('w')]))
+          ]
+          for var in lhs_ids:
+            if var in array_ids:
+              bodyStmts = [original.stmt]
+              bodyStmts += [ast.ExpStmt(
+                ast.FunCallExp(printFunIdent,
+                  [printFpIdent, ast.StringLitExp("\'"+var+"[%d]\',%f; "),
+                   index_id, ast.ArrayRefExp(ast.IdentExp(var), index_id)])
+              )]
+              original.stmt = ast.CompStmt(bodyStmts)
+            else:
+              results += [ast.ExpStmt(
+                ast.FunCallExp(printFunIdent, [printFpIdent, ast.StringLitExp("\'"+var+"\',%f"), ast.IdentExp(var)])
+              )]
+          results += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fclose'), [printFpIdent]))]
+          
+      
         transformed_stmt = ast.CompStmt(
             hostDecls + deviceDims + mallocs + h2dcopys
           + timerDecls + timerStart
@@ -617,6 +687,7 @@ class Transformation:
           + stageReds
           + d2hcopys
           + free_vars
+          + results
         )
         return transformed_stmt
     

@@ -32,6 +32,7 @@ Options:
   --config=<p1:v1,p2:v2,..>      configurations for external mode
   --configfile=filename          configuration filename 
   -v, --verbose                  verbosely show details of the results of the running program
+  --validate                     validate by comparing output of original and transformed codes
 
 environment variables: 
   ORIO_FLAGS                     the string value is used to augment the list of Orio command-lin
@@ -120,7 +121,7 @@ class CmdParser:
             opts, args = getopt.getopt(orioargv,
                                        'c:ehko:p:rs:vx',
                                        ['pre-command=', 'config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=', 
-                                       'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern'])
+                                       'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern', 'validate'])
 
         except Exception, e:
             sys.stderr.write('Orio command-line error: %s' % e)
@@ -158,6 +159,8 @@ class CmdParser:
                 cmdline['config'] = arg
             elif opt in ('--configfile'):
                 cmdline['configfile'] = arg
+            elif opt in ('--validate'):
+                cmdline['validate'] = True
                 
         #print cmdline.get('config')        
         #sys.exit()
