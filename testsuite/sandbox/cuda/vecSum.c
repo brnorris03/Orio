@@ -1,7 +1,5 @@
 void VecSum(int n, double *x, double s) {
 
-    register int i;
-
     /*@ begin PerfTuning (
           def performance_params {
             param TC[] = range(16,513,16);
@@ -25,6 +23,7 @@ void VecSum(int n, double *x, double s) {
           }
     ) @*/
 
+    register int i;
     int n=N;
 
     /*@ begin Loop (
