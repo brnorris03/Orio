@@ -3,7 +3,8 @@
 #
 
 import re, sys
-from tool.ZestyParser import *
+import orio.tool.ZestyParser.Token as Token
+from orio.tool.ZestyParser import *
 from orio.main.util.globals import *
 
 #--------------------------------------------------------------------------------
