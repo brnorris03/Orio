@@ -264,7 +264,7 @@ class Search:
         '''
 
         is_valid=False
-
+        perf_costs = []
         
         # test if the performance parameters are valid
         try:
