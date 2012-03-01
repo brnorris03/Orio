@@ -143,7 +143,7 @@ class IndentationLevel (AbstractToken):
     
     def __call__(self, parser, origCursor):
         if not parser.skip(self.space):
-            raise NotMatched
+            raise parser.NotMatched
         
         i = parser.data.rfind('\n', 0, parser.cursor) + 1
         level = len(parser.data[i:parser.cursor].expandtabs(self.tabwidth))

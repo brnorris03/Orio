@@ -5,7 +5,7 @@
 import random, re
 import skeleton_code
 from orio.main.util.globals import *
-from main.tuner.skeleton_code import SEQ_TIMER
+from orio.main.tuner.skeleton_code import SEQ_TIMER
 
 #-----------------------------------------------------
 
