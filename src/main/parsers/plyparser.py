@@ -19,7 +19,7 @@
 import sys, os
 import orio.tool.ply.yacc as yacc
 #import orio.main.parsers.flexer as lexer
-import orio.module.inline.sublexer as lexer
+#import orio.module.inline.sublexer as lexer
 from orio.main.util.globals import *
 import orio.module.inline.subroutine as subroutine
    
