@@ -12,7 +12,7 @@ from distutils.core import setup
 # to traverse the source code directory to get all python packages
 py_packages = []
 cur_dir = os.getcwd()
-src_dir = os.path.join(cur_dir, 'src')
+src_dir = os.path.join(cur_dir, 'orio')
 for root, dirs, files in os.walk(src_dir, topdown=True):
     if '__init__.py' in files:
         rel_dir = root[len(cur_dir)+1:]
@@ -51,7 +51,7 @@ setup(name = 'orio',
       maintainer_email = 'norris@mcs.anl.gov',
       url = 'https://trac.mcs.anl.gov/projects/performance/wiki/Orio',
       packages = py_packages,
-      package_dir = {'orio' : 'src'},
+      package_dir = {'orio' : 'orio'},
       #package_data = {'orio' : ['tool/zestyparser/*']},
       scripts = ['orcc', 'orf', 'orcuda'])
 
