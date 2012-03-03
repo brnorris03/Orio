@@ -3,7 +3,7 @@
 #
 
 import sys
-import ast, main.dyn_loader, orio.module.loop.codegen
+import ast, orio.main.dyn_loader, orio.module.loop.codegen
 from orio.main.util.globals import *
 
 #-----------------------------------------
@@ -21,7 +21,7 @@ class Transformation:
         self.perf_params = perf_params
         self.verbose = verbose
         self.language = language
-        self.dloader = main.dyn_loader.DynLoader()
+        self.dloader = orio.main.dyn_loader.DynLoader()
         
     #--------------------------------------
 
