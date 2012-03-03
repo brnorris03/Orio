@@ -3,7 +3,7 @@
 #
 
 import sys
-import ast, tool.ply.lex, tool.ply.yacc
+import ast, orio.tool.ply.lex, orio.tool.ply.yacc
 from orio.main.util.globals import *
 
 #------------------------------------------------
@@ -675,8 +675,8 @@ def getParser(start_line_no):
     __start_line_no = start_line_no
 
     # create the lexer and parser
-    lexer = tool.ply.lex.lex(debug=0, optimize=1)
-    parser = tool.ply.yacc.yacc(method='LALR', debug=0, optimize=1)
+    lexer = orio.tool.ply.lex.lex(debug=0, optimize=1)
+    parser = orio.tool.ply.yacc.yacc(method='LALR', debug=0, optimize=1)
 
     # return the parser
     return parser

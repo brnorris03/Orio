@@ -2,7 +2,7 @@
 # A PLY-based parser for the TSpec (Tuning Specifier)
 #
 import re
-import tool.ply.lex, tool.ply.yacc
+import orio.tool.ply.lex, orio.tool.ply.yacc
 import orio.main.util.globals as g
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -276,8 +276,8 @@ def p_error(p):
 #----------------------------------------------------------------------------------------------------------------------
 def getParser(start_symbol):
     '''Create the parser'''
-    _ = tool.ply.lex.lex()
-    parser = tool.ply.yacc.yacc(method='LALR', debug=0, start=start_symbol)
+    _ = orio.tool.ply.lex.lex()
+    parser = orio.tool.ply.yacc.yacc(method='LALR', debug=0, start=start_symbol)
     return parser
 
 

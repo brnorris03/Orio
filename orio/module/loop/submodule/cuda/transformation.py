@@ -654,8 +654,8 @@ class Transformation:
 
         #--------------------------------------------------------------------------------------------------------------
         # in validation mode, compare original and transformed codes' results
+        results  = []
         if g.Globals().validationMode:
-          results  = []
           printFp  = 'fp'
           printFunIdent = ast.IdentExp('fprintf')
           printFpIdent  = ast.IdentExp(printFp)
