@@ -7,9 +7,10 @@ Created on Aug 26, 2011
 
 
 import sys,os,re
-import orio.tool.ply.lex, orio.tool.ply.yacc
+import orio.tool.ply.lex
+import orio.tool.ply.yacc
 #from orio.module.bto.ast import *
-from orio.module.bto.lexer import *
+import orio.module.bto.lexer
 from orio.main.util.globals import *
 
 vars = {}
