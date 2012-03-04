@@ -1,11 +1,9 @@
 void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, double a3, double *x3,
            double a4, double *x4, double a5, double *x5) {
     
-    register int i;
-    
     /*@ begin PerfTuning (
           def performance_params {
-            param TC[] = range(16,513,16);
+            param TC[] = range(16,33,16);
             param CB[] = [True, False];
             param PHM[] = [False];
             param SC[] = range(1,3);
@@ -35,6 +33,7 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
           }
     ) @*/
 
+    register int i;
     int n=N;
 
     /*@ begin Loop (
