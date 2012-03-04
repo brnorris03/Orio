@@ -14,7 +14,7 @@ void VecSum(int n, double *x, double s) {
             param N[] = [1000];
           }
           def input_vars {
-            decl double s = random;
+            decl double s = 0;
             decl static double x[N] = random;
           }
           def performance_counter {
