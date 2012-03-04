@@ -187,7 +187,8 @@ class CodeGen_CUDA (CodeGen_C):
             s += ';\n'
 
         elif isinstance(tnode, ast.VarDeclInit):
-            s += indent + str(tnode.type_name) + ' ' + str(tnode.var_name)
+            s += indent + str(tnode.type_name) + ' '
+            s += self.generate(tnode.var_name, indent, extra_indent)
             s += '=' + self.generate(tnode.init_exp, indent, extra_indent)
             s += ';\n'
 

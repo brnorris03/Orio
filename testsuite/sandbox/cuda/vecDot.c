@@ -1,7 +1,5 @@
 void VecDot(int n, double *x, double *y, double r) {
 
-    register int i;
-
     /*@ begin PerfTuning (
           def performance_params {
             param TC[] = range(16,513,16);
@@ -26,6 +24,7 @@ void VecDot(int n, double *x, double *y, double r) {
           }
     ) @*/
 
+    register int i;
     int n=N;
 
     /*@ begin Loop (
