@@ -79,23 +79,22 @@ class Transformation:
         if g.Globals().validationMode and not g.Globals().executedOriginal:
           original = self.stmt.replicate()
           results  = []
-          printFunIdent = ast.IdentExp('fprintf')
           printFpIdent  = ast.IdentExp('fp')
           results += [
-            ast.VarDeclInit('FILE*', printFpIdent, ast.FunCallExp(ast.IdentExp('fopen'),
-                                                             [ast.StringLitExp('origexec.out'), ast.StringLitExp('w')]))
+            ast.VarDeclInit('FILE*', printFpIdent,
+                            ast.FunCallExp(ast.IdentExp('fopen'), [ast.StringLitExp('origexec.out'), ast.StringLitExp('w')]))
           ]
           results += [original]
           for var in lhs_ids:
             if var in array_ids:
               bodyStmts = [original.stmt]
-              bodyStmts += [ast.ExpStmt(ast.FunCallExp(printFunIdent,
+              bodyStmts += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fprintf'),
                 [printFpIdent, ast.StringLitExp("\'"+var+"[%d]\',%f; "), index_id, ast.ArrayRefExp(ast.IdentExp(var), index_id)])
               )]
               original.stmt = ast.CompStmt(bodyStmts)
             else:
               results += [ast.ExpStmt(
-                ast.FunCallExp(printFunIdent, [printFpIdent, ast.StringLitExp("\'"+var+"\',%f"), ast.IdentExp(var)])
+                ast.FunCallExp(ast.IdentExp('fprintf'), [printFpIdent, ast.StringLitExp("\'"+var+"\',%f"), ast.IdentExp(var)])
               )]
           results += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fclose'), [printFpIdent]))]
       
@@ -150,8 +149,8 @@ class Transformation:
         blockSize = ast.IdentExp('blockDim.x')
         threadIdx = ast.IdentExp('threadIdx.x')
         idx        = prefix + 'i'
-        idxIdent   = ast.IdentExp(idx)
         size       = prefix + 'n'
+        idxIdent   = ast.IdentExp(idx)
         sizeIdent  = ast.IdentExp(size)
         tidVarDecl = ast.VarDeclInit('int', tidIdent,
                             ast.BinOpExp(ast.BinOpExp(blockIdx, blockSize, ast.BinOpExp.MUL), threadIdx, ast.BinOpExp.ADD))
@@ -349,11 +348,15 @@ class Transformation:
         blks4chunksIdent  = ast.IdentExp('blks4chunks')
         calc_offset       = []
         calc_boffset      = []
-        hostDecls        += [ast.VarDecl('int', [idx, size])]
+        hostDecls        += [ast.VarDecl('int', [idx])]
+        if isReduction:
+          hostDecls      += [ast.VarDecl('int', [size])]
         if self.streamCount > 1:
           # declare and create streams
           hostDecls += [ast.VarDecl('cudaStream_t', ['stream[nstreams+1]'])]
-          hostDecls += [ast.VarDecl('int', [soffset, boffset])]
+          hostDecls += [ast.VarDecl('int', [soffset])]
+          if isReduction:
+            hostDecls += [ast.VarDecl('int', [boffset])]
           mallocs   += [
             ast.ForStmt(ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
                         ast.BinOpExp(idxIdent, nstreamsIdent, ast.BinOpExp.LE),
@@ -488,6 +491,7 @@ class Transformation:
         else:
           args    = [chunklenIdent]
           argsrem = [chunkremIdent]
+          boffsets = []
           # adjust array args using offsets
           dev_array_idss = map(lambda x: dev+x, array_ids)
           for arg in dev_lbi:
@@ -508,20 +512,24 @@ class Transformation:
             ast.IfStmt(ast.BinOpExp(ast.BinOpExp(gridxIdent, nstreamsIdent, ast.BinOpExp.MOD),
                                     int0,
                                     ast.BinOpExp.NE),
-                       ast.ExpStmt(ast.UnaryExp(blks4chunkIdent, ast.UnaryExp.POST_INC))),
-            # calc total number of blocks
-            ast.VarDeclInit('int', blks4chunksIdent, ast.BinOpExp(blks4chunkIdent, nstreamsIdent, ast.BinOpExp.MUL)),
-            # kernel invocations
+                       ast.ExpStmt(ast.UnaryExp(blks4chunkIdent, ast.UnaryExp.POST_INC)))
+          ]
+          # calc total number of blocks to reduce
+          if isReduction:
+            kernell_calls += [ast.VarDeclInit('int', blks4chunksIdent, ast.BinOpExp(blks4chunkIdent, nstreamsIdent, ast.BinOpExp.MUL))]
+            boffsets += [calc_boffset]
+          # kernel invocations
+          kernell_calls += [
             ast.ForStmt(
               ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
               ast.BinOpExp(idxIdent, nstreamsIdent, ast.BinOpExp.LT),
               ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
-              ast.CompStmt(calc_offset + calc_boffset + [kernell_call])),
+              ast.CompStmt(calc_offset + boffsets + [kernell_call])),
             # kernel invocation on the last chunk
             ast.IfStmt(ast.BinOpExp(chunkremIdent, int0, ast.BinOpExp.NE),
-                       ast.CompStmt(calc_offset + calc_boffset + [kernell_callrem,
-                                    ast.ExpStmt(ast.UnaryExp(blks4chunksIdent, ast.UnaryExp.POST_INC))]
-                       ))
+                       ast.CompStmt(calc_offset + boffsets + [kernell_callrem] +
+                                    ([ast.ExpStmt(ast.UnaryExp(blks4chunksIdent, ast.UnaryExp.POST_INC))] if isReduction else []))
+                       )
           ]
         
         # -------------------------------------------------
@@ -561,7 +569,8 @@ class Transformation:
         # -------------------------------------------------
         # copy data from devices to host
         d2hcopys = [ast.Comment('copy data from device to host')]
-        d2hasyncs = []
+        d2hasyncs    = []
+        d2hasyncsrem = []
         for var in lhs_ids:
             res_scalar_ids = filter(lambda x: x[1] == (dev+var), dev_scalar_ids)
             for rsid,drsid in res_scalar_ids:
@@ -578,7 +587,15 @@ class Transformation:
                         ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpyAsync'),
                                                    [ast.BinOpExp(ast.IdentExp(raid),  soffsetIdent, ast.BinOpExp.ADD),
                                                     ast.BinOpExp(ast.IdentExp(draid), soffsetIdent, ast.BinOpExp.ADD),
-                                                    ast.BinOpExp(scSizeIdent, nstreamsIdent, ast.BinOpExp.DIV),
+                                                    ast.BinOpExp(chunklenIdent, sizeofDblCall, ast.BinOpExp.MUL),
+                                                    ast.IdentExp('cudaMemcpyDeviceToHost'),
+                                                    ast.ArrayRefExp(ast.IdentExp('stream'), idxIdent)
+                                                    ]))]
+                    d2hasyncsrem += [
+                        ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpyAsync'),
+                                                   [ast.BinOpExp(ast.IdentExp(raid),  soffsetIdent, ast.BinOpExp.ADD),
+                                                    ast.BinOpExp(ast.IdentExp(draid), soffsetIdent, ast.BinOpExp.ADD),
+                                                    ast.BinOpExp(chunkremIdent, sizeofDblCall, ast.BinOpExp.MUL),
                                                     ast.IdentExp('cudaMemcpyDeviceToHost'),
                                                     ast.ArrayRefExp(ast.IdentExp('stream'), idxIdent)
                                                     ]))]
@@ -602,18 +619,20 @@ class Transformation:
                                                   ]))]
         # -------------------------------------------------
         if self.streamCount > 1 and not isReduction:
-            d2hcopys   += [ast.ForStmt(
-                               ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
-                               ast.BinOpExp(idxIdent, nstreamsIdent, ast.BinOpExp.LT),
-                               ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
-                               ast.CompStmt(calc_boffset + d2hasyncs))]
-            # synchronize
-            d2hcopys   += [ast.ForStmt(
-                               ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
-                               ast.BinOpExp(idxIdent, nstreamsIdent, ast.BinOpExp.LT),
-                               ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
-                               ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaStreamSynchronize'),
-                                                          [ast.ArrayRefExp(ast.IdentExp('stream'), idxIdent)])))]
+          d2hcopys += [ast.ForStmt(ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
+                                   ast.BinOpExp(idxIdent, nstreamsIdent, ast.BinOpExp.LT),
+                                   ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
+                                   ast.CompStmt(calc_offset + d2hasyncs))]
+          d2hcopys += [
+               ast.IfStmt(ast.BinOpExp(chunkremIdent, int0, ast.BinOpExp.NE),
+                          ast.CompStmt(calc_offset + d2hasyncsrem))]
+          # synchronize
+          d2hcopys   += [ast.ForStmt(
+                             ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
+                             ast.BinOpExp(idxIdent, nstreamsIdent, ast.BinOpExp.LE),
+                             ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
+                             ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaStreamSynchronize'),
+                                                        [ast.ArrayRefExp(ast.IdentExp('stream'), idxIdent)])))]
         # -------------------------------------------------
         # free allocated memory and resources
         free_vars = [ast.Comment('free allocated memory')]
@@ -678,28 +697,28 @@ class Transformation:
         # in validation mode, compare original and transformed codes' results
         results  = []
         if g.Globals().validationMode:
-          printFunIdent = ast.IdentExp('fprintf')
-          printFpIdent  = ast.IdentExp('fp')
+          printFpIdent = ast.IdentExp('fp')
           results += [
-            ast.VarDeclInit('FILE*', printFpIdent, ast.FunCallExp(ast.IdentExp('fopen'),
-                                                             [ast.StringLitExp('newexec.out'), ast.StringLitExp('w')]))
+            ast.VarDeclInit('FILE*', printFpIdent,
+                            ast.FunCallExp(ast.IdentExp('fopen'), [ast.StringLitExp('newexec.out'), ast.StringLitExp('w')]))
           ]
           for var in lhs_ids:
             if var in array_ids:
-              bodyStmts = [original.stmt]
-              bodyStmts += [ast.ExpStmt(
-                ast.FunCallExp(printFunIdent,
-                  [printFpIdent, ast.StringLitExp("\'"+var+"[%d]\',%f; "),
-                   index_id, ast.ArrayRefExp(ast.IdentExp(var), index_id)])
+              results += [ast.ForStmt(
+                ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
+                ast.BinOpExp(idxIdent, ubound_exp, ast.BinOpExp.LE),
+                ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
+                ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fprintf'),
+                                           [printFpIdent, ast.StringLitExp("\'"+var+"[%d]\',%f; "), idxIdent, ast.ArrayRefExp(ast.IdentExp(var), idxIdent)]))
               )]
-              original.stmt = ast.CompStmt(bodyStmts)
             else:
               results += [ast.ExpStmt(
-                ast.FunCallExp(printFunIdent, [printFpIdent, ast.StringLitExp("\'"+var+"\',%f"), ast.IdentExp(var)])
+                ast.FunCallExp(ast.IdentExp('fprintf'), [printFpIdent, ast.StringLitExp("\'"+var+"\',%f"), ast.IdentExp(var)])
               )]
           results += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fclose'), [printFpIdent]))]
           
-      
+        #--------------------------------------------------------------------------------------------------------------
+        # add up all components
         transformed_stmt = ast.CompStmt(
             hostDecls + deviceDims + mallocs + h2dcopys
           + timerDecls + timerStart
@@ -711,5 +730,5 @@ class Transformation:
           + results
         )
         return transformed_stmt
-    
+
 

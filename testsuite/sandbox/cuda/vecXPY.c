@@ -2,7 +2,7 @@ void VecXPY(int n, double *x, double *y) {
 
     /*@ begin PerfTuning (
           def performance_params {
-            param TC[] = range(16,513,16);
+            param TC[] = range(16,33,16);
             param CB[] = [True, False];
             param PHM[] = [False];
             param SC[] = range(1,3);
@@ -14,7 +14,7 @@ void VecXPY(int n, double *x, double *y) {
             param N[] = [1000];
           }
           def input_vars {
-            decl static double y[N] = 0;
+            decl static double y[N] = random;
             decl static double x[N] = random;
           }
           def performance_counter {

@@ -1,10 +1,8 @@
 void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, double *z) {
 
-    register int i;
-
     /*@ begin PerfTuning (
           def performance_params {
-            param TC[] = range(16,17,16);
+            param TC[] = range(16,33,16);
             param CB[] = [True, False];
             param PHM[] = [False];
             param SC[] = range(1,3);
@@ -29,6 +27,7 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
           }
     ) @*/
 
+    register int i;
     int n=N;
 
     /*@ begin Loop (
