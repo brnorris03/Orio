@@ -134,7 +134,7 @@ class Transformation:
         # replace all array indices with thread id
         tid = 'tid'
         tidIdent = ast.IdentExp(tid)
-        rewriteToTid = lambda x: tidIdent if isinstance(x, ast.IdentExp) else x
+        rewriteToTid = lambda x: tidIdent if isinstance(x, ast.IdentExp) and x.name == str(index_id) else x
         rewriteArrayIndices = lambda n: ast.ArrayRefExp(n.exp, loop_lib.rewriteNode(rewriteToTid, n.sub_exp)) if isinstance(n, ast.ArrayRefExp) else n
         loop_body3 = loop_lib.rewriteNode(rewriteArrayIndices, loop_body2)
         # end rewrite the loop body

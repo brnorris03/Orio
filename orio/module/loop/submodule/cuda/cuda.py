@@ -105,12 +105,14 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         CB          = 'cacheBlocks'
         PHM         = 'pinHostMem'
         STREAMCOUNT = 'streamCount'
+        DOMAIN      = 'domain'
 
         # default argument values
         threadCount = 16
         cacheBlocks = False
         pinHost     = False
         streamCount = 1
+        domain      = None
 
         # iterate over all transformation arguments
         errors = ''
@@ -142,6 +144,11 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                     errors += 'line %s: %s must be a positive integer: %s\n' % (line_no, aname, rhs)
                 else:
                     streamCount = rhs
+            elif aname == DOMAIN:
+                if not isinstance(rhs, str):
+                    errors += 'line %s: %s must be a string: %s\n' % (line_no, aname, rhs)
+                else:
+                    domain = rhs
             else:
                 g.err('orio.module.loop.submodule.cuda.cuda: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
@@ -149,7 +156,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
             g.err('orio.module.loop.submodule.cuda.cuda: errors evaluating transformation args:\n%s' % errors)
 
         # return evaluated transformation arguments
-        return (threadCount, cacheBlocks, pinHost, streamCount)
+        return (threadCount, cacheBlocks, pinHost, streamCount, domain)
 
     #------------------------------------------------------------------------------------------------------------------
 
@@ -206,8 +213,11 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         g.debug('orio.module.loop.submodule.cuda.CUDA: starting CUDA transformations')
 
         # perform transformation
-        t = transformation.Transformation(stmt, props, targs)
-        transformed_stmt = t.transform()
+        if len(targs) == 4:
+          t = transformation.Transformation(stmt, props, targs)
+          transformed_stmt = t.transform()
+        else:
+          transformed_stmt = stmt
 
         # return the transformed statement
         return transformed_stmt
