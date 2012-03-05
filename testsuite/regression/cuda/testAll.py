@@ -25,14 +25,14 @@ class MultiColumnOutput:
     
     @staticmethod
     def __getTermWidth():
-        import termios, fcntl, struct, sys
+        import termios, fcntl, struct#, sys
         s = struct.pack("HHHH", 0, 0, 0, 0)
         fd_stdout = sys.stdout.fileno()
         cols=80
-	try:
+        try:
           x = fcntl.ioctl(fd_stdout, termios.TIOCGWINSZ, s)
           (rows,cols,xPix,yPix)=struct.unpack("HHHH", x)
-	except IOError:
+        except IOError:
           debug("Error: cannot detect terminal width\n")
         return cols
 
@@ -295,7 +295,7 @@ def populateExamplesList(args):
 
 def shouldRunTest(testFile) :
     global globalNewFailCount
-    refFile = os.path.join("reference",testFile)
+    refFile  = os.path.join("reference",testFile)
     failFile = os.path.join("reference",testFile+'.FAIL')
     if os.path.exists(refFile) and not os.path.exists(failFile) :
         return True
@@ -327,7 +327,7 @@ def shouldRunTest(testFile) :
 
 
 def runTest(exName,exNum,totalNum,compiler,optimizeFlag):
-    import filecmp
+    #import filecmp
     printSep("*","** testing %i of %i (%s)" % (exNum,totalNum,exName),sepLength)
     cmd="ln -sf "+os.path.join("sources",exName) + " " + exName
     if runCmd(cmd): raise CommandError, cmd
@@ -341,13 +341,13 @@ def runTest(exName,exNum,totalNum,compiler,optimizeFlag):
     
     basename,ext=os.path.splitext(exName)
     originalSource = testPath+basename+ext
-    originalExec   = testPath+basename+'.run'
-    originalOutput = testPath+basename+'.out'
+    #originalExec   = testPath+basename+'.run'
+    #originalOutput = testPath+basename+'.out'
 
     prefix = '_'
-    processedSource = testPath+prefix+basename+ext
-    processedExec   = testPath+prefix+basename+'.run'
-    processedOutput = testPath+prefix+basename+'.out'
+    processedSource = prefix+basename+ext
+    #processedExec   = testPath+prefix+basename+'.run'
+    #processedOutput = testPath+prefix+basename+'.out'
 
     if not shouldRunTest(processedSource) :
         return
@@ -380,7 +380,7 @@ def runTest(exName,exNum,totalNum,compiler,optimizeFlag):
 
 
 def main():
-    import glob
+    #import glob
     from optparse import OptionParser
     usage = '%prog [options] '
 
@@ -492,17 +492,17 @@ def main():
             j += 1
 
     except CommandError, cmd:
-    	print 'CommandError: error while running "'+str(cmd)+'"\n'
-    	return -1
+      print 'CommandError: error while running "'+str(cmd)+'"\n'
+      return -1
     except ConfigError, errMsg:
-    	print "ERROR (environment configuration):",errMsg
-    	return -1
+      print "ERROR (environment configuration):",errMsg
+      return -1
     except CommandLineError, errMsg:
-    	print "ERROR (command line arguments):",errMsg
-    	return -1
+      print "ERROR (command line arguments):",errMsg
+      return -1
     except RuntimeError, errMsg:
-    	print 'caught exception: ',errMsg
-    	return -1
+      print 'caught exception: ',errMsg
+      return -1
 
     print "total: "+str(rangeEnd-rangeStart+1)+", ran  OK:"+str(globalOkCount)+", known errors:"+str(globalKnownFailCount)+", new errors:"+str(globalNewFailCount)
     return 0

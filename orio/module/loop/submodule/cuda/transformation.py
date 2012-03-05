@@ -517,7 +517,7 @@ class Transformation:
           # calc total number of blocks to reduce
           if isReduction:
             kernell_calls += [ast.VarDeclInit('int', blks4chunksIdent, ast.BinOpExp(blks4chunkIdent, nstreamsIdent, ast.BinOpExp.MUL))]
-            boffsets += [calc_boffset]
+            boffsets = calc_boffset
           # kernel invocations
           kernell_calls += [
             ast.ForStmt(
