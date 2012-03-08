@@ -122,9 +122,9 @@ class BTOLexer:
         reserved_map[r.lower()] = r
     
     # identifiersa
-    def t_ID(t):
+    def t_ID(self,t):
         r'[A-Za-z_]([_\.\w]*[_\w]+)*'
-        t.type = reserved_map.get(t.value,'ID')
+        t.type = self.reserved_map.get(t.value,'ID')
         return t
     
     # integer literal
@@ -146,16 +146,16 @@ class BTOLexer:
         
     # syntactical error
     def t_error(self,t):
-        err('orio.module.loop.parser: %s: syntactical error: "%s"' % ((t.lineno + __start_line_no - 1), t.value[0]))
+        self.err('orio.module.loop.parser: %s: syntactical error: "%s"' % ((t.lineno + __start_line_no - 1), t.value[0]))
     
     def err(self, s):
         sys.stderr.write(s)
         
-    def reset(selfself):
+    def reset(self):
         self.lexer.lineno = 1
         
     def build(self, **kwargs):
-        self.lexer = lex.lex(object=self, **kwargs)
+        self.lexer = orio.tool.ply.lex.lex(object=self, **kwargs)
         
     def test(self, data):
         self.lexer.input(data)
