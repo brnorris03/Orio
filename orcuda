@@ -15,7 +15,7 @@ if os.path.basename(cur_dir) == 'bin':
     dirs = [base_dir, os.path.join(base_dir,'orio')]
 else:
     # source tree (development) location
-    dirs = [os.path.join(cur_dir,'src')]
+    dirs = [os.path.join(cur_dir,'orio')]
 sys.path.extend(dirs)
 
 
