@@ -156,7 +156,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
             g.err('orio.module.loop.submodule.cuda.cuda: errors evaluating transformation args:\n%s' % errors)
 
         # return evaluated transformation arguments
-        return (threadCount, cacheBlocks, pinHost, streamCount, domain)
+        return {THREADCOUNT:threadCount, CB:cacheBlocks, PHM:pinHost, STREAMCOUNT:streamCount, DOMAIN:domain}
 
     #------------------------------------------------------------------------------------------------------------------
 
@@ -213,11 +213,8 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         g.debug('orio.module.loop.submodule.cuda.CUDA: starting CUDA transformations')
 
         # perform transformation
-        if len(targs) == 4:
-          t = transformation.Transformation(stmt, props, targs)
-          transformed_stmt = t.transform()
-        else:
-          transformed_stmt = stmt
+        t = transformation.Transformation(stmt, props, targs)
+        transformed_stmt = t.transform()
 
         # return the transformed statement
         return transformed_stmt
@@ -234,6 +231,12 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         props = self.getDeviceProps()
         
         # perform the transformation of the statement
-        transformed_stmt = self.cudify(self.stmt, props, targs)
+        try:
+          transformed_stmt = self.cudify(self.stmt, props, targs)
+        except Exception, e:
+          g.err(('orio.module.loop.submodule.cuda.transform: encountered an error while transforming ' +
+                  'statement:\n"%s"\n --> %s: %s') % (self.stmt, e.__class__.__name__, e))
         
         return transformed_stmt
+
+

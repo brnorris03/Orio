@@ -1,21 +1,27 @@
 #
-# Contain the CUDA transformation module
+# Contains the CUDA transformation module
 #
 
 import orio.module.loop.ast_lib.forloop_lib, orio.module.loop.ast_lib.common_lib
 import orio.main.util.globals as g
 import orio.module.loop.ast as ast
+from orio.module.loop.ast import *
+from ctypes.test.test_byteswap import bin
 
 #----------------------------------------------------------------------------------------------------------------------
 
-class Transformation:
+class Transformation(object):
     '''Code transformation'''
 
     def __init__(self, stmt, devProps, targs):
         '''Instantiate a code transformation object'''
         self.stmt        = stmt
         self.devProps    = devProps
-        self.threadCount, self.cacheBlocks, self.pinHostMem, self.streamCount = targs
+        self.threadCount = targs['threadCount']
+        self.cacheBlocks = targs['cacheBlocks']
+        self.pinHostMem  = targs['pinHostMem']
+        self.streamCount = targs['streamCount']
+        self.domain      = targs['domain']
         
         if self.streamCount > 1 and (self.devProps['deviceOverlap'] == 0 or self.devProps['asyncEngineCount'] == 0):
             g.err('orio.module.loop.submodule.cuda.transformation: ' +
@@ -35,9 +41,10 @@ class Transformation:
 
         # abbreviations
         loop_lib = orio.module.loop.ast_lib.common_lib.CommonLib()
-        int0 = ast.NumLitExp(0,ast.NumLitExp.INT)
-        int1 = ast.NumLitExp(1,ast.NumLitExp.INT)
-        int2 = ast.NumLitExp(2,ast.NumLitExp.INT)
+        int0 = ast.NumLitExp(0, ast.NumLitExp.INT)
+        int1 = ast.NumLitExp(1, ast.NumLitExp.INT)
+        int2 = ast.NumLitExp(2, ast.NumLitExp.INT)
+        int3 = ast.NumLitExp(3, ast.NumLitExp.INT)
         prefix = 'orcu_'
 
         nthreadsIdent = ast.IdentExp('nthreads')
@@ -105,6 +112,9 @@ class Transformation:
         # create decls for ubound_exp id's, assuming all ids are int's
         ubound_ids = loop_lib.collectNode(collectIdents, ubound_exp)
         kernelParams = [ast.FieldDecl('int', x) for x in ubound_ids]
+        host_arraysize = ubound_ids[0]
+        hostVecLenIdent = ast.IdentExp(host_arraysize)
+        scSizeIdent = ast.IdentExp('scSize')
 
         # collect all identifiers from the loop body
         loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
@@ -140,25 +150,76 @@ class Transformation:
         # end rewrite the loop body
         #--------------------------------------------------------------------------------------------------------------
 
+        #--------------------------------------------------------------------------------------------------------------
+        domainStmts   = []
+        domainArgs    = []
+        domainParams  = []
+        if self.domain != None:
+          domainStmts = [Comment('stencil domain parameters')]
+          gridn = 'gn'
+          gridm = 'gm'
+          #gridp = 'gp'
+          dof   = 'dof'
+          nos   = 'nos'
+          sidx  = 'sidx'
+          gridmIdent = IdentExp(gridm)
+          gridnIdent = IdentExp(gridn)
+          #gridpIdent = IdentExp(gridp)
+          dofIdent   = IdentExp(dof)
+          nosIdent   = IdentExp(nos)
+          sidxIdent  = IdentExp(sidx)
+          int4       = NumLitExp(4, NumLitExp.INT)
+          int5       = NumLitExp(5, NumLitExp.INT)
+          int6       = NumLitExp(6, NumLitExp.INT)
+          int7       = NumLitExp(7, NumLitExp.INT)
+          domainStmts += [
+            VarDeclInit('int', gridmIdent, FunCallExp(IdentExp('round'), [
+              FunCallExp(IdentExp('pow'), [hostVecLenIdent, CastExpr('double', BinOpExp(int1, int3, BinOpExp.DIV))])
+            ])),
+            VarDeclInit('int', gridnIdent, gridmIdent),
+            #VarDeclInit('int', gridpIdent, gridmIdent),
+            VarDeclInit('int', dofIdent, int1), # 1 dof
+            VarDeclInit('int', nosIdent, int7), # 7 stencil points
+            VarDecl('int', [sidx + '[' + nos + ']']),
+            ExpStmt(BinOpExp(ArrayRefExp(sidxIdent, int0), int0, BinOpExp.EQ_ASGN)),
+            ExpStmt(BinOpExp(ArrayRefExp(sidxIdent, int1), dofIdent, BinOpExp.EQ_ASGN)),
+            ExpStmt(BinOpExp(ArrayRefExp(sidxIdent, int2), BinOpExp(gridmIdent, dofIdent, BinOpExp.MUL), BinOpExp.EQ_ASGN)),
+            ExpStmt(BinOpExp(ArrayRefExp(sidxIdent, int3), BinOpExp(gridmIdent, BinOpExp(gridnIdent, dofIdent, BinOpExp.MUL), BinOpExp.MUL), BinOpExp.EQ_ASGN)),
+            ExpStmt(BinOpExp(ArrayRefExp(sidxIdent, int4), UnaryExp(dofIdent, UnaryExp.MINUS), BinOpExp.EQ_ASGN)),
+            ExpStmt(BinOpExp(ArrayRefExp(sidxIdent, int5), BinOpExp(UnaryExp(gridmIdent, UnaryExp.MINUS), dofIdent, BinOpExp.MUL), BinOpExp.EQ_ASGN)),
+            ExpStmt(BinOpExp(ArrayRefExp(sidxIdent, int6), BinOpExp(UnaryExp(gridmIdent, UnaryExp.MINUS),
+                                                                    BinOpExp(gridnIdent, dofIdent, BinOpExp.MUL), BinOpExp.MUL), BinOpExp.EQ_ASGN))
+          ]
+          for var in lhs_array_ids:
+            domainStmts += [
+              ExpStmt(FunCallExp(IdentExp('cudaMemset'), [IdentExp(var), int0, scSizeIdent]))
+            ]
+          domainStmts += [
+            ExpStmt(BinOpExp(ast.IdentExp('dimGrid.x'), hostVecLenIdent, BinOpExp.EQ_ASGN)),
+            ExpStmt(BinOpExp(ast.IdentExp('dimBlock.x'), nosIdent, BinOpExp.EQ_ASGN))
+            ]
+          domainArgs = [sidxIdent]
+          domainParams = [ast.FieldDecl('int*', sidx)]
+          kernelParams += domainParams
+        #--------------------------------------------------------------------------------------------------------------
 
         #--------------------------------------------------------------------------------------------------------------
+        #--------------------------------------------------------------------------------------------------------------
+        #--------------------------------------------------------------------------------------------------------------
         # begin generate the kernel
-        kernelStmts   = []
-        redKernStmts  = []
-        blockIdx  = ast.IdentExp('blockIdx.x')
-        blockSize = ast.IdentExp('blockDim.x')
-        threadIdx = ast.IdentExp('threadIdx.x')
         idx        = prefix + 'i'
         size       = prefix + 'n'
         idxIdent   = ast.IdentExp(idx)
         sizeIdent  = ast.IdentExp(size)
-        tidVarDecl = ast.VarDeclInit('int', tidIdent,
-                            ast.BinOpExp(ast.BinOpExp(blockIdx, blockSize, ast.BinOpExp.MUL), threadIdx, ast.BinOpExp.ADD))
-        kernelStmts  += [tidVarDecl]
-        redKernStmts += [tidVarDecl]
+        blockIdx   = ast.IdentExp('blockIdx.x')
+        blockSize  = ast.IdentExp('blockDim.x')
+        threadIdx  = ast.IdentExp('threadIdx.x')
+        tidVarDecl = ast.VarDeclInit('int', tidIdent, ast.BinOpExp(ast.BinOpExp(blockIdx, blockSize, ast.BinOpExp.MUL), threadIdx, ast.BinOpExp.ADD))
+        kernelStmts   = [tidVarDecl]
+        redKernStmts  = [tidVarDecl]
         redkernParams = []
-        cacheReads  = []
-        cacheWrites = []
+        cacheReads    = []
+        cacheWrites   = []
         if self.cacheBlocks:
             for var in array_ids:
                 sharedVar = 'shared_' + var
@@ -200,11 +261,23 @@ class Transformation:
             for temp in kernel_temps:
                 kernelStmts += [ast.VarDeclInit('double', temp, int0)]
 
-        kernelStmts += [
-            ast.IfStmt(ast.BinOpExp(tidIdent, ubound_exp, ast.BinOpExp.LE),
-                       ast.CompStmt(cacheReads + [loop_body3] + cacheWrites))
-        ]
-        
+        #--------------------------------------------------
+        if self.domain == None:
+          # the rewritten loop body statement
+          kernelStmts += [
+            IfStmt(BinOpExp(tidIdent, ubound_exp, BinOpExp.LE),
+                   CompStmt(cacheReads + [loop_body3] + cacheWrites))
+          ]
+        else:
+          kernelStmts  = [VarDeclInit('int', tidIdent, BinOpExp(blockIdx, ArrayRefExp(sidxIdent, threadIdx), BinOpExp.ADD))]
+          kernelStmts += [
+            IfStmt(BinOpExp(BinOpExp(tidIdent, int0, BinOpExp.GE),
+                            BinOpExp(tidIdent, hostVecLenIdent, BinOpExp.LT),
+                            BinOpExp.LAND),
+                   CompStmt([loop_body3]))
+          ]
+
+        #--------------------------------------------------
         # begin reduction statements
         reducts      = 'reducts'
         reductsIdent = ast.IdentExp(reducts)
@@ -243,7 +316,9 @@ class Transformation:
                                                     ast.BinOpExp.EQ_ASGN)))
             ]
         # end reduction statements
+        #--------------------------------------------------
         
+        #--------------------------------------------------
         # begin multi-stage reduction kernel
         blkdata      = prefix + 'vec'+str(g.Globals().getcounter())
         blkdataIdent = ast.IdentExp(blkdata)
@@ -278,6 +353,7 @@ class Transformation:
                                                 ast.BinOpExp.EQ_ASGN)))
           ]
         # end multi-stage reduction kernel
+        #--------------------------------------------------
 
         dev_kernel_name = prefix + 'kernel'+str(g.Globals().getcounter())
         dev_kernel = ast.FunDecl(dev_kernel_name, 'void', ['__global__'], kernelParams, ast.CompStmt(kernelStmts))
@@ -291,7 +367,9 @@ class Transformation:
           g.Globals().cunit_declarations += '\n' + orio.module.loop.codegen.CodeGen('cuda').generator.generate(dev_redkern, '', '  ')
         # end generate the kernel
         #--------------------------------------------------------------------------------------------------------------
-        
+        #--------------------------------------------------------------------------------------------------------------
+        #--------------------------------------------------------------------------------------------------------------
+
         
         #--------------------------------------------------------------------------------------------------------------
         # begin marshal resources
@@ -302,7 +380,6 @@ class Transformation:
         host_ids = []
         if isReduction:
             dev_lbi  += [dev_block_r]
-            #host_ids += [reducts]
         hostDecls  = [ast.Comment('declare variables')]
         hostDecls += [ast.VarDecl('double', map(lambda x: '*'+x, dev_lbi + host_ids))]
         hostDecls += [ast.VarDeclInit('int', nthreadsIdent, ast.NumLitExp(self.threadCount, ast.NumLitExp.INT))]
@@ -312,8 +389,6 @@ class Transformation:
         # calculate device dimensions
         hostDecls += [ast.VarDecl('dim3', ['dimGrid', 'dimBlock'])]
         gridxIdent = ast.IdentExp('dimGrid.x')
-        host_arraysize = ubound_ids[0]
-        hostVecLenIdent = ast.IdentExp(host_arraysize)
         # initialize grid size
         deviceDims  = [ast.Comment('calculate device dimensions')]
         deviceDims += [
@@ -333,7 +408,6 @@ class Transformation:
         h2dcopys  = [ast.Comment('copy data from host to device')]
         h2dasyncs = []
         sizeofDblCall = ast.FunCallExp(ast.IdentExp('sizeof'), [ast.IdentExp('double')])
-        scSizeIdent = ast.IdentExp('scSize')
         mallocs += [ast.VarDeclInit('int', scSizeIdent, ast.BinOpExp(hostVecLenIdent, sizeofDblCall, ast.BinOpExp.MUL))]
         
         # -------------------------------------------------
@@ -483,10 +557,10 @@ class Transformation:
         # -------------------------------------------------
         # invoke device kernel function:
         # -- kernelFun<<<numOfBlocks,numOfThreads>>>(dev_vars, ..., dev_result);
-        kernell_calls = [ast.Comment('invoke device kernel')]
+        kernell_calls = [Comment('invoke device kernel')]
         if self.streamCount == 1:
-          args = map(lambda x: ast.IdentExp(x), [host_arraysize] + dev_lbi)
-          kernell_call = ast.ExpStmt(ast.FunCallExp(ast.IdentExp(dev_kernel_name+'<<<dimGrid,dimBlock>>>'), args))
+          args = map(lambda x: IdentExp(x), [host_arraysize] + dev_lbi)
+          kernell_call = ExpStmt(FunCallExp(IdentExp(dev_kernel_name+'<<<dimGrid,dimBlock>>>'), args + domainArgs))
           kernell_calls += [kernell_call]
         else:
           args    = [chunklenIdent]
@@ -722,6 +796,7 @@ class Transformation:
         transformed_stmt = ast.CompStmt(
             hostDecls + deviceDims + mallocs + h2dcopys
           + timerDecls + timerStart
+          + domainStmts
           + kernell_calls
           + timerStop
           + stageReds
