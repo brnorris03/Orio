@@ -6,7 +6,6 @@ import orio.module.loop.ast_lib.forloop_lib, orio.module.loop.ast_lib.common_lib
 import orio.main.util.globals as g
 import orio.module.loop.ast as ast
 from orio.module.loop.ast import *
-from ctypes.test.test_byteswap import bin
 
 #----------------------------------------------------------------------------------------------------------------------
 
