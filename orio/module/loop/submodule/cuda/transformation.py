@@ -14,13 +14,14 @@ class Transformation(object):
 
     def __init__(self, stmt, devProps, targs):
         '''Instantiate a code transformation object'''
-        self.stmt        = stmt
-        self.devProps    = devProps
-        self.threadCount = targs['threadCount']
-        self.cacheBlocks = targs['cacheBlocks']
-        self.pinHostMem  = targs['pinHostMem']
-        self.streamCount = targs['streamCount']
-        self.domain      = targs['domain']
+        self.stmt         = stmt
+        self.devProps     = devProps
+        self.threadCount  = targs['threadCount']
+        self.cacheBlocks  = targs['cacheBlocks']
+        self.pinHostMem   = targs['pinHostMem']
+        self.streamCount  = targs['streamCount']
+        self.domain       = targs['domain']
+        self.dataOnDevice = targs['dataOnDevice']
         
         if self.streamCount > 1 and (self.devProps['deviceOverlap'] == 0 or self.devProps['asyncEngineCount'] == 0):
             g.err('orio.module.loop.submodule.cuda.transformation: ' +
@@ -374,22 +375,28 @@ class Transformation(object):
         # begin marshal resources
         # declare device variables
         dev = 'dev_'
+        if self.dataOnDevice:
+          dev = ''
         dev_lbi = map(lambda x: dev+x, list(lbi))
         dev_block_r = dev + reducts
         host_ids = []
+        local_ids = []
         if isReduction:
-            dev_lbi  += [dev_block_r]
+          dev_lbi   += [dev_block_r]
+          local_ids += [dev_block_r]
         hostDecls  = [ast.Comment('declare variables')]
-        hostDecls += [ast.VarDecl('double', map(lambda x: '*'+x, dev_lbi + host_ids))]
+        if self.dataOnDevice:
+          hostDecls += [ast.VarDecl('double', map(lambda x: '*'+x, local_ids))]
+        else:
+          hostDecls += [ast.VarDecl('double', map(lambda x: '*'+x, dev_lbi + host_ids))]
         hostDecls += [ast.VarDeclInit('int', nthreadsIdent, ast.NumLitExp(self.threadCount, ast.NumLitExp.INT))]
         if self.streamCount > 1:
           hostDecls += [ast.VarDeclInit('int', nstreamsIdent, ast.NumLitExp(self.streamCount, ast.NumLitExp.INT))]
         
         # calculate device dimensions
-        hostDecls += [ast.VarDecl('dim3', ['dimGrid', 'dimBlock'])]
-        gridxIdent = ast.IdentExp('dimGrid.x')
-        # initialize grid size
+        gridxIdent  = ast.IdentExp('dimGrid.x')
         deviceDims  = [ast.Comment('calculate device dimensions')]
+        deviceDims += [ast.VarDecl('dim3', ['dimGrid', 'dimBlock'])]
         deviceDims += [
             ast.ExpStmt(ast.BinOpExp(gridxIdent,
                                      ast.FunCallExp(ast.IdentExp('ceil'),
@@ -402,7 +409,7 @@ class Transformation(object):
         deviceDims += [ast.ExpStmt(ast.BinOpExp(ast.IdentExp('dimBlock.x'), nthreadsIdent, ast.BinOpExp.EQ_ASGN))]
 
         # -------------------------------------------------
-        # allocate device memory
+        streamDecls = []
         mallocs   = [ast.Comment('allocate device memory')]
         h2dcopys  = [ast.Comment('copy data from host to device')]
         h2dasyncs = []
@@ -425,18 +432,22 @@ class Transformation(object):
         if isReduction:
           hostDecls      += [ast.VarDecl('int', [size])]
         if self.streamCount > 1:
-          # declare and create streams
-          hostDecls += [ast.VarDecl('cudaStream_t', ['stream[nstreams+1]'])]
-          hostDecls += [ast.VarDecl('int', [soffset])]
+          streamDecls += [ast.Comment('create streams')]
+          streamDecls += [ast.VarDecl('int', [soffset])]
           if isReduction:
-            hostDecls += [ast.VarDecl('int', [boffset])]
-          mallocs   += [
+            streamDecls += [ast.VarDecl('int', [boffset])]
+          streamDecls   += [ast.VarDecl('cudaStream_t', ['stream[nstreams+1]'])]
+          streamDecls   += [
             ast.ForStmt(ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
                         ast.BinOpExp(idxIdent, nstreamsIdent, ast.BinOpExp.LE),
                         ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
                         ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaStreamCreate'),
                                                    [ast.UnaryExp(ast.IdentExp('stream[' + idx + ']'),
                                                                  ast.UnaryExp.ADDRESSOF)])))
+          ]
+          streamDecls   += [
+            ast.VarDeclInit('int', chunklenIdent, ast.BinOpExp(hostVecLenIdent, nstreamsIdent, ast.BinOpExp.DIV)),
+            ast.VarDeclInit('int', chunkremIdent, ast.BinOpExp(hostVecLenIdent, nstreamsIdent, ast.BinOpExp.MOD)),
           ]
           calc_offset = [
             ast.ExpStmt(ast.BinOpExp(soffsetIdent,
@@ -502,8 +513,6 @@ class Transformation(object):
         # for-loop over streams to do async copies
         if self.streamCount > 1:
           h2dcopys += [
-            ast.VarDeclInit('int', chunklenIdent, ast.BinOpExp(hostVecLenIdent, nstreamsIdent, ast.BinOpExp.DIV)),
-            ast.VarDeclInit('int', chunkremIdent, ast.BinOpExp(hostVecLenIdent, nstreamsIdent, ast.BinOpExp.MOD)),
             ast.ForStmt(ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
                         ast.BinOpExp(idxIdent, nstreamsIdent, ast.BinOpExp.LT),
                         ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
@@ -709,12 +718,13 @@ class Transformation(object):
         # -------------------------------------------------
         # free allocated memory and resources
         free_vars = [ast.Comment('free allocated memory')]
+        freeStreams = []
         if self.streamCount > 1:
             # unregister pinned memory
             for var in registeredHostIds:
                 free_vars += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaHostUnregister'), [ast.IdentExp(var)]))]
             # destroy streams
-            free_vars += [ast.ForStmt(
+            freeStreams += [ast.ForStmt(
                                ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
                                ast.BinOpExp(idxIdent, nstreamsIdent, ast.BinOpExp.LE),
                                ast.UnaryExp(idxIdent, ast.UnaryExp.POST_INC),
@@ -791,9 +801,15 @@ class Transformation(object):
           results += [ast.ExpStmt(ast.FunCallExp(ast.IdentExp('fclose'), [printFpIdent]))]
           
         #--------------------------------------------------------------------------------------------------------------
+        # no CPU-GPU data transfers
+        if (self.dataOnDevice):
+          mallocs   = []
+          h2dcopys  = []
+          d2hcopys  = []
+          free_vars = []
         # add up all components
         transformed_stmt = ast.CompStmt(
-            hostDecls + deviceDims + mallocs + h2dcopys
+            hostDecls + deviceDims + streamDecls + mallocs + h2dcopys
           + timerDecls + timerStart
           + domainStmts
           + kernell_calls
@@ -801,6 +817,7 @@ class Transformation(object):
           + stageReds
           + d2hcopys
           + free_vars
+          + freeStreams
           + results
         )
         return transformed_stmt

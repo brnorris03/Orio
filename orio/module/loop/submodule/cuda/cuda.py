@@ -106,13 +106,15 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         PHM         = 'pinHostMem'
         STREAMCOUNT = 'streamCount'
         DOMAIN      = 'domain'
+        DOD         = 'dataOnDevice'
 
         # default argument values
-        threadCount = 16
-        cacheBlocks = False
-        pinHost     = False
-        streamCount = 1
-        domain      = None
+        threadCount  = 16
+        cacheBlocks  = False
+        pinHost      = False
+        streamCount  = 1
+        domain       = None
+        dataOnDevice = False
 
         # iterate over all transformation arguments
         errors = ''
@@ -149,6 +151,11 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                     errors += 'line %s: %s must be a string: %s\n' % (line_no, aname, rhs)
                 else:
                     domain = rhs
+            elif aname == DOD:
+                if not isinstance(rhs, bool):
+                    errors += 'line %s: %s must be a boolean: %s\n' % (line_no, aname, rhs)
+                else:
+                    dataOnDevice = rhs
             else:
                 g.err('orio.module.loop.submodule.cuda.cuda: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
@@ -156,7 +163,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
             g.err('orio.module.loop.submodule.cuda.cuda: errors evaluating transformation args:\n%s' % errors)
 
         # return evaluated transformation arguments
-        return {THREADCOUNT:threadCount, CB:cacheBlocks, PHM:pinHost, STREAMCOUNT:streamCount, DOMAIN:domain}
+        return {THREADCOUNT:threadCount, CB:cacheBlocks, PHM:pinHost, STREAMCOUNT:streamCount, DOMAIN:domain, DOD:dataOnDevice}
 
     #------------------------------------------------------------------------------------------------------------------
 

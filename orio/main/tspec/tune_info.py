@@ -554,10 +554,13 @@ class TuningInfoGen:
                 if len(type_seq) == 0:
                     err('orio.main.tspec.tune_info: %s: missing type name' % line_no)
                     
-                if len(type_seq) > 1:
+                if len(type_seq) > 2:
                     err('orio.main.tspec.tune_info: %s: unrecognized type name: "%s"' % (line_no, type_seq[0]))
-               
-                dtype = type_seq[-1]
+                
+                if len(type_seq) == 1:
+                  dtype = type_seq[-1]
+                else:
+                  dtype = type_seq[-2] + ' ' + type_seq[-1]
                 ddims = [d for d,_ in dim_exp_seq]
                 ivar_decls.append((is_static, dtype, id_name, ddims, rhs))
 
