@@ -531,14 +531,17 @@ class Transformation(object):
           ]
         # -------------------------------------------------
         # malloc block-level result var
+        redallocs = []
         if isReduction:
-            mallocs += [
+            redalloc = [
                 ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMalloc'),
                                            [ast.CastExpr('void**', ast.UnaryExp(ast.IdentExp(dev_block_r), ast.UnaryExp.ADDRESSOF)),
                                             ast.BinOpExp(ast.ParenthExp(ast.BinOpExp(gridxIdent, int1, ast.BinOpExp.ADD)),
                                                          sizeofDblCall,
                                                          ast.BinOpExp.MUL)
                                             ]))]
+            mallocs += redalloc
+            redallocs += redalloc
             for var in host_ids:
                 if self.pinHostMem:
                     mallocs += [
@@ -691,14 +694,17 @@ class Transformation(object):
                                                     ]))]
         # -------------------------------------------------
         # memcpy block-level result var
+        d2hcopyreds = []
         if isReduction:
-          d2hcopys += [
+          d2hcopyred = [
                   ast.ExpStmt(ast.FunCallExp(ast.IdentExp('cudaMemcpy'),
                                                  [ast.UnaryExp(ast.IdentExp(lhs_ids[0]),ast.UnaryExp.ADDRESSOF),
                                                   ast.IdentExp(dev_block_r),
                                                   sizeofDblCall,
                                                   ast.IdentExp('cudaMemcpyDeviceToHost')
                                                   ]))]
+          d2hcopys += d2hcopyred
+          d2hcopyreds += d2hcopyred
         # -------------------------------------------------
         if self.streamCount > 1 and not isReduction:
           d2hcopys += [ast.ForStmt(ast.BinOpExp(idxIdent, int0, ast.BinOpExp.EQ_ASGN),
@@ -803,9 +809,9 @@ class Transformation(object):
         #--------------------------------------------------------------------------------------------------------------
         # no CPU-GPU data transfers
         if (self.dataOnDevice):
-          mallocs   = []
+          mallocs   = redallocs
           h2dcopys  = []
-          d2hcopys  = []
+          d2hcopys  = d2hcopyreds
           free_vars = []
         # add up all components
         transformed_stmt = ast.CompStmt(
