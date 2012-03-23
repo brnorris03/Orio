@@ -569,6 +569,7 @@ class Transformation(object):
         # invoke device kernel function:
         # -- kernelFun<<<numOfBlocks,numOfThreads>>>(dev_vars, ..., dev_result);
         kernell_calls = [Comment('invoke device kernel')]
+        kernell_calls += [ExpStmt(BinOpExp(IdentExp('orio_t_start'), FunCallExp(IdentExp('getClock'), []), BinOpExp.EQ_ASGN))]
         if self.streamCount == 1:
           args = map(lambda x: IdentExp(x), [host_arraysize] + dev_lbi)
           kernell_call = ExpStmt(FunCallExp(IdentExp(dev_kernel_name+'<<<dimGrid,dimBlock>>>'), args + domainArgs))
