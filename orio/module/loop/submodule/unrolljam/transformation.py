@@ -21,12 +21,14 @@ class Transformation:
         self.language = Globals().language
         self.flib = orio.module.loop.ast_lib.forloop_lib.ForLoopLib()
         self.cfolder = orio.module.loop.ast_lib.constant_folder.ConstFolder()
-        
+        self.newVarsOp = set([])
+        self.varsToAdd = set([])
+        self.varsNoAdd = set([])
     #----------------------------------------------------------
 
     def __addIdentWithExp(self, tnode, index_name, exp):
         '''Traverse the tree node and add any matching identifier with the provided expression'''
-
+            
         if isinstance(exp, orio.module.loop.ast.NumLitExp) and exp.val == 0:
             return tnode
         
@@ -70,7 +72,14 @@ class Transformation:
 
         elif isinstance(tnode, orio.module.loop.ast.IdentExp):
             if tnode.name != index_name:
-                return tnode
+                if self.ufactor == 1:
+                    return tnode
+                else:
+                    if tnode.name in self.varsToAdd:
+                        k = orio.module.loop.ast.IdentExp(tnode.name+str(exp))
+                        return k
+                    else:
+                        return tnode
             else:
                 add_exp = orio.module.loop.ast.BinOpExp(tnode,
                                                    exp.replicate(),
@@ -78,7 +87,8 @@ class Transformation:
                 return orio.module.loop.ast.ParenthExp(add_exp)
 
         elif isinstance(tnode, orio.module.loop.ast.ArrayRefExp):
-            tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
+            if isinstance(tnode.exp, orio.module.loop.ast.ArrayRefExp):
+                tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
             tnode.sub_exp = self.__addIdentWithExp(tnode.sub_exp, index_name, exp)
             return tnode
         
@@ -91,7 +101,7 @@ class Transformation:
             tnode.exp = self.__addIdentWithExp(tnode.exp, index_name, exp)
             return tnode
         
-        elif isinstance(tnode, orio.module.loop.ast.BinOpExp):
+        elif isinstance(tnode, orio.module.loop.ast.BinOpExp):              
             tnode.lhs = self.__addIdentWithExp(tnode.lhs, index_name, exp)
             tnode.rhs = self.__addIdentWithExp(tnode.rhs, index_name, exp)
             return tnode
@@ -108,6 +118,158 @@ class Transformation:
               
         else:
             err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
+    
+    #-----------------------------------------
+    
+    
+    def __computeNewVarsIntro(self, tnode):
+        
+        binOpExprs = self.__analyzeForNewVars(tnode)
+        
+        if len(self.newVarsOp) != 1 or (iter(self.newVarsOp).next() != orio.module.loop.ast.BinOpExp.ADD and iter(self.newVarsOp).next() != orio.module.loop.ast.BinOpExp.MUL):
+            #self.introNewVars = False
+            return
+        
+        for exp1 in binOpExprs:
+            if exp1[0] in self.varsNoAdd:
+                continue
+            if exp1[0] in exp1[1]:
+                for exp2 in binOpExprs:
+                    if exp2 is exp1:
+                        continue
+                    if exp1[0] in exp2[1] and exp1[0] != exp2[0]:
+                        self.varsNoAdd |= set([exp1[0]])
+                        self.varsToAdd -= set([exp1[0]])
+                        break
+                else:
+                    self.varsToAdd |= set([exp1[0]])
+            else:
+                self.varsNoAdd |= set([exp1[0]])
+                self.varsToAdd -= set([exp1[0]])
+            
+    
+    
+    
+    
+    #-----------------------------------------
+    
+    
+    def __analyzeForNewVars(self, tnode):
+        '''Traverse the tree node to reach every top level binary operation expression to obtain parsed info for later computation of new variables to introduce'''
+        binOpExprs = set([])
+        
+        if isinstance(tnode, orio.module.loop.ast.ExpStmt):
+            binOpExprs |= self.__analyzeForNewVars(tnode.exp)
+            
+        elif isinstance(tnode, orio.module.loop.ast.CompStmt):
+            for s in tnode.stmts:
+                binOpExprs |= self.__analyzeForNewVars(s)
+
+        elif isinstance(tnode, orio.module.loop.ast.IfStmt):
+            binOpExprs |= self.__analyzeForNewVars(tnode.test)
+            binOpExprs |= self.__analyzeForNewVars(tnode.true_stmt)
+            if tnode.false_stmt:
+                binOpExprs |= self.__analyzeForNewVars(tnode.false_stmt)
+
+        elif isinstance(tnode, orio.module.loop.ast.ForStmt):
+            if tnode.init:
+                binOpExprs |= self.__analyzeForNewVars(tnode.init)
+            if tnode.test:
+                binOpExprs |= self.__analyzeForNewVars(tnode.test)
+            if tnode.iter:
+                binOpExprs |= self.__analyzeForNewVars(tnode.iter)
+            binOpExprs |= self.__analyzeForNewVars(tnode.stmt)
+
+        elif isinstance(tnode, orio.module.loop.ast.TransformStmt):
+            err('orio.module.loop.submodule.unrolljam.transformation internal error: unprocessed transform statement')
+        
+        elif isinstance(tnode, orio.module.loop.ast.BinOpExp):
+            lfsVarName = '@ArrayVarNotConsidered@'
+            if tnode.op_type != orio.module.loop.ast.BinOpExp.EQ_ASGN:
+                return binOpExprs
+                #err('first operation of a top level binary op expression is not equal assignment???')
+            if not isinstance(tnode.lhs, orio.module.loop.ast.IdentExp):
+                if not isinstance(tnode.lhs, orio.module.loop.ast.ArrayRefExp):
+                    err('left hand side of a top level binary op expression is not an identifer expression or array ref exp???')
+            else:
+                lfsVarName = tnode.lhs.name
+            
+            tup = tuple(self.__extractFromBinOp(tnode.rhs))
+            binOpExprs |= set([(lfsVarName, tup)])
+        elif isinstance(tnode, orio.module.loop.ast.UnaryExp):
+            lfsVarName = '@ArrayVarNotConsidered@'
+            
+            if not isinstance(tnode.exp, orio.module.loop.ast.IdentExp):
+                if not isinstance(tnode.exp, orio.module.loop.ast.ArrayRefExp):
+                    err('the sub level exp of top level unary expression is not an identifer expression or array ref exp???')
+            else:
+                lfsVarName = tnode.exp.name
+                
+            tup = tuple(self.__extractFromBinOp(tnode.exp))
+            binOpExprs |= set([(lfsVarName, tup)])
+            
+        elif isinstance(tnode, orio.module.loop.ast.ParenthExp):
+            binOpExprs |= self.__analyzeForNewVars(tnode.exp)
+              
+        else:
+            err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
+            
+        return binOpExprs
+    
+    
+    
+    
+    
+    
+    
+    #-----------------------------------------
+    
+    
+    
+    
+    
+    def __extractFromBinOp(self, tnode):
+        var_names = set([])
+        
+        if isinstance(tnode, orio.module.loop.ast.NumLitExp):
+            return var_names
+        if isinstance(tnode, orio.module.loop.ast.ParenthExp):
+            var_names |= self.__extractFromBinOp(tnode.exp)
+        elif isinstance(tnode, orio.module.loop.ast.ArrayRefExp):
+            var_names |= self.__extractFromBinOp(tnode.exp)
+            var_names |= self.__extractFromBinOp(tnode.sub_exp)
+        elif isinstance(tnode, orio.module.loop.ast.IdentExp):
+            var_names |= set([tnode.name])
+        elif isinstance(tnode, orio.module.loop.ast.BinOpExp):
+            if isinstance(tnode.lhs, orio.module.loop.ast.ParenthExp):
+                var_names |= self.__extractFromBinOp(tnode.lhs.exp)
+            elif isinstance(tnode.lhs, orio.module.loop.ast.ArrayRefExp):
+                var_names |= self.__extractFromBinOp(tnode.lhs.exp)
+                var_names |= self.__extractFromBinOp(tnode.lhs.sub_exp)
+            elif isinstance(tnode.lhs, orio.module.loop.ast.BinOpExp):
+                var_names |= self.__extractFromBinOp(tnode.lhs)
+            elif isinstance(tnode.lhs, orio.module.loop.ast.IdentExp):
+                var_names |= set([tnode.lhs.name])
+            else:
+                err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.lhs.__class__.__name__)
+                
+            if isinstance(tnode.rhs, orio.module.loop.ast.ParenthExp):
+                var_names |= self.__extractFromBinOp(tnode.rhs.exp)
+            elif isinstance(tnode.rhs, orio.module.loop.ast.ArrayRefExp):
+                var_names |= self.__extractFromBinOp(tnode.rhs.exp)
+                var_names |= self.__extractFromBinOp(tnode.rhs.sub_exp)
+            elif isinstance(tnode.rhs, orio.module.loop.ast.BinOpExp):
+                var_names |= self.__extractFromBinOp(tnode.rhs)
+            elif isinstance(tnode.rhs, orio.module.loop.ast.IdentExp):
+                var_names |= set([tnode.rhs.name])
+            else:
+                err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.rhs.__class__.__name__)
+                
+            self.newVarsOp |= set([tnode.op_type])
+        else:
+            err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
+    
+        return var_names
     
     #-----------------------------------------
 
@@ -212,8 +374,14 @@ class Transformation:
                                                   orio.module.loop.ast.BinOpExp.MUL)
         new_stride_exp = self.cfolder.fold(new_stride_exp)
     
+        
+        s = loop_body.replicate()
+        #obtain info about whether or not to introduce new variables
+        self.__computeNewVarsIntro(s)
+    
         # compute unrolled statements
         unrolled_stmt_seqs = []
+        
         for i in range(0, self.ufactor):
             s = loop_body.replicate()
             it = orio.module.loop.ast.NumLitExp(i, orio.module.loop.ast.NumLitExp.INT)
