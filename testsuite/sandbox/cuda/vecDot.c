@@ -6,7 +6,7 @@ void VecDot(int n, double *x, double *y, double r) {
             param CB[] = [True, False];
             param PHM[] = [False];
             param SC[] = range(1,3);
-            param DOD[] = [True];
+            param DOD[] = [False];
           }
           def build {
             arg build_command = 'nvcc -arch=sm_20';
