@@ -11,7 +11,7 @@ import orio.main.util.globals as g
 keywords = [
     'def', 'arg', 'param', 'decl', 'let', 'spec', 'constraint',
     'build', 'build_command', 'batch_command', 'status_command', 'num_procs', 'libs',
-    'input_params', 'input_vars', 'static', 'dynamic', 'void', 'char', 'short', 'int', 'long', 'float', 'double',
+    'input_params', 'input_vars', 'static', 'dynamic', 'void', 'char', 'short', 'int', 'long', 'float', 'double', '__device__',
     'performance_params', 'performance_counter', 'method', 'repetitions',
     'search', 'time_limit', 'algorithm'
 ]
@@ -198,21 +198,32 @@ def p_constraint(p):
 #----------------------------------------------------------------------------------------------------------------------
 # declaration statement
 def p_decl(p):
-    ''' decl : DECL dyst type ID arrsizes EQ EXPR
-             | DECL dyst type ID arrsizes
+    ''' decl : DECL dyst mods type ID arrsizes EQ EXPR
+             | DECL dyst mods type ID arrsizes
     '''
-    id_name = (p[4], p.lineno(4))
-    types = p[2] + p[3]
-    if len(p) == 6:
-        p[0] = (p[1], p.lineno(1), id_name, types, p[5], (None, None))
+    id_name = (p[5], p.lineno(5))
+    types = p[2] + p[3] + p[4]
+    if len(p) == 7:
+        p[0] = (p[1], p.lineno(1), id_name, types, p[6], (None, None))
     else:
-        p[0] = (p[1], p.lineno(1), id_name, types, p[5], (p[7], p.lineno(7)))
+        p[0] = (p[1], p.lineno(1), id_name, types, p[6], (p[8], p.lineno(8)))
 
 #----------------------------------------------------------------------------------------------------------------------
 # optional static or dynamic modifier
 def p_dyst(p):
     ''' dyst : DYNAMIC
              | STATIC
+             | empty
+    '''
+    if p[1] <> None:
+        p[0] = [(p[1], p.lineno(1))]
+    else:
+        p[0] = []
+
+#----------------------------------------------------------------------------------------------------------------------
+# optional static or dynamic modifier
+def p_mods(p):
+    ''' mods : __DEVICE__
              | empty
     '''
     if p[1] <> None:
