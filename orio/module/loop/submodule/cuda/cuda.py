@@ -168,49 +168,50 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
     #------------------------------------------------------------------------------------------------------------------
 
     def getDeviceProps(self):
-        '''Get device properties'''
+      '''Get device properties'''
 
-        # write the query code
-        qsrc  = "enum_cuda_props.cu"
-        qexec = qsrc + ".o"
-        qout  = qexec + ".props"
+      # write the query code
+      qsrc  = "enum_cuda_props.cu"
+      qexec = qsrc + ".o"
+      qout  = qexec + ".props"
+      if not os.path.exists(qout):
         try:
-            f = open(qsrc, 'w')
-            f.write(CUDA_DEVICE_QUERY_SKELET)
-            f.close()
+          f = open(qsrc, 'w')
+          f.write(CUDA_DEVICE_QUERY_SKELET)
+          f.close()
         except:
-            g.err('orio.module.loop.submodule.cuda.cuda: cannot open file for writing: %s' % qsrc)
+          g.err('orio.module.loop.submodule.cuda.cuda: cannot open file for writing: %s' % qsrc)
         
         # compile the query
         cmd = 'nvcc -o %s %s' % (qexec, qsrc)
         status = os.system(cmd)
         if status:
-            g.err('orio.module.loop.submodule.cuda.cuda: failed to compile cuda device query code: "%s"' % cmd)
-
+          g.err('orio.module.loop.submodule.cuda.cuda: failed to compile cuda device query code: "%s"' % cmd)
+  
         # execute the query
         runcmd = './%s' % (qexec)
         status = os.system(runcmd)
         if status:
-            g.err('orio.module.loop.submodule.cuda.cuda: failed to execute cuda device query code: "%s"' % runcmd)
-        
-        # read query results
-        props = {}
-        try:
-            f = open(qout, 'r')
-            for line in f:
-                eline = ast.literal_eval(line)
-                props[eline[0]] = eline[1]
-            f.close()
-        except:
-            g.err('orio.module.loop.submodule.cuda.cuda: cannot open query output file for reading: %s' % qout)
-
-        # clean up
+          g.err('orio.module.loop.submodule.cuda.cuda: failed to execute cuda device query code: "%s"' % runcmd)
         os.remove(qsrc)
         os.remove(qexec)
-        os.remove(qout)
         
-        # return queried device props
-        return props
+      # read device properties
+      props = {}
+      try:
+        f = open(qout, 'r')
+        for line in f:
+            eline = ast.literal_eval(line)
+            props[eline[0]] = eline[1]
+        f.close()
+      except:
+        g.err('orio.module.loop.submodule.cuda.cuda: cannot open query output file for reading: %s' % qout)
+  
+      # clean up
+      #os.remove(qout)
+      
+      # return queried device props
+      return props
 
     #------------------------------------------------------------------------------------------------------------------
 
