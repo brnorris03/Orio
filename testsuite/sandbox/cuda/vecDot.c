@@ -6,7 +6,6 @@ void VecDot(int n, double *x, double *y, double r) {
             param CB[] = [True, False];
             param PHM[] = [False];
             param SC[] = range(1,3);
-            param DOD[] = [False];
           }
           def build {
             arg build_command = 'nvcc -arch=sm_20';
@@ -16,8 +15,8 @@ void VecDot(int n, double *x, double *y, double r) {
           }
           def input_vars {
             decl double r = 0;
-            decl static __device__ double x[N] = random;
-            decl static __device__ double y[N] = random;
+            decl static double x[N] = random;
+            decl static double y[N] = random;
           }
           def performance_counter {
             arg method = 'basic timer';
@@ -29,7 +28,7 @@ void VecDot(int n, double *x, double *y, double r) {
     int n=N;
 
     /*@ begin Loop (
-          transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM, streamCount=SC, dataOnDevice=DOD)
+          transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM, streamCount=SC)
         for (i=0; i<=n-1; i++)
           r=r+x[i]*y[i];
     ) @*/
