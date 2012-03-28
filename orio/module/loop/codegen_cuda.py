@@ -183,7 +183,10 @@ class CodeGen_CUDA (CodeGen_C):
 
         elif isinstance(tnode, ast.VarDecl):
             s += indent + str(tnode.type_name) + ' '
-            s += ', '.join(tnode.var_names)
+            if isinstance(tnode.var_names[0], ast.IdentExp): 
+              s += ', '.join(map(self.generate, tnode.var_names))
+            else:
+              s += ', '.join(tnode.var_names)
             s += ';\n'
 
         elif isinstance(tnode, ast.VarDeclInit):
