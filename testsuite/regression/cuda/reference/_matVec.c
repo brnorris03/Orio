@@ -13,20 +13,19 @@ void MatVec_StencilSG(int n, double* A, double* x, double* y) {
     /*declare variables*/
     double *dev_y, *dev_A, *dev_x;
     int nthreads=16;
-    dim3 dimGrid, dimBlock;
-    int orcu_i;
     /*calculate device dimensions*/
-    dimGrid.x=ceil((float)n/(float)nthreads);
+    dim3 dimGrid, dimBlock;
     dimBlock.x=nthreads;
+    dimGrid.x=(n+nthreads-1)/nthreads;
     /*allocate device memory*/
-    int scSize=n*sizeof(double);
-    cudaMalloc((void**)&dev_y,scSize);
-    cudaMalloc((void**)&dev_A,scSize);
-    cudaMalloc((void**)&dev_x,scSize);
+    int nbytes=n*sizeof(double);
+    cudaMalloc((void**)&dev_y,nbytes);
+    cudaMalloc((void**)&dev_A,nbytes);
+    cudaMalloc((void**)&dev_x,nbytes);
     /*copy data from host to device*/
-    cudaMemcpy(dev_y,y,scSize,cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_A,A,scSize,cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_x,x,scSize,cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_y,y,nbytes,cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_A,A,nbytes,cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_x,x,nbytes,cudaMemcpyHostToDevice);
     /*stencil domain parameters*/
     int gm=round(pow(n,(double)1/3));
     int gn=gm;
@@ -44,9 +43,10 @@ void MatVec_StencilSG(int n, double* A, double* x, double* y) {
     dimGrid.x=n;
     dimBlock.x=nos;
     /*invoke device kernel*/
-    orcu_kernel3<<<dimGrid,dimBlock>>>(n,dev_y,dev_A,dev_x,sidx);
+    orio_t_start=getClock();
+    orcu_kernel3<<<dimGrid,dimBlock>>>(n,dev_y,dev_A,dev_x);
     /*copy data from device to host*/
-    cudaMemcpy(y,dev_y,scSize,cudaMemcpyDeviceToHost);
+    cudaMemcpy(y,dev_y,nbytes,cudaMemcpyDeviceToHost);
     /*free allocated memory*/
     cudaFree(dev_y);
     cudaFree(dev_A);
