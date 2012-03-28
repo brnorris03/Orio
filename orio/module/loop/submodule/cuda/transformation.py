@@ -810,7 +810,10 @@ class Transformation(object):
         testNewOutput  = []
         if g.Globals().validationMode:
           printFpIdent = IdentExp('fp')
-          testNewOutput += [VarDeclInit('FILE*', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('newexec.out'), StringLitExp('w')]))]
+          testNewOutput = [
+            VarDeclInit('FILE*', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('newexec.out'), StringLitExp('w')])),
+            VarDecl('int', [idxIdent])
+          ]
           for var in self.model['lhss']:
             if var in array_ids:
               testNewOutput += [ForStmt(

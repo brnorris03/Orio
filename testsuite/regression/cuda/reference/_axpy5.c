@@ -13,33 +13,35 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
       double *dev_a1, *dev_x2, *dev_a3, *dev_a2, *dev_a5, *dev_a4, *dev_y, *dev_x3, *dev_x1, *dev_x4, *dev_x5;
       int nthreads=16;
       int nstreams=2;
-      dim3 dimGrid, dimBlock;
-      int orcu_i;
-      cudaStream_t stream[nstreams+1];
-      int orcu_soff;
       /*calculate device dimensions*/
-      dimGrid.x=ceil((float)n/(float)nthreads);
+      dim3 dimGrid, dimBlock;
       dimBlock.x=nthreads;
+      dimGrid.x=(n+nthreads-1)/nthreads;
+      /*create streams*/
+      int istream, soffset;
+      cudaStream_t stream[nstreams+1];
+      for (istream=0; istream<=nstreams; istream++ ) 
+        cudaStreamCreate(&stream[istream]);
+      int chunklen=n/nstreams;
+      int chunkrem=n%nstreams;
       /*allocate device memory*/
-      int scSize=n*sizeof(double);
-      for (orcu_i=0; orcu_i<=nstreams; orcu_i++ ) 
-        cudaStreamCreate(&stream[orcu_i]);
+      int nbytes=n*sizeof(double);
       cudaMalloc((void**)&dev_a1,sizeof(double));
       cudaMalloc((void**)&dev_a3,sizeof(double));
       cudaMalloc((void**)&dev_a2,sizeof(double));
       cudaMalloc((void**)&dev_a5,sizeof(double));
       cudaMalloc((void**)&dev_a4,sizeof(double));
-      cudaMalloc((void**)&dev_x2,scSize);
+      cudaMalloc((void**)&dev_x2,nbytes);
       cudaHostRegister(x2,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_y,scSize);
+      cudaMalloc((void**)&dev_y,nbytes);
       cudaHostRegister(y,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x3,scSize);
+      cudaMalloc((void**)&dev_x3,nbytes);
       cudaHostRegister(x3,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x1,scSize);
+      cudaMalloc((void**)&dev_x1,nbytes);
       cudaHostRegister(x1,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x4,scSize);
+      cudaMalloc((void**)&dev_x4,nbytes);
       cudaHostRegister(x4,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x5,scSize);
+      cudaMalloc((void**)&dev_x5,nbytes);
       cudaHostRegister(x5,n,cudaHostRegisterPortable);
       /*copy data from host to device*/
       cudaMemcpy(dev_a1,&a1,sizeof(double),cudaMemcpyHostToDevice);
@@ -47,53 +49,51 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
       cudaMemcpy(dev_a2,&a2,sizeof(double),cudaMemcpyHostToDevice);
       cudaMemcpy(dev_a5,&a5,sizeof(double),cudaMemcpyHostToDevice);
       cudaMemcpy(dev_a4,&a4,sizeof(double),cudaMemcpyHostToDevice);
-      int chunklen=n/nstreams;
-      int chunkrem=n%nstreams;
-      for (orcu_i=0; orcu_i<nstreams; orcu_i++ ) {
-        orcu_soff=orcu_i*chunklen;
-        cudaMemcpyAsync(dev_x2+orcu_soff,x2+orcu_soff,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[orcu_i]);
-        cudaMemcpyAsync(dev_y+orcu_soff,y+orcu_soff,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[orcu_i]);
-        cudaMemcpyAsync(dev_x3+orcu_soff,x3+orcu_soff,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[orcu_i]);
-        cudaMemcpyAsync(dev_x1+orcu_soff,x1+orcu_soff,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[orcu_i]);
-        cudaMemcpyAsync(dev_x4+orcu_soff,x4+orcu_soff,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[orcu_i]);
-        cudaMemcpyAsync(dev_x5+orcu_soff,x5+orcu_soff,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[orcu_i]);
+      for (istream=0; istream<nstreams; istream++ ) {
+        soffset=istream*chunklen;
+        cudaMemcpyAsync(dev_x2+soffset,x2+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
+        cudaMemcpyAsync(dev_y+soffset,y+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
+        cudaMemcpyAsync(dev_x3+soffset,x3+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
+        cudaMemcpyAsync(dev_x1+soffset,x1+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
+        cudaMemcpyAsync(dev_x4+soffset,x4+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
+        cudaMemcpyAsync(dev_x5+soffset,x5+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
       }
       if (chunkrem!=0) {
-        orcu_soff=orcu_i*chunklen;
-        cudaMemcpyAsync(dev_x5+orcu_soff,x5+orcu_soff,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[orcu_i]);
+        soffset=istream*chunklen;
+        cudaMemcpyAsync(dev_x2+soffset,x2+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
+        cudaMemcpyAsync(dev_y+soffset,y+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
+        cudaMemcpyAsync(dev_x3+soffset,x3+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
+        cudaMemcpyAsync(dev_x1+soffset,x1+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
+        cudaMemcpyAsync(dev_x4+soffset,x4+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
+        cudaMemcpyAsync(dev_x5+soffset,x5+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
       }
       /*invoke device kernel*/
+      orio_t_start=getClock();
       int blks4chunk=dimGrid.x/nstreams;
       if (dimGrid.x%nstreams!=0) 
         blks4chunk++ ;
-      for (orcu_i=0; orcu_i<nstreams; orcu_i++ ) {
-        orcu_soff=orcu_i*chunklen;
-        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[orcu_i]>>>(chunklen,dev_a1,dev_x2+orcu_soff,dev_a3,dev_a2,dev_a5,dev_a4,dev_y+orcu_soff,dev_x3+orcu_soff,dev_x1+orcu_soff,dev_x4+orcu_soff,dev_x5+orcu_soff);
+      for (istream=0; istream<nstreams; istream++ ) {
+        soffset=istream*chunklen;
+        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunklen,dev_a1,dev_x2+soffset,dev_a3,dev_a2,dev_a5,dev_a4,dev_y+soffset,dev_x3+soffset,dev_x1+soffset,dev_x4+soffset,dev_x5+soffset);
       }
       if (chunkrem!=0) {
-        orcu_soff=orcu_i*chunklen;
-        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[orcu_i]>>>(chunkrem,dev_a1,dev_x2+orcu_soff,dev_a3,dev_a2,dev_a5,dev_a4,dev_y+orcu_soff,dev_x3+orcu_soff,dev_x1+orcu_soff,dev_x4+orcu_soff,dev_x5+orcu_soff);
+        soffset=istream*chunklen;
+        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunkrem,dev_a1,dev_x2+soffset,dev_a3,dev_a2,dev_a5,dev_a4,dev_y+soffset,dev_x3+soffset,dev_x1+soffset,dev_x4+soffset,dev_x5+soffset);
       }
       /*copy data from device to host*/
-      for (orcu_i=0; orcu_i<nstreams; orcu_i++ ) {
-        orcu_soff=orcu_i*chunklen;
-        cudaMemcpyAsync(y+orcu_soff,dev_y+orcu_soff,chunklen*sizeof(double),cudaMemcpyDeviceToHost,stream[orcu_i]);
+      for (istream=0; istream<nstreams; istream++ ) {
+        soffset=istream*chunklen;
+        cudaMemcpyAsync(y+soffset,dev_y+soffset,chunklen*sizeof(double),cudaMemcpyDeviceToHost,stream[istream]);
       }
       if (chunkrem!=0) {
-        orcu_soff=orcu_i*chunklen;
-        cudaMemcpyAsync(y+orcu_soff,dev_y+orcu_soff,chunkrem*sizeof(double),cudaMemcpyDeviceToHost,stream[orcu_i]);
+        soffset=istream*chunklen;
+        cudaMemcpyAsync(y+soffset,dev_y+soffset,chunkrem*sizeof(double),cudaMemcpyDeviceToHost,stream[istream]);
       }
-      for (orcu_i=0; orcu_i<=nstreams; orcu_i++ ) 
-        cudaStreamSynchronize(stream[orcu_i]);
+      for (istream=0; istream<=nstreams; istream++ ) 
+        cudaStreamSynchronize(stream[istream]);
+      for (istream=0; istream<=nstreams; istream++ ) 
+        cudaStreamDestroy(stream[istream]);
       /*free allocated memory*/
-      cudaHostUnregister(x2);
-      cudaHostUnregister(y);
-      cudaHostUnregister(x3);
-      cudaHostUnregister(x1);
-      cudaHostUnregister(x4);
-      cudaHostUnregister(x5);
-      for (orcu_i=0; orcu_i<=nstreams; orcu_i++ ) 
-        cudaStreamDestroy(stream[orcu_i]);
       cudaFree(dev_a1);
       cudaFree(dev_x2);
       cudaFree(dev_a3);
