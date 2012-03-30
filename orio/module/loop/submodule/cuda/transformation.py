@@ -4,7 +4,6 @@
 
 import orio.module.loop.ast_lib.forloop_lib, orio.module.loop.ast_lib.common_lib
 import orio.main.util.globals as g
-import orio.module.loop.ast as ast
 from orio.module.loop.ast import *
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -39,7 +38,9 @@ class Transformation(object):
         'scalars':     [],
         'arrays':      [],
         'rhs_arrays':  [],
-        'lhss':        []
+        'lhss':        [],
+        'intscalars':  [],
+        'intarrays':   []
       }
 
       # tracks various state variables used during transformations
@@ -99,6 +100,7 @@ class Transformation(object):
       hostDecls = [
         Comment('declare variables'),
         VarDecl('double', map(lambda x: '*'+x[1], self.model['idents'])),
+        VarDecl('int',    map(lambda x: '*'+x[1], self.model['intarrays'])),
         VarDeclInit('int', self.cs['nthreads'], NumLitExp(self.threadCount, NumLitExp.INT))
       ]
       if self.streamCount > 1:
@@ -108,6 +110,8 @@ class Transformation(object):
       # free allocated memory and resources
       deallocs = [Comment('free allocated memory')]
       for _,dvar in self.model['idents']:
+        deallocs += [ExpStmt(FunCallExp(IdentExp('cudaFree'), [IdentExp(dvar)]))]
+      for _,dvar in self.model['intarrays']:
         deallocs += [ExpStmt(FunCallExp(IdentExp('cudaFree'), [IdentExp(dvar)]))]
       self.newstmts['deallocs'] = deallocs
 
@@ -246,6 +250,20 @@ class Transformation(object):
                  CompStmt(self.state['calc_offset'] + h2dasyncsrem))
         ]
 
+      for aid,daid in self.model['intarrays']:
+        mallocs += [
+          ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
+                             [CastExpr('void**', UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF)),
+                              FunCallExp(IdentExp('sizeof'), [IdentExp(aid)])
+                              ]))]
+        # memcopy rhs arrays device to host
+        if aid in self.model['rhs_arrays']:
+          h2dcopys += [
+            ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
+                               [IdentExp(daid), IdentExp(aid), FunCallExp(IdentExp('sizeof'), [IdentExp(aid)]),
+                                IdentExp('cudaMemcpyHostToDevice')
+                                ]))]
+
       # -------------------------------------------------
       # malloc block-level result var
       if self.model['isReduction']:
@@ -332,12 +350,14 @@ class Transformation(object):
       kernell_calls = [Comment('invoke device kernel')]
       kernell_calls += [ExpStmt(BinOpExp(IdentExp('orio_t_start'), FunCallExp(IdentExp('getClock'), []), BinOpExp.EQ_ASGN))]
       if self.streamCount == 1:
-        args = [self.model['inputsize']] + map(lambda x: IdentExp(x[1]), self.model['idents'])
+        args = [self.model['inputsize']] + self.model['intscalars'] \
+          + map(lambda x: IdentExp(x[1]), self.model['intarrays']) \
+          + map(lambda x: IdentExp(x[1]), self.model['idents'])
         kernell_call = ExpStmt(FunCallExp(IdentExp(self.state['dev_kernel_name']+'<<<dimGrid,dimBlock>>>'), args))# + self.state['domainArgs']))
         kernell_calls += [kernell_call]
       else:
-        args    = [self.cs['chunklen']]
-        argsrem = [self.cs['chunkrem']]
+        args    = [self.cs['chunklen']] + self.model['intscalars'] + map(lambda x: IdentExp(x[1]), self.model['intarrays'])
+        argsrem = [self.cs['chunkrem']] + self.model['intscalars'] + map(lambda x: IdentExp(x[1]), self.model['intarrays'])
         # adjust array args using offsets
         dev_array_idss = map(lambda x: x[1], self.model['arrays'])
         for _,arg in self.model['idents']:
@@ -423,6 +443,11 @@ class Transformation(object):
         # extract for-loop structure
         index_id, _, ubound_exp, _, loop_body = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(self.stmt)
 
+        if isinstance(loop_body, ForStmt):
+          index_id2, _, ubound_exp2, _, _ = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(loop_body)
+        indices = [index_id.name, index_id2.name]
+        ktempints = [index_id2]
+
         # abbreviations
         loop_lib = orio.module.loop.ast_lib.common_lib.CommonLib()
 
@@ -444,8 +469,13 @@ class Transformation(object):
             if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN:
                 return loop_lib.collectNode(collectIdents, n.rhs)
             else: return []
+        def collectIntIds(n):
+            if isinstance(n, ArrayRefExp):
+                return loop_lib.collectNode(collectIdents, n.sub_exp)
+            else: return []
         lhs_ids = loop_lib.collectNode(collectLhsIds, loop_body)
         rhs_ids = loop_lib.collectNode(collectRhsIds, loop_body)
+        lhs_ids = filter(lambda x: x not in indices, lhs_ids)
 
         # collect all array and non-array idents in the loop body
         collectArrayIdents = lambda n: [n.exp.name] if (isinstance(n, ArrayRefExp) and isinstance(n.exp, IdentExp)) else []
@@ -483,16 +513,22 @@ class Transformation(object):
         #--------------------------------------------------------------------------------------------------------------
         # begin rewrite the loop body
         # create decls for ubound_exp id's, assuming all ids are int's
-        ubound_ids = loop_lib.collectNode(collectIdents, ubound_exp)
+        ubound_idss = map(lambda x: loop_lib.collectNode(collectIdents, x), [ubound_exp, ubound_exp2])
+        ubound_ids = reduce(lambda acc,item: acc+item, ubound_idss)
         kernelParams = [FieldDecl('int', x) for x in ubound_ids]
+
+        int_ids = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIds, loop_body)))
+        intarrays = list(int_ids.intersection(array_ids))
+        array_ids = array_ids.difference(intarrays)
 
         # collect all identifiers from the loop body
         loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
-        lbi = set(filter(lambda x: x != index_id.name, loop_body_ids))
+        lbi = set(filter(lambda x: x not in (indices+ubound_ids+list(int_ids)), loop_body_ids))
         
         # create decls for loop body id's
         if self.model['isReduction']:
             lbi = lbi.difference(set(lhs_ids))
+        kernelParams += [FieldDecl('int*', x) for x in intarrays]
         kernelParams += [FieldDecl('double*', x) for x in lbi]
         scalar_ids = list(lbi.difference(array_ids))
         
@@ -501,16 +537,18 @@ class Transformation(object):
         idents = list(lbi)
         if self.model['isReduction']:
           idents += [lhs_ids[0]]
-        self.model['idents'] = map(lambda x: (x, dev+x), idents)
+        self.model['idents']  = map(lambda x: (x, dev+x), idents)
         self.model['scalars'] = map(lambda x: (x, dev+x), scalar_ids)
         self.model['arrays']  = map(lambda x: (x, dev+x), array_ids)
         self.model['inputsize'] = IdentExp(ubound_ids[0])
+        self.model['intscalars'] = map(lambda x: IdentExp(x), ubound_ids[1:])
+        self.model['intarrays']  = map(lambda x: (x, dev+x), intarrays)
 
-        kernel_temps = []
+        ktempdbls = []
         if self.model['isReduction']:
             for var in lhs_ids:
                 tempIdent = IdentExp(self.cs['prefix'] + 'var' + str(g.Globals().getcounter()))
-                kernel_temps += [tempIdent]
+                ktempdbls += [tempIdent]
                 rrLhs = lambda n: tempIdent if (isinstance(n, IdentExp) and n.name == var) else n
                 loop_body = loop_lib.rewriteNode(rrLhs, loop_body)
 
@@ -533,7 +571,7 @@ class Transformation(object):
 
         #--------------------------------------------------------------------------------------------------------------
         domainStmts   = []
-        domainArgs    = []
+        #domainArgs    = []
         domainParams  = []
         if self.domain != None:
           domainStmts = [Comment('stencil domain parameters')]
@@ -579,7 +617,7 @@ class Transformation(object):
             ExpStmt(BinOpExp(IdentExp('dimGrid.x'), self.model['inputsize'], BinOpExp.EQ_ASGN)),
             ExpStmt(BinOpExp(IdentExp('dimBlock.x'), nosIdent, BinOpExp.EQ_ASGN))
             ]
-          domainArgs = [sidxIdent]
+          #domainArgs = [sidxIdent]
           domainParams = [FieldDecl('int*', sidx)]
           kernelParams += domainParams
         #--------------------------------------------------------------------------------------------------------------
@@ -602,7 +640,7 @@ class Transformation(object):
         redkernParams = []
         cacheReads    = []
         cacheWrites   = []
-        if self.cacheBlocks:
+        if self.cacheBlocks and not isinstance(loop_body3, ForStmt):
             for var in array_ids:
                 sharedVar = 'shared_' + var
                 kernelStmts += [
@@ -640,8 +678,10 @@ class Transformation(object):
                     cacheWrites += [ExpStmt(BinOpExp(varExp, sharedVarExp, BinOpExp.EQ_ASGN))]
 
         if self.model['isReduction']:
-            for temp in kernel_temps:
+            for temp in ktempdbls:
                 kernelStmts += [VarDeclInit('double', temp, self.cs['int0'])]
+        for temp in ktempints:
+            kernelStmts += [VarDecl('int', [temp])]
 
         #--------------------------------------------------
         if self.domain == None:
