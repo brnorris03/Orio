@@ -21,8 +21,8 @@ class Transformation:
         self.language = Globals().language
         self.flib = orio.module.loop.ast_lib.forloop_lib.ForLoopLib()
         self.cfolder = orio.module.loop.ast_lib.constant_folder.ConstFolder()
-        self.newVarsOp = set([])
-        self.varsToAdd = set([])
+        self.newVarsOp = set([])  #tells you which operation is operated on the new set of variables (either none, plus, or multiply)
+        self.varsToAdd = set([])  #tells you which variable names considered for introduction. Need ufactor to deduce the full set of variables introduced.
         self.varsNoAdd = set([])
     #----------------------------------------------------------
 
@@ -124,8 +124,9 @@ class Transformation:
     
     def __computeNewVarsIntro(self, tnode):
         
-        binOpExprs = self.__analyzeForNewVars(tnode)
+        binOpExprs = self.__analyzeForNewVars(tnode) #has the form set([ lfsName, (rhsName1, rhsName2, ...)]
         
+        # there can only be one operation, and this operation has to be either addition or multiplication (they are both commutative and associative)
         if len(self.newVarsOp) != 1 or (iter(self.newVarsOp).next() != orio.module.loop.ast.BinOpExp.ADD and iter(self.newVarsOp).next() != orio.module.loop.ast.BinOpExp.MUL):
             #self.introNewVars = False
             return
@@ -133,17 +134,17 @@ class Transformation:
         for exp1 in binOpExprs:
             if exp1[0] in self.varsNoAdd:
                 continue
-            if exp1[0] in exp1[1]:
+            if exp1[0] in exp1[1]:   #there's modification of variable
                 for exp2 in binOpExprs:
                     if exp2 is exp1:
                         continue
-                    if exp1[0] in exp2[1] and exp1[0] != exp2[0]:
+                    if exp1[0] in exp2[1] and exp1[0] != exp2[0]:  #modification with alias
                         self.varsNoAdd |= set([exp1[0]])
                         self.varsToAdd -= set([exp1[0]])
                         break
-                else:
-                    self.varsToAdd |= set([exp1[0]])
-            else:
+                else:  #modification to itself but no alias
+                    self.varsToAdd |= set([exp1[0]])   
+            else:   #there's at least one non-modification of variable (just read)
                 self.varsNoAdd |= set([exp1[0]])
                 self.varsToAdd -= set([exp1[0]])
             
