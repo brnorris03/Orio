@@ -229,6 +229,7 @@ class Transformation:
     
     
     def __extractFromBinOp(self, tnode):
+        '''extract variable names used'''
         var_names = set([])
         
         if isinstance(tnode, orio.module.loop.ast.NumLitExp):
@@ -250,6 +251,8 @@ class Transformation:
                 var_names |= self.__extractFromBinOp(tnode.lhs)
             elif isinstance(tnode.lhs, orio.module.loop.ast.IdentExp):
                 var_names |= set([tnode.lhs.name])
+            elif isinstance(tnode.lhs, orio.module.loop.ast.NumLitExp):
+                pass
             else:
                 err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.lhs.__class__.__name__)
                 
@@ -262,6 +265,8 @@ class Transformation:
                 var_names |= self.__extractFromBinOp(tnode.rhs)
             elif isinstance(tnode.rhs, orio.module.loop.ast.IdentExp):
                 var_names |= set([tnode.rhs.name])
+            elif isinstance(tnode.rhs, orio.module.loop.ast.NumLitExp):
+                pass
             else:
                 err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.rhs.__class__.__name__)
                 
