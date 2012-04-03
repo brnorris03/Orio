@@ -97,10 +97,14 @@ class Transformation(object):
     # -----------------------------------------------------------------------------------------------------------------
     def createDVarDecls(self):
       '''Create declarations of device-side variables corresponding to host-side variables'''
+      intarrays = self.model['intarrays']
       hostDecls = [
         Comment('declare variables'),
-        VarDecl('double', map(lambda x: '*'+x[1], self.model['idents'])),
-        VarDecl('int',    map(lambda x: '*'+x[1], self.model['intarrays'])),
+        VarDecl('double', map(lambda x: '*'+x[1], self.model['idents']))
+      ]
+      if len(intarrays)>0:
+        hostDecls += [VarDecl('int', map(lambda x: '*'+x[1], intarrays))]
+      hostDecls += [
         VarDeclInit('int', self.cs['nthreads'], NumLitExp(self.threadCount, NumLitExp.INT))
       ]
       if self.streamCount > 1:
@@ -203,7 +207,8 @@ class Transformation(object):
         mallocs += [
           ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
                              [CastExpr('void**', UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF)),
-                              self.cs['nbytes']
+                              #self.cs['nbytes']
+                              FunCallExp(IdentExp('sizeof'), [IdentExp(aid)])
                               ]))]
         # memcopy rhs arrays device to host
         if aid in self.model['rhs_arrays']:
@@ -235,7 +240,8 @@ class Transformation(object):
           else:
             h2dcopys += [
               ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
-                                 [IdentExp(daid), IdentExp(aid), self.cs['nbytes'],
+                                 [IdentExp(daid), IdentExp(aid), #self.cs['nbytes'],
+                                  FunCallExp(IdentExp('sizeof'), [IdentExp(aid)]),
                                   IdentExp('cudaMemcpyHostToDevice')
                                   ]))]
       # for-loop over streams to do async copies
@@ -311,7 +317,8 @@ class Transformation(object):
             d2hcopys += [
               ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
                                  [IdentExp(raid), IdentExp(draid),
-                                  self.cs['nbytes'],
+                                  #self.cs['nbytes'],
+                                  FunCallExp(IdentExp('sizeof'), [IdentExp(raid)]),
                                   IdentExp('cudaMemcpyDeviceToHost')
                                   ]))]
       # -------------------------------------------------
@@ -443,10 +450,14 @@ class Transformation(object):
         # extract for-loop structure
         index_id, _, ubound_exp, _, loop_body = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(self.stmt)
 
+        indices = [index_id.name]
+        ktempints = []
+        nestedLoop = False
         if isinstance(loop_body, ForStmt):
           index_id2, _, ubound_exp2, _, _ = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(loop_body)
-        indices = [index_id.name, index_id2.name]
-        ktempints = [index_id2]
+          nestedLoop = True
+          indices += [index_id2.name]
+          ktempints += [index_id2] # declare inner index
 
         # abbreviations
         loop_lib = orio.module.loop.ast_lib.common_lib.CommonLib()
@@ -471,8 +482,16 @@ class Transformation(object):
             else: return []
         def collectIntIds(n):
             if isinstance(n, ArrayRefExp):
-                return loop_lib.collectNode(collectIdents, n.sub_exp)
+              return loop_lib.collectNode(collectIdents, n.sub_exp)
             else: return []
+        def collectIntIdsClosure(inferredInts):
+          def collectIntIds(n):
+            # constrained C
+            if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN and isinstance(n.lhs, IdentExp) and n.lhs.name in inferredInts:
+              idents = loop_lib.collectNode(collectIdents, n.rhs)
+              return idents
+            else: return []
+          return collectIntIds
         lhs_ids = loop_lib.collectNode(collectLhsIds, loop_body)
         rhs_ids = loop_lib.collectNode(collectRhsIds, loop_body)
         lhs_ids = filter(lambda x: x not in indices, lhs_ids)
@@ -496,15 +515,15 @@ class Transformation(object):
             VarDeclInit('FILE*', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('origexec.out'), StringLitExp('w')])),
             original
           ]
-          for var in lhs_ids:
+          bodyStmts = [original.stmt]
+          for var in self.model['lhss']:
             if var in array_ids:
-              bodyStmts = [original.stmt]
               bodyStmts += [ExpStmt(FunCallExp(IdentExp('fprintf'),
                 [printFpIdent, StringLitExp("\'"+var+"[%d]\',%f; "), index_id, ArrayRefExp(IdentExp(var), index_id)])
               )]
-              original.stmt = CompStmt(bodyStmts)
             else:
               testOrigOutput += [ExpStmt(FunCallExp(IdentExp('fprintf'), [printFpIdent, StringLitExp("\'"+var+"\',%f"), IdentExp(var)]))]
+          original.stmt = CompStmt(bodyStmts)
           testOrigOutput += [ExpStmt(FunCallExp(IdentExp('fclose'), [printFpIdent]))]
       
           return CompStmt(testOrigOutput)
@@ -513,17 +532,19 @@ class Transformation(object):
         #--------------------------------------------------------------------------------------------------------------
         # begin rewrite the loop body
         # create decls for ubound_exp id's, assuming all ids are int's
-        ubound_idss = map(lambda x: loop_lib.collectNode(collectIdents, x), [ubound_exp, ubound_exp2])
-        ubound_ids = reduce(lambda acc,item: acc+item, ubound_idss)
+        ubound_idss = map(lambda x: loop_lib.collectNode(collectIdents, x), [ubound_exp]+([ubound_exp2] if nestedLoop else []))
+        ubound_ids = reduce(lambda acc,item: acc+item, ubound_idss, [])
         kernelParams = [FieldDecl('int', x) for x in ubound_ids]
 
         int_ids = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIds, loop_body)))
-        intarrays = list(int_ids.intersection(array_ids))
+        int_ids_pass2 = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIdsClosure(int_ids), loop_body)))
+        ktempints += list(int_ids)
+        intarrays = list(int_ids_pass2.intersection(array_ids))
         array_ids = array_ids.difference(intarrays)
 
         # collect all identifiers from the loop body
         loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
-        lbi = set(filter(lambda x: x not in (indices+ubound_ids+list(int_ids)), loop_body_ids))
+        lbi = set(filter(lambda x: x not in (indices+ubound_ids+list(int_ids)+list(int_ids_pass2)), loop_body_ids))
         
         # create decls for loop body id's
         if self.model['isReduction']:
@@ -562,9 +583,9 @@ class Transformation(object):
         # replace all array indices with thread id
         tid = 'tid'
         tidIdent = IdentExp(tid)
-        rewriteToTid = lambda x: tidIdent if isinstance(x, IdentExp) and x.name == str(index_id) else x
-        rewriteArrayIndices = lambda n: ArrayRefExp(n.exp, loop_lib.rewriteNode(rewriteToTid, n.sub_exp)) if isinstance(n, ArrayRefExp) else n
-        loop_body3 = loop_lib.rewriteNode(rewriteArrayIndices, loop_body2)
+        rewriteToTid = lambda x: tidIdent if isinstance(x, IdentExp) and x.name == index_id.name else x
+        #rewriteArrayIndices = lambda n: ArrayRefExp(n.exp, loop_lib.rewriteNode(rewriteToTid, n.sub_exp)) if isinstance(n, ArrayRefExp) else n
+        loop_body3 = loop_lib.rewriteNode(rewriteToTid, loop_body2)
         # end rewrite the loop body
         #--------------------------------------------------------------------------------------------------------------
 
@@ -680,8 +701,8 @@ class Transformation(object):
         if self.model['isReduction']:
             for temp in ktempdbls:
                 kernelStmts += [VarDeclInit('double', temp, self.cs['int0'])]
-        for temp in ktempints:
-            kernelStmts += [VarDecl('int', [temp])]
+        if len(ktempints) > 1:
+            kernelStmts += [VarDecl('int', map(lambda x: IdentExp(x), ktempints))]
 
         #--------------------------------------------------
         if self.domain == None:
@@ -850,26 +871,31 @@ class Transformation(object):
         testNewOutput  = []
         if g.Globals().validationMode:
           printFpIdent = IdentExp('fp')
+          original = ForStmt(
+            BinOpExp(idxIdent, self.cs['int0'], BinOpExp.EQ_ASGN),
+            BinOpExp(idxIdent, ubound_exp, BinOpExp.LE),
+            UnaryExp(idxIdent, UnaryExp.POST_INC),
+            Comment('placeholder')
+          )
           testNewOutput = [
             VarDeclInit('FILE*', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('newexec.out'), StringLitExp('w')])),
-            VarDecl('int', [idxIdent])
+            VarDecl('int', [idxIdent]),
+            original
           ]
+          bodyStmts = []
           for var in self.model['lhss']:
             if var in array_ids:
-              testNewOutput += [ForStmt(
-                BinOpExp(idxIdent, self.cs['int0'], BinOpExp.EQ_ASGN),
-                BinOpExp(idxIdent, ubound_exp, BinOpExp.LE),
-                UnaryExp(idxIdent, UnaryExp.POST_INC),
-                ExpStmt(FunCallExp(IdentExp('fprintf'),
-                                           [printFpIdent, StringLitExp("\'"+var+"[%d]\',%f; "), idxIdent, ArrayRefExp(IdentExp(var), idxIdent)]))
-              )]
+              bodyStmts += [ExpStmt(FunCallExp(IdentExp('fprintf'),
+                [printFpIdent, StringLitExp("\'"+var+"[%d]\',%f; "), idxIdent, ArrayRefExp(IdentExp(var), idxIdent)]))
+              ]
             else:
               testNewOutput += [ExpStmt(
                 FunCallExp(IdentExp('fprintf'), [printFpIdent, StringLitExp("\'"+var+"\',%f"), IdentExp(var)])
               )]
+          original.stmt = CompStmt(bodyStmts)
           testNewOutput += [ExpStmt(FunCallExp(IdentExp('fclose'), [printFpIdent]))]
           self.newstmts['testNewOutput'] = testNewOutput
-          
+
         #--------------------------------------------------------------------------------------------------------------
         # add up all components
         transformed_stmt = CompStmt(
