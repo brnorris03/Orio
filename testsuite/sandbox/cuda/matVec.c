@@ -1,6 +1,5 @@
 void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos, int dof) {
 
-  register int i,j;
 
   /*@ begin PerfTuning (
         def performance_params {
@@ -30,6 +29,7 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
         }
   ) @*/
 
+  register int i,j;
   int nrows=m*n*p;
   int ndiags=Nos;
   int offsets[ndiags];
@@ -40,13 +40,18 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
   offsets[4]=dof;
   offsets[5]=m*dof;
   offsets[6]=m*n*dof;
+  int col;
 
   /*@
-    begin Loop(
+      begin Loop(
       transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM, streamCount=SC)
-        for(i=0; i<=nrows-1; i++)
-          for(j=0; j<=ndiags-1; j++)
-            y[i] += A[i+j*nrows] * x[i+offsets[j]];
+        for(i=0; i<=nrows-1; i++) {
+          for(j=0; j<=ndiags-1; j++){
+            col = i+offsets[j];
+            if(col>=0&&col<nrows)
+              y[i] += A[i+j*nrows] * x[col];
+          }
+        }
     )
   @*/
 
