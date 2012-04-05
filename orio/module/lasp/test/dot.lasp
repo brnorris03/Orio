@@ -1,0 +1,8 @@
+DOT
+in
+	x: vector, y: vector
+out
+	dot: scalar
+{
+	dot = x' * y
+}
