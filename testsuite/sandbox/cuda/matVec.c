@@ -6,7 +6,6 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
           param TC[]  = range(32,33,32);
           param CB[]  = [True];
           param PHM[] = [False];
-          param SC[]  = range(1,2);
         }
         def input_params {
           param m[]   = [2];
@@ -44,7 +43,7 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
 
   /*@
       begin Loop(
-      transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM, streamCount=SC)
+      transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM)
         for(i=0; i<=nrows-1; i++) {
           for(j=0; j<=ndiags-1; j++){
             col = i+offsets[j];
