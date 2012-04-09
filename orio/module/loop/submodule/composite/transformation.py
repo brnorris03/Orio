@@ -13,6 +13,7 @@ import orio.module.loop.submodule.scalarreplace.scalarreplace
 import orio.module.loop.submodule.boundreplace.boundreplace
 import orio.module.loop.submodule.pragma.pragma
 import orio.module.loop.submodule.arrcopy.arrcopy
+import orio.module.loop.submodule.cuda.cuda
 
 #-----------------------------------------
 
@@ -20,7 +21,7 @@ class Transformation:
     '''Code transformation implementation'''
 
     def __init__(self, tiles, permuts, regtiles, ujams, scalarrep, boundrep,
-                 pragma, openmp, vector, arrcopy, stmt):
+                 pragma, openmp, vector, arrcopy, cuda, stmt):
         '''Instantiate a code transformation object'''
 
         self.tiles = tiles
@@ -33,6 +34,7 @@ class Transformation:
         self.openmp = openmp
         self.vector = vector
         self.arrcopy = arrcopy
+        self.cuda = cuda
         self.stmt = stmt
 
         self.counter = 1
@@ -49,6 +51,7 @@ class Transformation:
         self.brep_smod = orio.module.loop.submodule.boundreplace.boundreplace.BoundReplace()
         self.prag_smod = orio.module.loop.submodule.pragma.pragma.Pragma()
         self.acop_smod = orio.module.loop.submodule.arrcopy.arrcopy.ArrCopy()
+        self.cuda_smod = orio.module.loop.submodule.cuda.cuda.CUDA()
 
     #----------------------------------------------------------
 
@@ -93,6 +96,27 @@ class Transformation:
 
         else:
             err('orio.module.loop.submodule.composite.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)            
+    
+    
+    #----------------------------------------------------------
+    def __cudify(self, stmt, targs):
+        if isinstance(stmt, orio.module.loop.ast.ForStmt):
+            stmt = self.cuda_smod.cudify(stmt, self.cuda_smod.getDeviceProps(), targs)
+        elif isinstance(stmt, orio.module.loop.ast.VarDecl):
+            pass
+        elif isinstance(stmt, orio.module.loop.ast.ExpStmt):
+            pass
+        elif isinstance(stmt, orio.module.loop.ast.CompStmt):
+            tstmts = []
+            for s in stmt.stmts:
+                t = self.__cudify(s, targs)
+                tstmts.append(t)
+            stmt.stmts = tstmts
+        else:
+            err('orio.module.loop.submodule.composite.transformation internal error: unexpected AST type: "%s"' % stmt.__class__.__name__)
+        return stmt
+    
+    
         
     #----------------------------------------------------------
 
@@ -516,6 +540,17 @@ class Transformation:
                  'vectorization: "%s"\nvector annotation: %s\n --> %s: %s') \
                  % (self.stmt.line_no, self.srep_smod.__class__.__name__, self.vector, e.__class__.__name__, e))
             
+        # apply cuda transformation
+        try:
+            threadCount, cacheBlocks, pinHost, streamCount = self.cuda
+            if threadCount:
+                targs = {'threadCount':threadCount, 'cacheBlocks':cacheBlocks, 'pinHostMem':pinHost, 'streamCount':streamCount, 'domain':None, 'dataOnDevice':False}
+                tstmt = self.__cudify(tstmt, targs)
+            
+        except Exception, e:
+            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'cuda: "%s"\ncuda annotation: %s\n --> %s: %s') \
+                 % (self.stmt.line_no, self.cuda_smod.__class__.__name__, self.cuda, e.__class__.__name__, e))
         # return the transformed statement
         return tstmt
 

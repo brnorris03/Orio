@@ -12,6 +12,7 @@ import orio.module.loop.submodule.scalarreplace.scalarreplace
 import orio.module.loop.submodule.boundreplace.boundreplace
 import orio.module.loop.submodule.pragma.pragma
 import orio.module.loop.submodule.arrcopy.arrcopy
+import orio.module.loop.submodule.cuda.cuda
 from orio.main.util.globals import *
 
 #---------------------------------------------------------------------
@@ -33,6 +34,7 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         self.brep_smod = orio.module.loop.submodule.boundreplace.boundreplace.BoundReplace()
         self.prag_smod = orio.module.loop.submodule.pragma.pragma.Pragma()
         self.acop_smod = orio.module.loop.submodule.arrcopy.arrcopy.ArrCopy()
+        self.cuda_smod = orio.module.loop.submodule.cuda.cuda.CUDA()
 
     #-----------------------------------------------------------------
 
@@ -50,6 +52,7 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         OPENMP = 'openmp'
         VECTOR = 'vector'
         ARRCOPY = 'arrcopy'
+        CUDA = 'cuda'
 
         # all expected transformation arguments
         tiles = ([], None)
@@ -62,6 +65,7 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         openmp = ((False, ''), None)
         vector = ((False, ''), None)
         arrcopy = ([], None)
+        cuda = ((None, False, False, None), None)
 
         # iterate over all transformation arguments
         for aname, rhs, line_no in transf_args:
@@ -94,6 +98,8 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
                 vector = (rhs, line_no)
             elif aname == ARRCOPY:
                 arrcopy = (rhs, line_no)
+            elif aname == CUDA:
+                cuda = (rhs, line_no)
 
             # unknown argument name
             else:
@@ -101,17 +107,17 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
 
         # check semantics of the transformation arguments
         (tiles, permuts, regtiles, ujams, scalarrep, boundrep,
-         pragma, openmp, vector, arrcopy) = self.checkTransfArgs(tiles, permuts, regtiles, ujams,
+         pragma, openmp, vector, arrcopy, cuda) = self.checkTransfArgs(tiles, permuts, regtiles, ujams,
                                                                  scalarrep, boundrep, pragma,
-                                                                 openmp, vector, arrcopy)
+                                                                 openmp, vector, arrcopy, cuda)
 
         # return information about the transformation arguments
-        return (tiles, permuts, regtiles, ujams, scalarrep, boundrep, pragma, openmp, vector, arrcopy)
+        return (tiles, permuts, regtiles, ujams, scalarrep, boundrep, pragma, openmp, vector, arrcopy, cuda)
 
     #-----------------------------------------------------------------
 
     def checkTransfArgs(self, tiles, permuts, regtiles, ujams, scalarrep, boundrep, pragma,
-                        openmp, vector, arrcopy):
+                        openmp, vector, arrcopy, cuda):
         '''Check the semantics of the given transformation arguments'''
         
         # evaluate arguments for loop tiling
@@ -147,6 +153,7 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         loops, ufactors = rhs
         loops, ufactors = self.regt_smod.checkTransfArgs((loops, line_no), (ufactors, line_no))
         regtiles = (loops, ufactors)
+
 
         # evaluate arguments for unroll/jamming
         rhs, line_no = ujams
@@ -258,18 +265,27 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
             targs.append((do_acopy, aref, suffix, dtype, dimsizes))
         arrcopy = targs
 
+        # evaluate arguments for cuda
+        rhs, line_no = cuda
+        if not isinstance(rhs, tuple):
+            err('orio.module.loop.submodule.cuda.cuda: %s: cuda argument must be a tuple: %s' % (line_no, rhs))
+        if len(rhs) != 4:
+            err(('orio.module.loop.submodule.cuda.cuda:%s: cuda argument must be in the form of ' +
+                    '(<threadCount>,<cacheBlocks>,<pinHostMem>,<streamCount>): %s') % (line_no, rhs))
+        cuda = rhs
+        
         # return information about the transformation arguments
-        return (tiles, permuts, regtiles, ujams, scalarrep, boundrep, pragma, openmp, vector, arrcopy)
+        return (tiles, permuts, regtiles, ujams, scalarrep, boundrep, pragma, openmp, vector, arrcopy, cuda)
 
     #-----------------------------------------------------------------
 
     def applyTransf(self, tiles, permuts, regtiles, ujams, scalarrep, boundrep,
-                    pragma, openmp, vector, arrcopy, stmt):
+                    pragma, openmp, vector, arrcopy, cuda, stmt):
         '''To apply a sequence of transformations'''
 
         # perform the composite transformations
         t = transformation.Transformation(tiles, permuts, regtiles, ujams, scalarrep,
-                                        boundrep, pragma, openmp, vector, arrcopy, self.stmt)
+                                        boundrep, pragma, openmp, vector, arrcopy, cuda, self.stmt)
         transformed_stmt = t.transform()
 
         # return the transformed statement
@@ -318,11 +334,11 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         # read all transformation arguments
         args_info = self.__readTransfArgs(self.perf_params, self.transf_args)
         (tiles, permuts, regtiles, ujams, scalarrep,
-         boundrep, pragma, openmp, vector, arrcopy) = args_info
+         boundrep, pragma, openmp, vector, arrcopy, cuda) = args_info
         
         # perform all transformations
         transformed_stmt = self.applyTransf(tiles, permuts, regtiles, ujams, scalarrep, boundrep,
-                                            pragma, openmp, vector, arrcopy, self.stmt)
+                                            pragma, openmp, vector, arrcopy, cuda, self.stmt)
 
         # return the transformed statement
         return transformed_stmt
