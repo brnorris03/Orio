@@ -26,6 +26,7 @@
 #   +-- NewAST 
 #        |
 #        +-- VarDecl
+#        +-- VarDeclInit
 #        +-- FieldDecl 
 #        +-- FunDecl
 #        +-- Pragma 
@@ -43,9 +44,10 @@ import codegen
 
 class AST:
 
-    def __init__(self, line_no = ''):
+    def __init__(self, line_no = '', parent = None):
         '''Create an abstract syntax tree node'''
         self.line_no = line_no           # may be null (i.e. empty string)
+        self.parent = parent
         
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
@@ -66,9 +68,9 @@ class AST:
 
 class Exp(AST):
 
-    def __init__(self, line_no = ''):
+    def __init__(self, line_no = '', parent = None):
         '''Create an expression'''
-        AST.__init__(self, line_no)
+        AST.__init__(self, line_no, parent)
 
 #-----------------------------------------------
 # Number Literal
@@ -79,9 +81,9 @@ class NumLitExp(Exp):
     INT = 1
     FLOAT = 2
     
-    def __init__(self, val, lit_type, line_no = ''):
+    def __init__(self, val, lit_type, line_no = '', parent = None):
         '''Create a numeric literal'''
-        Exp.__init__(self, line_no)
+        Exp.__init__(self, line_no, parent)
         self.val = val
         self.lit_type = lit_type
 
