@@ -35,6 +35,7 @@ class PerfTestDriver:
         self.tinfo = tinfo
         self.use_parallel_search = use_parallel_search
         self.compile_time=0
+        self.extra_compiler_opts = ''
         
         global counter
         counter += 1
@@ -47,12 +48,15 @@ class PerfTestDriver:
 
         if language == 'c': 
             self.src_name = self.__PTEST_FNAME + str(counter) + '.c'
+            self.src_name2 = self.__PTEST_FNAME + str(counter) + '_preprocessed.c'
             self.original_src_name = self.__PTEST_FNAME + str(counter) + '_original.c'
         elif language == 'cuda':
             self.src_name = self.__PTEST_FNAME + str(counter) + '.cu'
+            self.src_name2 = self.__PTEST_FNAME + str(counter) + '_preprocessed.cu'
             self.original_src_name = self.__PTEST_FNAME + str(counter) + '_original.cu'
         else:
             self.src_name = self.__PTEST_FNAME + str(counter) + '.F90'
+            self.src_name2 = self.__PTEST_FNAME + str(counter) + '_preprocessed.F90'
             self.original_src_name = self.__PTEST_FNAME + str(counter) + '_original.F90'
         
         self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
@@ -73,6 +77,15 @@ class PerfTestDriver:
         
         if self.tinfo.pcount_method not in (self.__PCOUNT_BASIC, self.__PCOUNT_BGP):
             err('orio.main.tuner.ptest_driver:  unknown performance-counting method: "%s"' % self.tinfo.pcount_method)
+
+        # get all extra options
+        self.extra_compiler_opts = ''
+        if self.tinfo.pcount_method == self.__PCOUNT_BGP:
+            self.extra_compiler_opts += ' -DBGP_COUNTER'
+        self.extra_compiler_opts += ' -DORIO_REPS=%s' % self.tinfo.pcount_reps
+        self.extra_compiler_opts += ' -DORIO_TIMES_ARRAY_SIZE=%s' % self.tinfo.timing_array_size
+
+
 
     #-----------------------------------------------------
 
@@ -105,19 +118,32 @@ class PerfTestDriver:
             
         return
                 
+    #-----------------------------------------------------
 
+    def __preprocess(self):
+        ''' 
+        Apply PBound to generated code. 
+        Some of the build options (include paths, etc.) are used. 
+        '''
+        if self.tinfo.pre_build_cmd:
+            # apply the pre-build command if defined
+   
+            cmd = ('%s %s -o %s %s' % (self.tinfo.pre_build_cmd, self.extra_compiler_opts,
+                                       self.src_name2, self.src_name))
+            # TODO: log all commands
+            status = os.system(cmd)
+            if status:
+                err('orio.main.tuner.ptest_driver:  failed to apply the pre-build command: "%s"' % cmd)
+
+        else:
+            self.src_name2 = self.src_name
+        return
+    
     #-----------------------------------------------------
 
     def __build(self):
         '''Compile the testing code'''
-        
-        # get all extra options
-        extra_compiler_opts = ''
-        if self.tinfo.pcount_method == self.__PCOUNT_BGP:
-            extra_compiler_opts += ' -DBGP_COUNTER'
-        extra_compiler_opts += ' -DORIO_REPS=%s' % self.tinfo.pcount_reps
-        extra_compiler_opts += ' -DORIO_TIMES_ARRAY_SIZE=%s' % self.tinfo.timing_array_size
-            
+                
         # compile the timing code (if needed)
         if self.timer_file:
             timer_objfile = self.timer_file[:self.timer_file.rfind('.')] + '.o'
@@ -137,23 +163,23 @@ class PerfTestDriver:
         # compile the original code if needed
         if not os.path.exists(self.original_exe_name):
             if self.language == 'cuda':
-                cmd = ('%s %s -DORIGINAL -o %s -c %s' % (self.tinfo.build_cmd, extra_compiler_opts,
-                                                         self.original_obj_name, self.src_name))
+                cmd = ('%s %s -DORIGINAL -o %s -c %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
+                                                         self.original_obj_name, self.src_name2))
                 info(' building the original code:\n\t' + cmd)
                 status = os.system(cmd)
                 if status:
                     err('orio.main.tuner.ptest_driver: failed to compile the original version of cuda code: "%s"' % cmd)
-                cmd = ('%s %s -DORIGINAL -o %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+                cmd = ('%s %s -DORIGINAL -o %s %s %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
                                                             self.original_exe_name, timer_objfile,
                                                             self.original_obj_name))
             else:
                 if timer_objfile and os.path.exists(timer_objfile):
-                    cmd = ('%s %s -DORIGINAL -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
-                                                            self.original_exe_name, self.src_name, 
+                    cmd = ('%s %s -DORIGINAL -o %s %s %s %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
+                                                            self.original_exe_name, self.src_name2, 
                                                             timer_objfile, self.tinfo.libs))
                 else:
-                    cmd = ('%s %s -DORIGINAL -o %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
-                                                            self.original_exe_name, self.src_name, 
+                    cmd = ('%s %s -DORIGINAL -o %s %s %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
+                                                            self.original_exe_name, self.src_name2, 
                                                             self.tinfo.libs))
                 
             info(' compiling the original code:\n\t' + cmd)
@@ -163,31 +189,40 @@ class PerfTestDriver:
             
         # compile the testing code
         if self.language == 'cuda':
-            cmd = ('%s %s -o %s -c %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+            cmd = ('%s %s -o %s -c %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
                                           self.obj_name, self.src_name))
             info(' building test code:\n\t' + cmd)
             status = os.system(cmd)
             if status:
                 err('orio.main.tuner.ptest_driver: failed to compile the testing cuda code: "%s"' % cmd)
-            cmd = ('%s %s -o %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
+            cmd = ('%s %s -o %s %s %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
                                           self.exe_name, timer_objfile,
                                           self.obj_name))
         else:
-            cmd = ('%s %s -o %s %s %s %s' % (self.tinfo.build_cmd, extra_compiler_opts,
-                                             self.exe_name, self.src_name, 
+            cmd = ('%s %s -o %s %s %s %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
+                                             self.exe_name, self.src_name2, 
                                              timer_objfile, self.tinfo.libs))
         info(' compiling test:\n\t' + cmd)
-
+        
         self.compile_time=0
         start=time.time()
 
+        # TODO: log all commands
         status = os.system(cmd)
 
         elapsed=time.time()-start
         self.compile_time=elapsed
-        
+    
         if status:
             err('orio.main.tuner.ptest_driver:  failed to compile the testing code: "%s"' % cmd)
+
+        if self.tinfo.post_build_cmd:
+            # Run the postbuild command
+            cmd = ('%s %s' % (self.tinfo.post_build_cmd, self.exe_name))
+            # TODO: log all commands
+            status = os.system(cmd)
+            if status:
+                err('orio.main.tuner.ptest_driver:  failed to apply the post-build command: "%s"' % cmd)
 
     #-----------------------------------------------------
 
@@ -303,6 +338,9 @@ class PerfTestDriver:
         # write the testing code
         self.__write(test_code)
 
+        # preprocess source code, e.g., run pbound if enabled
+        self.__preprocess()
+        
         # compile the testing code
         self.__build()
 
