@@ -221,7 +221,8 @@ class CommonLib:
         
         elif isinstance(n, orio.module.loop.ast.GotoStmt):
             return f(n) + self.collectNode(f, n.target)
-        
+        elif isinstance(n, orio.module.loop.ast.VarDecl):
+            return f(n)
         elif isinstance(n, orio.module.loop.ast.CompStmt):
             return reduce(lambda x,y: x + y,
                           [self.collectNode(f, a) for a in n.stmts],
@@ -265,6 +266,9 @@ class CommonLib:
             return r(n)
         
         elif isinstance(n, orio.module.loop.ast.IdentExp):
+            return r(n)
+        
+        elif isinstance(n, orio.module.loop.ast.VarDecl):
             return r(n)
         
         elif isinstance(n, orio.module.loop.ast.ArrayRefExp):
