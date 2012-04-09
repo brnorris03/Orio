@@ -16,7 +16,12 @@ SEARCH_MOD_NAME = 'orio.main.tuner.search'
 #--------------------------------------------------
 
 class PerfTuner:
-    '''The empirical performance tuner'''
+    '''
+    The empirical performance tuner.
+    This class is responsible for invoking the code generators of the annotation modules,
+    compiling the resulting code, and interfacing with the search interface to run the 
+    tests and collect the results.
+    '''
 
     # regular expressions
     __vname_re = r'[A-Za-z_]\w*'

@@ -15,10 +15,12 @@ class TuningInfo:
 
     def __init__(self, build_info, pcount_info, search_info, pparam_info, iparam_info, 
                  ivar_info, ptest_code_info):
-        '''To instantiate the tuning information'''
+        '''
+        Tuning parameters specified by the user in the tuning spec.
+        '''
 
         # unpack all information
-        build_cmd, batch_cmd, status_cmd, num_procs, libs, cc, fc, timer_file = build_info
+        
         pcount_method, pcount_reps, random_seed, timing_array_size = pcount_info
         search_algo, search_time_limit, search_total_runs, search_opts = search_info
         pparam_params, pparam_constraints = pparam_info
@@ -27,13 +29,16 @@ class TuningInfo:
         ptest_skeleton_code_file, = ptest_code_info
 
         # build arguments
-        self.build_cmd = build_cmd        # command for compiling the generated code
-        self.cc = cc                      # C compiler needed for timer function
-        self.libs = libs                  # extra libraries for linking
-        self.batch_cmd = batch_cmd        # command for requesting a batch job
-        self.status_cmd = status_cmd      # command for checking status of submitted batch
-        self.num_procs = num_procs        # the number of processes used to run the test driver
-        self.timer_file = timer_file      # user-specified implementation of the getClock() function
+        self.pre_build_cmd = build_info.get('prebuild_cmd') # command to run before invoking build_cmd
+        self.build_cmd = build_info.get('build_cmd')        # command for compiling the generated code
+        self.post_build_cmd = build_info.get('postbuild_cmd') # command to run after building (before running) code, it is applied to the executable
+        self.cc = build_info.get('cc')                      # C compiler needed for timer function
+        self.fc = build_info.get('fc')
+        self.libs = build_info.get('libs')                  # extra libraries for linking
+        self.batch_cmd = build_info.get('batch_cmd')        # command for requesting a batch job
+        self.status_cmd = build_info.get('status_cmd')      # command for checking status of submitted batch
+        self.num_procs = build_info.get('num_procs')        # the number of processes used to run the test driver
+        self.timer_file = build_info.get('timer_file')      # user-specified implementation of the getClock() function
 
         # performance counter arguments
         self.pcount_method = pcount_method             # default: 'basic timer' --> in microseconds
@@ -76,7 +81,9 @@ class TuningInfo:
         s += '------------------\n'
         s += ' tuning info      \n'
         s += '------------------\n'
+        s += ' pre-build command: %s \n' % self.pre_build_cmd
         s += ' build command: %s \n' % self.build_cmd
+        s += ' post-build command: %s\n' % self.post_build_cmd
         s += ' C compiler (CC): %s \n' % self.cc
         s += ' libraries to link: %s \n' % self.libs
         s += ' batch command: %s \n' % self.batch_cmd
@@ -150,7 +157,9 @@ class TuningInfoGen:
         '''
 
         # all expected argument names
+        PREBUILDCMD = 'prebuild_command'
         BUILDCMD = 'build_command'
+        POSTBUILDCMD = 'postbuild_command'
         LIBS = 'libs'               # TODO: remove (replaced by FLIBS, CLIBS, CXXLIBS)
         CC = 'CC'
         CXX = 'CXX'
@@ -167,7 +176,9 @@ class TuningInfoGen:
         TIMER_FILE = 'timer_file'
         
         # all expected build information
+        prebuild_cmd = None
         build_cmd = None
+        postbuild_cmd = None
         cc = 'gcc'          # default C compiler, needed for timer routine
         fc = 'gfortran'
         libs = ''
@@ -196,7 +207,14 @@ class TuningInfoGen:
             # unknown argument name
             if id_name not in (BUILDCMD, BATCHCMD, STATUSCMD, NUMPROCS, LIBS, CC, TIMER_FILE):
                 err('orio.main.tspec.tune_info: %s: unknown build argument: "%s"' % (id_line_no, id_name))
-                
+
+            # evaluate the pre-build command
+            if id_name == PREBUILDCMD:
+                if not isinstance(rhs, str):
+                    err('orio.main.tspec.tune_info: %s: post-build command in build section must be a string' % rhs_line_no)
+                    
+                postbuild_cmd = rhs             
+                                
 
             # evaluate the build command
             if id_name == BUILDCMD:
@@ -204,6 +222,13 @@ class TuningInfoGen:
                     err('orio.main.tspec.tune_info: %s: build command in build section must be a string' % rhs_line_no)
                     
                 build_cmd = rhs
+
+            # evaluate the post-build command
+            if id_name == POSTBUILDCMD:
+                if not isinstance(rhs, str):
+                    err('orio.main.tspec.tune_info: %s: post-build command in build section must be a string' % rhs_line_no)
+                    
+                postbuild_cmd = rhs             
                 
             # Need C compiler for timing routine (even when generating Fortran)
             elif id_name == CC:
@@ -255,7 +280,7 @@ class TuningInfoGen:
                     
 
         # return all build information
-        return (build_cmd, batch_cmd, status_cmd, num_procs, libs, cc, fc, timer_file)
+        return (prebuild_cmd, build_cmd, postbuild_cmd, batch_cmd, status_cmd, num_procs, libs, cc, fc, timer_file)
 
     #-----------------------------------------------------------
 
@@ -699,7 +724,7 @@ class TuningInfoGen:
             
             # build definition
             if dname == BUILD:
-                (build_cmd, batch_cmd, status_cmd,
+                (prebuild_cmd, build_cmd, postbuild_cmd, batch_cmd, status_cmd,
                  num_procs, libs, cc, fc, timer_file) = self.__genBuildInfo(body_stmt_seq, line_no)
                 if build_cmd == None:
                     err('orio.main.tspec.tune_info: %s: missing build command in the build section' % line_no)
@@ -713,7 +738,16 @@ class TuningInfoGen:
                     warn(('orio.main.tspec.tune_info: %s: number of processors in build section must be greater than ' +
                             'one for non-batch (or non-parallel) search') % line_no)
                     
-                build_info = (build_cmd, batch_cmd, status_cmd, num_procs, libs, cc, fc, timer_file)
+                build_info = {'prebuild_cmd':prebuild_cmd, 
+                              'build_cmd':build_cmd, 
+                              'postbuild_cmd':postbuild_cmd,
+                              'batch_cmd':batch_cmd,
+                              'status_cmd':status_cmd,
+                              'num_procs':num_procs, 
+                              'libs':libs, 
+                              'cc':cc, 
+                              'fc':fc,
+                              'timer_file':timer_file}
 
             # performance counter definition
             elif dname == PERF_COUNTER:
