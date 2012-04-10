@@ -2,7 +2,7 @@
 # The code generator (i.e. unparser) for the AST classes for CUDA
 #
 
-from ast import *
+import ast
 import orio.main.util.globals as g
 
 class CodeGen:
@@ -16,42 +16,43 @@ class CodeGen:
         '''To generate code that corresponds to the given AST'''
 
         s = ''
-        if isinstance(tnode, Comment):
+        if isinstance(tnode, ast.Comment):
             s += indent
             if tnode.text:
                 s += '/*' + tnode.text + '*/'
             s += '\n'
         
-        elif isinstance(tnode, LitExp):
-            if tnode.lit_type == LitExp.STRING:
+        elif isinstance(tnode, ast.LitExp):
+            if tnode.lit_type == ast.LitExp.STRING:
                 s += '"' + str(tnode.val) + '"'
             else:
                 s += str(tnode.val)
 
-        elif isinstance(tnode, IdentExp):
+        elif isinstance(tnode, ast.IdentExp):
             s += str(tnode.name)
 
-        elif isinstance(tnode, ArrayRefExp):
+        elif isinstance(tnode, ast.ArrayRefExp):
             s += self.generate(tnode.exp, indent, extra_indent)
             s += '[' + self.generate(tnode.sub, indent, extra_indent) + ']'
 
-        elif isinstance(tnode, CallExp):
+        elif isinstance(tnode, ast.CallExp):
             s += self.generate(tnode.exp, indent, extra_indent) + '('
             s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.args))
             s += ')'
 
-        elif isinstance(tnode, UnaryExp):
+        elif isinstance(tnode, ast.UnaryExp):
             s = self.generate(tnode.exp, indent, extra_indent)
             if   tnode.op_type == tnode.PLUS: s = '+' + s
             elif tnode.op_type == tnode.MINUS: s = '-' + s
             elif tnode.op_type == tnode.LNOT: s = '!' + s
+            elif tnode.op_type == tnode.TRANSPOSE: s += "'"
             elif tnode.op_type == tnode.PRE_INC: s = ' ++' + s
             elif tnode.op_type == tnode.PRE_DEC: s = ' --' + s
             elif tnode.op_type == tnode.POST_INC: s += '++ '
             elif tnode.op_type == tnode.POST_DEC: s += '-- '
             else: g.err('orio.module.lasp.codegen: unknown unary operator type: %s' % tnode.op_type)
 
-        elif isinstance(tnode, BinOpExp):
+        elif isinstance(tnode, ast.BinOpExp):
             s += self.generate(tnode.lhs, indent, extra_indent)
             if   tnode.op_type == tnode.PLUS: s += '+'
             elif tnode.op_type == tnode.MINUS: s += '-'
@@ -74,21 +75,21 @@ class CodeGen:
             else: g.err('orio.module.loop.codegen_cuda internal error: unknown binary operator type: %s' % tnode.op_type)
             s += self.generate(tnode.rhs, indent, extra_indent)
 
-        elif isinstance(tnode, ParenExp):
+        elif isinstance(tnode, ast.ParenExp):
             s += '(' + self.generate(tnode.exp, indent, extra_indent) + ')'
 
-        elif isinstance(tnode, ExpStmt):
+        elif isinstance(tnode, ast.ExpStmt):
             s += indent + self.generate(tnode.exp, indent, extra_indent) + ';\n'
 
-        elif isinstance(tnode, CompStmt):
+        elif isinstance(tnode, ast.CompStmt):
             s += indent + '{\n'
             for stmt in tnode.stmts:
                 s += self.generate(stmt, indent + extra_indent, extra_indent)
             s += indent + '}\n'
 
-        elif isinstance(tnode, IfStmt):
+        elif isinstance(tnode, ast.IfStmt):
             s += indent + 'if (' + self.generate(tnode.test, indent, extra_indent) + ') '
-            if isinstance(tnode.true_stmt, CompStmt):
+            if isinstance(tnode.true_stmt, ast.CompStmt):
                 tstmt_s = self.generate(tnode.true_stmt, indent, extra_indent)
                 s += tstmt_s[tstmt_s.index('{'):]
                 if tnode.false_stmt:
@@ -99,14 +100,14 @@ class CodeGen:
                 if tnode.false_stmt:
                     s += indent + 'else '
             if tnode.false_stmt:
-                if isinstance(tnode.false_stmt, CompStmt):
+                if isinstance(tnode.false_stmt, ast.CompStmt):
                     tstmt_s = self.generate(tnode.false_stmt, indent, extra_indent)
                     s += tstmt_s[tstmt_s.index('{'):]
                 else:
                     s += '\n'
                     s += self.generate(tnode.false_stmt, indent + extra_indent, extra_indent)
 
-        elif isinstance(tnode, ForStmt):
+        elif isinstance(tnode, ast.ForStmt):
             if tnode.getLabel(): s += tnode.getLabel() + ':'
             s += indent + 'for ('
             if tnode.init:
@@ -118,44 +119,44 @@ class CodeGen:
             if tnode.iter:
                 s += self.generate(tnode.iter, indent, extra_indent)
             s += ') '
-            if isinstance(tnode.stmt, CompStmt): 
+            if isinstance(tnode.stmt, ast.CompStmt): 
                 stmt_s = self.generate(tnode.stmt, indent, extra_indent)
                 s += stmt_s[stmt_s.index('{'):]
             else:
                 s += '\n'
                 s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
 
-        elif isinstance(tnode, WhileStmt):
+        elif isinstance(tnode, ast.WhileStmt):
             s += indent + 'while (' + self.generate(tnode.test, indent, extra_indent)
             s += ') '
-            if isinstance(tnode.stmt, CompStmt): 
+            if isinstance(tnode.stmt, ast.CompStmt): 
                 stmt_s = self.generate(tnode.stmt, indent, extra_indent)
                 s += stmt_s[stmt_s.index('{'):]
             else:
                 s += '\n'
                 s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
 
-        elif isinstance(tnode, VarInit):
+        elif isinstance(tnode, ast.VarInit):
             s += self.generate(tnode.var_name, indent, extra_indent)
             if tnode.init_exp:
                 s += '=' + self.generate(tnode.init_exp, indent, extra_indent)
 
-        elif isinstance(tnode, VarDec):
+        elif isinstance(tnode, ast.VarDec):
             s += indent + str(tnode.type_name) + ' '
             s += ', '.join(map(self.generate, tnode.var_inits))
             s += ';\n'
 
-        elif isinstance(tnode, ParamDec):
-            s += tnode.ty + ' ' + tnode.name
+        elif isinstance(tnode, ast.ParamDec):
+            s += self.generate(tnode.ty, indent, extra_indent) + ' ' + self.generate(tnode.name, indent, extra_indent)
 
-        elif isinstance(tnode, FunDec):
+        elif isinstance(tnode, ast.FunDec):
             s += indent + ' '.join(tnode.modifiers) + ' '
-            s += tnode.return_type + ' '
-            s += tnode.name + '('
+            s += self.generate(tnode.return_type, indent, extra_indent) + ' '
+            s += self.generate(tnode.name, indent, extra_indent) + '('
             s += ', '.join(map(self.generate, tnode.params)) + ') '
             s += self.generate(tnode.body, indent, extra_indent)
 
-        elif isinstance(tnode, TransformStmt):
+        elif isinstance(tnode, ast.TransformStmt):
             g.err('orio.module.lasp.codegen: a transformation statement is never generated as an output')
 
         else:
