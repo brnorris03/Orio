@@ -15,7 +15,7 @@ class Node(object):
         
     def __repr__(self):
         '''Return a string representation for this AST object'''
-        return codegen.CodeGen().generator.generate(self)
+        return codegen.CodeGen().generate(self)
 
     def __str__(self):
         '''Return a string representation for this AST object'''
@@ -133,10 +133,11 @@ class UnaryExp(Exp):
     PLUS = 1
     MINUS = 2
     LNOT = 3
-    PRE_INC = 4
-    PRE_DEC = 5
-    POST_INC = 6
-    POST_DEC = 7
+    TRANSPOSE = 4
+    PRE_INC = 10
+    PRE_DEC = 11
+    POST_INC = 12
+    POST_DEC = 13
 
     def __init__(self, op_type, exp, coord=None):
         super(UnaryExp, self).__init__(coord)
@@ -272,7 +273,7 @@ class FunDec(Stmt):
         self.modifiers = modifiers
         self.params = param_decs
         self.body = body
-        self.kids[name, return_type, modifiers, param_decs, body]
+        self.kids = [name, return_type, modifiers, param_decs, body]
 
 #----------------------------------------------------------
 class TransformStmt(Stmt):
