@@ -3,7 +3,7 @@
 #
 
 import sys
-import orio.module.loop.ast, orio.module.loop.oost
+import orio.module.loop.ast
 import orio.main.util.globals as g
 
 #-----------------------------------------------------------
@@ -343,19 +343,4 @@ class CommonLib:
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-class NodeMapper(orio.module.loop.oost.NodeVisitor):
-    """ A node visitor that applies a given function to every node in the tree
-    """
-    def __init__(self, fun):
-        self.fun = fun
-
-    def visit(self, node):
-        method = 'visit_' + node.__class__.__name__
-        visitor = getattr(self, method, self.generic_visit)
-        return visitor(node)
-        
-    def generic_visit(self, node):
-        self.fun(node)
-        for c in node.kids:
-            self.visit(c)
 
