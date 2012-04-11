@@ -469,21 +469,25 @@ class Transformation(object):
         
         # collect all LHS identifiers within the loop body
         def collectLhsIds(n):
-            if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN:
-                if isinstance(n.lhs, IdentExp):
-                    return [n.lhs.name]
-                elif isinstance(n.lhs, ArrayRefExp) and isinstance(n.lhs.exp, IdentExp):
-                    return [n.lhs.exp.name]
-                else: return []
+          if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN:
+            if isinstance(n.lhs, IdentExp):
+              return [n.lhs.name]
+            elif isinstance(n.lhs, ArrayRefExp):
+              llhs = n.lhs.exp
+              while isinstance(llhs, ArrayRefExp):
+                llhs = llhs.exp
+              if isinstance(llhs, IdentExp):
+                return [llhs.name]
             else: return []
+          else: return []
         def collectRhsIds(n):
-            if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN:
-                return loop_lib.collectNode(collectIdents, n.rhs)
-            else: return []
+          if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN:
+            return loop_lib.collectNode(collectIdents, n.rhs)
+          else: return []
         def collectIntIds(n):
-            if isinstance(n, ArrayRefExp):
-              return loop_lib.collectNode(collectIdents, n.sub_exp)
-            else: return []
+          if isinstance(n, ArrayRefExp):
+            return loop_lib.collectNode(collectIdents, n.sub_exp)
+          else: return []
         def collectIntIdsClosure(inferredInts):
           def collectIntIds(n):
             # constrained C
