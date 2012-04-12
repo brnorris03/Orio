@@ -24,8 +24,7 @@ void VecSum(int n, double *x, double s) {
       int chunklen=n/nstreams;
       int chunkrem=n%nstreams;
       /*allocate device memory*/
-      int nbytes=n*sizeof(double);
-      cudaMalloc((void**)&dev_x,nbytes);
+      cudaMalloc((void**)&dev_x,sizeof(x));
       cudaHostRegister(x,n,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_s,(dimGrid.x+1)*sizeof(double));
       /*copy data from host to device*/
