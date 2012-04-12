@@ -24,10 +24,9 @@ void VecXPY(int n, double *x, double *y) {
       int chunklen=n/nstreams;
       int chunkrem=n%nstreams;
       /*allocate device memory*/
-      int nbytes=n*sizeof(double);
-      cudaMalloc((void**)&dev_y,nbytes);
+      cudaMalloc((void**)&dev_y,sizeof(y));
       cudaHostRegister(y,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x,nbytes);
+      cudaMalloc((void**)&dev_x,sizeof(x));
       cudaHostRegister(x,n,cudaHostRegisterPortable);
       /*copy data from host to device*/
       for (istream=0; istream<nstreams; istream++ ) {

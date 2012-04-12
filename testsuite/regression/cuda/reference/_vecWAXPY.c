@@ -24,13 +24,12 @@ void VecWAXPY(int n, double *w, double a, double *x, double *y) {
       int chunklen=n/nstreams;
       int chunkrem=n%nstreams;
       /*allocate device memory*/
-      int nbytes=n*sizeof(double);
       cudaMalloc((void**)&dev_a,sizeof(double));
-      cudaMalloc((void**)&dev_y,nbytes);
+      cudaMalloc((void**)&dev_y,sizeof(y));
       cudaHostRegister(y,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x,nbytes);
+      cudaMalloc((void**)&dev_x,sizeof(x));
       cudaHostRegister(x,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_w,nbytes);
+      cudaMalloc((void**)&dev_w,sizeof(w));
       /*copy data from host to device*/
       cudaMemcpy(dev_a,&a,sizeof(double),cudaMemcpyHostToDevice);
       for (istream=0; istream<nstreams; istream++ ) {
