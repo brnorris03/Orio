@@ -25,8 +25,7 @@ void VecNorm2(int n, double *x, double r) {
       int chunklen=n/nstreams;
       int chunkrem=n%nstreams;
       /*allocate device memory*/
-      int nbytes=n*sizeof(double);
-      cudaMalloc((void**)&dev_x,nbytes);
+      cudaMalloc((void**)&dev_x,sizeof(x));
       cudaHostRegister(x,n,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_r,(dimGrid.x+1)*sizeof(double));
       /*copy data from host to device*/

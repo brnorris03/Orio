@@ -1,8 +1,9 @@
 void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
+  int i;
   /*@ begin PerfTuning (
         def performance_params {
           param TC[]  = range(32,33,32);
-          param CB[]  = [True];
+          param CB[]  = [False];
           param PHM[] = [False];
         }
         def input_params {
@@ -24,7 +25,6 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
         }
   ) @*/
 
-  int i;
   int nrows=m*n;
   int offsets[Nos];
   offsets[0]=-m;
@@ -32,14 +32,15 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
   offsets[2]=0;
   offsets[3]=1;
   offsets[4]=m;
-  int bb = offsets[0];
-  int be = offsets[4];
+  int bb = offsets[4];
+  int be = nrows-offsets[4];
 
   double hx     = 1.0/(m-1);
   double hy     = 1.0/(n-1);
   double sc     = hx*hy*lambda;
   double hxdhy  = hx/hy;
   double hydhx  = hy/hx;
+  double u;
 
   /*@ begin Loop(transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM)
   for(i=bb; i<=be-1; i++) {

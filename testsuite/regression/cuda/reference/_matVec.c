@@ -1,62 +1,71 @@
-void MatVec_StencilSG(int n, double* A, double* x, double* y) {
+void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos, int dof) {
 
-  register int s;
+
+  register int i,j;
+  int nrows=m*n*p;
+  int ndiags=Nos;
+  int offsets[ndiags];
+  offsets[0]=-m*n*dof;
+  offsets[1]=-m*dof;
+  offsets[2]=-dof;
+  offsets[3]=0;
+  offsets[4]=dof;
+  offsets[5]=m*dof;
+  offsets[6]=m*n*dof;
+  int col;
 
   /*@
-    begin Loop(
-      transform CUDA(threadCount=16, cacheBlocks=False, pinHostMem=False, streamCount=1, domain='Stencil_SG3_Star1_Dof1')
-        for(s=0; s<=n-1; s++)
-          y[s] += A[s] * x[s];
+      begin Loop(
+      transform CUDA(threadCount=16, cacheBlocks=False, pinHostMem=False)
+        for(i=0; i<=nrows-1; i++) {
+          for(j=0; j<=ndiags-1; j++){
+            col = i+offsets[j];
+            if(col>=0&&col<nrows)
+              y[i] += A[i+j*nrows] * x[col];
+          }
+        }
     )
   @*/
   {
     /*declare variables*/
     double *dev_y, *dev_A, *dev_x;
+    int *dev_offsets;
     int nthreads=16;
     /*calculate device dimensions*/
     dim3 dimGrid, dimBlock;
     dimBlock.x=nthreads;
-    dimGrid.x=(n+nthreads-1)/nthreads;
+    dimGrid.x=(nrows+nthreads-1)/nthreads;
     /*allocate device memory*/
-    int nbytes=n*sizeof(double);
-    cudaMalloc((void**)&dev_y,nbytes);
-    cudaMalloc((void**)&dev_A,nbytes);
-    cudaMalloc((void**)&dev_x,nbytes);
+    cudaMalloc((void**)&dev_y,sizeof(y));
+    cudaMalloc((void**)&dev_A,sizeof(A));
+    cudaMalloc((void**)&dev_x,sizeof(x));
+    cudaMalloc((void**)&dev_offsets,sizeof(offsets));
     /*copy data from host to device*/
-    cudaMemcpy(dev_y,y,nbytes,cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_A,A,nbytes,cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_x,x,nbytes,cudaMemcpyHostToDevice);
-    /*stencil domain parameters*/
-    int gm=round(pow(n,(double)1/3));
-    int gn=gm;
-    int dof=1;
-    int nos=7;
-    int sidx[nos];
-    sidx[0]=0;
-    sidx[1]=dof;
-    sidx[2]=gm*dof;
-    sidx[3]=gm*gn*dof;
-    sidx[4]=-dof;
-    sidx[5]=-gm*dof;
-    sidx[6]=-gm*gn*dof;
-    cudaMemset(y,0,scSize);
-    dimGrid.x=n;
-    dimBlock.x=nos;
+    cudaMemcpy(dev_y,y,sizeof(y),cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_A,A,sizeof(A),cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_x,x,sizeof(x),cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_offsets,offsets,sizeof(offsets),cudaMemcpyHostToDevice);
     /*invoke device kernel*/
     orio_t_start=getClock();
-    orcu_kernel3<<<dimGrid,dimBlock>>>(n,dev_y,dev_A,dev_x);
+    orcu_kernel3<<<dimGrid,dimBlock>>>(nrows,ndiags,dev_offsets,dev_y,dev_A,dev_x);
     /*copy data from device to host*/
-    cudaMemcpy(y,dev_y,nbytes,cudaMemcpyDeviceToHost);
+    cudaMemcpy(y,dev_y,sizeof(y),cudaMemcpyDeviceToHost);
     /*free allocated memory*/
     cudaFree(dev_y);
     cudaFree(dev_A);
     cudaFree(dev_x);
+    cudaFree(dev_offsets);
   }
 /*@ end @*/
 }
-__global__ void orcu_kernel3(int n, double* y, double* A, double* x, int* sidx) {
-  int tid=blockIdx.x+sidx[threadIdx.x];
-  if (tid>=0&&tid<n) {
-    y[tid]=y[tid]+A[tid]*x[tid];
+__global__ void orcu_kernel3(int nrows, int ndiags, int* offsets, double* y, double* A, double* x) {
+  int tid=blockIdx.x*blockDim.x+threadIdx.x;
+  int j, col;
+  if (tid<=nrows-1) {
+    for (j=0; j<=ndiags-1; j++ ) {
+      col=tid+offsets[j];
+      if (col>=0&&col<nrows) 
+        y[tid]=y[tid]+A[tid+j*nrows]*x[col];
+    }
   }
 }

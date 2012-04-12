@@ -197,7 +197,10 @@ class CodeGen_CUDA (CodeGen_C):
 
         elif isinstance(tnode, ast.FieldDecl):
             s += tnode.ty + ' '
-            s += tnode.name
+            if isinstance(tnode.name, ast.IdentExp):
+              s+= tnode.name.name
+            else:
+              s += tnode.name
 
         elif isinstance(tnode, ast.FunDecl):
             s += indent + ' '.join(tnode.modifiers) + ' '

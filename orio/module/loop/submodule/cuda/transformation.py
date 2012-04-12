@@ -182,7 +182,7 @@ class Transformation(object):
       '''Create device-side mallocs'''
       mallocs  = [
         Comment('allocate device memory'),
-        VarDeclInit('int', self.cs['nbytes'], BinOpExp(self.model['inputsize'], self.cs['sizeofDbl'], BinOpExp.MUL))
+        #VarDeclInit('int', self.cs['nbytes'], BinOpExp(self.model['inputsize'], self.cs['sizeofDbl'], BinOpExp.MUL))
       ]
       h2dcopys = [Comment('copy data from host to device')]
       h2dasyncs    = []
@@ -357,14 +357,14 @@ class Transformation(object):
       kernell_calls = [Comment('invoke device kernel')]
       kernell_calls += [ExpStmt(BinOpExp(IdentExp('orio_t_start'), FunCallExp(IdentExp('getClock'), []), BinOpExp.EQ_ASGN))]
       if self.streamCount == 1:
-        args = [self.model['inputsize']] + self.model['intscalars'] \
+        args = [self.model['inputsize']] + self.model['ubounds'] + self.model['intscalars'] \
           + map(lambda x: IdentExp(x[1]), self.model['intarrays']) \
           + map(lambda x: IdentExp(x[1]), self.model['idents'])
         kernell_call = ExpStmt(FunCallExp(IdentExp(self.state['dev_kernel_name']+'<<<dimGrid,dimBlock>>>'), args))# + self.state['domainArgs']))
         kernell_calls += [kernell_call]
       else:
-        args    = [self.cs['chunklen']] + self.model['intscalars'] + map(lambda x: IdentExp(x[1]), self.model['intarrays'])
-        argsrem = [self.cs['chunkrem']] + self.model['intscalars'] + map(lambda x: IdentExp(x[1]), self.model['intarrays'])
+        args    = [self.cs['chunklen']] + self.model['ubounds'] + self.model['intscalars'] + map(lambda x: IdentExp(x[1]), self.model['intarrays'])
+        argsrem = [self.cs['chunkrem']] + self.model['ubounds'] + self.model['intscalars'] + map(lambda x: IdentExp(x[1]), self.model['intarrays'])
         # adjust array args using offsets
         dev_array_idss = map(lambda x: x[1], self.model['arrays'])
         for _,arg in self.model['idents']:
@@ -448,7 +448,7 @@ class Transformation(object):
             self.stmt.stmt = self.stmt.stmt.stmts[0]
         
         # extract for-loop structure
-        index_id, _, ubound_exp, _, loop_body = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(self.stmt)
+        index_id, lbound_exp, ubound_exp, _, loop_body = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(self.stmt)
 
         indices = [index_id.name]
         ktempints = []
@@ -542,22 +542,20 @@ class Transformation(object):
 
         int_ids = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIds, loop_body)))
         int_ids_pass2 = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIdsClosure(int_ids), loop_body)))
-        ktempints += list(int_ids)
+        ktempints += filter(lambda x: x in lhs_ids, list(int_ids))
+        kdeclints = list(int_ids.difference(ktempints))
+        if str(lbound_exp) != '0':
+          kdeclints += [str(lbound_exp)]
         intarrays = list(int_ids_pass2.intersection(array_ids))
         array_ids = array_ids.difference(intarrays)
 
         # collect all identifiers from the loop body
         loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
         lbi = set(filter(lambda x: x not in (indices+ubound_ids+list(int_ids)+list(int_ids_pass2)), loop_body_ids))
-        
-        # create decls for loop body id's
+
         if self.model['isReduction']:
             lbi = lbi.difference(set(lhs_ids))
-        kernelParams += [FieldDecl('int*', x) for x in intarrays]
-        kernelParams += [FieldDecl('double*', x) for x in lbi]
         scalar_ids = list(lbi.difference(array_ids))
-        
-        # initialize with the results of the analysis
         dev = self.cs['dev']
         idents = list(lbi)
         if self.model['isReduction']:
@@ -566,8 +564,14 @@ class Transformation(object):
         self.model['scalars'] = map(lambda x: (x, dev+x), scalar_ids)
         self.model['arrays']  = map(lambda x: (x, dev+x), array_ids)
         self.model['inputsize'] = IdentExp(ubound_ids[0])
-        self.model['intscalars'] = map(lambda x: IdentExp(x), ubound_ids[1:])
+        self.model['ubounds'] = map(lambda x: IdentExp(x), ubound_ids[1:])
+        self.model['intscalars'] = map(lambda x: IdentExp(x), kdeclints)
         self.model['intarrays']  = map(lambda x: (x, dev+x), intarrays)
+
+        # create parameter decls
+        kernelParams += [FieldDecl('int', x) for x in self.model['intscalars']]
+        kernelParams += [FieldDecl('int*', x) for x in intarrays]
+        kernelParams += [FieldDecl('double*', x) for x in lbi]
 
         ktempdbls = []
         if self.model['isReduction']:
@@ -659,7 +663,9 @@ class Transformation(object):
         blockIdx   = IdentExp('blockIdx.x')
         blockSize  = IdentExp('blockDim.x')
         threadIdx  = IdentExp('threadIdx.x')
-        tidVarDecl = VarDeclInit('int', tidIdent, BinOpExp(BinOpExp(blockIdx, blockSize, BinOpExp.MUL), threadIdx, BinOpExp.ADD))
+        tidVarDecl = VarDeclInit('int', tidIdent, BinOpExp(BinOpExp(blockIdx, blockSize, BinOpExp.MUL),
+                                                           BinOpExp(threadIdx, lbound_exp, BinOpExp.ADD) if str(lbound_exp) != '0' else threadIdx,
+                                                           BinOpExp.ADD))
         kernelStmts   = [tidVarDecl]
         redKernStmts  = [tidVarDecl]
         redkernParams = []

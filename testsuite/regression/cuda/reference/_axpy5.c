@@ -25,23 +25,22 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
       int chunklen=n/nstreams;
       int chunkrem=n%nstreams;
       /*allocate device memory*/
-      int nbytes=n*sizeof(double);
       cudaMalloc((void**)&dev_a1,sizeof(double));
       cudaMalloc((void**)&dev_a3,sizeof(double));
       cudaMalloc((void**)&dev_a2,sizeof(double));
       cudaMalloc((void**)&dev_a5,sizeof(double));
       cudaMalloc((void**)&dev_a4,sizeof(double));
-      cudaMalloc((void**)&dev_x2,nbytes);
-      cudaHostRegister(x2,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_y,nbytes);
+      cudaMalloc((void**)&dev_y,sizeof(y));
       cudaHostRegister(y,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x3,nbytes);
+      cudaMalloc((void**)&dev_x2,sizeof(x2));
+      cudaHostRegister(x2,n,cudaHostRegisterPortable);
+      cudaMalloc((void**)&dev_x3,sizeof(x3));
       cudaHostRegister(x3,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x1,nbytes);
+      cudaMalloc((void**)&dev_x1,sizeof(x1));
       cudaHostRegister(x1,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x4,nbytes);
+      cudaMalloc((void**)&dev_x4,sizeof(x4));
       cudaHostRegister(x4,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x5,nbytes);
+      cudaMalloc((void**)&dev_x5,sizeof(x5));
       cudaHostRegister(x5,n,cudaHostRegisterPortable);
       /*copy data from host to device*/
       cudaMemcpy(dev_a1,&a1,sizeof(double),cudaMemcpyHostToDevice);
@@ -51,8 +50,8 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
       cudaMemcpy(dev_a4,&a4,sizeof(double),cudaMemcpyHostToDevice);
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;
-        cudaMemcpyAsync(dev_x2+soffset,x2+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
         cudaMemcpyAsync(dev_y+soffset,y+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
+        cudaMemcpyAsync(dev_x2+soffset,x2+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
         cudaMemcpyAsync(dev_x3+soffset,x3+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
         cudaMemcpyAsync(dev_x1+soffset,x1+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
         cudaMemcpyAsync(dev_x4+soffset,x4+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
@@ -60,8 +59,8 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
       }
       if (chunkrem!=0) {
         soffset=istream*chunklen;
-        cudaMemcpyAsync(dev_x2+soffset,x2+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
         cudaMemcpyAsync(dev_y+soffset,y+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
+        cudaMemcpyAsync(dev_x2+soffset,x2+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
         cudaMemcpyAsync(dev_x3+soffset,x3+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
         cudaMemcpyAsync(dev_x1+soffset,x1+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
         cudaMemcpyAsync(dev_x4+soffset,x4+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
@@ -110,15 +109,15 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
 }
 __global__ void orcu_kernel3(int n, double* a1, double* x2, double* a3, double* a2, double* a5, double* a4, double* y, double* x3, double* x1, double* x4, double* x5) {
   int tid=blockIdx.x*blockDim.x+threadIdx.x;
-  __shared__ double shared_x2[16];
   __shared__ double shared_y[16];
+  __shared__ double shared_x2[16];
   __shared__ double shared_x3[16];
   __shared__ double shared_x1[16];
   __shared__ double shared_x4[16];
   __shared__ double shared_x5[16];
   if (tid<=n-1) {
-    shared_x2[threadIdx.x]=x2[tid];
     shared_y[threadIdx.x]=y[tid];
+    shared_x2[threadIdx.x]=x2[tid];
     shared_x3[threadIdx.x]=x3[tid];
     shared_x1[threadIdx.x]=x1[tid];
     shared_x4[threadIdx.x]=x4[tid];
