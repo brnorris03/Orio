@@ -290,7 +290,8 @@ class Transformation(object):
         for rsid,drsid in res_scalar_ids:
           d2hcopys += [
             ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
-                               [IdentExp(rsid), IdentExp(drsid),
+                               [UnaryExp(IdentExp(rsid),UnaryExp.ADDRESSOF),
+                                IdentExp(drsid),
                                 self.cs['sizeofDbl'],
                                 IdentExp('cudaMemcpyDeviceToHost')
                                 ]))]
@@ -567,7 +568,7 @@ class Transformation(object):
         self.model['ubounds'] = map(lambda x: IdentExp(x), ubound_ids[1:])
         self.model['intscalars'] = map(lambda x: IdentExp(x), kdeclints)
         self.model['intarrays']  = map(lambda x: (x, dev+x), intarrays)
-
+        
         # create parameter decls
         kernelParams += [FieldDecl('int', x) for x in self.model['intscalars']]
         kernelParams += [FieldDecl('int*', x) for x in intarrays]
