@@ -1,7 +1,7 @@
 void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
   int i;
   int nrows=m*n;
-  int offsets[Nos];
+  int offsets[5];
   offsets[0]=-m;
   offsets[1]=-1;
   offsets[2]=0;
