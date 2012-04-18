@@ -414,18 +414,20 @@ class Transformation:
                                             new_stride_exp, unrolled_loop_body)
         
         # generate the cleanup-loop lower-bound expression
-        if self.parallelize or self.language == 'fortran':
-            t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
-                                         orio.module.loop.ast.NumLitExp(self.ufactor,
+        # if self.parallelize or self.language == 'fortran':
+        t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
+                                     orio.module.loop.ast.NumLitExp(self.ufactor,
                                                                    orio.module.loop.ast.NumLitExp.INT),
-                                         orio.module.loop.ast.BinOpExp.MOD)
-            cleanup_lbound_exp = orio.module.loop.ast.BinOpExp(
-                orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
-                orio.module.loop.ast.ParenthExp(t),
-                orio.module.loop.ast.BinOpExp.SUB)
-            cleanup_lbound_exp = self.cfolder.fold(cleanup_lbound_exp)
-        else:
-            cleanup_lbound_exp = None
+                                    orio.module.loop.ast.BinOpExp.MOD)
+        cleanup_lbound_exp = orio.module.loop.ast.BinOpExp(
+                                     orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
+                                     orio.module.loop.ast.ParenthExp(t),
+                                     orio.module.loop.ast.BinOpExp.SUB)
+        cleanup_lbound_exp = self.cfolder.fold(cleanup_lbound_exp)
+        #else:
+            #cleanup_lbound_exp = None
+        # the above if else conditions are removed to make CUDA submodule works, which needs a lower bound.
+        # Not sure why there is an if else condition in the first place.
         
         # generate the clean-up loop
         cleanup_loop = self.flib.createForLoop(index_id, cleanup_lbound_exp, ubound_exp,
