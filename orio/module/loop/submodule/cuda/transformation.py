@@ -182,7 +182,7 @@ class Transformation(object):
       '''Create device-side mallocs'''
       mallocs  = [
         Comment('allocate device memory'),
-        #VarDeclInit('int', self.cs['nbytes'], BinOpExp(self.model['inputsize'], self.cs['sizeofDbl'], BinOpExp.MUL))
+        VarDeclInit('int', self.cs['nbytes'], BinOpExp(self.model['inputsize'], self.cs['sizeofDbl'], BinOpExp.MUL))
       ]
       h2dcopys = [Comment('copy data from host to device')]
       h2dasyncs    = []
@@ -207,8 +207,8 @@ class Transformation(object):
         mallocs += [
           ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
                              [CastExpr('void**', UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF)),
-                              #self.cs['nbytes']
-                              FunCallExp(IdentExp('sizeof'), [IdentExp(aid)])
+                              self.cs['nbytes']
+                              #FunCallExp(IdentExp('sizeof'), [IdentExp(aid)])
                               ]))]
         # memcopy rhs arrays device to host
         if aid in self.model['rhs_arrays']:
@@ -240,8 +240,9 @@ class Transformation(object):
           else:
             h2dcopys += [
               ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
-                                 [IdentExp(daid), IdentExp(aid), #self.cs['nbytes'],
-                                  FunCallExp(IdentExp('sizeof'), [IdentExp(aid)]),
+                                 [IdentExp(daid), IdentExp(aid),
+                                  self.cs['nbytes'],
+                                  #FunCallExp(IdentExp('sizeof'), [IdentExp(aid)]),
                                   IdentExp('cudaMemcpyHostToDevice')
                                   ]))]
       # for-loop over streams to do async copies
@@ -318,8 +319,8 @@ class Transformation(object):
             d2hcopys += [
               ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
                                  [IdentExp(raid), IdentExp(draid),
-                                  #self.cs['nbytes'],
-                                  FunCallExp(IdentExp('sizeof'), [IdentExp(raid)]),
+                                  self.cs['nbytes'],
+                                  #FunCallExp(IdentExp('sizeof'), [IdentExp(raid)]),
                                   IdentExp('cudaMemcpyDeviceToHost')
                                   ]))]
       # -------------------------------------------------

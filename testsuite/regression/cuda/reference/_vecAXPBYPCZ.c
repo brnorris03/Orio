@@ -24,14 +24,15 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
       int chunklen=n/nstreams;
       int chunkrem=n%nstreams;
       /*allocate device memory*/
+      int nbytes=n*sizeof(double);
       cudaMalloc((void**)&dev_a,sizeof(double));
       cudaMalloc((void**)&dev_c,sizeof(double));
       cudaMalloc((void**)&dev_b,sizeof(double));
-      cudaMalloc((void**)&dev_y,sizeof(y));
+      cudaMalloc((void**)&dev_y,nbytes);
       cudaHostRegister(y,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x,sizeof(x));
+      cudaMalloc((void**)&dev_x,nbytes);
       cudaHostRegister(x,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_z,sizeof(z));
+      cudaMalloc((void**)&dev_z,nbytes);
       cudaHostRegister(z,n,cudaHostRegisterPortable);
       /*copy data from host to device*/
       cudaMemcpy(dev_a,&a,sizeof(double),cudaMemcpyHostToDevice);

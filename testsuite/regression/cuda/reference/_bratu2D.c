@@ -31,21 +31,22 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
     dimBlock.x=nthreads;
     dimGrid.x=(be+nthreads-1)/nthreads;
     /*allocate device memory*/
+    int nbytes=be*sizeof(double);
     cudaMalloc((void**)&dev_hxdhy,sizeof(double));
     cudaMalloc((void**)&dev_sc,sizeof(double));
     cudaMalloc((void**)&dev_hydhx,sizeof(double));
-    cudaMalloc((void**)&dev_X,sizeof(X));
-    cudaMalloc((void**)&dev_F,sizeof(F));
+    cudaMalloc((void**)&dev_X,nbytes);
+    cudaMalloc((void**)&dev_F,nbytes);
     /*copy data from host to device*/
     cudaMemcpy(dev_hxdhy,&hxdhy,sizeof(double),cudaMemcpyHostToDevice);
     cudaMemcpy(dev_sc,&sc,sizeof(double),cudaMemcpyHostToDevice);
     cudaMemcpy(dev_hydhx,&hydhx,sizeof(double),cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_X,X,sizeof(X),cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_X,X,nbytes,cudaMemcpyHostToDevice);
     /*invoke device kernel*/
     orio_t_start=getClock();
     orcu_kernel3<<<dimGrid,dimBlock>>>(be,nrows,bb,dev_hxdhy,dev_X,dev_hydhx,dev_sc,dev_F);
     /*copy data from device to host*/
-    cudaMemcpy(F,dev_F,sizeof(F),cudaMemcpyDeviceToHost);
+    cudaMemcpy(F,dev_F,nbytes,cudaMemcpyDeviceToHost);
     /*free allocated memory*/
     cudaFree(dev_hxdhy);
     cudaFree(dev_X);

@@ -24,10 +24,11 @@ void VecAXPY(int n, double a, double *x, double *y) {
       int chunklen=n/nstreams;
       int chunkrem=n%nstreams;
       /*allocate device memory*/
+      int nbytes=n*sizeof(double);
       cudaMalloc((void**)&dev_a,sizeof(double));
-      cudaMalloc((void**)&dev_y,sizeof(y));
+      cudaMalloc((void**)&dev_y,nbytes);
       cudaHostRegister(y,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x,sizeof(x));
+      cudaMalloc((void**)&dev_x,nbytes);
       cudaHostRegister(x,n,cudaHostRegisterPortable);
       /*copy data from host to device*/
       cudaMemcpy(dev_a,&a,sizeof(double),cudaMemcpyHostToDevice);
