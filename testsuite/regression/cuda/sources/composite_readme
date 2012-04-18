@@ -1,0 +1,3 @@
+
+composite1: 
+cuda = (16,False, False, 1), scalarreplace = (False, 'int')
