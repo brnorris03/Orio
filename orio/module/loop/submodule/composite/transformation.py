@@ -104,6 +104,8 @@ class Transformation:
             stmt = self.cuda_smod.cudify(stmt, self.cuda_smod.getDeviceProps(), targs)
         elif isinstance(stmt, orio.module.loop.ast.VarDecl):
             pass
+        elif isinstance(stmt, orio.module.loop.ast.VarDeclInit):
+            pass
         elif isinstance(stmt, orio.module.loop.ast.ExpStmt):
             pass
         elif isinstance(stmt, orio.module.loop.ast.CompStmt):
