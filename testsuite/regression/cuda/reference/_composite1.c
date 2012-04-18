@@ -43,7 +43,7 @@ register int i;
       /*invoke device kernel*/
       orio_t_start=getClock();
       orcu_kernel5<<<dimGrid,dimBlock>>>(n,orio_lbound1,dev_y,dev_a1,dev_x1);
-      /*copy data from device to host*/
+      /*copy data from device to host*/  //Below you are duplicating work. Fix this!!
       cudaMemcpy(y,dev_y,nbytes,cudaMemcpyDeviceToHost);
       cudaMemcpy(y,dev_y,nbytes,cudaMemcpyDeviceToHost);
       /*free allocated memory*/
