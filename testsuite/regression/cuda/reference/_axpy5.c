@@ -25,22 +25,23 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
       int chunklen=n/nstreams;
       int chunkrem=n%nstreams;
       /*allocate device memory*/
+      int nbytes=n*sizeof(double);
       cudaMalloc((void**)&dev_a1,sizeof(double));
       cudaMalloc((void**)&dev_a3,sizeof(double));
       cudaMalloc((void**)&dev_a2,sizeof(double));
       cudaMalloc((void**)&dev_a5,sizeof(double));
       cudaMalloc((void**)&dev_a4,sizeof(double));
-      cudaMalloc((void**)&dev_y,sizeof(y));
+      cudaMalloc((void**)&dev_y,nbytes);
       cudaHostRegister(y,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x2,sizeof(x2));
+      cudaMalloc((void**)&dev_x2,nbytes);
       cudaHostRegister(x2,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x3,sizeof(x3));
+      cudaMalloc((void**)&dev_x3,nbytes);
       cudaHostRegister(x3,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x1,sizeof(x1));
+      cudaMalloc((void**)&dev_x1,nbytes);
       cudaHostRegister(x1,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x4,sizeof(x4));
+      cudaMalloc((void**)&dev_x4,nbytes);
       cudaHostRegister(x4,n,cudaHostRegisterPortable);
-      cudaMalloc((void**)&dev_x5,sizeof(x5));
+      cudaMalloc((void**)&dev_x5,nbytes);
       cudaHostRegister(x5,n,cudaHostRegisterPortable);
       /*copy data from host to device*/
       cudaMemcpy(dev_a1,&a1,sizeof(double),cudaMemcpyHostToDevice);

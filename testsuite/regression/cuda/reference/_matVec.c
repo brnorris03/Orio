@@ -36,20 +36,21 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
     dimBlock.x=nthreads;
     dimGrid.x=(nrows+nthreads-1)/nthreads;
     /*allocate device memory*/
-    cudaMalloc((void**)&dev_y,sizeof(y));
-    cudaMalloc((void**)&dev_A,sizeof(A));
-    cudaMalloc((void**)&dev_x,sizeof(x));
+    int nbytes=nrows*sizeof(double);
+    cudaMalloc((void**)&dev_y,nbytes);
+    cudaMalloc((void**)&dev_A,nbytes);
+    cudaMalloc((void**)&dev_x,nbytes);
     cudaMalloc((void**)&dev_offsets,sizeof(offsets));
     /*copy data from host to device*/
-    cudaMemcpy(dev_y,y,sizeof(y),cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_A,A,sizeof(A),cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_x,x,sizeof(x),cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_y,y,nbytes,cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_A,A,nbytes,cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_x,x,nbytes,cudaMemcpyHostToDevice);
     cudaMemcpy(dev_offsets,offsets,sizeof(offsets),cudaMemcpyHostToDevice);
     /*invoke device kernel*/
     orio_t_start=getClock();
     orcu_kernel3<<<dimGrid,dimBlock>>>(nrows,ndiags,dev_offsets,dev_y,dev_A,dev_x);
     /*copy data from device to host*/
-    cudaMemcpy(y,dev_y,sizeof(y),cudaMemcpyDeviceToHost);
+    cudaMemcpy(y,dev_y,nbytes,cudaMemcpyDeviceToHost);
     /*free allocated memory*/
     cudaFree(dev_y);
     cudaFree(dev_A);
