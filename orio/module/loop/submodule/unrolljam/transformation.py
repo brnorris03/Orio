@@ -415,14 +415,29 @@ class Transformation:
         
         # generate the cleanup-loop lower-bound expression
         # if self.parallelize or self.language == 'fortran':
+        t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(ubound_exp.replicate()), 
+                                          orio.module.loop.ast.ParenthExp(lbound_exp.replicate()),
+                                          orio.module.loop.ast.BinOpExp.SUB)
+        t = orio.module.loop.ast.BinOpExp(t, orio.module.loop.ast.NumLitExp(1, orio.module.loop.ast.NumLitExp.INT), orio.module.loop.ast.BinOpExp.ADD)
+        t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(t),
+                                          orio.module.loop.ast.NumLitExp(self.ufactor, orio.module.loop.ast.NumLitExp.INT),
+                                          orio.module.loop.ast.BinOpExp.MOD)
         t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
-                                     orio.module.loop.ast.NumLitExp(self.ufactor,
-                                                                   orio.module.loop.ast.NumLitExp.INT),
-                                    orio.module.loop.ast.BinOpExp.MOD)
-        cleanup_lbound_exp = orio.module.loop.ast.BinOpExp(
-                                     orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
-                                     orio.module.loop.ast.ParenthExp(t),
-                                     orio.module.loop.ast.BinOpExp.SUB)
+                                          orio.module.loop.ast.ParenthExp(t),
+                                          orio.module.loop.ast.BinOpExp.SUB)
+        cleanup_lbound_exp = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(t),
+                                                           orio.module.loop.ast.NumLitExp(1, orio.module.loop.ast.NumLitExp.INT),
+                                                           orio.module.loop.ast.BinOpExp.ADD)
+        
+                                          
+        #t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
+         #                            orio.module.loop.ast.NumLitExp(self.ufactor,
+          #                                                         orio.module.loop.ast.NumLitExp.INT),
+           #                         orio.module.loop.ast.BinOpExp.MOD)
+        #cleanup_lbound_exp = orio.module.loop.ast.BinOpExp(
+         #                            orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
+          #                           orio.module.loop.ast.ParenthExp(t),
+           #                          orio.module.loop.ast.BinOpExp.SUB)
         cleanup_lbound_exp = self.cfolder.fold(cleanup_lbound_exp)
         #else:
             #cleanup_lbound_exp = None
