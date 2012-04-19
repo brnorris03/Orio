@@ -5,7 +5,6 @@
 import sys
 from orio.main.util.globals import *
 import orio.module.loop.ast, orio.module.loop.ast_lib.constant_folder, orio.module.loop.ast_lib.forloop_lib
-import orio.main.util.globals as g
 
 #-----------------------------------------
 
@@ -411,55 +410,28 @@ class Transformation:
             unrolled_loop_body = orio.module.loop.ast.CompStmt(unrolled_stmts)
             
         # generate the orio.main.unrolled loop
-        
-        lbound_name = 'orio_lbound'+str(g.Globals().getcounter())
-        lbound_name_exp = orio.module.loop.ast.IdentExp(lbound_name)
-        lbound_init = orio.module.loop.ast.VarDeclInit('int', lbound_name_exp, new_lbound_exp)
-        loop = self.flib.createForLoop(index_id, lbound_name_exp, new_ubound_exp,
+        loop = self.flib.createForLoop(index_id, new_lbound_exp, new_ubound_exp,
                                             new_stride_exp, unrolled_loop_body)
         
         # generate the cleanup-loop lower-bound expression
         # if self.parallelize or self.language == 'fortran':
-        t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(ubound_exp.replicate()), 
-                                          orio.module.loop.ast.ParenthExp(lbound_exp.replicate()),
-                                          orio.module.loop.ast.BinOpExp.SUB)
-        t = orio.module.loop.ast.BinOpExp(t, orio.module.loop.ast.NumLitExp(1, orio.module.loop.ast.NumLitExp.INT), orio.module.loop.ast.BinOpExp.ADD)
-        t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(t),
-                                          orio.module.loop.ast.NumLitExp(self.ufactor, orio.module.loop.ast.NumLitExp.INT),
-                                          orio.module.loop.ast.BinOpExp.MOD)
         t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
-                                          orio.module.loop.ast.ParenthExp(t),
-                                          orio.module.loop.ast.BinOpExp.SUB)
-        cleanup_lbound_exp = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(t),
-                                                           orio.module.loop.ast.NumLitExp(1, orio.module.loop.ast.NumLitExp.INT),
-                                                           orio.module.loop.ast.BinOpExp.ADD)
-        
-                                          
-        #t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
-         #                            orio.module.loop.ast.NumLitExp(self.ufactor,
-          #                                                         orio.module.loop.ast.NumLitExp.INT),
-           #                         orio.module.loop.ast.BinOpExp.MOD)
-        #cleanup_lbound_exp = orio.module.loop.ast.BinOpExp(
-         #                            orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
-          #                           orio.module.loop.ast.ParenthExp(t),
-           #                          orio.module.loop.ast.BinOpExp.SUB)
+                                     orio.module.loop.ast.NumLitExp(self.ufactor,
+                                                                   orio.module.loop.ast.NumLitExp.INT),
+                                    orio.module.loop.ast.BinOpExp.MOD)
+        cleanup_lbound_exp = orio.module.loop.ast.BinOpExp(
+                                     orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
+                                     orio.module.loop.ast.ParenthExp(t),
+                                     orio.module.loop.ast.BinOpExp.SUB)
         cleanup_lbound_exp = self.cfolder.fold(cleanup_lbound_exp)
-        
-    
         #else:
             #cleanup_lbound_exp = None
         # the above if else conditions are removed to make CUDA submodule works, which needs a lower bound.
         # Not sure why there is an if else condition in the first place.
         
         # generate the clean-up loop
-        cleanup_lbound_name = 'orio_lbound'+str(g.Globals().getcounter())
-        cleanup_lbound_name_exp = orio.module.loop.ast.IdentExp(cleanup_lbound_name)
-        cleanup_lbound_init = orio.module.loop.ast.VarDeclInit('int', cleanup_lbound_name_exp, cleanup_lbound_exp)
-        
-        cleanup_loop = self.flib.createForLoop(index_id, cleanup_lbound_name_exp, ubound_exp,
+        cleanup_loop = self.flib.createForLoop(index_id, cleanup_lbound_exp, ubound_exp,
                                                stride_exp, loop_body)
-        
-        
         
         # generate the transformed statement
         if self.parallelize:
@@ -469,9 +441,9 @@ class Transformation:
                 omp_pragma = orio.module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
             else:
                 omp_pragma = orio.module.loop.ast.Pragma('omp parallel for')     
-            stmts = [omp_pragma, lbound_init, loop, cleanup_lbound_init, cleanup_loop]
+            stmts = [omp_pragma, loop, cleanup_loop]
         else:
-            stmts = [lbound_init, loop, cleanup_lbound_init, cleanup_loop]
+            stmts = [loop, cleanup_loop]
         transformed_stmt = orio.module.loop.ast.CompStmt(stmts)
 
         # return the transformed statement
