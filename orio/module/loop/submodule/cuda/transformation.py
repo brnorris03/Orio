@@ -359,7 +359,7 @@ class Transformation(object):
       '''Create kernel calls'''
       kernell_calls = [Comment('invoke device kernel')]
       if self.model['lbound'] is not None:
-        kernell_calls += [ExpStmt(self.model['lbound'])]
+        kernell_calls += [self.model['lbound']]
       kernell_calls += [ExpStmt(BinOpExp(IdentExp('orio_t_start'), FunCallExp(IdentExp('getClock'), []), BinOpExp.EQ_ASGN))]
       if self.streamCount == 1:
         args = [self.model['inputsize']] + self.model['ubounds'] + self.model['intscalars'] \
@@ -551,7 +551,7 @@ class Transformation(object):
         kdeclints = list(int_ids.difference(ktempints))
         if str(lbound_exp) != '0':
           lbound_id = self.cs['prefix'] + 'var' + str(g.Globals().getcounter())
-          self.model['lbound'] = BinOpExp(IdentExp(lbound_id), lbound_exp, BinOpExp.EQ_ASGN)
+          self.model['lbound'] = VarDeclInit('int', IdentExp(lbound_id), lbound_exp)
           kdeclints += [lbound_id]
         intarrays = list(int_ids_pass2.intersection(array_ids))
         array_ids = array_ids.difference(intarrays)
