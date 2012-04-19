@@ -1,10 +1,11 @@
 void VecXPY(int n, double *x, double *y) {
 
     register int i;
+    int lb = 4;
 
     /*@ begin Loop (
           transform CUDA(threadCount=16, cacheBlocks=True, pinHostMem=False, streamCount=2)
-        for (i=0; i<=n-1; i++)
+        for (i=lb; i<=n-1; i++)
           y[i]=x[i]+y[i];
     ) @*/
     {
@@ -41,17 +42,18 @@ void VecXPY(int n, double *x, double *y) {
         cudaMemcpyAsync(dev_x+soffset,x+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
       }
       /*invoke device kernel*/
+      orcu_var1=lb;
       orio_t_start=getClock();
       int blks4chunk=dimGrid.x/nstreams;
       if (dimGrid.x%nstreams!=0) 
         blks4chunk++ ;
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;
-        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunklen,dev_y+soffset,dev_x+soffset);
+        orcu_kernel4<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunklen,orcu_var1,dev_y+soffset,dev_x+soffset);
       }
       if (chunkrem!=0) {
         soffset=istream*chunklen;
-        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunkrem,dev_y+soffset,dev_x+soffset);
+        orcu_kernel4<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunkrem,orcu_var1,dev_y+soffset,dev_x+soffset);
       }
       /*copy data from device to host*/
       for (istream=0; istream<nstreams; istream++ ) {
@@ -72,8 +74,8 @@ void VecXPY(int n, double *x, double *y) {
     }
 /*@ end @*/
 }
-__global__ void orcu_kernel3(int n, double* y, double* x) {
-  int tid=blockIdx.x*blockDim.x+threadIdx.x;
+__global__ void orcu_kernel4(int n, int orcu_var1, double* y, double* x) {
+  int tid=blockIdx.x*blockDim.x+threadIdx.x+orcu_var1;
   __shared__ double shared_y[16];
   __shared__ double shared_x[16];
   if (tid<=n-1) {
