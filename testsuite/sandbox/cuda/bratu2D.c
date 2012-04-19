@@ -13,8 +13,8 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
           param lambda = 6;
         }
         def input_vars {
-          decl static double X[m*n*Nos] = random;
-          decl static double F[m*n*Nos] = 0;
+          decl dynamic double X[m*n*Nos] = random;
+          decl dynamic double F[m*n*Nos] = 0;
         }
         def build {
           arg build_command = 'nvcc -arch=sm_20';

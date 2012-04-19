@@ -40,7 +40,8 @@ class Transformation(object):
         'rhs_arrays':  [],
         'lhss':        [],
         'intscalars':  [],
-        'intarrays':   []
+        'intarrays':   [],
+        'lbound':      None
       }
 
       # tracks various state variables used during transformations
@@ -357,6 +358,8 @@ class Transformation(object):
     def createKernelCalls(self):
       '''Create kernel calls'''
       kernell_calls = [Comment('invoke device kernel')]
+      if self.model['lbound'] is not None:
+        kernell_calls += [ExpStmt(self.model['lbound'])]
       kernell_calls += [ExpStmt(BinOpExp(IdentExp('orio_t_start'), FunCallExp(IdentExp('getClock'), []), BinOpExp.EQ_ASGN))]
       if self.streamCount == 1:
         args = [self.model['inputsize']] + self.model['ubounds'] + self.model['intscalars'] \
@@ -500,7 +503,7 @@ class Transformation(object):
           return collectIntIds
         lhs_ids = loop_lib.collectNode(collectLhsIds, loop_body)
         rhs_ids = loop_lib.collectNode(collectRhsIds, loop_body)
-        lhs_ids = filter(lambda x: x not in indices, lhs_ids)
+        lhs_ids = list(set(filter(lambda x: x not in indices, lhs_ids)))
 
         # collect all array and non-array idents in the loop body
         collectArrayIdents = lambda n: [n.exp.name] if (isinstance(n, ArrayRefExp) and isinstance(n.exp, IdentExp)) else []
@@ -547,7 +550,9 @@ class Transformation(object):
         ktempints += filter(lambda x: x in lhs_ids, list(int_ids))
         kdeclints = list(int_ids.difference(ktempints))
         if str(lbound_exp) != '0':
-          kdeclints += [str(lbound_exp)]
+          lbound_id = self.cs['prefix'] + 'var' + str(g.Globals().getcounter())
+          self.model['lbound'] = BinOpExp(IdentExp(lbound_id), lbound_exp, BinOpExp.EQ_ASGN)
+          kdeclints += [lbound_id]
         intarrays = list(int_ids_pass2.intersection(array_ids))
         array_ids = array_ids.difference(intarrays)
 
@@ -666,7 +671,7 @@ class Transformation(object):
         blockSize  = IdentExp('blockDim.x')
         threadIdx  = IdentExp('threadIdx.x')
         tidVarDecl = VarDeclInit('int', tidIdent, BinOpExp(BinOpExp(blockIdx, blockSize, BinOpExp.MUL),
-                                                           BinOpExp(threadIdx, lbound_exp, BinOpExp.ADD) if str(lbound_exp) != '0' else threadIdx,
+                                                           BinOpExp(threadIdx, IdentExp(lbound_id), BinOpExp.ADD) if str(lbound_exp) != '0' else threadIdx,
                                                            BinOpExp.ADD))
         kernelStmts   = [tidVarDecl]
         redKernStmts  = [tidVarDecl]

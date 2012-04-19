@@ -43,8 +43,9 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
     cudaMemcpy(dev_hydhx,&hydhx,sizeof(double),cudaMemcpyHostToDevice);
     cudaMemcpy(dev_X,X,nbytes,cudaMemcpyHostToDevice);
     /*invoke device kernel*/
+    orcu_var1=bb;
     orio_t_start=getClock();
-    orcu_kernel3<<<dimGrid,dimBlock>>>(be,nrows,bb,dev_hxdhy,dev_X,dev_hydhx,dev_sc,dev_F);
+    orcu_kernel4<<<dimGrid,dimBlock>>>(be,nrows,orcu_var1,dev_hxdhy,dev_X,dev_hydhx,dev_sc,dev_F);
     /*copy data from device to host*/
     cudaMemcpy(F,dev_F,nbytes,cudaMemcpyDeviceToHost);
     /*free allocated memory*/
@@ -56,8 +57,8 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
   }
 /*@ end @*/
 }
-__global__ void orcu_kernel3(int be, int nrows, int bb, double* hxdhy, double* X, double* hydhx, double* sc, double* F) {
-  int tid=blockIdx.x*blockDim.x+threadIdx.x+bb;
+__global__ void orcu_kernel4(int be, int nrows, int orcu_var1, double* hxdhy, double* X, double* hydhx, double* sc, double* F) {
+  int tid=blockIdx.x*blockDim.x+threadIdx.x+orcu_var1;
   if (tid<=be-1) {
     F[tid]=(2*X[tid+2*nrows]-X[tid+nrows]-X[tid+3*nrows])*(*hydhx)+(2*X[tid+2*nrows]-X[tid]-X[tid+4*nrows])*(*hxdhy)-(*sc)*exp(X[tid+2*nrows]);
   }
