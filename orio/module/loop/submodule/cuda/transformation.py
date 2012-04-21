@@ -189,20 +189,6 @@ class Transformation(object):
       h2dasyncs    = []
       h2dasyncsrem = []
       # -------------------------------------------------
-      for sid,dsid in self.model['scalars']:
-        mallocs += [
-          ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
-                             [CastExpr('void**', UnaryExp(IdentExp(dsid), UnaryExp.ADDRESSOF)),
-                              self.cs['sizeofDbl']
-                              ]))]
-        h2dcopys += [
-          ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
-                             [IdentExp(dsid), UnaryExp(IdentExp(sid), UnaryExp.ADDRESSOF),
-                              self.cs['sizeofDbl'],
-                              IdentExp('cudaMemcpyHostToDevice')
-                              ]))]
-
-      # -------------------------------------------------
       pinnedIdents = []
       for aid,daid in self.model['arrays']:
         mallocs += [
@@ -288,12 +274,12 @@ class Transformation(object):
       d2hasyncs    = []
       d2hasyncsrem = []
       for var in self.model['lhss']:
-        res_scalar_ids = filter(lambda x: x[0] == var, self.model['scalars'])
-        for rsid,drsid in res_scalar_ids:
+        res_scalar_ids = filter(lambda x: x == var, self.model['scalars'])
+        for rsid in res_scalar_ids:
           d2hcopys += [
             ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
                                [UnaryExp(IdentExp(rsid),UnaryExp.ADDRESSOF),
-                                IdentExp(drsid),
+                                IdentExp(rsid),
                                 self.cs['sizeofDbl'],
                                 IdentExp('cudaMemcpyDeviceToHost')
                                 ]))]
@@ -364,24 +350,25 @@ class Transformation(object):
       if self.streamCount == 1:
         args = [self.model['inputsize']] + self.model['ubounds'] + self.model['intscalars'] \
           + map(lambda x: IdentExp(x[1]), self.model['intarrays']) \
+          + map(lambda x: IdentExp(x), self.model['scalars']) \
           + map(lambda x: IdentExp(x[1]), self.model['idents'])
         kernell_call = ExpStmt(FunCallExp(IdentExp(self.state['dev_kernel_name']+'<<<dimGrid,dimBlock>>>'), args))# + self.state['domainArgs']))
         kernell_calls += [kernell_call]
       else:
         args    = [self.cs['chunklen']] + self.model['ubounds'] + self.model['intscalars'] + map(lambda x: IdentExp(x[1]), self.model['intarrays'])
         argsrem = [self.cs['chunkrem']] + self.model['ubounds'] + self.model['intscalars'] + map(lambda x: IdentExp(x[1]), self.model['intarrays'])
+        for arg in self.model['scalars']:
+          args    += [IdentExp(arg)]
+          argsrem += [IdentExp(arg)]
         # adjust array args using offsets
         dev_array_idss = map(lambda x: x[1], self.model['arrays'])
         for _,arg in self.model['idents']:
-            if arg in dev_array_idss:
-                args    += [BinOpExp(IdentExp(arg), self.cs['soffset'], BinOpExp.ADD)]
-                argsrem += [BinOpExp(IdentExp(arg), self.cs['soffset'], BinOpExp.ADD)]
-            elif arg == self.cs['dev']+self.model['lhss'][0]:
-                args    += [BinOpExp(IdentExp(arg), self.cs['boffset'], BinOpExp.ADD)]
-                argsrem += [BinOpExp(IdentExp(arg), self.cs['boffset'], BinOpExp.ADD)]
-            else:
-                args    += [IdentExp(arg)]
-                argsrem += [IdentExp(arg)]
+          if arg in dev_array_idss:
+            args    += [BinOpExp(IdentExp(arg), self.cs['soffset'], BinOpExp.ADD)]
+            argsrem += [BinOpExp(IdentExp(arg), self.cs['soffset'], BinOpExp.ADD)]
+          elif arg == self.cs['dev']+self.model['lhss'][0]:
+            args    += [BinOpExp(IdentExp(arg), self.cs['boffset'], BinOpExp.ADD)]
+            argsrem += [BinOpExp(IdentExp(arg), self.cs['boffset'], BinOpExp.ADD)]
         kernell_call    = ExpStmt(FunCallExp(IdentExp(self.state['dev_kernel_name']+'<<<blks4chunk,dimBlock,0,stream['+str(self.cs['istream'])+']>>>'), args))
         kernell_callrem = ExpStmt(FunCallExp(IdentExp(self.state['dev_kernel_name']+'<<<blks4chunk,dimBlock,0,stream['+str(self.cs['istream'])+']>>>'), argsrem))
         kernell_calls += [
@@ -564,11 +551,12 @@ class Transformation(object):
             lbi = lbi.difference(set(lhs_ids))
         scalar_ids = list(lbi.difference(array_ids))
         dev = self.cs['dev']
+        lbi = lbi.difference(scalar_ids)
         idents = list(lbi)
         if self.model['isReduction']:
           idents += [lhs_ids[0]]
         self.model['idents']  = map(lambda x: (x, dev+x), idents)
-        self.model['scalars'] = map(lambda x: (x, dev+x), scalar_ids)
+        self.model['scalars'] = scalar_ids
         self.model['arrays']  = map(lambda x: (x, dev+x), array_ids)
         self.model['inputsize'] = IdentExp(ubound_ids[0])
         self.model['ubounds'] = map(lambda x: IdentExp(x), ubound_ids[1:])
@@ -578,6 +566,7 @@ class Transformation(object):
         # create parameter decls
         kernelParams += [FieldDecl('int', x) for x in self.model['intscalars']]
         kernelParams += [FieldDecl('int*', x) for x in intarrays]
+        kernelParams += [FieldDecl('double', x) for x in scalar_ids]
         kernelParams += [FieldDecl('double*', x) for x in lbi]
 
         ktempdbls = []
@@ -588,19 +577,15 @@ class Transformation(object):
                 rrLhs = lambda n: tempIdent if (isinstance(n, IdentExp) and n.name == var) else n
                 loop_body = loop_lib.rewriteNode(rrLhs, loop_body)
 
-        # add dereferences to all non-array id's in the loop body
-        addDerefs2 = lambda n: ParenthExp(UnaryExp(n, UnaryExp.DEREF)) if (isinstance(n, IdentExp) and n.name in scalar_ids) else n
-        loop_body2 = loop_lib.rewriteNode(addDerefs2, loop_body)
-
         collectLhsExprs = lambda n: [n.lhs] if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN else []
-        loop_lhs_exprs = loop_lib.collectNode(collectLhsExprs, loop_body2)
+        loop_lhs_exprs = loop_lib.collectNode(collectLhsExprs, loop_body)
 
         # replace all array indices with thread id
         tid = 'tid'
         tidIdent = IdentExp(tid)
         rewriteToTid = lambda x: tidIdent if isinstance(x, IdentExp) and x.name == index_id.name else x
         #rewriteArrayIndices = lambda n: ArrayRefExp(n.exp, loop_lib.rewriteNode(rewriteToTid, n.sub_exp)) if isinstance(n, ArrayRefExp) else n
-        loop_body3 = loop_lib.rewriteNode(rewriteToTid, loop_body2)
+        loop_body3 = loop_lib.rewriteNode(rewriteToTid, loop_body)
         # end rewrite the loop body
         #--------------------------------------------------------------------------------------------------------------
 
