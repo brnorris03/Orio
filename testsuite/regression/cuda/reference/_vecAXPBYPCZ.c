@@ -9,7 +9,7 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
     ) @*/
     {
       /*declare variables*/
-      double *dev_a, *dev_c, *dev_b, *dev_y, *dev_x, *dev_z;
+      double *dev_y, *dev_x, *dev_z;
       int nthreads=16;
       int nstreams=2;
       /*calculate device dimensions*/
@@ -25,9 +25,6 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
       int chunkrem=n%nstreams;
       /*allocate device memory*/
       int nbytes=n*sizeof(double);
-      cudaMalloc((void**)&dev_a,sizeof(double));
-      cudaMalloc((void**)&dev_c,sizeof(double));
-      cudaMalloc((void**)&dev_b,sizeof(double));
       cudaMalloc((void**)&dev_y,nbytes);
       cudaHostRegister(y,n,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_x,nbytes);
@@ -35,9 +32,6 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
       cudaMalloc((void**)&dev_z,nbytes);
       cudaHostRegister(z,n,cudaHostRegisterPortable);
       /*copy data from host to device*/
-      cudaMemcpy(dev_a,&a,sizeof(double),cudaMemcpyHostToDevice);
-      cudaMemcpy(dev_c,&c,sizeof(double),cudaMemcpyHostToDevice);
-      cudaMemcpy(dev_b,&b,sizeof(double),cudaMemcpyHostToDevice);
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;
         cudaMemcpyAsync(dev_y+soffset,y+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
@@ -57,11 +51,11 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
         blks4chunk++ ;
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;
-        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunklen,dev_a,dev_c,dev_b,dev_y+soffset,dev_x+soffset,dev_z+soffset);
+        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunklen,a,c,b,dev_y+soffset,dev_x+soffset,dev_z+soffset);
       }
       if (chunkrem!=0) {
         soffset=istream*chunklen;
-        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunkrem,dev_a,dev_c,dev_b,dev_y+soffset,dev_x+soffset,dev_z+soffset);
+        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunkrem,a,c,b,dev_y+soffset,dev_x+soffset,dev_z+soffset);
       }
       /*copy data from device to host*/
       for (istream=0; istream<nstreams; istream++ ) {
@@ -77,16 +71,13 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
       for (istream=0; istream<=nstreams; istream++ ) 
         cudaStreamDestroy(stream[istream]);
       /*free allocated memory*/
-      cudaFree(dev_a);
-      cudaFree(dev_c);
-      cudaFree(dev_b);
       cudaFree(dev_y);
       cudaFree(dev_x);
       cudaFree(dev_z);
     }
 /*@ end @*/
 }
-__global__ void orcu_kernel3(int n, double* a, double* c, double* b, double* y, double* x, double* z) {
+__global__ void orcu_kernel3(int n, double a, double c, double b, double* y, double* x, double* z) {
   int tid=blockIdx.x*blockDim.x+threadIdx.x;
   __shared__ double shared_y[16];
   __shared__ double shared_x[16];
@@ -95,7 +86,7 @@ __global__ void orcu_kernel3(int n, double* a, double* c, double* b, double* y, 
     shared_y[threadIdx.x]=y[tid];
     shared_x[threadIdx.x]=x[tid];
     shared_z[threadIdx.x]=z[tid];
-    shared_y[threadIdx.x]=(*a)*shared_x[threadIdx.x]+(*b)*shared_y[threadIdx.x]+(*c)*shared_z[threadIdx.x];
+    shared_y[threadIdx.x]=a*shared_x[threadIdx.x]+b*shared_y[threadIdx.x]+c*shared_z[threadIdx.x];
     y[tid]=shared_y[threadIdx.x];
   }
 }
