@@ -42,7 +42,7 @@ void VecXPY(int n, double *x, double *y) {
         cudaMemcpyAsync(dev_x+soffset,x+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
       }
       /*invoke device kernel*/
-      orcu_var1=lb;
+      int orcu_var1=lb;
       orio_t_start=getClock();
       int blks4chunk=dimGrid.x/nstreams;
       if (dimGrid.x%nstreams!=0) 

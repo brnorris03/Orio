@@ -9,7 +9,7 @@ void VecWAXPY(int n, double *w, double a, double *x, double *y) {
     ) @*/
     {
       /*declare variables*/
-      double *dev_a, *dev_x, *dev_y, *dev_w;
+      double *dev_x, *dev_y, *dev_w;
       int nthreads=16;
       int nstreams=2;
       /*calculate device dimensions*/
@@ -25,14 +25,12 @@ void VecWAXPY(int n, double *w, double a, double *x, double *y) {
       int chunkrem=n%nstreams;
       /*allocate device memory*/
       int nbytes=n*sizeof(double);
-      cudaMalloc((void**)&dev_a,sizeof(double));
       cudaMalloc((void**)&dev_y,nbytes);
       cudaHostRegister(y,n,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_x,nbytes);
       cudaHostRegister(x,n,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_w,nbytes);
       /*copy data from host to device*/
-      cudaMemcpy(dev_a,&a,sizeof(double),cudaMemcpyHostToDevice);
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;
         cudaMemcpyAsync(dev_y+soffset,y+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
@@ -50,11 +48,11 @@ void VecWAXPY(int n, double *w, double a, double *x, double *y) {
         blks4chunk++ ;
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;
-        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunklen,dev_a,dev_x+soffset,dev_y+soffset,dev_w+soffset);
+        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunklen,a,dev_x+soffset,dev_y+soffset,dev_w+soffset);
       }
       if (chunkrem!=0) {
         soffset=istream*chunklen;
-        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunkrem,dev_a,dev_x+soffset,dev_y+soffset,dev_w+soffset);
+        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunkrem,a,dev_x+soffset,dev_y+soffset,dev_w+soffset);
       }
       /*copy data from device to host*/
       for (istream=0; istream<nstreams; istream++ ) {
@@ -70,14 +68,13 @@ void VecWAXPY(int n, double *w, double a, double *x, double *y) {
       for (istream=0; istream<=nstreams; istream++ ) 
         cudaStreamDestroy(stream[istream]);
       /*free allocated memory*/
-      cudaFree(dev_a);
       cudaFree(dev_x);
       cudaFree(dev_y);
       cudaFree(dev_w);
     }
 /*@ end @*/
 }
-__global__ void orcu_kernel3(int n, double* a, double* x, double* y, double* w) {
+__global__ void orcu_kernel3(int n, double a, double* x, double* y, double* w) {
   int tid=blockIdx.x*blockDim.x+threadIdx.x;
   __shared__ double shared_y[16];
   __shared__ double shared_x[16];
@@ -85,7 +82,7 @@ __global__ void orcu_kernel3(int n, double* a, double* x, double* y, double* w) 
   if (tid<=n-1) {
     shared_y[threadIdx.x]=y[tid];
     shared_x[threadIdx.x]=x[tid];
-    shared_w[threadIdx.x]=(*a)*shared_x[threadIdx.x]+shared_y[threadIdx.x];
+    shared_w[threadIdx.x]=a*shared_x[threadIdx.x]+shared_y[threadIdx.x];
     w[tid]=shared_w[threadIdx.x];
   }
 }

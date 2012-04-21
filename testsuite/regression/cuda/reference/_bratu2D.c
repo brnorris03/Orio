@@ -24,7 +24,7 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
   ) @*/
   {
     /*declare variables*/
-    double *dev_hxdhy, *dev_X, *dev_hydhx, *dev_sc, *dev_F;
+    double *dev_F, *dev_X;
     int nthreads=32;
     /*calculate device dimensions*/
     dim3 dimGrid, dimBlock;
@@ -32,34 +32,25 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
     dimGrid.x=(be+nthreads-1)/nthreads;
     /*allocate device memory*/
     int nbytes=be*sizeof(double);
-    cudaMalloc((void**)&dev_hxdhy,sizeof(double));
-    cudaMalloc((void**)&dev_sc,sizeof(double));
-    cudaMalloc((void**)&dev_hydhx,sizeof(double));
     cudaMalloc((void**)&dev_X,nbytes);
     cudaMalloc((void**)&dev_F,nbytes);
     /*copy data from host to device*/
-    cudaMemcpy(dev_hxdhy,&hxdhy,sizeof(double),cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_sc,&sc,sizeof(double),cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_hydhx,&hydhx,sizeof(double),cudaMemcpyHostToDevice);
     cudaMemcpy(dev_X,X,nbytes,cudaMemcpyHostToDevice);
     /*invoke device kernel*/
-    orcu_var1=bb;
+    int orcu_var1=bb;
     orio_t_start=getClock();
-    orcu_kernel4<<<dimGrid,dimBlock>>>(be,nrows,orcu_var1,dev_hxdhy,dev_X,dev_hydhx,dev_sc,dev_F);
+    orcu_kernel4<<<dimGrid,dimBlock>>>(be,nrows,orcu_var1,hxdhy,sc,hydhx,dev_F,dev_X);
     /*copy data from device to host*/
     cudaMemcpy(F,dev_F,nbytes,cudaMemcpyDeviceToHost);
     /*free allocated memory*/
-    cudaFree(dev_hxdhy);
-    cudaFree(dev_X);
-    cudaFree(dev_hydhx);
-    cudaFree(dev_sc);
     cudaFree(dev_F);
+    cudaFree(dev_X);
   }
 /*@ end @*/
 }
-__global__ void orcu_kernel4(int be, int nrows, int orcu_var1, double* hxdhy, double* X, double* hydhx, double* sc, double* F) {
+__global__ void orcu_kernel4(int be, int nrows, int orcu_var1, double hxdhy, double sc, double hydhx, double* F, double* X) {
   int tid=blockIdx.x*blockDim.x+threadIdx.x+orcu_var1;
   if (tid<=be-1) {
-    F[tid]=(2*X[tid+2*nrows]-X[tid+nrows]-X[tid+3*nrows])*(*hydhx)+(2*X[tid+2*nrows]-X[tid]-X[tid+4*nrows])*(*hxdhy)-(*sc)*exp(X[tid+2*nrows]);
+    F[tid]=(2*X[tid+2*nrows]-X[tid+nrows]-X[tid+3*nrows])*hydhx+(2*X[tid+2*nrows]-X[tid]-X[tid+4*nrows])*hxdhy-sc*exp(X[tid+2*nrows]);
   }
 }

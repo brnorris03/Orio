@@ -10,7 +10,7 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
     ) @*/
     {
       /*declare variables*/
-      double *dev_a1, *dev_x2, *dev_a3, *dev_a2, *dev_a5, *dev_a4, *dev_y, *dev_x3, *dev_x1, *dev_x4, *dev_x5;
+      double *dev_y, *dev_x2, *dev_x3, *dev_x1, *dev_x4, *dev_x5;
       int nthreads=16;
       int nstreams=2;
       /*calculate device dimensions*/
@@ -26,11 +26,6 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
       int chunkrem=n%nstreams;
       /*allocate device memory*/
       int nbytes=n*sizeof(double);
-      cudaMalloc((void**)&dev_a1,sizeof(double));
-      cudaMalloc((void**)&dev_a3,sizeof(double));
-      cudaMalloc((void**)&dev_a2,sizeof(double));
-      cudaMalloc((void**)&dev_a5,sizeof(double));
-      cudaMalloc((void**)&dev_a4,sizeof(double));
       cudaMalloc((void**)&dev_y,nbytes);
       cudaHostRegister(y,n,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_x2,nbytes);
@@ -44,11 +39,6 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
       cudaMalloc((void**)&dev_x5,nbytes);
       cudaHostRegister(x5,n,cudaHostRegisterPortable);
       /*copy data from host to device*/
-      cudaMemcpy(dev_a1,&a1,sizeof(double),cudaMemcpyHostToDevice);
-      cudaMemcpy(dev_a3,&a3,sizeof(double),cudaMemcpyHostToDevice);
-      cudaMemcpy(dev_a2,&a2,sizeof(double),cudaMemcpyHostToDevice);
-      cudaMemcpy(dev_a5,&a5,sizeof(double),cudaMemcpyHostToDevice);
-      cudaMemcpy(dev_a4,&a4,sizeof(double),cudaMemcpyHostToDevice);
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;
         cudaMemcpyAsync(dev_y+soffset,y+soffset,chunklen*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
@@ -74,11 +64,11 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
         blks4chunk++ ;
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;
-        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunklen,dev_a1,dev_x2+soffset,dev_a3,dev_a2,dev_a5,dev_a4,dev_y+soffset,dev_x3+soffset,dev_x1+soffset,dev_x4+soffset,dev_x5+soffset);
+        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunklen,a1,a3,a2,a5,a4,dev_y+soffset,dev_x2+soffset,dev_x3+soffset,dev_x1+soffset,dev_x4+soffset,dev_x5+soffset);
       }
       if (chunkrem!=0) {
         soffset=istream*chunklen;
-        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunkrem,dev_a1,dev_x2+soffset,dev_a3,dev_a2,dev_a5,dev_a4,dev_y+soffset,dev_x3+soffset,dev_x1+soffset,dev_x4+soffset,dev_x5+soffset);
+        orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunkrem,a1,a3,a2,a5,a4,dev_y+soffset,dev_x2+soffset,dev_x3+soffset,dev_x1+soffset,dev_x4+soffset,dev_x5+soffset);
       }
       /*copy data from device to host*/
       for (istream=0; istream<nstreams; istream++ ) {
@@ -94,13 +84,8 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
       for (istream=0; istream<=nstreams; istream++ ) 
         cudaStreamDestroy(stream[istream]);
       /*free allocated memory*/
-      cudaFree(dev_a1);
-      cudaFree(dev_x2);
-      cudaFree(dev_a3);
-      cudaFree(dev_a2);
-      cudaFree(dev_a5);
-      cudaFree(dev_a4);
       cudaFree(dev_y);
+      cudaFree(dev_x2);
       cudaFree(dev_x3);
       cudaFree(dev_x1);
       cudaFree(dev_x4);
@@ -108,7 +93,7 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
     }
 /*@ end @*/
 }
-__global__ void orcu_kernel3(int n, double* a1, double* x2, double* a3, double* a2, double* a5, double* a4, double* y, double* x3, double* x1, double* x4, double* x5) {
+__global__ void orcu_kernel3(int n, double a1, double a3, double a2, double a5, double a4, double* y, double* x2, double* x3, double* x1, double* x4, double* x5) {
   int tid=blockIdx.x*blockDim.x+threadIdx.x;
   __shared__ double shared_y[16];
   __shared__ double shared_x2[16];
@@ -123,7 +108,7 @@ __global__ void orcu_kernel3(int n, double* a1, double* x2, double* a3, double* 
     shared_x1[threadIdx.x]=x1[tid];
     shared_x4[threadIdx.x]=x4[tid];
     shared_x5[threadIdx.x]=x5[tid];
-    shared_y[threadIdx.x]=shared_y[threadIdx.x]+(*a1)*shared_x1[threadIdx.x]+(*a2)*shared_x2[threadIdx.x]+(*a3)*shared_x3[threadIdx.x]+(*a4)*shared_x4[threadIdx.x]+(*a5)*shared_x5[threadIdx.x];
+    shared_y[threadIdx.x]=shared_y[threadIdx.x]+a1*shared_x1[threadIdx.x]+a2*shared_x2[threadIdx.x]+a3*shared_x3[threadIdx.x]+a4*shared_x4[threadIdx.x]+a5*shared_x5[threadIdx.x];
     y[tid]=shared_y[threadIdx.x];
   }
 }
