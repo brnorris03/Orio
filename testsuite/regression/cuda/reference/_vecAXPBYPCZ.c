@@ -26,11 +26,11 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
       /*allocate device memory*/
       int nbytes=n*sizeof(double);
       cudaMalloc((void**)&dev_y,nbytes);
-      cudaHostRegister(y,n,cudaHostRegisterPortable);
+      cudaHostRegister(y,nbytes,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_x,nbytes);
-      cudaHostRegister(x,n,cudaHostRegisterPortable);
+      cudaHostRegister(x,nbytes,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_z,nbytes);
-      cudaHostRegister(z,n,cudaHostRegisterPortable);
+      cudaHostRegister(z,nbytes,cudaHostRegisterPortable);
       /*copy data from host to device*/
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;
@@ -68,6 +68,9 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
       }
       for (istream=0; istream<=nstreams; istream++ ) 
         cudaStreamSynchronize(stream[istream]);
+      cudaHostUnregister(y);
+      cudaHostUnregister(x);
+      cudaHostUnregister(z);
       for (istream=0; istream<=nstreams; istream++ ) 
         cudaStreamDestroy(stream[istream]);
       /*free allocated memory*/

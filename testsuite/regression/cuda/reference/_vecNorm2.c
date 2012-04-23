@@ -27,7 +27,7 @@ void VecNorm2(int n, double *x, double r) {
       /*allocate device memory*/
       int nbytes=n*sizeof(double);
       cudaMalloc((void**)&dev_x,nbytes);
-      cudaHostRegister(x,n,cudaHostRegisterPortable);
+      cudaHostRegister(x,nbytes,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_r,(dimGrid.x+1)*sizeof(double));
       /*copy data from host to device*/
       for (istream=0; istream<nstreams; istream++ ) {
@@ -71,6 +71,7 @@ void VecNorm2(int n, double *x, double r) {
       }
       /*copy data from device to host*/
       cudaMemcpy(&r,dev_r,sizeof(double),cudaMemcpyDeviceToHost);
+      cudaHostUnregister(x);
       for (istream=0; istream<=nstreams; istream++ ) 
         cudaStreamDestroy(stream[istream]);
       /*free allocated memory*/

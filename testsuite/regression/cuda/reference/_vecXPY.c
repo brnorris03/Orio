@@ -27,9 +27,9 @@ void VecXPY(int n, double *x, double *y) {
       /*allocate device memory*/
       int nbytes=n*sizeof(double);
       cudaMalloc((void**)&dev_y,nbytes);
-      cudaHostRegister(y,n,cudaHostRegisterPortable);
+      cudaHostRegister(y,nbytes,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_x,nbytes);
-      cudaHostRegister(x,n,cudaHostRegisterPortable);
+      cudaHostRegister(x,nbytes,cudaHostRegisterPortable);
       /*copy data from host to device*/
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;
@@ -66,6 +66,8 @@ void VecXPY(int n, double *x, double *y) {
       }
       for (istream=0; istream<=nstreams; istream++ ) 
         cudaStreamSynchronize(stream[istream]);
+      cudaHostUnregister(y);
+      cudaHostUnregister(x);
       for (istream=0; istream<=nstreams; istream++ ) 
         cudaStreamDestroy(stream[istream]);
       /*free allocated memory*/
