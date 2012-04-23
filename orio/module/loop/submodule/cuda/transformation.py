@@ -46,7 +46,6 @@ class Transformation(object):
 
       # tracks various state variables used during transformations
       self.state = {
-        'pinnedIdents': [],
         'calc_offset': [],
         'calc_boffset': [],
         'dev_kernel_name': '',
@@ -165,12 +164,8 @@ class Transformation(object):
         VarDeclInit('int', self.cs['chunkrem'], BinOpExp(self.model['inputsize'], self.cs['nstreams'], BinOpExp.MOD)),
       ]
 
-      deallocs = []
-      # unregister pinned memory
-      for var in self.state['pinnedIdents']:
-        deallocs += [ExpStmt(FunCallExp(IdentExp('cudaHostUnregister'), [IdentExp(var)]))]
       # destroy streams
-      deallocs += [
+      deallocs = [
         ForStmt(BinOpExp(self.cs['istream'], self.cs['int0'], BinOpExp.EQ_ASGN),
                 BinOpExp(self.cs['istream'], self.cs['nstreams'], BinOpExp.LE),
                 UnaryExp(self.cs['istream'], UnaryExp.POST_INC),
@@ -203,7 +198,7 @@ class Transformation(object):
             # pin host memory while streaming
             mallocs += [
               ExpStmt(FunCallExp(IdentExp('cudaHostRegister'),
-                                         [IdentExp(aid), self.model['inputsize'],
+                                         [IdentExp(aid), self.cs['nbytes'],
                                           IdentExp('cudaHostRegisterPortable')
                                           ]))
             ]
@@ -334,7 +329,10 @@ class Transformation(object):
                              UnaryExp(self.cs['istream'], UnaryExp.POST_INC),
                              ExpStmt(FunCallExp(IdentExp('cudaStreamSynchronize'), [ArrayRefExp(IdentExp('stream'), self.cs['istream'])])))]
 
-      self.state['pinnedIdents'] = pinnedIdents
+      # unregister any pinned memory
+      for var in pinnedIdents:
+        d2hcopys += [ExpStmt(FunCallExp(IdentExp('cudaHostUnregister'), [IdentExp(var)]))]
+
       self.newstmts['mallocs']  = mallocs
       self.newstmts['h2dcopys'] = h2dcopys
       self.newstmts['d2hcopys'] = d2hcopys

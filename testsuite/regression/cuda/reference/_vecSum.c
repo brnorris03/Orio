@@ -26,7 +26,7 @@ void VecSum(int n, double *x, double s) {
       /*allocate device memory*/
       int nbytes=n*sizeof(double);
       cudaMalloc((void**)&dev_x,nbytes);
-      cudaHostRegister(x,n,cudaHostRegisterPortable);
+      cudaHostRegister(x,nbytes,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_s,(dimGrid.x+1)*sizeof(double));
       /*copy data from host to device*/
       for (istream=0; istream<nstreams; istream++ ) {
@@ -70,6 +70,7 @@ void VecSum(int n, double *x, double s) {
       }
       /*copy data from device to host*/
       cudaMemcpy(&s,dev_s,sizeof(double),cudaMemcpyDeviceToHost);
+      cudaHostUnregister(x);
       for (istream=0; istream<=nstreams; istream++ ) 
         cudaStreamDestroy(stream[istream]);
       /*free allocated memory*/

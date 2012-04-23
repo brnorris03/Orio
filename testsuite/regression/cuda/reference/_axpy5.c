@@ -27,17 +27,17 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
       /*allocate device memory*/
       int nbytes=n*sizeof(double);
       cudaMalloc((void**)&dev_y,nbytes);
-      cudaHostRegister(y,n,cudaHostRegisterPortable);
+      cudaHostRegister(y,nbytes,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_x2,nbytes);
-      cudaHostRegister(x2,n,cudaHostRegisterPortable);
+      cudaHostRegister(x2,nbytes,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_x3,nbytes);
-      cudaHostRegister(x3,n,cudaHostRegisterPortable);
+      cudaHostRegister(x3,nbytes,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_x1,nbytes);
-      cudaHostRegister(x1,n,cudaHostRegisterPortable);
+      cudaHostRegister(x1,nbytes,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_x4,nbytes);
-      cudaHostRegister(x4,n,cudaHostRegisterPortable);
+      cudaHostRegister(x4,nbytes,cudaHostRegisterPortable);
       cudaMalloc((void**)&dev_x5,nbytes);
-      cudaHostRegister(x5,n,cudaHostRegisterPortable);
+      cudaHostRegister(x5,nbytes,cudaHostRegisterPortable);
       /*copy data from host to device*/
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;
@@ -81,6 +81,12 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
       }
       for (istream=0; istream<=nstreams; istream++ ) 
         cudaStreamSynchronize(stream[istream]);
+      cudaHostUnregister(y);
+      cudaHostUnregister(x2);
+      cudaHostUnregister(x3);
+      cudaHostUnregister(x1);
+      cudaHostUnregister(x4);
+      cudaHostUnregister(x5);
       for (istream=0; istream<=nstreams; istream++ ) 
         cudaStreamDestroy(stream[istream]);
       /*free allocated memory*/
