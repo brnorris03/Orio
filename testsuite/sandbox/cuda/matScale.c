@@ -28,11 +28,11 @@ void MatScale_SeqDIA(double* A, double a) {
 
   /*@ begin Loop(transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM, streamCount=SC)
         for(i=0;i<=nz-1;i++) {
-          A[nz] *= a;
+          A[i] *= a;
         }
   ) @*/
   for(i=0;i<=nz-1;i++) {
-    A[nz] *= a;
+    A[i] *= a;
   }
   /*@ end @*/
   /*@ end @*/
