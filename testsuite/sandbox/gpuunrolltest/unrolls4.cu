@@ -132,7 +132,7 @@ int main(){
 	axpy1(NN, y, a1, x1);
 	for(i=0; i<13; i++)
 		printf("%f\n", y[i]);
-        for(i=1048571; i<1048576; i++)
+        for(i=NN-9; i<NN; i++)
                 printf("%f\n", y[i]);
 
 	return 0;
