@@ -12,12 +12,12 @@ __global__ void orcu_kernel6(int n, int orcu_var3, double a1, double* y, double*
     }
   }
 }
-__global__ void orcu_kernel11(int n, int orcu_var8, double a1, double* y, double* x1) {
-  int tid=blockIdx.x*blockDim.x+threadIdx.x+orcu_var8;
-  if (tid<=n-1) {
-    y[tid]=y[tid]+a1*x1[tid];
-  }
-}
+//__global__ void orcu_kernel11(int n, int orcu_var8, double a1, double* y, double* x1) {
+  //int tid=blockIdx.x*blockDim.x+threadIdx.x+orcu_var8;
+  //if (tid<=n-1) {
+    //y[tid]=y[tid]+a1*x1[tid];
+  //}
+//}
 
 
 void axpy1(int n, double *y, double a1, double *x1)
@@ -72,15 +72,15 @@ HANDLE_ERROR(cudaEventCreate(&stop));
       int orcu_var3=orio_lbound1;
 
     
-      int orio_lbound2=n-((n-(0))%2);
-      int orcu_var8=orio_lbound2;
-      cudaStream_t stream1, stream2;
-      cudaStreamCreate(&stream1);
-      cudaStreamCreate(&stream2);
+      //int orio_lbound2=n-((n-(0))%2);
+      //int orcu_var8=orio_lbound2;
+      //cudaStream_t stream1, stream2;
+      //cudaStreamCreate(&stream1);
+      //cudaStreamCreate(&stream2);
 
       HANDLE_ERROR(cudaEventRecord(start, 0));
-      orcu_kernel6<<<dimGrid,dimBlock,0,stream1>>>(n,orcu_var3,a1,dev_y,dev_x1);
-      orcu_kernel11<<<1,dimBlock,0,stream2>>>(n,orcu_var8,a1,dev_y,dev_x1);
+      orcu_kernel6<<<dimGrid,dimBlock>>>(n,orcu_var3,a1,dev_y,dev_x1);
+      //orcu_kernel11<<<1,dimBlock,0,stream2>>>(n,orcu_var8,a1,dev_y,dev_x1);
       HANDLE_ERROR(cudaEventRecord(stop, 0));
       /*copy data from device to host*/
       cudaMemcpy(y,dev_y,nbytes,cudaMemcpyDeviceToHost);
@@ -88,9 +88,6 @@ HANDLE_ERROR(cudaEventCreate(&stop));
       cudaFree(dev_y);
       cudaFree(dev_x1);
 
-
-      cudaStreamDestroy(stream1);
-      cudaStreamDestroy(stream2);
     //}
     //int orio_lbound2=n-((n-(0))%2);
     {
