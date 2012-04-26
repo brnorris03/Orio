@@ -1,17 +1,19 @@
-Here are sample tests to check the effect of unrolling on AXPY1.
+Here are sample tests to check the effect of unrolling on AXPY2.
 
 In AXPY1, you have 3 inputs.
 1) array x1
-2) array y
+2) array x2
+3) array y
 3) scalar a1
+4) scalar a2
 
-The result will be y = y + a1*x1
+The result will be y = y + a1*x1 + a2*x2
 
-In consts.h, NN determines the size of x1 and y, AA determines the value of a1, and TC is the thread count (number of threads per block).
+In consts.h, NN determines the size of x1 and y, AA determines the value of a1, AA2 the value of a2, and TC is the thread count (number of threads per block).
 
-The values of the array x1 and y are set to equal to their component number. So, the 0th element of x1 or y is 0, the 1th element of x1 or y is 1, the 2nd element of x1 or y is 2, etc etc.
+The values of the array x1, x2 and y are set to equal to their component number. So, the 0th element of x1 or y is 0, the 1th element of x1 or y is 1, the 2nd element of x1 or y is 2, etc etc.
 
-In our case, NN is 2 to the power 20, AA is 1, and TC is 128. By empirical test, without any unrolling, TC=128 is the best GPU configuration performance wise with respect to TC, among the set {32, 64, 128, 256, 512}.
+In our case, NN is 2 to the power 20, AA and A2 are 1, and TC is 128. By empirical test, without any unrolling, TC=128 is the best GPU configuration performance wise with respect to TC, among the set {32, 64, 128, 256, 512}.
 
 cpu.c is the cpu version.
 
