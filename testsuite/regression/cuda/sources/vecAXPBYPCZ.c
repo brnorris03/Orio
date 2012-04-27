@@ -9,7 +9,7 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
     ) @*/
 
     for (i=0; i<=n-1; i++)
-        y[i]=a*x[i]+b*y[i];
+        y[i]=a*x[i]+b*y[i]+c*z[i];
 
     /*@ end @*/
 }
