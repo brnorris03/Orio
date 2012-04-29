@@ -210,7 +210,7 @@ class CodeGen_CUDA (CodeGen_C):
             s += self.generate(tnode.body, indent, extra_indent)
 
         elif isinstance(tnode, ast.Pragma):
-            s += '#pragma ' + str(tnode.pstring) + '\n'
+            s += indent + '#pragma ' + str(tnode.pstring) + '\n'
 
         elif isinstance(tnode, ast.Container):
             s += self.generate(tnode.ast, indent, extra_indent)

@@ -15,11 +15,12 @@ class Loop(Module):
     '''Loop transformation module'''
     
     def __init__(self, perf_params, module_body_code, annot_body_code,
-                 line_no, indent_size, language='C'):
+                 line_no, indent_size, language='C', tinfo=None):
         '''Instantiate a loop transformation module'''
         
         Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       line_no, indent_size, language)
+        self.tinfo = tinfo
 
     #---------------------------------------------------------------------
     
@@ -30,7 +31,7 @@ class Loop(Module):
         stmts = parser.getParser(self.line_no).parse(self.module_body_code)
 
         # apply transformations
-        t = transformation.Transformation(self.perf_params, self.verbose, self.language)
+        t = transformation.Transformation(self.perf_params, self.verbose, self.language, self.tinfo)
         transformed_stmts = t.transform(stmts)
         
         # generate code for the transformed ASTs

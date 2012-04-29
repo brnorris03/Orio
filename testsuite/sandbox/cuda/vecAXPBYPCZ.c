@@ -4,7 +4,6 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
           def performance_params {
             param TC[] = range(16,33,16);
             param CB[] = [True, False];
-            param PHM[] = [False];
             param SC[] = range(1,3);
           }
           def build {
@@ -30,14 +29,13 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
     register int i;
     int n=N;
 
-    /*@ begin Loop (
-          transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM, streamCount=SC)
+    /*@ begin Loop(transform CUDA(threadCount=TC, cacheBlocks=CB, streamCount=SC)
         for (i=0; i<=n-1; i++)
           y[i]=a*x[i]+b*y[i]+c*z[i];
     ) @*/
 
     for (i=0; i<=n-1; i++)
-        y[i]=a*x[i]+b*y[i];
+      y[i]=a*x[i]+b*y[i]+c*z[i];
 
     /*@ end @*/
     /*@ end @*/
