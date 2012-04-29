@@ -122,7 +122,8 @@ class OptDriver:
                                               optimized_body_code,
                                               cfrag.leader_ann.mod_code_line_no,
                                               cfrag.leader_ann.indent_size,
-                                              language=self.lang)
+                                              language=self.lang,
+                                              tinfo=self.ptuner.tinfo)
                 except Exception, e:
                     err('orio.main.opt_driver: %s: encountered an error when transforming annotation "%s"\n --> %s: %s' %
                            (cfrag.leader_ann.mod_name_line_no, cfrag.leader_ann.mod_name,e.__class__.__name__, e))

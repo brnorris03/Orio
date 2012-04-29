@@ -2,9 +2,8 @@ void VecDot(int n, double *x, double *y, double r) {
 
     /*@ begin PerfTuning (
           def performance_params {
-            param TC[] = range(16,17,16);
+            param TC[] = range(16,33,16);
             param CB[] = [True, False];
-            param PHM[] = [False];
             param SC[] = range(1,3);
           }
           def build {
@@ -20,21 +19,20 @@ void VecDot(int n, double *x, double *y, double r) {
           }
           def performance_counter {
             arg method = 'basic timer';
-            arg repetitions = 10;
+            arg repetitions = 1;
           }
     ) @*/
 
     register int i;
     int n=N;
 
-    /*@ begin Loop (
-          transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM, streamCount=SC)
+    /*@ begin Loop(transform CUDA(threadCount=TC, cacheBlocks=CB, streamCount=SC)
         for (i=0; i<=n-1; i++)
-          r=r+x[i]*y[i];
+          r+=x[i]*y[i];
     ) @*/
 
     for (i=0; i<=n-1; i++)
-        r=r+x[i]*y[i];
+        r+=x[i]*y[i];
 
     /*@ end @*/
     /*@ end @*/

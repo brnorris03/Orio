@@ -4,7 +4,6 @@ void VecWAXPY(int n, double *w, double a, double *x, double *y) {
           def performance_params {
             param TC[] = range(16,33,16);
             param CB[] = [True, False];
-            param PHM[] = [False];
             param SC[] = range(1,3);
           }
           def build {
@@ -28,8 +27,7 @@ void VecWAXPY(int n, double *w, double a, double *x, double *y) {
     register int i;
     int n=N;
 
-    /*@ begin Loop (
-          transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM, streamCount=SC)
+    /*@ begin Loop(transform CUDA(threadCount=TC, cacheBlocks=CB, streamCount=SC)
         for (i=0; i<=n-1; i++)
           w[i]=a*x[i]+y[i];
     ) @*/

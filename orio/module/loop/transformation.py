@@ -16,12 +16,13 @@ TSUBMOD_NAME = 'orio.module.loop.submodule'
 class Transformation:
     '''Code transformation implementation'''
 
-    def __init__(self, perf_params, verbose, language='C'):
+    def __init__(self, perf_params, verbose, language='C', tinfo=None):
         '''To instantiate a code transformation object'''
         self.perf_params = perf_params
         self.verbose = verbose
         self.language = language
         self.dloader = orio.main.dyn_loader.DynLoader()
+        self.tinfo = tinfo
         
     #--------------------------------------
 
@@ -81,7 +82,7 @@ class Transformation:
             
             # apply code transformations
             try:
-                t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language)
+                t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language, self.tinfo)
                 transformed_stmt = t.transform()
             except Exception, e:
                 err(('orio.module.loop.transformation:%s: encountered an error as optimizing the transformation ' +
