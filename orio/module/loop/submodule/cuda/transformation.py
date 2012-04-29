@@ -11,7 +11,7 @@ class Transformation(object):
     '''Code transformation'''
 
     # -----------------------------------------------------------------------------------------------------------------
-    def __init__(self, stmt, devProps, targs):
+    def __init__(self, stmt, devProps, targs, tinfo=None):
       '''Instantiate a code transformation object'''
       self.stmt         = stmt
       self.devProps     = devProps
@@ -21,10 +21,18 @@ class Transformation(object):
       self.streamCount  = targs['streamCount']
       self.domain       = targs['domain']
       self.dataOnDevice = targs['dataOnDevice']
+      self.unrollInner  = targs['unrollInner']
       
       if self.streamCount > 1 and (self.devProps['deviceOverlap'] == 0 or self.devProps['asyncEngineCount'] == 0):
           g.err('orio.module.loop.submodule.cuda.transformation: ' +
                 'device cannot handle overlaps or concurrent data transfers; so no speedup from streams')
+      
+      self.tinfo = tinfo
+      if self.streamCount > 1:
+        ivarLists = filter(lambda x: len(x[3])>0, tinfo.ivar_decls)
+        ivarListLengths = set(reduce(lambda acc,item: acc+item[3], ivarLists, []))
+        if len(ivarListLengths) > 1:
+          g.err('orio.module.loop.submodule.cuda.transformation: streaming for different-length arrays is not supported')
       
       # control flag to perform device-side timing
       self.doDeviceTiming = False
@@ -178,7 +186,7 @@ class Transformation(object):
       '''Create device-side mallocs'''
       mallocs  = [
         Comment('allocate device memory'),
-        VarDeclInit('int', self.cs['nbytes'], BinOpExp(self.model['inputsize'], self.cs['sizeofDbl'], BinOpExp.MUL))
+        #VarDeclInit('int', self.cs['nbytes'], BinOpExp(self.model['inputsize'], self.cs['sizeofDbl'], BinOpExp.MUL))
       ]
       h2dcopys = [Comment('copy data from host to device')]
       h2dasyncs    = []
@@ -186,11 +194,17 @@ class Transformation(object):
       # -------------------------------------------------
       pinnedIdents = []
       for aid,daid in self.model['arrays']:
+        aidtinfo = filter(lambda x: x[2] == aid, self.tinfo.ivar_decls)
+        if len(aidtinfo) == 0:
+          g.err('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
+        else:
+          aidtinfo = aidtinfo[0]
+        aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
         mallocs += [
           ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
                              [CastExpr('void**', UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF)),
-                              self.cs['nbytes']
-                              #FunCallExp(IdentExp('sizeof'), [IdentExp(aid)])
+                              #self.cs['nbytes']
+                              aidbytes
                               ]))]
         # memcopy rhs arrays device to host
         if aid in self.model['rhs_arrays']:
@@ -198,7 +212,9 @@ class Transformation(object):
             # pin host memory while streaming
             mallocs += [
               ExpStmt(FunCallExp(IdentExp('cudaHostRegister'),
-                                         [IdentExp(aid), self.cs['nbytes'],
+                                         [IdentExp(aid),
+                                          #self.cs['nbytes'],
+                                          aidbytes,
                                           IdentExp('cudaHostRegisterPortable')
                                           ]))
             ]
@@ -223,8 +239,8 @@ class Transformation(object):
             h2dcopys += [
               ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
                                  [IdentExp(daid), IdentExp(aid),
-                                  self.cs['nbytes'],
-                                  #FunCallExp(IdentExp('sizeof'), [IdentExp(aid)]),
+                                  #self.cs['nbytes'],
+                                  aidbytes,
                                   IdentExp('cudaMemcpyHostToDevice')
                                   ]))]
       # for-loop over streams to do async copies
@@ -298,11 +314,17 @@ class Transformation(object):
                                   ArrayRefExp(IdentExp('stream'), self.cs['istream'])
                                   ]))]
           else:
+            raidtinfo = filter(lambda x: x[2] == raid, self.tinfo.ivar_decls)
+            if len(raidtinfo) == 0:
+              g.err('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
+            else:
+              raidtinfo = raidtinfo[0]
+            raidbytes = BinOpExp(IdentExp(raidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(raidtinfo[1])]), BinOpExp.MUL)
             d2hcopys += [
               ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
                                  [IdentExp(raid), IdentExp(draid),
-                                  self.cs['nbytes'],
-                                  #FunCallExp(IdentExp('sizeof'), [IdentExp(raid)]),
+                                  #self.cs['nbytes'],
+                                  raidbytes,
                                   IdentExp('cudaMemcpyDeviceToHost')
                                   ]))]
       # -------------------------------------------------
@@ -701,9 +723,16 @@ class Transformation(object):
         if self.model['isReduction']:
             for temp in ktempdbls:
                 kernelStmts += [VarDeclInit('double', temp, self.cs['int0'])]
-        if len(ktempints) > 1:
+        if len(ktempints) > 0:
             kernelStmts += [VarDecl('int', map(lambda x: IdentExp(x), ktempints))]
 
+        #--------------------------------------------------
+        if isinstance(loop_body3, ForStmt):
+          if self.unrollInner > 1:
+            loop_body3 = CompStmt([Pragma('unroll ' + str(self.unrollInner)), loop_body3])
+          else:
+            loop_body3 = CompStmt([Pragma('unroll'), loop_body3])
+        
         #--------------------------------------------------
         if self.domain == None:
           # the rewritten loop body statement

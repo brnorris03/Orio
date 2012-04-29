@@ -41,6 +41,7 @@ class PerfTuner:
         self.num_bin=0
         self.num_int=0
         
+        self.tinfo = None
     
     #-------------------------------------------------
 
@@ -52,6 +53,7 @@ class PerfTuner:
         
         # extract the tuning information specified from the given annotation
         tinfo = self.__extractTuningInfo(module_body_code, line_no)
+        self.tinfo = tinfo
         
         # determine if parallel search is required
         use_parallel_search = tinfo.batch_cmd != None

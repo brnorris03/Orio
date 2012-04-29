@@ -87,13 +87,12 @@ int main( void ) {
 class CUDA(orio.module.loop.submodule.submodule.SubModule):
     '''The cuda transformation submodule.'''
     
-    def __init__(self, perf_params = None, transf_args = None, stmt = None, language='cuda'):
+    def __init__(self, perf_params = None, transf_args = None, stmt = None, language='cuda', tinfo=None):
         '''To instantiate the transformation submodule.'''
         
         orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
+        self.tinfo = tinfo
 
-        # TODO: future transformations here, e.g., 
-        #self.cudastream_smod = orio.module.loop.submodule.cudastream.cudastream.CudaStream()
         
     #------------------------------------------------------------------------------------------------------------------
 
@@ -107,6 +106,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         STREAMCOUNT = 'streamCount'
         DOMAIN      = 'domain'
         DOD         = 'dataOnDevice'
+        UIF         = 'unrollInner'
 
         # default argument values
         threadCount  = 16
@@ -115,6 +115,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         streamCount  = 1
         domain       = None
         dataOnDevice = False
+        unrollInner  = None
 
         # iterate over all transformation arguments
         errors = ''
@@ -156,6 +157,11 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                     errors += 'line %s: %s must be a boolean: %s\n' % (line_no, aname, rhs)
                 else:
                     dataOnDevice = rhs
+            elif aname == UIF:
+                if not isinstance(rhs, int) or rhs <= 0:
+                    errors += 'line %s: %s must be a positive integer: %s\n' % (line_no, aname, rhs)
+                else:
+                    unrollInner = rhs
             else:
                 g.err('orio.module.loop.submodule.cuda.cuda: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
@@ -163,7 +169,14 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
             g.err('orio.module.loop.submodule.cuda.cuda: errors evaluating transformation args:\n%s' % errors)
 
         # return evaluated transformation arguments
-        return {THREADCOUNT:threadCount, CB:cacheBlocks, PHM:pinHost, STREAMCOUNT:streamCount, DOMAIN:domain, DOD:dataOnDevice}
+        return {
+          THREADCOUNT:threadCount,
+          CB:cacheBlocks,
+          PHM:pinHost,
+          STREAMCOUNT:streamCount,
+          DOMAIN:domain,
+          DOD:dataOnDevice,
+          UIF:unrollInner}
 
     #------------------------------------------------------------------------------------------------------------------
 
@@ -221,7 +234,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         g.debug('orio.module.loop.submodule.cuda.CUDA: starting CUDA transformations')
 
         # perform transformation
-        t = transformation.Transformation(stmt, props, targs)
+        t = transformation.Transformation(stmt, props, targs, self.tinfo)
         transformed_stmt = t.transform()
 
         # return the transformed statement
