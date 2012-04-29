@@ -28,7 +28,7 @@ class Transformation(object):
                 'device cannot handle overlaps or concurrent data transfers; so no speedup from streams')
       
       self.tinfo = tinfo
-      if self.streamCount > 1:
+      if self.tinfo is not None and self.streamCount > 1:
         ivarLists = filter(lambda x: len(x[3])>0, tinfo.ivar_decls)
         ivarListLengths = set(reduce(lambda acc,item: acc+item[3], ivarLists, []))
         if len(ivarListLengths) > 1:
@@ -186,20 +186,24 @@ class Transformation(object):
       '''Create device-side mallocs'''
       mallocs  = [
         Comment('allocate device memory'),
-        #VarDeclInit('int', self.cs['nbytes'], BinOpExp(self.model['inputsize'], self.cs['sizeofDbl'], BinOpExp.MUL))
       ]
+      if self.tinfo is None: # inference mode
+        mallocs += [VarDeclInit('int', self.cs['nbytes'], BinOpExp(self.model['inputsize'], self.cs['sizeofDbl'], BinOpExp.MUL))]
       h2dcopys = [Comment('copy data from host to device')]
       h2dasyncs    = []
       h2dasyncsrem = []
       # -------------------------------------------------
       pinnedIdents = []
       for aid,daid in self.model['arrays']:
-        aidtinfo = filter(lambda x: x[2] == aid, self.tinfo.ivar_decls)
-        if len(aidtinfo) == 0:
-          g.err('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
+        if self.tinfo is None:
+          aidbytes = self.cs['nbytes']
         else:
-          aidtinfo = aidtinfo[0]
-        aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
+          aidtinfo = filter(lambda x: x[2] == aid, self.tinfo.ivar_decls)
+          if len(aidtinfo) == 0:
+            g.err('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
+          else:
+            aidtinfo = aidtinfo[0]
+          aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
         mallocs += [
           ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
                              [CastExpr('void**', UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF)),
@@ -314,12 +318,15 @@ class Transformation(object):
                                   ArrayRefExp(IdentExp('stream'), self.cs['istream'])
                                   ]))]
           else:
-            raidtinfo = filter(lambda x: x[2] == raid, self.tinfo.ivar_decls)
-            if len(raidtinfo) == 0:
-              g.err('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
+            if self.tinfo is None:
+              raidbytes = self.cs['nbytes']
             else:
-              raidtinfo = raidtinfo[0]
-            raidbytes = BinOpExp(IdentExp(raidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(raidtinfo[1])]), BinOpExp.MUL)
+              raidtinfo = filter(lambda x: x[2] == raid, self.tinfo.ivar_decls)
+              if len(raidtinfo) == 0:
+                g.err('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
+              else:
+                raidtinfo = raidtinfo[0]
+              raidbytes = BinOpExp(IdentExp(raidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(raidtinfo[1])]), BinOpExp.MUL)
             d2hcopys += [
               ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
                                  [IdentExp(raid), IdentExp(draid),
