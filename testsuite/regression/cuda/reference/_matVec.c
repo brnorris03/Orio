@@ -63,13 +63,10 @@ __global__ void orcu_kernel3(int nrows, int ndiags, int* offsets, double* y, dou
   int tid=blockIdx.x*blockDim.x+threadIdx.x;
   int j, col;
   if (tid<=nrows-1) {
-    {
-      #pragma unroll
-      for (j=0; j<=ndiags-1; j++ ) {
-        col=tid+offsets[j];
-        if (col>=0&&col<nrows) 
-          y[tid]=y[tid]+A[tid+j*nrows]*x[col];
-      }
+    for (j=0; j<=ndiags-1; j++ ) {
+      col=tid+offsets[j];
+      if (col>=0&&col<nrows) 
+        y[tid]=y[tid]+A[tid+j*nrows]*x[col];
     }
   }
 }
