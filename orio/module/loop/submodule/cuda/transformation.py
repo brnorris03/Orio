@@ -535,19 +535,26 @@ class Transformation(object):
           original = self.stmt.replicate()
           printFpIdent = IdentExp('fp')
           testOrigOutput = [
-            VarDeclInit('FILE*', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('origexec.out'), StringLitExp('w')])),
+            VarDecl('FILE*', [printFpIdent]),
+            IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), VarDeclInit('', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('origexec.out'), StringLitExp('w')]))),
             original
           ]
           bodyStmts = [original.stmt]
+          fprintfStmts1 = []
+          ifStmt1 = IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), CompStmt(fprintfStmts1))
+          bodyStmts += [ifStmt1]
+          fprintfStmts2 = []
+          ifStmt2 = IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), CompStmt(fprintfStmts2))
+          testOrigOutput += [ifStmt2]
           for var in self.model['lhss']:
             if var in array_ids:
-              bodyStmts += [ExpStmt(FunCallExp(IdentExp('fprintf'),
+              fprintfStmts1 += [ExpStmt(FunCallExp(IdentExp('fprintf'),
                 [printFpIdent, StringLitExp("\'"+var+"[%d]\',%f; "), index_id, ArrayRefExp(IdentExp(var), index_id)])
               )]
             else:
-              testOrigOutput += [ExpStmt(FunCallExp(IdentExp('fprintf'), [printFpIdent, StringLitExp("\'"+var+"\',%f"), IdentExp(var)]))]
+              fprintfStmts2 += [ExpStmt(FunCallExp(IdentExp('fprintf'), [printFpIdent, StringLitExp("\'"+var+"\',%f"), IdentExp(var)]))]
           original.stmt = CompStmt(bodyStmts)
-          testOrigOutput += [ExpStmt(FunCallExp(IdentExp('fclose'), [printFpIdent]))]
+          testOrigOutput += [IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ),ExpStmt(FunCallExp(IdentExp('fclose'), [printFpIdent])))]
       
           return CompStmt(testOrigOutput)
 
@@ -734,7 +741,7 @@ class Transformation(object):
             kernelStmts += [VarDecl('int', map(lambda x: IdentExp(x), ktempints))]
 
         #--------------------------------------------------
-        if isinstance(loop_body3, ForStmt):
+        if isinstance(loop_body3, ForStmt) and self.unrollInner>0:
           if self.unrollInner > 1:
             loop_body3 = CompStmt([Pragma('unroll ' + str(self.unrollInner)), loop_body3])
           else:
@@ -914,22 +921,32 @@ class Transformation(object):
             Comment('placeholder')
           )
           testNewOutput = [
-            VarDeclInit('FILE*', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('newexec.out'), StringLitExp('w')])),
+            VarDecl('FILE*', [printFpIdent]),
+            IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), VarDeclInit('', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('newexec.out'), StringLitExp('w')]))),
             VarDecl('int', [idxIdent]),
             original
           ]
           bodyStmts = []
+          
+          fprintfStmts1 = []
+          ifStmt1 = IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), CompStmt(fprintfStmts1))
+          bodyStmts += [ifStmt1]
+          fprintfStmts2 = []
+          ifStmt2 = IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), CompStmt(fprintfStmts2))
+          testNewOutput += [ifStmt2]
+          
+          
           for var in self.model['lhss']:
             if var in array_ids:
-              bodyStmts += [ExpStmt(FunCallExp(IdentExp('fprintf'),
+              fprintfStmts1 += [ExpStmt(FunCallExp(IdentExp('fprintf'),
                 [printFpIdent, StringLitExp("\'"+var+"[%d]\',%f; "), idxIdent, ArrayRefExp(IdentExp(var), idxIdent)]))
               ]
             else:
-              testNewOutput += [ExpStmt(
+              fprintfStmts2 += [ExpStmt(
                 FunCallExp(IdentExp('fprintf'), [printFpIdent, StringLitExp("\'"+var+"\',%f"), IdentExp(var)])
               )]
           original.stmt = CompStmt(bodyStmts)
-          testNewOutput += [ExpStmt(FunCallExp(IdentExp('fclose'), [printFpIdent]))]
+          testNewOutput += [IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), ExpStmt(FunCallExp(IdentExp('fclose'), [printFpIdent])))]
           self.newstmts['testNewOutput'] = testNewOutput
 
         #--------------------------------------------------------------------------------------------------------------
