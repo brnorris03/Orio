@@ -535,26 +535,19 @@ class Transformation(object):
           original = self.stmt.replicate()
           printFpIdent = IdentExp('fp')
           testOrigOutput = [
-            VarDecl('FILE*', [printFpIdent]),
-            IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), VarDeclInit('', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('origexec.out'), StringLitExp('w')]))),
+            VarDeclInit('FILE*', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('origexec.out'), StringLitExp('w')])),
             original
           ]
           bodyStmts = [original.stmt]
-          fprintfStmts1 = []
-          ifStmt1 = IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), CompStmt(fprintfStmts1))
-          bodyStmts += [ifStmt1]
-          fprintfStmts2 = []
-          ifStmt2 = IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), CompStmt(fprintfStmts2))
-          testOrigOutput += [ifStmt2]
           for var in self.model['lhss']:
             if var in array_ids:
-              fprintfStmts1 += [ExpStmt(FunCallExp(IdentExp('fprintf'),
+              bodyStmts += [ExpStmt(FunCallExp(IdentExp('fprintf'),
                 [printFpIdent, StringLitExp("\'"+var+"[%d]\',%f; "), index_id, ArrayRefExp(IdentExp(var), index_id)])
               )]
             else:
-              fprintfStmts2 += [ExpStmt(FunCallExp(IdentExp('fprintf'), [printFpIdent, StringLitExp("\'"+var+"\',%f"), IdentExp(var)]))]
+              testOrigOutput += [ExpStmt(FunCallExp(IdentExp('fprintf'), [printFpIdent, StringLitExp("\'"+var+"\',%f"), IdentExp(var)]))]
           original.stmt = CompStmt(bodyStmts)
-          testOrigOutput += [IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ),ExpStmt(FunCallExp(IdentExp('fclose'), [printFpIdent])))]
+          testOrigOutput += [ExpStmt(FunCallExp(IdentExp('fclose'), [printFpIdent]))]
       
           return CompStmt(testOrigOutput)
 
@@ -781,25 +774,47 @@ class Transformation(object):
             kernelStmts += [ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))];
             # at each step, divide the array into two halves and sum two corresponding elements
             kernelStmts += [VarDecl('int', [idx])]
+            # handling of a remainder within a block
+            rem = self.cs['prefix'] + 'rem'
+            acc = self.cs['prefix'] + 'acc'
+            remIdent = IdentExp(rem)
+            accIdent = IdentExp(acc)
+            kernelStmts += [VarDeclInit('int', remIdent, self.cs['int0'])]
+            kernelStmts += [VarDecl('__shared__ double', [self.cs['prefix']+'acc'])]
+            elseRem = \
+              IfStmt(BinOpExp(remIdent, BinOpExp(remIdent, threadIdx, BinOpExp.EQ), BinOpExp.LAND),
+                     CompStmt([ExpStmt(BinOpExp(accIdent,
+                                                ArrayRefExp(blkdataIdent, BinOpExp(remIdent, self.cs['int1'], BinOpExp.SUB)),
+                                                BinOpExp.ASGN_ADD)),
+                               ExpStmt(BinOpExp(remIdent, self.cs['int0'], BinOpExp.EQ_ASGN))]),
+                     IfStmt(BinOpExp(BinOpExp(BinOpExp(idxIdent, self.cs['int1'], BinOpExp.BAND),
+                                              BinOpExp(idxIdent, self.cs['int1'], BinOpExp.NE),
+                                              BinOpExp.LAND),
+                                     BinOpExp(threadIdx, idxIdent, BinOpExp.EQ),
+                                     BinOpExp.LAND),
+                            ExpStmt(BinOpExp(remIdent, idxIdent, BinOpExp.EQ_ASGN))
+                     )
+              )
+            
             kernelStmts += [
-                ForStmt(BinOpExp(idxIdent, BinOpExp(IdentExp('blockDim.x'), self.cs['int2'], BinOpExp.DIV), BinOpExp.EQ_ASGN),
-                            BinOpExp(idxIdent, self.cs['int0'], BinOpExp.GT),
-                            BinOpExp(idxIdent, self.cs['int1'], BinOpExp.ASGN_SHR),
-                            CompStmt([IfStmt(BinOpExp(threadIdx, idxIdent, BinOpExp.LT),
-                                                     ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
-                                                                              ArrayRefExp(blkdataIdent,
-                                                                                              BinOpExp(threadIdx, idxIdent, BinOpExp.ADD)),
-                                                                              BinOpExp.ASGN_ADD))
-                                                     ),
-                                          ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))]))
+              ForStmt(BinOpExp(idxIdent, BinOpExp(IdentExp('blockDim.x'), self.cs['int2'], BinOpExp.DIV), BinOpExp.EQ_ASGN),
+                      BinOpExp(idxIdent, self.cs['int0'], BinOpExp.GT),
+                      BinOpExp(idxIdent, self.cs['int1'], BinOpExp.ASGN_SHR),
+                      CompStmt([IfStmt(BinOpExp(threadIdx, idxIdent, BinOpExp.LT),
+                                       ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
+                                                        ArrayRefExp(blkdataIdent, BinOpExp(threadIdx, idxIdent, BinOpExp.ADD)),
+                                                        BinOpExp.ASGN_ADD)),
+                                       elseRem
+                                       ),
+                                ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))]))
             ]
             # the first thread within a block stores the results for the entire block
             kernelParams += [FieldDecl('double*', reducts)]
             kernelStmts += [
-                IfStmt(BinOpExp(threadIdx, self.cs['int0'], BinOpExp.EQ),
-                           ExpStmt(BinOpExp(ArrayRefExp(reductsIdent, blockIdx),
-                                                    ArrayRefExp(blkdataIdent, self.cs['int0']),
-                                                    BinOpExp.EQ_ASGN)))
+              IfStmt(BinOpExp(threadIdx, self.cs['int0'], BinOpExp.EQ),
+                     ExpStmt(BinOpExp(ArrayRefExp(reductsIdent, blockIdx),
+                                      BinOpExp(ArrayRefExp(blkdataIdent, self.cs['int0']), accIdent, BinOpExp.ADD),
+                                      BinOpExp.EQ_ASGN)))
             ]
         # end reduction statements
         #--------------------------------------------------
@@ -921,32 +936,22 @@ class Transformation(object):
             Comment('placeholder')
           )
           testNewOutput = [
-            VarDecl('FILE*', [printFpIdent]),
-            IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), VarDeclInit('', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('newexec.out'), StringLitExp('w')]))),
+            VarDeclInit('FILE*', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('newexec.out'), StringLitExp('w')])),
             VarDecl('int', [idxIdent]),
             original
           ]
           bodyStmts = []
-          
-          fprintfStmts1 = []
-          ifStmt1 = IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), CompStmt(fprintfStmts1))
-          bodyStmts += [ifStmt1]
-          fprintfStmts2 = []
-          ifStmt2 = IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), CompStmt(fprintfStmts2))
-          testNewOutput += [ifStmt2]
-          
-          
           for var in self.model['lhss']:
             if var in array_ids:
-              fprintfStmts1 += [ExpStmt(FunCallExp(IdentExp('fprintf'),
+              bodyStmts += [ExpStmt(FunCallExp(IdentExp('fprintf'),
                 [printFpIdent, StringLitExp("\'"+var+"[%d]\',%f; "), idxIdent, ArrayRefExp(IdentExp(var), idxIdent)]))
               ]
             else:
-              fprintfStmts2 += [ExpStmt(
+              testNewOutput += [ExpStmt(
                 FunCallExp(IdentExp('fprintf'), [printFpIdent, StringLitExp("\'"+var+"\',%f"), IdentExp(var)])
               )]
           original.stmt = CompStmt(bodyStmts)
-          testNewOutput += [IfStmt(BinOpExp(IdentExp('orio_i'), NumLitExp(0, NumLitExp.INT), BinOpExp.EQ), ExpStmt(FunCallExp(IdentExp('fclose'), [printFpIdent])))]
+          testNewOutput += [ExpStmt(FunCallExp(IdentExp('fclose'), [printFpIdent]))]
           self.newstmts['testNewOutput'] = testNewOutput
 
         #--------------------------------------------------------------------------------------------------------------
