@@ -35,7 +35,7 @@ class Transformation(object):
           g.err('orio.module.loop.submodule.cuda.transformation: streaming for different-length arrays is not supported')
       
       # control flag to perform device-side timing
-      self.doDeviceTiming = False
+      self.doDeviceTiming = True
 
       # ---------------------------------------------------------------------
       # analysis results; initial values are at defaults
@@ -373,7 +373,6 @@ class Transformation(object):
       kernell_calls = [Comment('invoke device kernel')]
       if self.model['lbound'] is not None:
         kernell_calls += [self.model['lbound']]
-      kernell_calls += [ExpStmt(BinOpExp(IdentExp('orio_t_start'), FunCallExp(IdentExp('getClock'), []), BinOpExp.EQ_ASGN))]
       if self.streamCount == 1:
         args = [self.model['inputsize']] + self.model['ubounds'] + self.model['intscalars'] \
           + map(lambda x: IdentExp(x[1]), self.model['intarrays']) \
@@ -900,8 +899,6 @@ class Transformation(object):
         if self.doDeviceTiming:
           self.newstmts['timerStart'] = [
             VarDecl('cudaEvent_t', ['start', 'stop']),
-            VarDecl('float', [self.cs['prefix'] + 'elapsed']),
-            VarDecl('FILE*', [self.cs['prefix'] + 'fp']),
             ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(IdentExp('start'), UnaryExp.ADDRESSOF)])),
             ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(IdentExp('stop'),  UnaryExp.ADDRESSOF)])),
             ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [IdentExp('start'), self.cs['int0']]))
@@ -912,14 +909,6 @@ class Transformation(object):
             ExpStmt(FunCallExp(IdentExp('cudaEventElapsedTime'),
                                        [UnaryExp(IdentExp(self.cs['prefix'] + 'elapsed'), UnaryExp.ADDRESSOF),
                                         IdentExp('start'), IdentExp('stop')])),
-            AssignStmt(self.cs['prefix'] + 'fp',
-                        FunCallExp(IdentExp('fopen'), [StringLitExp(self.cs['prefix'] + 'time.out'), StringLitExp('a')])),
-            ExpStmt(FunCallExp(IdentExp('fprintf'),
-                                       [IdentExp(self.cs['prefix'] + 'fp'),
-                                        StringLitExp('Kernel_time@rep[%d]:%fms. '),
-                                        IdentExp('orio_i'),
-                                        IdentExp(self.cs['prefix'] + 'elapsed')])),
-            ExpStmt(FunCallExp(IdentExp('fclose'), [IdentExp(self.cs['prefix'] + 'fp')])),
             ExpStmt(FunCallExp(IdentExp('cudaEventDestroy'), [IdentExp('start')])),
             ExpStmt(FunCallExp(IdentExp('cudaEventDestroy'), [IdentExp('stop')]))
           ]
