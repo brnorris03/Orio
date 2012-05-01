@@ -100,6 +100,8 @@ class CodeGen_CUDA (CodeGen_C):
                 s += '>>='
             elif tnode.op_type == tnode.ASGN_SHL:
                 s += '<<='
+            elif tnode.op_type == tnode.BAND:
+                s += '&'
             else:
                 g.err('orio.module.loop.codegen_cuda internal error: unknown binary operator type: %s' % tnode.op_type)
             s += self.generate(tnode.rhs, indent, extra_indent)

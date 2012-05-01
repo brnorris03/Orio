@@ -5,7 +5,6 @@ void VecMAXPY(int n, int nv, double *a, double *x, double *y) {
           param TC[] = range(16,33,16);
           param CB[] = [True, False];
           param UIF[] = range(1,3);
-	  param SC[] = range(1,3);
         }
         def build {
           arg build_command = 'nvcc -arch=sm_20';
@@ -29,7 +28,7 @@ void VecMAXPY(int n, int nv, double *a, double *x, double *y) {
   int n=N;
   int nv=NV;
 
-  /*@ begin Loop (transform CUDA(threadCount=TC, cacheBlocks=CB, unrollInner=UIF, streamCount=SC)
+  /*@ begin Loop (transform CUDA(threadCount=TC, cacheBlocks=CB, unrollInner=UIF)
 
   for (i=0; i<=n-1; i++)
     for (j=0; j<=nv-1; j++)
