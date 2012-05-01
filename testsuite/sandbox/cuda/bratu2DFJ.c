@@ -4,7 +4,6 @@ void FormJacobian2D(double lambda, int m, int n, double *x, double *dia) {
         def performance_params {
           param TC[] = range(32,65,32);
           param CB[] = [True, False];
-          param SC[] = range(1,3);
         }
         def input_params {
           param Lambda = 6;
@@ -37,7 +36,7 @@ void FormJacobian2D(double lambda, int m, int n, double *x, double *dia) {
   int bb = m;
   int be = nrows-m;
 
-  /*@ begin Loop(transform CUDA(threadCount=TC, cacheBlocks=CB, streamCount=SC)
+  /*@ begin Loop(transform CUDA(threadCount=TC, cacheBlocks=CB)
 
   for(i=bb; i<=be-1; i++) {
     dia[i-m]           = -hxdhy;
