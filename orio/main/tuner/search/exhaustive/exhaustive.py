@@ -77,7 +77,10 @@ class Exhaustive(orio.main.tuner.search.search.Search):
                 coord_val = eval(coord_str)
                 info('cost: %s' % (perf_cost))
                 floatNums = [float(x) for x in perf_cost]
-                mean_perf_cost=sum(floatNums) / len(perf_cost)
+                if len(perf_cost) == 1:
+                    mean_perf_cost = sum(floatNums)
+                else:
+                    mean_perf_cost = sum(floatNums[1:]) / (len(perf_cost)-1)
                 info('coordinate: %s, cost: %s' % (coord_val, perf_cost))
                 
                 if mean_perf_cost < best_perf_cost and perf_cost > 0.0:
