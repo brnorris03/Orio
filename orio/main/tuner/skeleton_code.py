@@ -412,25 +412,21 @@ SEQ_DEFAULT_CUDA = r'''
 
 /*@ global @*/
 
-extern double getClock(); 
-
 int main(int argc, char *argv[])
 {
   /*@ prologue @*/
 
-  double orio_t_start, orio_t_end, orio_t, orio_t_min = (double)LONG_MAX;
+  double orio_t_min = (double)LONG_MAX;
+  float orcu_elapsed;
   int orio_i;
 
   for (orio_i=0; orio_i<ORIO_REPS; orio_i++)
   {
-    orio_t_start = getClock();
     
     /*@ tested code @*/
 
-    orio_t_end = getClock();
-    orio_t = orio_t_end - orio_t_start;
-    printf("{'/*@ coordinate @*/' : %g}\n", orio_t);
-    if (orio_t < orio_t_min) orio_t_min = orio_t;
+    printf("{'/*@ coordinate @*/' : %g}\n", orcu_elapsed);
+    if (orcu_elapsed < orio_t_min) orio_t_min = orcu_elapsed;
   }
   
   /*
