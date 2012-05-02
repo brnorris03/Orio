@@ -769,17 +769,19 @@ class Transformation(object):
             kernelStmts += [ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
                                                      loop_lhs_exprs[0],
                                                      BinOpExp.EQ_ASGN))]
+            rem = self.cs['prefix'] + 'rem'
+            acc = self.cs['prefix'] + 'acc'
+            remIdent = IdentExp(rem)
+            accIdent = IdentExp(acc)
+            kernelStmts += [VarDecl('__shared__ double', [self.cs['prefix']+'acc'])]
+            kernelStmts += [IfStmt(BinOpExp(threadIdx,self.cs['int0'],BinOpExp.EQ),
+                                   ExpStmt(BinOpExp(accIdent, self.cs['int0'], BinOpExp.EQ_ASGN)))]
             # sync threads prior to reduction
             kernelStmts += [ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))];
             # at each step, divide the array into two halves and sum two corresponding elements
             kernelStmts += [VarDecl('int', [idx])]
             # handling of a remainder within a block
-            rem = self.cs['prefix'] + 'rem'
-            acc = self.cs['prefix'] + 'acc'
-            remIdent = IdentExp(rem)
-            accIdent = IdentExp(acc)
             kernelStmts += [VarDeclInit('int', remIdent, self.cs['int0'])]
-            kernelStmts += [VarDecl('__shared__ double', [self.cs['prefix']+'acc'])]
             elseRem = \
               IfStmt(BinOpExp(remIdent, BinOpExp(remIdent, threadIdx, BinOpExp.EQ), BinOpExp.LAND),
                      CompStmt([ExpStmt(BinOpExp(accIdent,
