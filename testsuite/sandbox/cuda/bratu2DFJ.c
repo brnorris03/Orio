@@ -43,7 +43,7 @@ void FormJacobian2D(double lambda, int m, int n, double *x, double *dia) {
     dia[i+nrows-m-1]   = -hydhx;
     dia[i+2*nrows-m-1] = 2.0*(hydhx + hxdhy) - sc*exp(x[i]);
     dia[i+3*nrows-m-1] = -hydhx;
-    dia[i+5*nrows-m-2] = -hxdhy;
+    dia[i+4*nrows-m-2] = -hxdhy;
   }
 
   ) @*/
@@ -53,7 +53,7 @@ void FormJacobian2D(double lambda, int m, int n, double *x, double *dia) {
     dia[i+nrows-m-1]   = -hydhx;
     dia[i+2*nrows-m-1] = 2.0*(hydhx + hxdhy) - sc*exp(x[i]);
     dia[i+3*nrows-m-1] = -hydhx;
-    dia[i+5*nrows-m-2] = -hxdhy;
+    dia[i+4*nrows-m-2] = -hxdhy;
   }
 
   /*@ end @*/
