@@ -75,7 +75,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
             for coord_str, perf_cost in pcost_items:
                 coord_val = eval(coord_str)
-                info('cost: %s' % (perf_cost))
+                #info('cost: %s' % (perf_cost))
                 floatNums = [float(x) for x in perf_cost]
                 if len(perf_cost) == 1:
                     mean_perf_cost = sum(floatNums)
@@ -111,7 +111,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
 
         info('----- end exhaustive search -----')
         info('----- begin summary -----')
-        info(' best coordinate: %s, cost: %e' % (best_coord, best_perf_cost))
+        info(' best coordinate: %s=%s, cost: %e' % (best_coord, self.coordToPerfParams(best_coord), best_perf_cost))
         info(' total search time: %.2f seconds' % search_time)
         info('----- end summary -----')
         
