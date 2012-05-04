@@ -96,7 +96,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         
     #------------------------------------------------------------------------------------------------------------------
 
-    def readTransfArgs(self, perf_params, transf_args):
+    def readTransfArgs(self, perf_params, transf_args, props):
         '''Process the given transformation arguments'''
 
         # expected argument names
@@ -109,7 +109,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         UIF         = 'unrollInner'
 
         # default argument values
-        threadCount  = 16
+        threadCount  = props['warpSize']
         cacheBlocks  = False
         pinHost      = False
         streamCount  = 1
@@ -128,8 +128,8 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                 g.err('orio.module.loop.submodule.cuda.cuda: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
             
             if aname == THREADCOUNT:
-                if not isinstance(rhs, int) or rhs <= 0:
-                    errors += 'line %s: %s must be a positive integer: %s\n' % (line_no, aname, rhs)
+                if not isinstance(rhs, int) or rhs <= 0 or rhs > props['maxThreadsPerBlock']:
+                    errors += 'line %s: %s must be a positive integer less than device limit of maxThreadsPerBlock=%s: %s\n' % (line_no, aname, props['maxThreadsPerBlock'], rhs)
                 else:
                     threadCount = rhs
             elif aname == CB:
@@ -146,6 +146,16 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                 if not isinstance(rhs, int) or rhs <= 0:
                     errors += 'line %s: %s must be a positive integer: %s\n' % (line_no, aname, rhs)
                 else:
+                    if rhs > 1:
+                      overlap = props['deviceOverlap']
+                      if overlap == 0:
+                        errors += '%s=%s: deviceOverlap=%s, overlap of data transfer and kernel execution is not supported\n' % (aname, rhs, overlap)
+                      asyncs = props['asyncEngineCount']
+                      if asyncs == 0:
+                        errors += '%s=%s: device asyncEngineCount=%s, overlap of data transfer and kernel execution is not supported\n' % (aname, rhs, asyncs)
+                      concs = props['concurrentKernels']
+                      if concs == 0:
+                        errors += '%s=%s: device concurrentKernels=%s, concurrent kernel execution is not supported\n' % (aname, rhs, concs)
                     streamCount = rhs
             elif aname == DOMAIN:
                 if not isinstance(rhs, str):
@@ -163,10 +173,10 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                 else:
                     unrollInner = rhs
             else:
-                g.err('orio.module.loop.submodule.cuda.cuda: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
+                g.err('%s: %s: unrecognized transformation argument: "%s"' % (self.__class__, line_no, aname))
 
         if not errors == '':
-            g.err('orio.module.loop.submodule.cuda.cuda: errors evaluating transformation args:\n%s' % errors)
+            g.err('%s: errors evaluating transformation args:\n%s' % (self.__class__, errors))
 
         # return evaluated transformation arguments
         return {
@@ -182,6 +192,12 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
 
     def getDeviceProps(self):
       '''Get device properties'''
+
+      # check for nvcc
+      qcmd = 'which -s nvcc'
+      status = os.system(qcmd)
+      if status != 0:
+        g.err("%s: could not locate nvcc with '%s'" % (self.__class__, qcmd))
 
       # write the query code
       qsrc  = "enum_cuda_props.cu"
@@ -200,7 +216,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         status = os.system(cmd)
         if status:
           g.err('orio.module.loop.submodule.cuda.cuda: failed to compile cuda device query code: "%s"' % cmd)
-  
+
         # execute the query
         runcmd = './%s' % (qexec)
         status = os.system(runcmd)
@@ -223,6 +239,12 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
       # clean up
       #os.remove(qout)
       
+      if props['devId'] == -2:
+        g.err("%s: there is no CUDA 1.0 enabled GPU on this machine" % self.__class__)
+      
+      if props['major'] < 2 and props['minor'] < 3:
+        g.warn("%s: running on compute capability less than 1.3 is not recommended, detected %s.%s." % (self.__class__, props['major'], props['minor']))
+
       # return queried device props
       return props
 
@@ -245,11 +267,11 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
     def transform(self):
         '''The implementation of the abstract transform method for CUDA'''
 
-        # read all transformation arguments
-        targs = self.readTransfArgs(self.perf_params, self.transf_args)
-        
         # read device properties
         props = self.getDeviceProps()
+        
+        # read all transformation arguments
+        targs = self.readTransfArgs(self.perf_params, self.transf_args, props)
         
         # perform the transformation of the statement
         try:

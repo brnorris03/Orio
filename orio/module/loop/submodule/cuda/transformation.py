@@ -23,10 +23,6 @@ class Transformation(object):
       self.dataOnDevice = targs['dataOnDevice']
       self.unrollInner  = targs['unrollInner']
       
-      if self.streamCount > 1 and (self.devProps['deviceOverlap'] == 0 or self.devProps['asyncEngineCount'] == 0):
-          g.err('orio.module.loop.submodule.cuda.transformation: ' +
-                'device cannot handle overlaps or concurrent data transfers; so no speedup from streams')
-      
       self.tinfo = tinfo
       if self.tinfo is not None and self.streamCount > 1:
         ivarLists = filter(lambda x: len(x[3])>0, tinfo.ivar_decls)
@@ -34,9 +30,6 @@ class Transformation(object):
         if len(ivarListLengths) > 1:
           g.err('orio.module.loop.submodule.cuda.transformation: streaming for different-length arrays is not supported')
       
-      # control flag to perform device-side timing
-      self.doDeviceTiming = True
-
       # ---------------------------------------------------------------------
       # analysis results; initial values are at defaults
       self.model = {
@@ -898,22 +891,21 @@ class Transformation(object):
         
         #--------------------------------------------------------------------------------------------------------------
         # cuda timing calls
-        if self.doDeviceTiming:
-          self.newstmts['timerStart'] = [
-            VarDecl('cudaEvent_t', ['start', 'stop']),
-            ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(IdentExp('start'), UnaryExp.ADDRESSOF)])),
-            ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(IdentExp('stop'),  UnaryExp.ADDRESSOF)])),
-            ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [IdentExp('start'), self.cs['int0']]))
-          ]
-          self.newstmts['timerStop'] = [
-            ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [IdentExp('stop'), self.cs['int0']])),
-            ExpStmt(FunCallExp(IdentExp('cudaEventSynchronize'), [IdentExp('stop')])),
-            ExpStmt(FunCallExp(IdentExp('cudaEventElapsedTime'),
-                                       [UnaryExp(IdentExp(self.cs['prefix'] + 'elapsed'), UnaryExp.ADDRESSOF),
-                                        IdentExp('start'), IdentExp('stop')])),
-            ExpStmt(FunCallExp(IdentExp('cudaEventDestroy'), [IdentExp('start')])),
-            ExpStmt(FunCallExp(IdentExp('cudaEventDestroy'), [IdentExp('stop')]))
-          ]
+        self.newstmts['timerStart'] = [
+          VarDecl('cudaEvent_t', ['start', 'stop']),
+          ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(IdentExp('start'), UnaryExp.ADDRESSOF)])),
+          ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(IdentExp('stop'),  UnaryExp.ADDRESSOF)])),
+          ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [IdentExp('start'), self.cs['int0']]))
+        ]
+        self.newstmts['timerStop'] = [
+          ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [IdentExp('stop'), self.cs['int0']])),
+          ExpStmt(FunCallExp(IdentExp('cudaEventSynchronize'), [IdentExp('stop')])),
+          ExpStmt(FunCallExp(IdentExp('cudaEventElapsedTime'),
+                                     [UnaryExp(IdentExp(self.cs['prefix'] + 'elapsed'), UnaryExp.ADDRESSOF),
+                                      IdentExp('start'), IdentExp('stop')])),
+          ExpStmt(FunCallExp(IdentExp('cudaEventDestroy'), [IdentExp('start')])),
+          ExpStmt(FunCallExp(IdentExp('cudaEventDestroy'), [IdentExp('stop')]))
+        ]
 
         #--------------------------------------------------------------------------------------------------------------
         # in validation mode, output transformed codes' results for comparison with original code's results
