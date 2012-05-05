@@ -22,6 +22,7 @@ class Transformation(object):
       self.domain       = targs['domain']
       self.dataOnDevice = targs['dataOnDevice']
       self.unrollInner  = targs['unrollInner']
+      self.preferL1Size = targs['preferL1Size']
       
       self.tinfo = tinfo
       if self.tinfo is not None and self.streamCount > 1:
@@ -278,6 +279,21 @@ class Transformation(object):
                               ]))]
 
       # -------------------------------------------------
+      # set L1 cache size preference
+      if self.preferL1Size == 16:
+        mallocs += [
+          ExpStmt(FunCallExp(IdentExp('cudaDeviceSetCacheConfig'), [IdentExp('cudaFuncCachePreferShared')]))
+        ]
+      elif self.preferL1Size == 32:
+        mallocs += [
+          ExpStmt(FunCallExp(IdentExp('cudaDeviceSetCacheConfig'), [IdentExp('cudaFuncCachePreferEqual')]))
+        ]
+      elif self.preferL1Size == 48:
+        mallocs += [
+          ExpStmt(FunCallExp(IdentExp('cudaDeviceSetCacheConfig'), [IdentExp('cudaFuncCachePreferL1')]))
+        ]
+
+      # -------------------------------------------------
       d2hcopys = [Comment('copy data from device to host')]
       d2hasyncs    = []
       d2hasyncsrem = []
@@ -354,6 +370,13 @@ class Transformation(object):
       # unregister any pinned memory
       for var in pinnedIdents:
         d2hcopys += [ExpStmt(FunCallExp(IdentExp('cudaHostUnregister'), [IdentExp(var)]))]
+
+      # -------------------------------------------------
+      # reset L1 cache size preference to the default
+      if self.preferL1Size > 0:
+        d2hcopys += [
+          ExpStmt(FunCallExp(IdentExp('cudaDeviceSetCacheConfig'), [IdentExp('cudaFuncCachePreferNone')]))
+        ]
 
       self.newstmts['mallocs']  = mallocs
       self.newstmts['h2dcopys'] = h2dcopys
