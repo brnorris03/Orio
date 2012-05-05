@@ -335,7 +335,8 @@ class PerfTuner:
         self.num_int=self.num_int-self.num_bin
 
         min_vals=[min(v) for v in axis_val_ranges]
-        min_vals=[min(v)-min(v) for v in axis_val_ranges]
+        #min_vals=[min(v)-min(v) for v in axis_val_ranges]
+        min_vals=[0 for v in min_vals]
         min_val_str="%s" % min_vals
         min_val_str=min_val_str.replace('False','0')
         min_val_str=min_val_str.replace('[','')

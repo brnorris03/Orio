@@ -107,6 +107,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         DOMAIN      = 'domain'
         DOD         = 'dataOnDevice'
         UIF         = 'unrollInner'
+        PREFERL1SZ  = 'preferL1Size'
 
         # default argument values
         threadCount  = props['warpSize']
@@ -116,6 +117,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         domain       = None
         dataOnDevice = False
         unrollInner  = None
+        preferL1Size = 0
 
         # iterate over all transformation arguments
         errors = ''
@@ -172,6 +174,16 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                     errors += 'line %s: %s must be a positive integer: %s\n' % (line_no, aname, rhs)
                 else:
                     unrollInner = rhs
+            elif aname == PREFERL1SZ:
+                if not isinstance(rhs, int) or rhs not in [16,32,48]:
+                    errors += 'line %s: %s must be either 16, 32 or 48 KB: %s\n' % (line_no, aname, rhs)
+                else:
+                    major = props['major']
+                    if major < 2:
+                      errors += '%s=%s: L1 cache is not resizable on compute capability less than 2.x, current comp.cap.=%s.%s\n' % (aname, rhs, major, props['minor'])
+                    elif major < 3 and rhs == 32:
+                      errors += '%s=%s: L1 cache cannot be set to %s on compute capability less than 3.x, current comp.cap.=%s.%s\n' % (aname, rhs, rhs, major, props['minor'])
+                    preferL1Size = rhs
             else:
                 g.err('%s: %s: unrecognized transformation argument: "%s"' % (self.__class__, line_no, aname))
 
@@ -186,7 +198,8 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
           STREAMCOUNT:streamCount,
           DOMAIN:domain,
           DOD:dataOnDevice,
-          UIF:unrollInner}
+          UIF:unrollInner,
+          PREFERL1SZ:preferL1Size}
 
     #------------------------------------------------------------------------------------------------------------------
 
