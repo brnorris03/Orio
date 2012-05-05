@@ -247,7 +247,7 @@ def p_type(p):
 #----------------------------------------------------------------------------------------------------------------------
 # optional array brackets
 def p_brackets(p):
-    ''' brackets : '[' ']'
+    ''' brackets : '[' ']' brackets
                  | empty
     '''
     if p[1] == None:
