@@ -4,7 +4,6 @@ void MatScale_SeqDIA(double* A, double a) {
         def performance_params {
           param TC[]  = range(16,33,16);
           param CB[]  = [True, False];
-          param PHM[] = [False];
           param SC[]  = range(1,3);
         }
         def input_params {
@@ -26,14 +25,18 @@ void MatScale_SeqDIA(double* A, double a) {
   register int i;
   int nz = N;
 
-  /*@ begin Loop(transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM, streamCount=SC)
-        for(i=0;i<=nz-1;i++) {
-          A[i] *= a;
-        }
-  ) @*/
+  /*@ begin Loop(transform CUDA(threadCount=TC, cacheBlocks=CB, streamCount=SC)
+
   for(i=0;i<=nz-1;i++) {
     A[i] *= a;
   }
+
+  ) @*/
+
+  for(i=0;i<=nz-1;i++) {
+    A[i] *= a;
+  }
+
   /*@ end @*/
   /*@ end @*/
 }
