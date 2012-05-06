@@ -3,6 +3,7 @@
 #
 
 import StringIO, sys, tokenize
+import __builtin__, itertools, string
 from orio.main.util.globals import *
 
 #--------------------------------------------------------------------------------
@@ -289,7 +290,7 @@ class TSpecEvaluator:
 
     def evaluate(self, stmt_seq):
         '''To evaluate the given statement sequence'''
-        return self.__evaluate(stmt_seq, {}, {})
+        return self.__evaluate(stmt_seq, dict(__builtin__.__dict__.items() + itertools.__dict__.items() + string.__dict__.items()), {})
 
 
 
