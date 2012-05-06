@@ -935,16 +935,8 @@ class Transformation(object):
         testNewOutput  = []
         if g.Globals().validationMode:
           printFpIdent = IdentExp('fp')
-          original = ForStmt(
-            BinOpExp(idxIdent, self.cs['int0'], BinOpExp.EQ_ASGN),
-            BinOpExp(idxIdent, ubound_exp, BinOpExp.LE),
-            UnaryExp(idxIdent, UnaryExp.POST_INC),
-            Comment('placeholder')
-          )
           testNewOutput = [
             VarDeclInit('FILE*', printFpIdent, FunCallExp(IdentExp('fopen'), [StringLitExp('newexec.out'), StringLitExp('w')])),
-            VarDecl('int', [idxIdent]),
-            original
           ]
           bodyStmts = []
           for var in self.model['lhss']:
@@ -956,7 +948,16 @@ class Transformation(object):
               testNewOutput += [ExpStmt(
                 FunCallExp(IdentExp('fprintf'), [printFpIdent, StringLitExp("\'"+var+"\',%f"), IdentExp(var)])
               )]
-          original.stmt = CompStmt(bodyStmts)
+          if len(bodyStmts) > 0:
+            testNewOutput += [
+              VarDecl('int', [idxIdent]),
+              ForStmt(
+                BinOpExp(idxIdent, self.cs['int0'], BinOpExp.EQ_ASGN),
+                BinOpExp(idxIdent, ubound_exp, BinOpExp.LE),
+                UnaryExp(idxIdent, UnaryExp.POST_INC),
+                CompStmt(bodyStmts)
+              )
+            ]
           testNewOutput += [ExpStmt(FunCallExp(IdentExp('fclose'), [printFpIdent]))]
           self.newstmts['testNewOutput'] = testNewOutput
 
