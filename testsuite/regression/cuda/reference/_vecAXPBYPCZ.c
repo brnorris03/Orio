@@ -44,8 +44,11 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
         cudaMemcpyAsync(dev_x+soffset,x+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
         cudaMemcpyAsync(dev_z+soffset,z+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
       }
+      cudaEvent_t start, stop;
+      cudaEventCreate(&start);
+      cudaEventCreate(&stop);
+      cudaEventRecord(start,0);
       /*invoke device kernel*/
-      orio_t_start=getClock();
       int blks4chunk=dimGrid.x/nstreams;
       if (dimGrid.x%nstreams!=0) 
         blks4chunk++ ;
@@ -57,6 +60,11 @@ void VecAXPBYPCZ(int n, double a, double *x, double b, double *y, double c, doub
         soffset=istream*chunklen;
         orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunkrem,a,c,b,dev_y+soffset,dev_x+soffset,dev_z+soffset);
       }
+      cudaEventRecord(stop,0);
+      cudaEventSynchronize(stop);
+      cudaEventElapsedTime(&orcu_elapsed,start,stop);
+      cudaEventDestroy(start);
+      cudaEventDestroy(stop);
       /*copy data from device to host*/
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;

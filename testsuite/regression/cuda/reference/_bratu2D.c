@@ -36,10 +36,18 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
     cudaMalloc((void**)&dev_F,nbytes);
     /*copy data from host to device*/
     cudaMemcpy(dev_X,X,nbytes,cudaMemcpyHostToDevice);
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start,0);
     /*invoke device kernel*/
     int orcu_var1=bb;
-    orio_t_start=getClock();
     orcu_kernel4<<<dimGrid,dimBlock>>>(be,nrows,orcu_var1,hxdhy,sc,hydhx,dev_F,dev_X);
+    cudaEventRecord(stop,0);
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&orcu_elapsed,start,stop);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
     /*copy data from device to host*/
     cudaMemcpy(F,dev_F,nbytes,cudaMemcpyDeviceToHost);
     /*free allocated memory*/

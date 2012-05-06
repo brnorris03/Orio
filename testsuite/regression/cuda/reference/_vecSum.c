@@ -37,8 +37,11 @@ void VecSum(int n, double *x, double s) {
         soffset=istream*chunklen;
         cudaMemcpyAsync(dev_x+soffset,x+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
       }
+      cudaEvent_t start, stop;
+      cudaEventCreate(&start);
+      cudaEventCreate(&stop);
+      cudaEventRecord(start,0);
       /*invoke device kernel*/
-      orio_t_start=getClock();
       int blks4chunk=dimGrid.x/nstreams;
       if (dimGrid.x%nstreams!=0) 
         blks4chunk++ ;
@@ -68,6 +71,11 @@ void VecSum(int n, double *x, double s) {
           orcu_trds=1024;
         orcu_blksum5<<<orcu_blks,orcu_trds>>>(orcu_n,dev_s);
       }
+      cudaEventRecord(stop,0);
+      cudaEventSynchronize(stop);
+      cudaEventElapsedTime(&orcu_elapsed,start,stop);
+      cudaEventDestroy(start);
+      cudaEventDestroy(stop);
       /*copy data from device to host*/
       cudaMemcpy(&s,dev_s,sizeof(double),cudaMemcpyDeviceToHost);
       cudaHostUnregister(x);
@@ -90,15 +98,26 @@ __global__ void orcu_kernel4(int n, double* x, double* reducts) {
   /*reduce single-thread results within a block*/
   __shared__ double orcu_vec2[16];
   orcu_vec2[threadIdx.x]=orcu_var1;
+  __shared__ double orcu_acc;
+  if (threadIdx.x==0) 
+    orcu_acc=0;
   __syncthreads();
   int orcu_i;
+  int orcu_rem=0;
   for (orcu_i=blockDim.x/2; orcu_i>0; orcu_i>>=1) {
     if (threadIdx.x<orcu_i) 
       orcu_vec2[threadIdx.x]+=orcu_vec2[threadIdx.x+orcu_i];
+    else 
+      if (orcu_rem&&orcu_rem==threadIdx.x) {
+        orcu_acc+=orcu_vec2[orcu_rem-1];
+        orcu_rem=0;
+      } else 
+        if (orcu_i&1&&orcu_i!=1&&threadIdx.x==orcu_i) 
+          orcu_rem=orcu_i;
     __syncthreads();
   }
   if (threadIdx.x==0) 
-    reducts[blockIdx.x]=orcu_vec2[0];
+    reducts[blockIdx.x]=orcu_vec2[0]+orcu_acc;
 }
 
 __global__ void orcu_blksum5(int orcu_n, double* reducts) {

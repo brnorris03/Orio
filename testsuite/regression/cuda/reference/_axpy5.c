@@ -57,8 +57,11 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
         cudaMemcpyAsync(dev_x4+soffset,x4+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
         cudaMemcpyAsync(dev_x5+soffset,x5+soffset,chunkrem*sizeof(double),cudaMemcpyHostToDevice,stream[istream]);
       }
+      cudaEvent_t start, stop;
+      cudaEventCreate(&start);
+      cudaEventCreate(&stop);
+      cudaEventRecord(start,0);
       /*invoke device kernel*/
-      orio_t_start=getClock();
       int blks4chunk=dimGrid.x/nstreams;
       if (dimGrid.x%nstreams!=0) 
         blks4chunk++ ;
@@ -70,6 +73,11 @@ void axpy5(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
         soffset=istream*chunklen;
         orcu_kernel3<<<blks4chunk,dimBlock,0,stream[istream]>>>(chunkrem,a1,a3,a2,a5,a4,dev_y+soffset,dev_x2+soffset,dev_x3+soffset,dev_x1+soffset,dev_x4+soffset,dev_x5+soffset);
       }
+      cudaEventRecord(stop,0);
+      cudaEventSynchronize(stop);
+      cudaEventElapsedTime(&orcu_elapsed,start,stop);
+      cudaEventDestroy(start);
+      cudaEventDestroy(stop);
       /*copy data from device to host*/
       for (istream=0; istream<nstreams; istream++ ) {
         soffset=istream*chunklen;

@@ -46,9 +46,17 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
     cudaMemcpy(dev_A,A,nbytes,cudaMemcpyHostToDevice);
     cudaMemcpy(dev_x,x,nbytes,cudaMemcpyHostToDevice);
     cudaMemcpy(dev_offsets,offsets,sizeof(offsets),cudaMemcpyHostToDevice);
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start,0);
     /*invoke device kernel*/
-    orio_t_start=getClock();
     orcu_kernel3<<<dimGrid,dimBlock>>>(nrows,ndiags,dev_offsets,dev_y,dev_A,dev_x);
+    cudaEventRecord(stop,0);
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&orcu_elapsed,start,stop);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
     /*copy data from device to host*/
     cudaMemcpy(y,dev_y,nbytes,cudaMemcpyDeviceToHost);
     /*free allocated memory*/
