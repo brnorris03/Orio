@@ -240,7 +240,8 @@ class Search:
         #debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)
-        new_perf_costs = self.ptdriver.run(test_code)
+        perf_param = self.coordToPerfParams(uneval_coords[0])
+        new_perf_costs = self.ptdriver.run(test_code, perf_param=perf_param)
         #new_perf_costs = self.getPerfCostConfig(coord_key,perf_params)
         # remember the performance cost of previously evaluated coordinate
         self.perf_cost_records.update(new_perf_costs.items())
