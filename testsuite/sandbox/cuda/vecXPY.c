@@ -5,9 +5,10 @@ void VecXPY(int n, double *x, double *y) {
             param TC[] = range(16,33,16);
             param CB[] = [True, False];
             param SC[] = range(1,3);
+            param CFLAGS[] = map(join, product(['', '-use_fast_math'], ['', '-Xptxas -dlcm=cg']));
           }
           def build {
-            arg build_command = 'nvcc -arch=sm_20';
+            arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
           }
           def input_params {
             param N[] = [1000];

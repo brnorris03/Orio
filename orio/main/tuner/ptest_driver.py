@@ -2,7 +2,7 @@
 # To compile and execute the performance-testing code to get the performance cost
 #
 
-import os, time
+import os, time, re
 
 from orio.main.util.globals import *
 
@@ -141,7 +141,7 @@ class PerfTestDriver:
     
     #-----------------------------------------------------
 
-    def __build(self):
+    def __build(self, perf_param=None):
         '''Compile the testing code'''
                 
         # compile the timing code (if needed)
@@ -152,9 +152,19 @@ class PerfTestDriver:
             
         if self.use_parallel_search: timer_objfile = ''
         
+        # build_cmd
+        cflags_tag = '@CFLAGS'
+        build_cmd = self.tinfo.build_cmd
+        match_obj = re.search(cflags_tag, build_cmd)
+        if match_obj:
+          cflags_val = ''
+          if perf_param is not None:
+            cflags_val = perf_param.get('CFLAGS', '')
+          build_cmd = re.sub(cflags_tag, cflags_val, build_cmd)
+        
         if timer_objfile and not os.path.exists(timer_objfile):  
             # TODO: Too crude, need to make sure object is newer than source
-            cmd = ('%s -O0 -c -o %s %s' % (self.tinfo.build_cmd, timer_objfile, self.timer_file))
+            cmd = ('%s -O0 -c -o %s %s' % (build_cmd, timer_objfile, self.timer_file))
             info(' compiling timer:\n\t' + cmd)
             status = os.system(cmd)
             if status or not os.path.exists(timer_objfile):
@@ -163,22 +173,22 @@ class PerfTestDriver:
         # compile the original code if needed
         if not os.path.exists(self.original_exe_name):
             if self.language == 'cuda':
-                cmd = ('%s %s -DORIGINAL -o %s -c %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
+                cmd = ('%s %s -DORIGINAL -o %s -c %s' % (build_cmd, self.extra_compiler_opts,
                                                          self.original_obj_name, self.src_name2))
                 info(' building the original code:\n\t' + cmd)
                 status = os.system(cmd)
                 if status:
                     err('orio.main.tuner.ptest_driver: failed to compile the original version of cuda code: "%s"' % cmd)
-                cmd = ('%s %s -DORIGINAL -o %s %s %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
+                cmd = ('%s %s -DORIGINAL -o %s %s %s' % (build_cmd, self.extra_compiler_opts,
                                                             self.original_exe_name, timer_objfile,
                                                             self.original_obj_name))
             else:
                 if timer_objfile and os.path.exists(timer_objfile):
-                    cmd = ('%s %s -DORIGINAL -o %s %s %s %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
+                    cmd = ('%s %s -DORIGINAL -o %s %s %s %s' % (build_cmd, self.extra_compiler_opts,
                                                             self.original_exe_name, self.src_name2, 
                                                             timer_objfile, self.tinfo.libs))
                 else:
-                    cmd = ('%s %s -DORIGINAL -o %s %s %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
+                    cmd = ('%s %s -DORIGINAL -o %s %s %s' % (build_cmd, self.extra_compiler_opts,
                                                             self.original_exe_name, self.src_name2, 
                                                             self.tinfo.libs))
                 
@@ -189,17 +199,17 @@ class PerfTestDriver:
             
         # compile the testing code
         if self.language == 'cuda':
-            cmd = ('%s %s -o %s -c %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
+            cmd = ('%s %s -o %s -c %s' % (build_cmd, self.extra_compiler_opts,
                                           self.obj_name, self.src_name))
             info(' building test code:\n\t' + cmd)
             status = os.system(cmd)
             if status:
                 err('orio.main.tuner.ptest_driver: failed to compile the testing cuda code: "%s"' % cmd)
-            cmd = ('%s %s -o %s %s %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
+            cmd = ('%s %s -o %s %s %s' % (build_cmd, self.extra_compiler_opts,
                                           self.exe_name, timer_objfile,
                                           self.obj_name))
         else:
-            cmd = ('%s %s -o %s %s %s %s' % (self.tinfo.build_cmd, self.extra_compiler_opts,
+            cmd = ('%s %s -o %s %s %s %s' % (build_cmd, self.extra_compiler_opts,
                                              self.exe_name, self.src_name2, 
                                              timer_objfile, self.tinfo.libs))
         info(' compiling test:\n\t' + cmd)
@@ -329,7 +339,7 @@ class PerfTestDriver:
 
     #-----------------------------------------------------
             
-    def run(self, test_code):
+    def run(self, test_code, perf_param=None):
         '''To compile and to execute the given testing code to get the performance cost
         @param test_code: the code for testing multiple coordinates in the search space
         @return: a dictionary of the times corresponding to each coordinate in the search space
@@ -342,7 +352,7 @@ class PerfTestDriver:
         self.__preprocess()
         
         # compile the testing code
-        self.__build()
+        self.__build(perf_param=perf_param)
 
         # execute the testing code to get performance costs
         perf_costs = self.__execute()
