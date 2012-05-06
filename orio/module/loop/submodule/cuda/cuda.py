@@ -207,7 +207,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
       '''Get device properties'''
 
       # check for nvcc
-      qcmd = 'which -s nvcc'
+      qcmd = 'which nvcc'
       status = os.system(qcmd)
       if status != 0:
         g.err("%s: could not locate nvcc with '%s'" % (self.__class__, qcmd))
