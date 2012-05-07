@@ -83,7 +83,7 @@ class PerfTestDriver:
         if self.tinfo.pcount_method == self.__PCOUNT_BGP:
             self.extra_compiler_opts += ' -DBGP_COUNTER'
         self.extra_compiler_opts += ' -DORIO_REPS=%s' % self.tinfo.pcount_reps
-        self.extra_compiler_opts += ' -DORIO_TIMES_ARRAY_SIZE=%s' % self.tinfo.timing_array_size
+        #self.extra_compiler_opts += ' -DORIO_TIMES_ARRAY_SIZE=%s' % self.tinfo.timing_array_size
 
 
 

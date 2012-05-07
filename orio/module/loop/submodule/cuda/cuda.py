@@ -206,17 +206,17 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
     def getDeviceProps(self):
       '''Get device properties'''
 
-      # check for nvcc
-      qcmd = 'which nvcc'
-      status = os.system(qcmd)
-      if status != 0:
-        g.err("%s: could not locate nvcc with '%s'" % (self.__class__, qcmd))
-
       # write the query code
       qsrc  = "enum_cuda_props.cu"
       qexec = qsrc + ".o"
       qout  = qexec + ".props"
       if not os.path.exists(qout):
+        # check for nvcc
+        qcmd = 'which nvcc'
+        status = os.system(qcmd)
+        if status != 0:
+          g.err("%s: could not locate nvcc with '%s'" % (self.__class__, qcmd))
+
         try:
           f = open(qsrc, 'w')
           f.write(CUDA_DEVICE_QUERY_SKELET)

@@ -452,7 +452,7 @@ class Transformation(object):
         else:
           kernell_calls += [VarDeclInit('int', stageBlocksIdent,  self.cs['gridx'])]
         bodyStmts = [
-          ExpStmt(FunCallExp(IdentExp('cudaDeviceSynchronize'), [])),
+          #ExpStmt(FunCallExp(IdentExp('cudaDeviceSynchronize'), [])),
           ExpStmt(BinOpExp(sizeIdent, stageBlocksIdent, BinOpExp.EQ_ASGN)),
           ExpStmt(BinOpExp(stageBlocksIdent,
                            BinOpExp(ParenthExp(BinOpExp(stageBlocksIdent, maxThreadsPerBlockM1, BinOpExp.ADD)),
