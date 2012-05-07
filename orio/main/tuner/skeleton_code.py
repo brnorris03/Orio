@@ -81,7 +81,6 @@ int main(int argc, char *argv[])
   /*@ prologue @*/
 
   double orio_t_start, orio_t_end, orio_t, orio_t_min = (double)LONG_MAX;
-  double orio_times[ORIO_TIMES_ARRAY_SIZE];
   int orio_i;
 
   for (orio_i=0; orio_i<ORIO_REPS; orio_i++)
@@ -416,22 +415,15 @@ int main(int argc, char *argv[])
 {
   /*@ prologue @*/
 
-  double orio_t_min = (double)LONG_MAX;
   float orcu_elapsed;
   int orio_i;
-
   for (orio_i=0; orio_i<ORIO_REPS; orio_i++)
   {
     
     /*@ tested code @*/
 
     printf("{'/*@ coordinate @*/' : %g}\n", orcu_elapsed);
-    if (orcu_elapsed < orio_t_min) orio_t_min = orcu_elapsed;
   }
-  
-  /*
-  printf("{'/*@ coordinate @*/' : %g}", orio_t_min);
-  */
   
   /*@ epilogue @*/
 
