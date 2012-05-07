@@ -47,15 +47,15 @@ class PerfTestDriver:
         self.__PTEST_FNAME=Globals().out_prefix+self.__PTEST_FNAME
 
         if language == 'c': 
-            self.src_name = self.__PTEST_FNAME + str(counter) + '.c'
+            self.src_name  = self.__PTEST_FNAME + str(counter) + '.c'
             self.src_name2 = self.__PTEST_FNAME + str(counter) + '_preprocessed.c'
             self.original_src_name = self.__PTEST_FNAME + str(counter) + '_original.c'
         elif language == 'cuda':
-            self.src_name = self.__PTEST_FNAME + str(counter) + '.cu'
+            self.src_name  = self.__PTEST_FNAME + str(counter) + '.cu'
             self.src_name2 = self.__PTEST_FNAME + str(counter) + '_preprocessed.cu'
             self.original_src_name = self.__PTEST_FNAME + str(counter) + '_original.cu'
         else:
-            self.src_name = self.__PTEST_FNAME + str(counter) + '.F90'
+            self.src_name  = self.__PTEST_FNAME + str(counter) + '.F90'
             self.src_name2 = self.__PTEST_FNAME + str(counter) + '_preprocessed.F90'
             self.original_src_name = self.__PTEST_FNAME + str(counter) + '_original.F90'
         
@@ -67,8 +67,8 @@ class PerfTestDriver:
 
         if not self.tinfo.timer_file:
             if self.language == 'c': self.timer_file = 'timer_cpu.c'
-            elif self.language == 'cuda': self.timer_file = 'timer_cpu.cu'
-            else: self.timer_file = 'timer_cpu.F90'
+            elif self.language == 'fortran': self.timer_file = 'timer_cpu.F90'
+            else: self.timer_file = None
         else:
             self.timer_file = self.tinfo.timer_file
         
@@ -85,39 +85,40 @@ class PerfTestDriver:
         self.extra_compiler_opts += ' -DORIO_REPS=%s' % self.tinfo.pcount_reps
         #self.extra_compiler_opts += ' -DORIO_TIMES_ARRAY_SIZE=%s' % self.tinfo.timing_array_size
 
-
+        # for efficiency
+        self.first = True
 
     #-----------------------------------------------------
 
     def __write(self, test_code):
-        '''Write the testing code into a file'''
+        '''Write the test code into a file'''
 
         try:
             f = open(self.src_name, 'w')
             f.write(test_code)
             f.close()
         except:
-            err('orio.main.tuner.ptest_driver:  cannot open file for writing: %s' % self.src_name)
+            err('orio.main.tuner.ptest_driver: cannot open file for writing: %s' % self.src_name)
             
-        if not self.tinfo.timer_file and not (os.path.exists(self.timer_file)):
-            # Generate the timing routine file
-            try: 
-                f = open(self.timer_file, 'w')
-                f.write(self.timer_code)
-                f.close()
-            except:
-                err('orio.main.tuner.ptest_driver:  cannot open file for writing: timer_cpu.c')
-
-        if not os.path.exists(self.original_src_name):
-            try:
-                f = open(self.original_src_name, 'w')
-                f.write(test_code)
-                f.close()
-            except:
-                err('orio.main.tuner.ptest_driver:  cannot open file for writing: %s' % self.original_src_name)
-            
+        if self.first:
+          if self.language != 'cuda' and not self.tinfo.timer_file and not (os.path.exists(self.timer_file)):
+              # Generate the timing routine file
+              try: 
+                  f = open(self.timer_file, 'w')
+                  f.write(self.timer_code)
+                  f.close()
+              except:
+                  err('orio.main.tuner.ptest_driver:  cannot open file for writing: timer_cpu.c')
+  
+          if not os.path.exists(self.original_src_name):
+              try:
+                  f = open(self.original_src_name, 'w')
+                  f.write(test_code)
+                  f.close()
+              except:
+                  err('orio.main.tuner.ptest_driver:  cannot open file for writing: %s' % self.original_src_name)
         return
-                
+  
     #-----------------------------------------------------
 
     def __preprocess(self):
@@ -171,17 +172,14 @@ class PerfTestDriver:
                 err('orio.main.tuner.ptest_driver:  failed to compile the timer code: "%s"' % cmd)
             
         # compile the original code if needed
-        if not os.path.exists(self.original_exe_name):
+        if self.first:
             if self.language == 'cuda':
-                cmd = ('%s %s -DORIGINAL -o %s -c %s' % (build_cmd, self.extra_compiler_opts,
-                                                         self.original_obj_name, self.src_name2))
-                info(' building the original code:\n\t' + cmd)
+                cmd = ('%s %s -DORIGINAL -o %s -c %s' % (build_cmd, self.extra_compiler_opts, self.original_obj_name, self.src_name2))
+                info(' compiling the original code:\n\t' + cmd)
                 status = os.system(cmd)
                 if status:
                     err('orio.main.tuner.ptest_driver: failed to compile the original version of cuda code: "%s"' % cmd)
-                cmd = ('%s %s -DORIGINAL -o %s %s %s' % (build_cmd, self.extra_compiler_opts,
-                                                            self.original_exe_name, timer_objfile,
-                                                            self.original_obj_name))
+                cmd = ('%s %s -DORIGINAL -o %s %s' % (build_cmd, self.extra_compiler_opts, self.original_exe_name, self.original_obj_name))
             else:
                 if timer_objfile and os.path.exists(timer_objfile):
                     cmd = ('%s %s -DORIGINAL -o %s %s %s %s' % (build_cmd, self.extra_compiler_opts,
@@ -191,28 +189,27 @@ class PerfTestDriver:
                     cmd = ('%s %s -DORIGINAL -o %s %s %s' % (build_cmd, self.extra_compiler_opts,
                                                             self.original_exe_name, self.src_name2, 
                                                             self.tinfo.libs))
-                
-            info(' compiling the original code:\n\t' + cmd)
+            
+            info(' building the original code:\n\t' + cmd)
             status = os.system(cmd)
             if status:
                 err('orio.main.tuner.ptest_driver:  failed to compile the original version of the code: "%s"' % cmd)
+
+            self.first = False
             
-        # compile the testing code
+        # compile the test code
         if self.language == 'cuda':
-            cmd = ('%s %s -o %s -c %s' % (build_cmd, self.extra_compiler_opts,
-                                          self.obj_name, self.src_name))
-            info(' building test code:\n\t' + cmd)
+            cmd = ('%s %s -o %s -c %s' % (build_cmd, self.extra_compiler_opts, self.obj_name, self.src_name))
+            info(' compiling test:\n\t' + cmd)
             status = os.system(cmd)
             if status:
-                err('orio.main.tuner.ptest_driver: failed to compile the testing cuda code: "%s"' % cmd)
-            cmd = ('%s %s -o %s %s %s' % (build_cmd, self.extra_compiler_opts,
-                                          self.exe_name, timer_objfile,
-                                          self.obj_name))
+                err('orio.main.tuner.ptest_driver: failed to compile the test cuda code: "%s"' % cmd)
+            cmd = ('%s %s -o %s %s' % (build_cmd, self.extra_compiler_opts, self.exe_name, self.obj_name))
         else:
             cmd = ('%s %s -o %s %s %s %s' % (build_cmd, self.extra_compiler_opts,
                                              self.exe_name, self.src_name2, 
                                              timer_objfile, self.tinfo.libs))
-        info(' compiling test:\n\t' + cmd)
+        info(' building test:\n\t' + cmd)
         
         self.compile_time=0
         start=time.time()
@@ -237,11 +234,11 @@ class PerfTestDriver:
     #-----------------------------------------------------
 
     def __execute(self):
-        '''Execute the executable to get the performance costs'''
+        '''Execute the test to get the performance costs'''
 
         # check if the executable exists
         if not os.path.exists(self.exe_name):
-            err('orio.main.tuner.ptest_driver:  the executable of the testing code does not exist')
+            err('orio.main.tuner.ptest_driver:  the executable of the test code does not exist')
 
         # initialize the performance costs dictionary
         # (indexed by the string representation of the search coordinates)
@@ -276,7 +273,7 @@ class PerfTestDriver:
                 f.close()
                 if output: perf_costs = eval(output)
             except Exception, e:
-                err('orio.main.tuner.ptest_driver: failed to execute the testing code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
+                err('orio.main.tuner.ptest_driver: failed to execute the test code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
                 
         # execute the search sequentially
         else:
@@ -287,7 +284,7 @@ class PerfTestDriver:
                 out = f.readlines()
                 f.close()
             except Exception, e:
-                err('orio.main.tuner.ptest_driver: failed to execute the testing code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
+                err('orio.main.tuner.ptest_driver: failed to execute the test code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
                 
             try:
                 if out:
