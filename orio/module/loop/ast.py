@@ -202,6 +202,7 @@ class BinOpExp(Exp):
     ASGN_SHR = 17
     ASGN_SHL = 18
     BAND = 19
+    SHR = 20
 
     def __init__(self, lhs, rhs, op_type, line_no = ''):
         '''Create a binary operation expression'''
@@ -213,6 +214,21 @@ class BinOpExp(Exp):
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
         return BinOpExp(self.lhs.replicate(), self.rhs.replicate(), self.op_type, self.line_no)
+
+#-----------------------------------------------
+# Ternary Operation
+#-----------------------------------------------
+class TernaryExp(Exp):
+    def __init__(self, test, true_expr, false_expr, line_no = ''):
+        '''Create a ternary operation expression'''
+        Exp.__init__(self, line_no)
+        self.test = test
+        self.true_expr = true_expr
+        self.false_expr = false_expr
+
+    def replicate(self):
+        '''Replicate this abstract syntax tree node'''
+        return TernaryExp(self.test.replicate(), self.true_expr.replicate(), self.false_expr.replicate(), self.line_no)
 
 #-----------------------------------------------
 # Parenthesized Expression
