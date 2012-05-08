@@ -102,9 +102,16 @@ class CodeGen_CUDA (CodeGen_C):
                 s += '<<='
             elif tnode.op_type == tnode.BAND:
                 s += '&'
+            elif tnode.op_type == tnode.SHR:
+                s += '>>'
             else:
                 g.err('orio.module.loop.codegen_cuda internal error: unknown binary operator type: %s' % tnode.op_type)
             s += self.generate(tnode.rhs, indent, extra_indent)
+
+        elif isinstance(tnode, ast.TernaryExp):
+            s += self.generate(tnode.test, indent, extra_indent) + '?'
+            s += self.generate(tnode.true_expr,  indent, extra_indent) + ':'
+            s += self.generate(tnode.false_expr, indent, extra_indent)
 
         elif isinstance(tnode, ast.ParenthExp):
             s += '(' + self.generate(tnode.exp, indent, extra_indent) + ')'
