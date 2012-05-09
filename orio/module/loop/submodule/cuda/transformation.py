@@ -444,13 +444,12 @@ class Transformation(object):
       # -------------------------------------------------
       # for reductions, iteratively keep block-summing, until nothing more to sum: aka multi-staged reduction
       stageBlocks       = self.cs['prefix'] + 'blks'
-      stageThreads      = self.cs['prefix'] + 'trds'
+      #stageThreads      = self.cs['prefix'] + 'trds'
       stageBlocksIdent  = IdentExp(stageBlocks)
-      stageThreadsIdent = IdentExp(stageThreads)
+      #stageThreadsIdent = IdentExp(stageThreads)
       sizeIdent         = IdentExp(self.cs['prefix'] + 'n')
-      maxThreads           = self.devProps['maxThreadsPerBlock']
-      maxThreadsPerBlock   = NumLitExp(str(maxThreads), NumLitExp.INT)
-      maxThreadsPerBlockM1 = NumLitExp(str(maxThreads - 1), NumLitExp.INT)
+      #maxThreads           = self.devProps['maxThreadsPerBlock']
+      #maxThreadsPerBlock   = NumLitExp(str(maxThreads), NumLitExp.INT)
       if self.model['isReduction']:
         if self.streamCount > 1:
           kernell_calls += [VarDeclInit('int', stageBlocksIdent,  self.cs['blks4chunks'])]
@@ -460,20 +459,20 @@ class Transformation(object):
           #ExpStmt(FunCallExp(IdentExp('cudaDeviceSynchronize'), [])),
           ExpStmt(BinOpExp(sizeIdent, stageBlocksIdent, BinOpExp.EQ_ASGN)),
           ExpStmt(BinOpExp(stageBlocksIdent,
-                           BinOpExp(ParenthExp(BinOpExp(stageBlocksIdent, maxThreadsPerBlockM1, BinOpExp.ADD)),
-                                        NumLitExp(str(maxThreads), NumLitExp.INT),
-                                        BinOpExp.DIV),
+                           BinOpExp(ParenthExp(BinOpExp(stageBlocksIdent, NumLitExp(str(self.threadCount-1), NumLitExp.INT), BinOpExp.ADD)),
+                                    NumLitExp(str(self.threadCount), NumLitExp.INT),
+                                    BinOpExp.DIV),
                            BinOpExp.EQ_ASGN)),
-          IfStmt(BinOpExp(sizeIdent, NumLitExp(str(maxThreads), NumLitExp.INT), BinOpExp.LT),
-                 CompStmt([ExpStmt(BinOpExp(stageThreadsIdent, self.cs['int1'], BinOpExp.EQ_ASGN)),
-                           WhileStmt(BinOpExp(stageThreadsIdent, sizeIdent, BinOpExp.LT),
-                                     ExpStmt(BinOpExp(stageThreadsIdent, self.cs['int1'], BinOpExp.ASGN_SHL)))]),
-                 ExpStmt(BinOpExp(stageThreadsIdent, maxThreadsPerBlock, BinOpExp.EQ_ASGN))),
-          ExpStmt(FunCallExp(IdentExp(self.state['dev_redkern_name']+'<<<'+stageBlocks+','+stageThreads+'>>>'),
+          #IfStmt(BinOpExp(sizeIdent, NumLitExp(str(maxThreads), NumLitExp.INT), BinOpExp.LT),
+          #       CompStmt([ExpStmt(BinOpExp(stageThreadsIdent, self.cs['int1'], BinOpExp.EQ_ASGN)),
+          #                 WhileStmt(BinOpExp(stageThreadsIdent, sizeIdent, BinOpExp.LT),
+          #                           ExpStmt(BinOpExp(stageThreadsIdent, self.cs['int1'], BinOpExp.ASGN_SHL)))]),
+          #       ExpStmt(BinOpExp(stageThreadsIdent, maxThreadsPerBlock, BinOpExp.EQ_ASGN))),
+          ExpStmt(FunCallExp(IdentExp(self.state['dev_redkern_name']+'<<<'+stageBlocks+','+str(self.threadCount)+'>>>'),
                              [sizeIdent, IdentExp(self.cs['dev']+self.model['lhss'][0])]))
         ]
         kernell_calls += [
-          VarDecl('int', [stageThreadsIdent, sizeIdent]),
+          VarDecl('int', [sizeIdent]),
           WhileStmt(BinOpExp(stageBlocksIdent, self.cs['int1'], BinOpExp.GT), CompStmt(bodyStmts))
         ]
       self.newstmts['kernell_calls'] = kernell_calls
@@ -782,17 +781,15 @@ class Transformation(object):
         reductsIdent = IdentExp(reducts)
         blkdata      = self.cs['prefix'] + 'vec'+str(g.Globals().getcounter())
         blkdataIdent = IdentExp(blkdata)
-        #rem = self.cs['prefix'] + 'rem'
-        #remIdent = IdentExp(rem)
-        dev_kernel_name  = self.cs['prefix'] + 'kernel'+str(g.Globals().getcounter())
-        dev_redkern_name = self.cs['prefix'] + 'blksum'+str(g.Globals().getcounter())
+        dev_kernel_name     = self.cs['prefix'] + 'kernel'+str(g.Globals().getcounter())
+        dev_redkern_name    = self.cs['prefix'] + 'blksum'+str(g.Globals().getcounter())
         dev_warpkern64_name = self.cs['prefix'] + 'warpReduce64'
         dev_warpkern32_name = self.cs['prefix'] + 'warpReduce32'
+        reduceStmts = []
         if self.model['isReduction']:
             kernelStmts += [Comment('reduce single-thread results within a block')]
             # declare the array shared by threads within a block
             tcount = self.threadCount
-            offset = 0
             kernelStmts += [VarDecl('__shared__ double', [blkdata+'['+str(tcount)+']'])]
             # store the lhs/computed values into the shared array
             kernelStmts += [ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
@@ -801,92 +798,11 @@ class Transformation(object):
             # sync threads prior to reduction
             if tcount > 32: # no need for syncing within a warp
               kernelStmts += [ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))];
+
             # at each step, divide the array into two halves and sum two corresponding elements
-            def unrollTemplate(tc, offset, isEdge):
-              elsePart3 = []
-              if offset != 0:
-                if isEdge:
-                  elsePart3 = [
-                   IfStmt(BinOpExp(BinOpExp(threadIdx, NumLitExp(offset, NumLitExp.INT), BinOpExp.GE),
-                                   BinOpExp(threadIdx, NumLitExp(offset+tc, NumLitExp.INT), BinOpExp.LT),
-                                   BinOpExp.LAND),
-                          ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
-                                           ArrayRefExp(blkdataIdent, TernaryExp(BinOpExp(BinOpExp(threadIdx, NumLitExp(tc, NumLitExp.INT), BinOpExp.ADD),
-                                                                                         NumLitExp(self.threadCount, NumLitExp.INT),
-                                                                                         BinOpExp.LT),
-                                                                                BinOpExp(threadIdx, NumLitExp(tc, NumLitExp.INT), BinOpExp.ADD),
-                                                                                threadIdx),
-                                                        ),
-                                            BinOpExp.ASGN_ADD)))
-                  ]
-                else:
-                  elsePart3 = [
-                     IfStmt(BinOpExp(BinOpExp(threadIdx, NumLitExp(offset, NumLitExp.INT), BinOpExp.GE),
-                                     BinOpExp(threadIdx, NumLitExp(offset+tc, NumLitExp.INT), BinOpExp.LT),
-                                     BinOpExp.LAND),
-                            ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
-                                             ArrayRefExp(blkdataIdent, BinOpExp(threadIdx, NumLitExp(tc, NumLitExp.INT), BinOpExp.ADD)),
-                                             BinOpExp.ASGN_ADD)))
-                  ]
-              return [
-                IfStmt(BinOpExp(threadIdx, NumLitExp(tc, NumLitExp.INT), BinOpExp.LT),
-                       ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
-                                        ArrayRefExp(blkdataIdent, BinOpExp(threadIdx, NumLitExp(tc, NumLitExp.INT), BinOpExp.ADD)),
-                                        BinOpExp.ASGN_ADD)),
-                       CompStmt(elsePart3)),
-                ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))
-              ]
-
-            def unrollWarpTemplate(tc, offset, isEdge):
-              elsePart2 = []
-              if offset != 0:
-                if isEdge:
-                  elsePart2 = [
-                   IfStmt(BinOpExp(BinOpExp(threadIdx, NumLitExp(offset, NumLitExp.INT), BinOpExp.GE),
-                                   BinOpExp(threadIdx, NumLitExp(offset+tc, NumLitExp.INT), BinOpExp.LT),
-                                   BinOpExp.LAND),
-                          ExpStmt(FunCallExp(IdentExp(dev_warpkern64_name), [threadIdx, BinOpExp(blkdataIdent, NumLitExp(offset, NumLitExp.INT), BinOpExp.ADD)])))
-                  ]
-                else:
-                  elsePart2 = [
-                   IfStmt(BinOpExp(BinOpExp(threadIdx, NumLitExp(offset, NumLitExp.INT), BinOpExp.GE),
-                                   BinOpExp(threadIdx, NumLitExp(offset+tc, NumLitExp.INT), BinOpExp.LT),
-                                   BinOpExp.LAND),
-                          ExpStmt(FunCallExp(IdentExp(dev_warpkern64_name), [threadIdx, BinOpExp(blkdataIdent, NumLitExp(offset, NumLitExp.INT), BinOpExp.ADD)])))
-                  ]
-              return [
-                  IfStmt(BinOpExp(threadIdx, int32, BinOpExp.LT),
-                         ExpStmt(FunCallExp(IdentExp(dev_warpkern64_name), [threadIdx, blkdataIdent])),
-                         CompStmt(elsePart2))
-              ]
-
-
-            if tcount == 1024:
-              kernelStmts += unrollTemplate(512, 0, False)
-
-            if tcount >= 512:
-              if tcount <= 768:
-                kernelStmts += unrollTemplate(256, 0, False)
-              elif tcount > 768 and tcount < 1024:
-                kernelStmts += unrollTemplate(256, 512, True)
-                offset = 512
-
-            if tcount >= 256:
-              if tcount == 256:
-                kernelStmts += unrollTemplate(128, 0, False)
-              elif tcount >= 640 and tcount < 1024:
-                kernelStmts += unrollTemplate(128, 512, True)
-                offset = 512
-
-            if tcount >= 128:
-              if tcount == 128:
-                kernelStmts += unrollTemplate(64, 0, False)
-              elif tcount >= 576 and tcount < 1024:
-                kernelStmts += unrollTemplate(64, 512, True)
-                offset = 512
-
-            #kernelStmts += [VarDecl('int', [idx])]
-            #kernelStmts += [
+            # this relies on nvcc to work properly, but nvcc 4.2 did not unroll correctly as of May 1, 2012
+            #reduceStmts += [VarDecl('int', [idx])]
+            #reduceStmts += [
             #  Pragma('unroll'),
             #  ForStmt(BinOpExp(idxIdent, IdentExp(str(tcount/2)), BinOpExp.EQ_ASGN),
             #          BinOpExp(idxIdent, NumLitExp(32, NumLitExp.INT), BinOpExp.GT),
@@ -898,32 +814,119 @@ class Transformation(object):
             #                           ),
             #                    ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))]))
             #]
-            int32 = NumLitExp(32, NumLitExp.INT)
+
+            # unroll treewise reduction loop
+            def unrollTemplate(tc, offset):
+              if offset != 0:
+                return [
+                  IfStmt(BinOpExp(BinOpExp(threadIdx, NumLitExp(offset, NumLitExp.INT), BinOpExp.GE),
+                                  BinOpExp(threadIdx, NumLitExp(offset+tc, NumLitExp.INT), BinOpExp.LT),
+                                  BinOpExp.LAND),
+                         ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
+                                          ArrayRefExp(blkdataIdent, BinOpExp(threadIdx, NumLitExp(tc, NumLitExp.INT), BinOpExp.ADD)),
+                                          BinOpExp.ASGN_ADD))),
+                  ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))
+                ]
+              else:
+                return [
+                  IfStmt(BinOpExp(threadIdx, NumLitExp(tc, NumLitExp.INT), BinOpExp.LT),
+                         ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
+                                          ArrayRefExp(blkdataIdent, BinOpExp(threadIdx, NumLitExp(tc, NumLitExp.INT), BinOpExp.ADD)),
+                                          BinOpExp.ASGN_ADD))),
+                  ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))
+                ]
+
+            def unrollWarpTemplate(tc, offset):
+              if tc == 16:
+                warp = dev_warpkern32_name
+              else:
+                warp = dev_warpkern64_name
+              if offset != 0:
+                return [
+                  IfStmt(BinOpExp(BinOpExp(threadIdx, NumLitExp(offset, NumLitExp.INT), BinOpExp.GE),
+                                  BinOpExp(threadIdx, NumLitExp(offset+tc, NumLitExp.INT), BinOpExp.LT),
+                                  BinOpExp.LAND),
+                         ExpStmt(FunCallExp(IdentExp(warp), [threadIdx, blkdataIdent])))
+                ]
+              else:
+                return [
+                  IfStmt(BinOpExp(threadIdx, NumLitExp(tc, NumLitExp.INT), BinOpExp.LT),
+                         ExpStmt(FunCallExp(IdentExp(warp), [threadIdx, blkdataIdent])))
+                ]
+
+            offset = 0
+            offsets = []
+            if tcount == 1024:
+              reduceStmts += unrollTemplate(512, 0)
+
+            if tcount >= 512:
+              reduceStmts += unrollTemplate(256, 0)
+              if tcount > 512:
+                if offset == 0 and tcount & 511:
+                  offset += 512
+                elif offset != 0 and tcount & 256:
+                  reduceStmts += unrollTemplate(256, offset)
+                  reduceStmts += unrollTemplate(128, offset)
+                  reduceStmts += unrollTemplate(64, offset)
+                  reduceStmts += unrollWarpTemplate(32, offset)
+                  offsets += [offset]
+                  offset += 512
+
+            if tcount >= 256:
+              reduceStmts += unrollTemplate(128, 0)
+              if tcount > 256:
+                if offset == 0 and tcount & 255:
+                  offset += 256
+                elif offset != 0 and tcount & 256:
+                  reduceStmts += unrollTemplate(128, offset)
+                  reduceStmts += unrollTemplate(64, offset)
+                  reduceStmts += unrollWarpTemplate(32, offset)
+                  offsets += [offset]
+                  offset += 256
+
+            if tcount >= 128:
+              reduceStmts += unrollTemplate(64, 0)
+              if tcount > 128:
+                if offset == 0 and tcount & 127:
+                  offset += 128
+                elif offset != 0 and tcount & 128:
+                  reduceStmts += unrollTemplate(64, offset)
+                  reduceStmts += unrollWarpTemplate(32, offset)
+                  offsets += [offset]
+                  offset += 128
+                  
+            if tcount >= 64:
+              reduceStmts += unrollWarpTemplate(32, 0)
+              if tcount > 64:
+                if offset == 0 and tcount & 63:
+                  offset += 64
+                elif offset != 0 and tcount & 64:
+                  reduceStmts += unrollWarpTemplate(32, offset)
+                  offsets += [offset]
+                  if tcount & 32:
+                    offset += 64
+                  
+            if tcount >= 32:
+              if tcount == 32:
+                reduceStmts += unrollWarpTemplate(16, 0)
+              elif tcount & 32:
+                reduceStmts += unrollWarpTemplate(16, offset)
+                offsets += [offset]
 
             baseExpr = ArrayRefExp(blkdataIdent, self.cs['int0'])
             def addRemTemplate(baseExpr, rem):
               return BinOpExp(baseExpr, ArrayRefExp(blkdataIdent, rem), BinOpExp.ADD)
-            baseExpr = addRemTemplate(baseExpr, NumLitExp(offset, NumLitExp.INT))
-
-            if tcount >= 64:
-              if tcount == 64:
-                kernelStmts += unrollWarpTemplate(32, 0, False)
-              elif tcount >= 544 and tcount < 1024:
-                kernelStmts += unrollWarpTemplate(32, 512, True)
-                offset = 512
-
-            if tcount >= 32:
-              if tcount == 32:
-                kernelStmts += unrollWarpTemplate(16, 0, False)
+            for offset in offsets:
+              baseExpr = addRemTemplate(baseExpr, NumLitExp(offset, NumLitExp.INT))
 
             # the first thread within a block stores the results for the entire block
             kernelParams += [FieldDecl('double*', reducts)]
-            kernelStmts += [
+            reduceStmts += [
+              ExpStmt(FunCallExp(IdentExp('__syncthreads'),[])),
               IfStmt(BinOpExp(threadIdx, self.cs['int0'], BinOpExp.EQ),
-                     ExpStmt(BinOpExp(ArrayRefExp(reductsIdent, blockIdx),
-                                      baseExpr,
-                                      BinOpExp.EQ_ASGN)))
+                     ExpStmt(BinOpExp(ArrayRefExp(reductsIdent, blockIdx), baseExpr, BinOpExp.EQ_ASGN)))
             ]
+            kernelStmts += reduceStmts
         # end reduction statements
         #--------------------------------------------------
         
@@ -965,7 +968,6 @@ class Transformation(object):
                                BinOpExp.ASGN_ADD))
             ]
             warpkern32 = FunDecl(dev_warpkern32_name, 'void', ['__device__'], warpkernParams, CompStmt(warpKern32Stmts))
-            g.Globals().cunit_declarations += [orio.module.loop.codegen.CodeGen('cuda').generator.generate(warpkern32, '', '  ') + '\n']
           if warpkern64 is None:
             warpKern64Stmts = [
               ExpStmt(BinOpExp(ArrayRefExp(reductsIdent, tidIdent),
@@ -973,44 +975,46 @@ class Transformation(object):
                                BinOpExp.ASGN_ADD)),
             ] + warpKern32Stmts
             warpkern64 = FunDecl(dev_warpkern64_name, 'void', ['__device__'], warpkernParams, CompStmt(warpKern64Stmts))
-            g.Globals().cunit_declarations += [orio.module.loop.codegen.CodeGen('cuda').generator.generate(warpkern64, '', '  ') + '\n']
+          g.Globals().cunit_declarations += [orio.module.loop.codegen.CodeGen('cuda').generator.generate(warpkern32, '', '  ') + '\n']
+          g.Globals().cunit_declarations += [orio.module.loop.codegen.CodeGen('cuda').generator.generate(warpkern64, '', '  ') + '\n']
         # end warp reduce
         #--------------------------------------------------
 
         #--------------------------------------------------
         # begin multi-stage reduction kernel
-        blkdata      = self.cs['prefix'] + 'vec'+str(g.Globals().getcounter())
-        blkdataIdent = IdentExp(blkdata)
         if self.model['isReduction']:
-          redkernParams += [FieldDecl('int', size), FieldDecl('double*', reducts)]
-          redKernStmts += [VarDecl('__shared__ double', [blkdata+'['+str(self.devProps['maxThreadsPerBlock'])+']'])]
+          redkernParams = [FieldDecl('int', size), FieldDecl('double*', reducts)]
+          
+          tcount = self.threadCount
+          redKernStmts += [VarDecl('__shared__ double', [blkdata+'['+str(tcount)+']'])]
+          #redKernStmts += [VarDecl('__shared__ double', [blkdata+'['+str(self.devProps['maxThreadsPerBlock'])+']'])]
           redKernStmts += [IfStmt(BinOpExp(tidIdent, sizeIdent, BinOpExp.LT),
-                                      ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
-                                                               ArrayRefExp(reductsIdent, tidIdent),
-                                                               BinOpExp.EQ_ASGN)),
-                                      ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
-                                                               self.cs['int0'],
-                                                               BinOpExp.EQ_ASGN)))]
-          redKernStmts += [ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))]
-          redKernStmts += [VarDecl('int', [idx])]
-          redKernStmts += [ForStmt(
-            BinOpExp(idxIdent, BinOpExp(IdentExp('blockDim.x'), self.cs['int2'], BinOpExp.DIV), BinOpExp.EQ_ASGN),
-            BinOpExp(idxIdent, self.cs['int0'], BinOpExp.GT),
-            BinOpExp(idxIdent, self.cs['int1'], BinOpExp.ASGN_SHR),
-            CompStmt([IfStmt(BinOpExp(threadIdx, idxIdent, BinOpExp.LT),
-                                     ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
-                                                              ArrayRefExp(blkdataIdent,
-                                                                              BinOpExp(threadIdx, idxIdent, BinOpExp.ADD)),
-                                                              BinOpExp.ASGN_ADD))
-                                     ),
-                          ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))])
-          )]
-          redKernStmts += [
-            IfStmt(BinOpExp(threadIdx, self.cs['int0'], BinOpExp.EQ),
-                       ExpStmt(BinOpExp(ArrayRefExp(reductsIdent, blockIdx),
-                                                ArrayRefExp(blkdataIdent, self.cs['int0']),
-                                                BinOpExp.EQ_ASGN)))
-          ]
+                                  ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
+                                                   ArrayRefExp(reductsIdent, tidIdent),
+                                                   BinOpExp.EQ_ASGN)),
+                                  ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
+                                                   self.cs['int0'],
+                                                   BinOpExp.EQ_ASGN)))]
+          # sync threads prior to reduction
+          if tcount > 32: # no need for syncing within a warp
+            redKernStmts += [ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))];
+
+          
+          #redKernStmts += [VarDecl('int', [idx])]
+          #redKernStmts += [ForStmt(
+          #  BinOpExp(idxIdent, BinOpExp(IdentExp('blockDim.x'), self.cs['int2'], BinOpExp.DIV), BinOpExp.EQ_ASGN),
+          #  BinOpExp(idxIdent, self.cs['int0'], BinOpExp.GT),
+          #  BinOpExp(idxIdent, self.cs['int1'], BinOpExp.ASGN_SHR),
+          #  CompStmt([IfStmt(BinOpExp(threadIdx, idxIdent, BinOpExp.LT),
+          #                           ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),
+          #                                                    ArrayRefExp(blkdataIdent,
+          #                                                                    BinOpExp(threadIdx, idxIdent, BinOpExp.ADD)),
+          #                                                    BinOpExp.ASGN_ADD))
+          #                           ),
+          #                ExpStmt(FunCallExp(IdentExp('__syncthreads'),[]))])
+          #)]
+
+          redKernStmts += reduceStmts
         # end multi-stage reduction kernel
         #--------------------------------------------------
 
