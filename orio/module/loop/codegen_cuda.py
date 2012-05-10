@@ -166,7 +166,12 @@ class CodeGen_CUDA (CodeGen_C):
             if tnode.getLabel(): s += tnode.getLabel() + ':'
             s += indent + 'for ('
             if tnode.init:
-                s += self.generate(tnode.init, indent, extra_indent)
+                if isinstance(tnode.init, ast.VarDeclInit):
+                  s += str(tnode.init.type_name) + ' '
+                  s += self.generate(tnode.init.var_name, indent, extra_indent)
+                  s += '=' + self.generate(tnode.init.init_exp, indent, extra_indent)
+                else:
+                  s += self.generate(tnode.init, indent, extra_indent)
             s += '; '
             if tnode.test:
                 s += self.generate(tnode.test, indent, extra_indent)

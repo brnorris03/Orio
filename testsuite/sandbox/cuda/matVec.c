@@ -1,11 +1,16 @@
 void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos, int dof) {
 
   register int i,j;
-  /*@ begin PerfTuning (
+  /*@ begin PerfTuning(
         def performance_params {
           param TC[]  = range(32,65,32);
-          param CB[]  = [True, False];
+          param BC[]  = range(14,29,14);
           param UIF[] = range(1,3);
+          param PL[]  = [16,48];
+          param CFLAGS[] = map(join, product(['', '-use_fast_math'], ['', '-Xptxas -dlcm=cg']));
+        }
+        def build {
+          arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
         }
         def input_params {
           param m[]   = [2];
@@ -19,12 +24,9 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
           decl static double x[m*n*p*dof]     = random;
           decl static double y[m*n*p*dof]     = 0;
         }
-        def build {
-          arg build_command = 'nvcc -arch=sm_20';
-        }
         def performance_counter {
           arg method = 'basic timer';
-          arg repetitions = 10;
+          arg repetitions = 1;
         }
   ) @*/
 
@@ -40,15 +42,25 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
   offsets[6]=m*n*dof;
   int col;
 
-  /*@ begin Loop(transform CUDA(threadCount=TC, cacheBlocks=CB, unrollInner=UIF)
-        for(i=0; i<=nrows-1; i++) {
-          for(j=0; j<=ndiags-1; j++){
-            col = i+offsets[j];
-            if(col>=0&&col<nrows)
-              y[i] += A[i+j*nrows] * x[col];
-          }
-        }
+  /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, preferL1Size=PL, unrollInner=UIF)
+
+  for(i=0; i<=nrows-1; i++) {
+    for(j=0; j<=ndiags-1; j++){
+      col = i+offsets[j];
+      if(col>=0&&col<nrows)
+        y[i] += A[i+j*nrows] * x[col];
+    }
+  }
+
   ) @*/
+
+  for(i=0; i<=nrows-1; i++) {
+    for(j=0; j<=ndiags-1; j++){
+      col = i+offsets[j];
+      if(col>=0&&col<nrows)
+        y[i] += A[i+j*nrows] * x[col];
+    }
+  }
 
   /*@ end @*/
   /*@ end @*/

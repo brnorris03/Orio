@@ -2,10 +2,10 @@ void VecDot(int n, double *x, double *y, double r) {
 
   register int i;
 
-  /*@ begin Loop(transform CUDA(threadCount=32, cacheBlocks=True, streamCount=2)
+  /*@ begin Loop(transform CUDA(threadCount=32, blockCount=14, streamCount=2, cacheBlocks=True, preferL1Size=16)
 
   for (i=0; i<=n-1; i++)
-    r=r+x[i]*y[i];
+    r+=x[i]*y[i];
 
   ) @*/
   {
@@ -16,7 +16,7 @@ void VecDot(int n, double *x, double *y, double r) {
     /*calculate device dimensions*/
     dim3 dimGrid, dimBlock;
     dimBlock.x=nthreads;
-    dimGrid.x=(n+nthreads-1)/nthreads;
+    dimGrid.x=14;
     /*create streams*/
     int istream, soffset, boffset;
     cudaStream_t stream[nstreams+1];
@@ -31,6 +31,7 @@ void VecDot(int n, double *x, double *y, double r) {
     cudaMalloc((void**)&dev_x,nbytes);
     cudaHostRegister(x,nbytes,cudaHostRegisterPortable);
     cudaMalloc((void**)&dev_r,(dimGrid.x+1)*sizeof(double));
+    cudaDeviceSetCacheConfig(cudaFuncCachePreferShared);
     /*copy data from host to device*/
     for (istream=0; istream<nstreams; istream++ ) {
       soffset=istream*chunklen;
@@ -78,6 +79,7 @@ void VecDot(int n, double *x, double *y, double r) {
     cudaMemcpy(&r,dev_r,sizeof(double),cudaMemcpyDeviceToHost);
     cudaHostUnregister(y);
     cudaHostUnregister(x);
+    cudaDeviceSetCacheConfig(cudaFuncCachePreferNone);
     for (istream=0; istream<=nstreams; istream++ ) 
       cudaStreamDestroy(stream[istream]);
     /*free allocated memory*/
@@ -104,12 +106,13 @@ __device__ void orcu_warpReduce64(int tid, volatile double* reducts) {
   reducts[tid]+=reducts[tid+1];
 }
 
-__global__ void orcu_kernel3(int n, double* y, double* x, double* reducts) {
-  int tid=blockIdx.x*blockDim.x+threadIdx.x;
+__global__ void orcu_kernel3(const int n, double* y, double* x, double* reducts) {
+  const int tid=blockIdx.x*blockDim.x+threadIdx.x;
+  const int gsize=gridDim.x*blockDim.x;
   __shared__ double shared_y[32];
   __shared__ double shared_x[32];
   double orcu_var1=0;
-  if (tid<=n-1) {
+  for (int i=tid; i<=n-1; i+=gsize) {
     shared_y[threadIdx.x]=y[tid];
     shared_x[threadIdx.x]=x[tid];
     orcu_var1=orcu_var1+shared_x[threadIdx.x]*shared_y[threadIdx.x];
@@ -125,7 +128,7 @@ __global__ void orcu_kernel3(int n, double* y, double* x, double* reducts) {
 }
 
 __global__ void orcu_blksum4(int orcu_n, double* reducts) {
-  int tid=blockIdx.x*blockDim.x+threadIdx.x;
+  const int tid=blockIdx.x*blockDim.x+threadIdx.x;
   __shared__ double orcu_vec2[32];
   if (tid<orcu_n) 
     orcu_vec2[threadIdx.x]=reducts[tid];
