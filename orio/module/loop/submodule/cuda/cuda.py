@@ -195,7 +195,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                 g.err('%s: %s: unrecognized transformation argument: "%s"' % (self.__class__, line_no, aname))
 
         if not errors == '':
-            g.err('%s: errors evaluating transformation args:\n%s' % (self.__class__, errors))
+          raise Exception, ('%s: errors evaluating transformation args:\n%s' % (self.__class__, errors))
 
         # return evaluated transformation arguments
         return {
@@ -230,19 +230,19 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
           f.write(CUDA_DEVICE_QUERY_SKELET)
           f.close()
         except:
-          g.err('orio.module.loop.submodule.cuda.cuda: cannot open file for writing: %s' % qsrc)
+          g.err('%s: cannot open file for writing: %s' % (self.__class__, qsrc))
         
         # compile the query
         cmd = 'nvcc -o %s %s' % (qexec, qsrc)
         status = os.system(cmd)
         if status:
-          g.err('orio.module.loop.submodule.cuda.cuda: failed to compile cuda device query code: "%s"' % cmd)
+          g.err('%s: failed to compile cuda device query code: "%s"' % (self.__class__, cmd))
 
         # execute the query
         runcmd = './%s' % (qexec)
         status = os.system(runcmd)
         if status:
-          g.err('orio.module.loop.submodule.cuda.cuda: failed to execute cuda device query code: "%s"' % runcmd)
+          g.err('%s: failed to execute cuda device query code: "%s"' % (self.__class__, runcmd))
         os.remove(qsrc)
         os.remove(qexec)
         
@@ -255,11 +255,8 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
             props[eline[0]] = eline[1]
         f.close()
       except:
-        g.err('orio.module.loop.submodule.cuda.cuda: cannot open query output file for reading: %s' % qout)
+        g.err('%s: cannot open query output file for reading: %s' % (self.__class__, qout))
   
-      # clean up
-      #os.remove(qout)
-      
       if props['devId'] == -2:
         g.err("%s: there is no CUDA 1.0 enabled GPU on this machine" % self.__class__)
       
@@ -295,11 +292,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         targs = self.readTransfArgs(self.perf_params, self.transf_args, props)
         
         # perform the transformation of the statement
-        try:
-          transformed_stmt = self.cudify(self.stmt, props, targs)
-        except Exception, e:
-          g.err(('orio.module.loop.submodule.cuda.transform: encountered an error while transforming ' +
-                  'statement:\n"%s"\n --> %s: %s') % (self.stmt, e.__class__.__name__, e))
+        transformed_stmt = self.cudify(self.stmt, props, targs)
         
         return transformed_stmt
 
