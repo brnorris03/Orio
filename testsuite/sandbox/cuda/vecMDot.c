@@ -3,11 +3,14 @@ void VecMDot(int n, int nv, double *x, double *y, double *r) {
   register int i,j;
   /*@ begin PerfTuning (
         def performance_params {
-          param TC[] = range(16,33,16);
+          param TC[]  = range(32,65,32);
+          param BC[]  = range(14,29,14);
           param UIF[] = range(1,3);
+          param PL[]  = [16,48];
+          param CFLAGS[] = map(join, product(['', '-use_fast_math'], ['', '-Xptxas -dlcm=cg']));
         }
         def build {
-          arg build_command = 'nvcc -arch=sm_20';
+          arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
         }
         def input_params {
           param N[] = [10];

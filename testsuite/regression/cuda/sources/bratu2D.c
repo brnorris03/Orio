@@ -17,13 +17,17 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
   double hydhx  = hy/hx;
   double u;
 
-  /*@ begin Loop(transform CUDA(threadCount=32, cacheBlocks=False, pinHostMem=False)
+  /*@ begin Loop(transform CUDA(threadCount=32, blockCount=14, streamCount=2, preferL1Size=16)
+
   for(i=bb; i<=be-1; i++) {
     F[i] = (2*X[i+2*nrows] - X[i+nrows] - X[i+3*nrows])*hydhx + (2*X[i+2*nrows] - X[i] - X[i+4*nrows])*hxdhy - sc*exp(X[i+2*nrows]);
   }
+
   ) @*/
+
   for(i=bb; i<=be-1; i++) {
     F[i] = (2*X[i+2*nrows] - X[i+nrows] - X[i+3*nrows])*hydhx + (2*X[i+2*nrows] - X[i] - X[i+4*nrows])*hxdhy - sc*exp(X[i+2*nrows]);
   }
+
   /*@ end @*/
 }

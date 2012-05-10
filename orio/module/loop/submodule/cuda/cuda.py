@@ -101,6 +101,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
 
         # expected argument names
         THREADCOUNT = 'threadCount'
+        BLOCKCOUNT  = 'blockCount'
         CB          = 'cacheBlocks'
         PHM         = 'pinHostMem'
         STREAMCOUNT = 'streamCount'
@@ -111,6 +112,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
 
         # default argument values
         threadCount  = props['warpSize']
+        blockCount   = props['multiProcessorCount']
         cacheBlocks  = False
         pinHost      = False
         streamCount  = 1
@@ -134,6 +136,11 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                     errors += 'line %s: %s must be a positive integer less than device limit of maxThreadsPerBlock=%s: %s\n' % (line_no, aname, props['maxThreadsPerBlock'], rhs)
                 else:
                     threadCount = rhs
+            elif aname == BLOCKCOUNT:
+                if not isinstance(rhs, int) or rhs <= 0 or rhs > props['maxGridSize'][0]:
+                    errors += 'line %s: %s must be a positive integer less than device limit of maxGridSize[0]=%s: %s\n' % (line_no, aname, props['maxGridSize'][0], rhs)
+                else:
+                    blockCount = rhs
             elif aname == CB:
                 if not isinstance(rhs, bool):
                     errors += 'line %s: %s must be a boolean: %s\n' % (line_no, aname, rhs)
@@ -193,6 +200,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         # return evaluated transformation arguments
         return {
           THREADCOUNT:threadCount,
+          BLOCKCOUNT:blockCount,
           CB:cacheBlocks,
           PHM:pinHost,
           STREAMCOUNT:streamCount,
