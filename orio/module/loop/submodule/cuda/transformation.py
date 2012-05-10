@@ -21,6 +21,7 @@ class Transformation(object):
       self.stmt         = stmt
       self.devProps     = devProps
       self.threadCount  = targs['threadCount']
+      self.blockCount   = targs['blockCount']
       self.cacheBlocks  = targs['cacheBlocks']
       self.pinHostMem   = targs['pinHostMem']
       self.streamCount  = targs['streamCount']
@@ -134,13 +135,14 @@ class Transformation(object):
         Comment('calculate device dimensions'),
         VarDecl('dim3', ['dimGrid', 'dimBlock']),
         ExpStmt(BinOpExp(IdentExp('dimBlock.x'), self.cs['nthreads'], BinOpExp.EQ_ASGN)),
-        ExpStmt(BinOpExp(self.cs['gridx'],
-                         BinOpExp(ParenthExp(BinOpExp(self.model['inputsize'],
-                                                      BinOpExp(self.cs['nthreads'], self.cs['int1'], BinOpExp.SUB),
-                                                      BinOpExp.ADD)),
-                                  self.cs['nthreads'],
-                                  BinOpExp.DIV),
-                         BinOpExp.EQ_ASGN))
+        ExpStmt(BinOpExp(IdentExp('dimGrid.x'), IdentExp(self.blockCount), BinOpExp.EQ_ASGN))
+        #ExpStmt(BinOpExp(self.cs['gridx'],
+        #                 BinOpExp(ParenthExp(BinOpExp(self.model['inputsize'],
+        #                                              BinOpExp(self.cs['nthreads'], self.cs['int1'], BinOpExp.SUB),
+        #                                              BinOpExp.ADD)),
+        #                          self.cs['nthreads'],
+        #                          BinOpExp.DIV),
+        #                 BinOpExp.EQ_ASGN))
       ]
 
 
@@ -576,7 +578,7 @@ class Transformation(object):
         # create decls for ubound_exp id's, assuming all ids are int's
         ubound_idss = map(lambda x: loop_lib.collectNode(collectIdents, x), [ubound_exp]+([ubound_exp2] if nestedLoop else []))
         ubound_ids = reduce(lambda acc,item: acc+item, ubound_idss, [])
-        kernelParams = [FieldDecl('int', x) for x in ubound_ids]
+        kernelParams = [FieldDecl('const int', x) for x in ubound_ids]
 
         int_ids = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIds, loop_body)))
         int_ids_pass2 = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIdsClosure(int_ids), loop_body)))
@@ -627,11 +629,11 @@ class Transformation(object):
         loop_lhs_exprs = loop_lib.collectNode(collectLhsExprs, loop_body)
 
         # replace all array indices with thread id
-        tid = 'tid'
-        tidIdent = IdentExp(tid)
-        rewriteToTid = lambda x: tidIdent if isinstance(x, IdentExp) and x.name == index_id.name else x
+        tidIdent = IdentExp('tid')
+        #rewriteToTid = lambda x: tidIdent if isinstance(x, IdentExp) and x.name == index_id.name else x
         #rewriteArrayIndices = lambda n: ArrayRefExp(n.exp, loop_lib.rewriteNode(rewriteToTid, n.sub_exp)) if isinstance(n, ArrayRefExp) else n
-        loop_body3 = loop_lib.rewriteNode(rewriteToTid, loop_body)
+        #loop_body3 = loop_lib.rewriteNode(rewriteToTid, loop_body)
+        loop_body3 = loop_body
         # end rewrite the loop body
         #--------------------------------------------------------------------------------------------------------------
 
@@ -700,11 +702,16 @@ class Transformation(object):
         sizeIdent  = IdentExp(size)
         blockIdx   = IdentExp('blockIdx.x')
         blockSize  = IdentExp('blockDim.x')
+        gridSize   = IdentExp('gridDim.x')
         threadIdx  = IdentExp('threadIdx.x')
-        tidVarDecl = VarDeclInit('int', tidIdent, BinOpExp(BinOpExp(blockIdx, blockSize, BinOpExp.MUL),
-                                                           BinOpExp(threadIdx, IdentExp(lbound_id), BinOpExp.ADD) if str(lbound_exp) != '0' else threadIdx,
-                                                           BinOpExp.ADD))
-        kernelStmts   = [tidVarDecl]
+        gsizeIdent = IdentExp('gsize')
+        tidVarDecl = VarDeclInit('const int', tidIdent,
+                                 BinOpExp(BinOpExp(blockIdx, blockSize, BinOpExp.MUL),
+                                          BinOpExp(threadIdx, IdentExp(lbound_id), BinOpExp.ADD) if str(lbound_exp) != '0' else threadIdx,
+                                          BinOpExp.ADD))
+        gsizeDecl  = VarDeclInit('const int', gsizeIdent, BinOpExp(gridSize, blockSize, BinOpExp.MUL))
+
+        kernelStmts   = [tidVarDecl, gsizeDecl]
         redKernStmts  = [tidVarDecl]
         redkernParams = []
         cacheReads    = []
@@ -762,9 +769,16 @@ class Transformation(object):
         #--------------------------------------------------
         if self.domain == None:
           # the rewritten loop body statement
+          #kernelStmts += [
+          #  IfStmt(BinOpExp(tidIdent, ubound_exp, BinOpExp.LE),
+          #         CompStmt(cacheReads + [loop_body3] + cacheWrites))
+          #]
           kernelStmts += [
-            IfStmt(BinOpExp(tidIdent, ubound_exp, BinOpExp.LE),
-                   CompStmt(cacheReads + [loop_body3] + cacheWrites))
+            ForStmt(
+              VarDeclInit('int', index_id, tidIdent),
+              BinOpExp(index_id, ubound_exp, BinOpExp.LE),
+              BinOpExp(index_id, gsizeIdent, BinOpExp.ASGN_ADD),
+              CompStmt(cacheReads + [loop_body3] + cacheWrites))
           ]
         else:
           kernelStmts  = [VarDeclInit('int', tidIdent, BinOpExp(blockIdx, ArrayRefExp(sidxIdent, threadIdx), BinOpExp.ADD))]

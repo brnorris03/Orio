@@ -1,8 +1,15 @@
 void FormJacobian2D(double lambda, int m, int n, double *x, double *dia) {
-  int i;
-  /*@ begin PerfTuning (
+
+  register int i;
+  /*@ begin PerfTuning(
         def performance_params {
           param TC[] = range(32,65,32);
+          param BC[] = range(14,29,14);
+          param PL[] = [16,48];
+          param CFLAGS[] = map(join, product(['', '-use_fast_math'], ['', '-Xptxas -dlcm=cg']));
+        }
+        def build {
+          arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
         }
         def input_params {
           param Lambda = 6;
@@ -12,9 +19,6 @@ void FormJacobian2D(double lambda, int m, int n, double *x, double *dia) {
         def input_vars {
           decl dynamic double x[M*N] = random;
           decl dynamic double dia[5*M*N-2*M-2] = 0;
-        }
-        def build {
-          arg build_command = 'nvcc -arch=sm_20';
         }
         def performance_counter {
           arg method = 'basic timer';
@@ -35,7 +39,7 @@ void FormJacobian2D(double lambda, int m, int n, double *x, double *dia) {
   int bb = m;
   int be = nrows-m;
 
-  /*@ begin Loop(transform CUDA(threadCount=TC)
+  /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, preferL1Size=PL)
 
   for(i=bb; i<=be-1; i++) {
     dia[i-m]           = -hxdhy;
