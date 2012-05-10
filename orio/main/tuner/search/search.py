@@ -220,15 +220,18 @@ class Search:
         for coord in uneval_coords:
             coord_key = str(coord)
             perf_params = self.coordToPerfParams(coord)
-            #print perf_params
             #info('transformation time = %e',time.time())
             self.transform_time=0
             start = time.time()
-            #print perf_params
             #print self.getPerfCostConfig(coord_key,perf_params)
 
-            transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
-            #print perf_params
+            try:
+              transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
+            except Exception, e:
+              err('failed during evaluation of coordinate: %s=%s\n%s %s' % (coord, self.coordToPerfParams(coord), e.__class__.__name__, e), 0, False)
+              perf_costs[coord_key] = [self.MAXFLOAT]
+              continue
+
             elapsed = (time.time() - start)
             self.transform_time=elapsed
             #info('transformation time = %e' % self.transform_time)
@@ -237,6 +240,8 @@ class Search:
                 sys.exit(1)
             transformed_code, _ = transformed_code_seq[0]
             code_map[coord_key] = transformed_code
+        if code_map == {}: # nothing to test
+          return perf_costs
         #debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)

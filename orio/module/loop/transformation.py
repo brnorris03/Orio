@@ -2,8 +2,7 @@
 # The transformation that applies code transformation procedures
 #
 
-import sys
-import ast, orio.main.dyn_loader, orio.module.loop.codegen
+import ast, orio.main.dyn_loader
 from orio.main.util.globals import *
 
 #-----------------------------------------
@@ -70,7 +69,7 @@ class Transformation:
 
             # check for repeated transformation argument names
             arg_names = {}
-            for [aname, rhs, line_no] in stmt.args:
+            for [aname, _, line_no] in stmt.args:
                 if aname in arg_names:
                     err('orio.module.loop.transformation: %s: repeated transformation argument: "%s"' % (line_no, aname))
                 arg_names[aname] = None
@@ -81,12 +80,13 @@ class Transformation:
             submod_class = self.dloader.loadClass(submod_name, class_name)
             
             # apply code transformations
-            try:
-                t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language, self.tinfo)
-                transformed_stmt = t.transform()
-            except Exception, e:
-                err(('orio.module.loop.transformation:%s: encountered an error as optimizing the transformation ' +
-                        'statement: "%s"\n --> %s: %s') % (stmt.line_no, class_name,e.__class__.__name__, e))
+            #try:
+            t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language, self.tinfo)
+            transformed_stmt = t.transform()
+            #except Exception, e:
+            #    err(('orio.module.loop.transformation:%s: encountered an error as optimizing the transformation ' +
+            #            'statement: "%s"\n --> %s: %s') % (stmt.line_no, class_name,e.__class__.__name__, e), 0, False)
+            #    raise Exception, e
 
             # return the transformed statement
             return transformed_stmt
