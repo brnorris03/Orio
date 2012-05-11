@@ -332,7 +332,7 @@ class PerfTestDriver:
         if Globals().keep_temps: return
         for fname in [self.exe_name, self.src_name, self.timer_file]:
             try:
-                if os.path.exists(fname):
+                if fname and os.path.exists(fname):
                     os.unlink(fname)
             except:
                 err('orio.main.tuner.ptest_driver:  cannot delete file: %s' % fname)
