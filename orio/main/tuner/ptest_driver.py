@@ -300,6 +300,9 @@ class PerfTestDriver:
                             perf_costs_reps.append(val)
                             perf_costs[key]=perf_costs_reps
                             #break
+                        else:
+                            perf_costs['0'] = [float('inf')] # skip this test
+                            #raise Exception
                 #if output: perf_costs = eval(str(output))
             except Exception, e:
                 err('orio.main.tuner.ptest_driver: failed to process test result, command was "%s", output: "%s\n --> %s: %s' %

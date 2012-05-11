@@ -125,6 +125,16 @@ class Transformation(object):
         deallocs += [ExpStmt(FunCallExp(IdentExp('cudaFree'), [IdentExp(dvar)]))]
       for _,dvar in self.model['intarrays']:
         deallocs += [ExpStmt(FunCallExp(IdentExp('cudaFree'), [IdentExp(dvar)]))]
+
+      # perform run-time sanity check
+      errIdent = IdentExp('err')
+      deallocs += [
+        VarDeclInit('cudaError_t', IdentExp('err'), FunCallExp(IdentExp('cudaGetLastError'), [])),
+        IfStmt(BinOpExp(IdentExp('cudaSuccess'), errIdent, BinOpExp.NE),
+               ExpStmt(FunCallExp(IdentExp('printf'),
+                                  [StringLitExp('CUDA runtime error: %s'), FunCallExp(IdentExp('cudaGetErrorString'), [errIdent])])))
+      ]
+      
       self.newstmts['deallocs'] = deallocs
 
 
