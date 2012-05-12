@@ -111,6 +111,7 @@ def start(argv, lang):
                 # write output
                 info('\n----- begin writing the output file(s) -----')
                 path_name, ext = os.path.splitext(out_filename)
+                if language == 'cuda': ext = '.cu'
                 for optimized_code, input_params in optimized_code_seq:
                     if len(optimized_code_seq) > 1:
                         suffix = ''
