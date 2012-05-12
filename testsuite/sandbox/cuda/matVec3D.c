@@ -1,11 +1,12 @@
 void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos, int dof) {
 
   register int i,j;
-  /*@ begin PerfTuning(
+  int col;
+  /*@ begin PerfTuning (
         def performance_params {
-          param TC[]  = range(32,65,32);
-          param BC[]  = range(14,29,14);
-          param UIF[] = range(1,3);
+          param TC[]  = range(32,1025,32);
+          param BC[]  = range(14,113,14);
+          param UIF[] = range(1,8);
           param PL[]  = [16,48];
           param CFLAGS[] = map(join, product(['', '-use_fast_math'], ['', '-Xptxas -dlcm=cg']));
         }
@@ -13,11 +14,13 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
           arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
         }
         def input_params {
-          param m[]   = [2];
-          param n[]   = [2];
-          param p[]   = [2];
+          param m[]   = [16,32,64,128,256];
+          param n[]   = [16,32,64,128,256];
+          param p[]   = [16,32,64,128,256];
           param Nos[] = [7];
           param dof[] = [1];
+          constraint c1 = (m==n);
+          constraint c2 = (n==p);
         }
         def input_vars {
           decl static double A[m*n*p*Nos*dof] = random;
@@ -26,7 +29,7 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
         }
         def performance_counter {
           arg method = 'basic timer';
-          arg repetitions = 1;
+          arg repetitions = 6;
         }
   ) @*/
 
@@ -40,7 +43,6 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
   offsets[4]=dof;
   offsets[5]=m*dof;
   offsets[6]=m*n*dof;
-  int col;
 
   /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, preferL1Size=PL, unrollInner=UIF)
 
