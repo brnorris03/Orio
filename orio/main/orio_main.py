@@ -110,9 +110,9 @@ def start(argv, lang):
     
                 # write output
                 info('\n----- begin writing the output file(s) -----')
+                path_name, ext = os.path.splitext(out_filename)
                 for optimized_code, input_params in optimized_code_seq:
                     if len(optimized_code_seq) > 1:
-                        path_name, ext = os.path.splitext(out_filename)
                         suffix = ''
                         for pname, pval in input_params:
                             suffix += '_%s_%s' % (pname, pval)
