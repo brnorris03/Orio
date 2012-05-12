@@ -138,7 +138,8 @@ class PerfTuner:
                                        'search_opts':search_opts,
                                        'ptcodegen':ptcodegen, 
                                        'ptdriver':ptdriver, 'odriver':self.odriver,
-                                       'use_parallel_search':use_parallel_search})
+                                       'use_parallel_search':use_parallel_search,
+                                       'input_params':ptcodegen.input_params[:]})
 
             # search for the best performance parameters
             best_perf_params, best_perf_cost = search_eng.search()

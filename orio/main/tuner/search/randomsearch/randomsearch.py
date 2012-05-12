@@ -156,16 +156,14 @@ class Randomsearch(orio.main.tuner.search.search.Search):
         search_time = time.time() - start_time
         
         info('----- end random search -----')
-        info('----- begin summary -----')
-        info(' best coordinate: %s, cost: %e' % (best_coord, best_perf_cost))
-        info(' total search time: %.2f seconds' % search_time)
+        info('----- begin random search summary -----')
         info(' total completed runs: %s' % runs)
         info(' total successful runs: %s' % sruns)
         info(' total failed runs: %s' % fruns)
-        info('----- end summary -----')
+        info('----- end random search summary -----')
         
         # return the best coordinate
-        return best_coord
+        return best_coord, best_perf_cost, search_time, sruns
    
    # Private methods
    #--------------------------------------------------
