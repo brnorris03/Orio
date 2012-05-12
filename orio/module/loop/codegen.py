@@ -201,6 +201,12 @@ class CodeGen_C (CodeGen):
             s += ', '.join(tnode.var_names)
             s += ';\n'
 
+        elif isinstance(tnode, ast.VarDeclInit):
+            s += indent + str(tnode.type_name) + ' '
+            s += self.generate(tnode.var_name, indent, extra_indent)
+            s += '=' + self.generate(tnode.init_exp, indent, extra_indent)
+            s += ';\n'
+
         elif isinstance(tnode, ast.Pragma):
             s += '#pragma ' + str(tnode.pstring) + '\n'
 

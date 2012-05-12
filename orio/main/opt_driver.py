@@ -117,6 +117,7 @@ class OptDriver:
 
                 # apply code transformations
                 try:
+                  if self.lang == 'cuda':
                     transformation = mod_class(perf_params,
                                               cfrag.leader_ann.mod_code,
                                               optimized_body_code,
@@ -124,6 +125,13 @@ class OptDriver:
                                               cfrag.leader_ann.indent_size,
                                               language=self.lang,
                                               tinfo=self.ptuner.tinfo)
+                  else:
+                    transformation = mod_class(perf_params,
+                                              cfrag.leader_ann.mod_code,
+                                              optimized_body_code,
+                                              cfrag.leader_ann.mod_code_line_no,
+                                              cfrag.leader_ann.indent_size,
+                                              language=self.lang)
                 except Exception, e:
                     err('orio.main.opt_driver: %s: encountered an error when transforming annotation "%s"\n --> %s: %s' %
                            (cfrag.leader_ann.mod_name_line_no, cfrag.leader_ann.mod_name,e.__class__.__name__, e))
