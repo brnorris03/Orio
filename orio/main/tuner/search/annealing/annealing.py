@@ -215,14 +215,9 @@ class Annealing(orio.main.tuner.search.search.Search):
         search_time = time.time() - start_time
         
         info('----- end simulated annealing search -----')
-        info('----- begin summary -----')
-        info(' best coordinate: %s, cost: %s' % (best_global_coord, best_global_perf_cost))
-        info(' total search time: %.2f seconds' % search_time)
-        info(' total completed runs: %s' % runs)
-        info('----- end summary -----')
         
         # return the best coordinate
-        return best_global_coord
+        return best_global_coord, best_global_perf_cost, search_time, runs
        
        
         #--------------------------------------------------

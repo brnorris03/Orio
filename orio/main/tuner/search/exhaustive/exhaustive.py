@@ -46,9 +46,11 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         coord_count = 1
         if self.use_parallel_search:
             coord_count = self.num_procs
+        top_perf={}
         
         # record the best coordinate and its best performance cost
         best_coord = None
+        top_coords = {}
         best_perf_cost = self.MAXFLOAT
         
         # start the timer
@@ -77,16 +79,19 @@ class Exhaustive(orio.main.tuner.search.search.Search):
                 coord_val = eval(coord_str)
                 #info('cost: %s' % (perf_cost))
                 floatNums = [float(x) for x in perf_cost]
+
                 if len(perf_cost) == 1:
                     mean_perf_cost = sum(floatNums)
                 else:
                     mean_perf_cost = sum(floatNums[1:]) / (len(perf_cost)-1)
+
                 info('coordinate: %s, average cost: %s, all costs: %s' % (coord_val, mean_perf_cost, perf_cost))
                 
                 if mean_perf_cost < best_perf_cost and perf_cost > 0.0:
                     best_coord = coord_val
                     best_perf_cost = mean_perf_cost
                     info('>>>> best coordinate found: %s, average cost: %e' % (coord_val, mean_perf_cost))
+
 
             # check if the time is up
             if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
@@ -110,13 +115,9 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         search_time = time.time() - start_time
 
         info('----- end exhaustive search -----')
-        info('----- begin summary -----')
-        info(' best coordinate: %s=%s, cost: %e' % (best_coord, self.coordToPerfParams(best_coord), best_perf_cost))
-        info(' total search time: %.2f seconds' % search_time)
-        info('----- end summary -----')
         
         # return the best coordinate
-        return best_coord
+        return best_coord,best_perf_cost,search_time,len(coords)
     
     # Private methods       
     #--------------------------------------------------

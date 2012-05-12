@@ -188,7 +188,7 @@ class Extern(orio.main.tuner.search.search.Search):
             sys.stderr.write(result)
             #sys.stderr.write('%s\n'%pf)
         # return the best coordinate
-        return best_coord
+        return best_coord, best_perf_cost, search_time, sruns
    
    # Private methods
    #--------------------------------------------------
