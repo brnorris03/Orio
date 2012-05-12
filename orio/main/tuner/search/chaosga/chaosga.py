@@ -4,18 +4,20 @@ import orio.main.tuner.search.search
 class ChaosGA(orio.main.tuner.search.search.Search):
     def __init__(self, params):
         orio.main.tuner.search.search.Search.__init__(self, params)
+        self.search_time = -1
+        self.numEvals=500
 
         # Method required by the search interface
     def searchBestCoord(self):
         answer = evolve.newSolution("ga_test.txt", 
             self,
-            500,    #numEvals
+            self.numEvals,    #numEvals
             2.8,    #growthrate
             50,    #population max
             0.6,    #initial population proportion
             min,    #minimizing, not maximizing
             )
-        return answer.genome
+        return answer.genome, answer.bestYet, self.search_time, self.numEvals
 
     def fitness(self, x):
         return self.getPerfCost(x)
