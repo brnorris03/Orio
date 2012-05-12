@@ -81,7 +81,10 @@ class Transformation:
             
             # apply code transformations
             #try:
-            t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language, self.tinfo)
+            if self.language == 'cuda':
+              t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language, self.tinfo)
+            else:
+              t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language)
             transformed_stmt = t.transform()
             #except Exception, e:
             #    err(('orio.module.loop.transformation:%s: encountered an error as optimizing the transformation ' +
