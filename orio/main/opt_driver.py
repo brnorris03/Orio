@@ -142,6 +142,7 @@ class OptDriver:
 
                 # create the optimized code sequence
                 g = Globals()
+                externals = ''
                 if len(g.cunit_declarations) > 0:
                   externals = reduce(lambda x,y: x + y, g.cunit_declarations)
                   g.cunit_declarations = []
