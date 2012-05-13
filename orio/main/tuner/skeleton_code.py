@@ -73,6 +73,7 @@ SEQ_DEFAULT = r'''
 #include <time.h>
 
 /*@ global @*/
+/*@ external @*/
 
 extern double getClock(); 
 
@@ -119,6 +120,7 @@ PAR_DEFAULT = r'''
 
 
 /*@ global @*/
+/*@ external @*/
 
 #define BIG_NUMBER 147483647.0
 
@@ -410,6 +412,7 @@ SEQ_DEFAULT_CUDA = r'''
 #include <cuda.h>
 
 /*@ global @*/
+/*@ external @*/
 
 int main(int argc, char *argv[])
 {
@@ -439,6 +442,7 @@ class PerfTestSkeletonCode:
 
     # tags
     __GLOBAL_TAG = r'/\*@\s*global\s*@\*/'
+    __EXTERNAL_TAG = r'/\*@\s*external\s*@\*/'
     __PROLOGUE_TAG = r'/\*@\s*prologue\s*@\*/'
     __EPILOGUE_TAG = r'/\*@\s*epilogue\s*@\*/'
     __TCODE_TAG = r'/\*@\s*tested\s+code\s*@\*/'
@@ -476,6 +480,10 @@ class PerfTestSkeletonCode:
         match_obj = re.search(self.__GLOBAL_TAG, code)
         if not match_obj:
             err('main.tuner.skeleton_code:  missing "global" tag in the skeleton code')
+
+        match_obj = re.search(self.__EXTERNAL_TAG, code)
+        if not match_obj:
+            err('main.tuner.skeleton_code:  missing "external" tag in the skeleton code')
 
         match_obj = re.search(self.__PROLOGUE_TAG, code)
         if not match_obj:
@@ -563,7 +571,8 @@ class PerfTestSkeletonCode:
         if self.use_parallel_search:
             switch_body_code = re.search(self.__SWITCHBODY_TAG, code).group(1)
             tcode = ''
-            for i, (code_key, code_value) in enumerate(tested_code_map.items()):
+            par_externals = ''
+            for i, (code_key, (code_value, externals)) in enumerate(tested_code_map.items()):
                 scode = switch_body_code
                 scode = re.sub(self.__COORD_TAG, code_key, scode)
                 scode = re.sub(self.__TCODE_TAG, code_value, scode)
@@ -571,11 +580,14 @@ class PerfTestSkeletonCode:
                 tcode += '  case %s:\n' % i
                 tcode += '    {\n' + scode + '\n    }\n'
                 tcode += '    break;\n'
+                par_externals += externals
+            code = re.sub(self.__EXTERNAL_TAG, par_externals, code)
             code = re.sub(self.__SWITCHBODY_TAG, tcode, code)
             
         # insert the sequential code
         else:
-            ((coord_key, tcode),) = tested_code_map.items()
+            ((coord_key, (tcode, externals)),) = tested_code_map.items()
+            code = re.sub(self.__EXTERNAL_TAG, externals, code)
             code = re.sub(self.__COORD_TAG, coord_key, code)
             code = re.sub(self.__TCODE_TAG, tcode, code)
 
