@@ -214,8 +214,8 @@ class Search:
         if Globals().validationMode and not Globals().executedOriginal:
           validation_map = {}
           transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
-          transformed_code, _ = transformed_code_seq[0]
-          validation_map['original'] = transformed_code
+          transformed_code, _, externals = transformed_code_seq[0]
+          validation_map['original'] = (transformed_code, externals)
           instrumented_code = self.ptcodegen.generate(validation_map)
           _ = self.ptdriver.run(instrumented_code)
           Globals().executedOriginal = True
@@ -243,8 +243,8 @@ class Search:
             if len(transformed_code_seq) != 1:
                 err('internal error: the optimized annotation code cannot contain multiple versions')
                 sys.exit(1)
-            transformed_code, _ = transformed_code_seq[0]
-            code_map[coord_key] = transformed_code
+            transformed_code, _, externals = transformed_code_seq[0]
+            code_map[coord_key] = (transformed_code, externals)
         if code_map == {}: # nothing to test
           return perf_costs
         #debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
@@ -322,8 +322,8 @@ class Search:
             sys.exit(1)
 
         #coord_key='param'    
-        transformed_code, _ = transformed_code_seq[0]
-        code_map[coord_key] = transformed_code
+        transformed_code, _, externals = transformed_code_seq[0]
+        code_map[coord_key] = (transformed_code, externals)
         #debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)

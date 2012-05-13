@@ -104,15 +104,15 @@ def start(argv, lang):
                 # remove all annotations from output
                 if g.erase_annot:
                     info('\n----- begin removing annotations from output-----')
-                    optimized_code_seq = [[ann_parser.AnnParser().removeAnns(c), i] \
-                                          for c, i in optimized_code_seq]
+                    optimized_code_seq = [[ann_parser.AnnParser().removeAnns(c), i, e] \
+                                          for c, i, e in optimized_code_seq]
                     info('----- finished removing annotations from output-----')
     
                 # write output
                 info('\n----- begin writing the output file(s) -----')
                 path_name, ext = os.path.splitext(out_filename)
                 if language == 'cuda': ext = '.cu'
-                for optimized_code, input_params in optimized_code_seq:
+                for optimized_code, input_params, externals in optimized_code_seq:
                     if len(optimized_code_seq) > 1:
                         suffix = ''
                         for pname, pval in input_params:
@@ -122,10 +122,8 @@ def start(argv, lang):
                     info('--> writing output to: %s' % out_filename)
                     try:
                         f = open(out_filename, 'w')
+                        f.write(externals)
                         f.write(optimized_code)
-                        if len(g.cunit_declarations) > 0:
-                            f.write(reduce(lambda x,y: x + y, g.cunit_declarations)) # cuda kernel functions
-                            g.cunit_declarations = []
                         f.close()
                     except:
                         err('orio.main.main:  cannot open file for writing: %s' % g.out_filename)
