@@ -14,7 +14,8 @@ class PerfTestCodeGen(object):
 
     # function names
     malloc_func_name = 'malloc_arrays'
-    init_func_name = 'init_input_vars'
+    dalloc_func_name = 'dalloc_arrays'
+    init_func_name   = 'init_input_vars'
 
     #-----------------------------------------------------
 
@@ -32,6 +33,7 @@ class PerfTestCodeGen(object):
         self.iparam_code = self.__genIParams(input_params)
         self.decl_code = self.__genDecls(input_decls)
         self.malloc_code = self.__genMAllocs(input_decls)
+        self.dalloc_code = self.__genDAllocs(input_decls)
         self.init_code = self.__genInits(input_decls)
 
         self.__checkDeclFile()
@@ -135,6 +137,17 @@ class PerfTestCodeGen(object):
         malloc_code = '\n'.join([ivars_decl_code] + mallocs)
         malloc_code = '  ' + re.sub('\n', '\n  ', malloc_code)
         return malloc_code
+
+    #-----------------------------------------------------
+    
+    def __genDAllocs(self, input_decls):
+
+        dalloc_code = ''
+        for is_static, _, vname, vdims, _ in input_decls:                 
+          if len(vdims) > 0 and not is_static:
+            dalloc_code += '  free('+vname+');'+r'\n';
+        
+        return dalloc_code
 
     #-----------------------------------------------------
     
@@ -273,6 +286,7 @@ class PerfTestCodeGen(object):
         else:
             decl_code = self.decl_code + '\n'
             decl_code += 'void %s() {\n%s\n}\n' % (self.malloc_func_name, self.malloc_code)
+            decl_code += 'void %s() {\n%s}\n'   % (self.dalloc_func_name, self.dalloc_code)
 
         # generate the initialization code
         if self.init_file:
@@ -295,6 +309,8 @@ class PerfTestCodeGen(object):
         # create code for the epilogue section
         # TODO: Here we should put validation with original results
         epilogue_code = ''
+        if not self.decl_file:
+            epilogue_code += ('%s();' % self.dalloc_func_name) + '\n'
 
         # get the performance-testing code
         ptest_code = self.ptest_skeleton_code.insertCode(global_code, prologue_code,
