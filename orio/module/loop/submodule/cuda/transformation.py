@@ -132,7 +132,7 @@ class Transformation(object):
         VarDeclInit('cudaError_t', IdentExp('err'), FunCallExp(IdentExp('cudaGetLastError'), [])),
         IfStmt(BinOpExp(IdentExp('cudaSuccess'), errIdent, BinOpExp.NE),
                ExpStmt(FunCallExp(IdentExp('printf'),
-                                  [StringLitExp('CUDA runtime error: %s'), FunCallExp(IdentExp('cudaGetErrorString'), [errIdent])])))
+                                  [StringLitExp('CUDA runtime error: %s@'), FunCallExp(IdentExp('cudaGetErrorString'), [errIdent])])))
       ]
       
       self.newstmts['deallocs'] = deallocs
