@@ -136,7 +136,7 @@ class Extern(orio.main.tuner.search.search.Search):
                 fruns +=1
                 sys.stderr.write('FAILED\n')
 
-            perf_cost=perf_costs.get(coord_key)
+            perf_cost,_=perf_costs.get(coord_key)
 
 
             try:
