@@ -40,7 +40,7 @@ void FormJacobian2D(double lambda, int m, int n, double *x, double *dia) {
   /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, preferL1Size=PL)
 
   for(i=0; i<=nrows-1; i++) {
-    if (i<m || i>=nrows-m || i%(m-1)==0) {
+    if (i<m || i>=nrows-m || i%m==0 || i%m==m-1) {
       dia[i+2*nrows-m-1] = 1.0;
     } else {
       dia[i-m]           = -hxdhy;
@@ -54,7 +54,7 @@ void FormJacobian2D(double lambda, int m, int n, double *x, double *dia) {
   ) @*/
 
   for(i=0; i<=nrows-1; i++) {
-    if (i<m || i>=nrows-m || i%(m-1)==0) {
+    if (i<m || i>=nrows-m || i%m==0 || i%m==m-1) {
       dia[i+2*nrows-m-1] = 1.0;
     } else {
       dia[i-m]           = -hxdhy;
