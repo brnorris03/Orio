@@ -185,7 +185,7 @@ class Search:
                     is_out = True
                     break
             if is_out:
-                perf_costs[coord_key] = [self.MAXFLOAT]
+                perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
                 continue
 
             # if the given coordinate has been computed before
@@ -205,7 +205,7 @@ class Search:
 
             # if invalid performance parameters
             if not is_valid:
-                perf_costs[coord_key] = [self.MAXFLOAT]
+                perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
                 continue
 
             # store all unevaluated coordinates
@@ -239,7 +239,7 @@ class Search:
               transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
             except Exception, e:
               err('failed during evaluation of coordinate: %s=%s\n%s %s' % (coord, self.coordToPerfParams(coord), e.__class__.__name__, e), 0, False)
-              perf_costs[coord_key] = [self.MAXFLOAT]
+              perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
               continue
 
             elapsed = (time.time() - start)
