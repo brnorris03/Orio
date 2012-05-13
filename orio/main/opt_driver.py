@@ -75,7 +75,7 @@ class OptDriver:
 
         # apply no optimizations to non-annotation code fragment
         if isinstance(cfrag, orio.main.code_frag.NonAnn):
-            return [(cfrag.code, [])]
+            return [(cfrag.code, [], '')]
 
         # optimize annotated code region
         elif isinstance(cfrag, orio.main.code_frag.AnnCodeRegion):
@@ -101,7 +101,7 @@ class OptDriver:
                     sys.exit(1)
 
                 # get the optimized body code
-                optimized_body_code, _ = optimized_body_code_seq[0]
+                optimized_body_code, _, inner_ext = optimized_body_code_seq[0]
 
                 # dynamically load the transformation module class
                 class_name = cfrag.leader_ann.mod_name
@@ -141,14 +141,17 @@ class OptDriver:
                 optimized_code = transformation.transform()
 
                 # create the optimized code sequence
-                optimized_code_seq = [(optimized_code, [])]
+                g = Globals()
+                if len(g.cunit_declarations) > 0:
+                  externals = reduce(lambda x,y: x + y, g.cunit_declarations)
+                  g.cunit_declarations = []
+                optimized_code_seq = [(optimized_code, [], inner_ext + externals)]
 
             # prepend the leader annotation and append the trailer annotation to each of
             # the optimized code
             leader_code = cfrag.leader_ann.code
             trailer_code = cfrag.trailer_ann.code
-            optimized_code_seq = [((leader_code + c + trailer_code), i) \
-                                  for c, i in optimized_code_seq]
+            optimized_code_seq = [((leader_code + c + trailer_code), i, e) for c, i, e in optimized_code_seq]
 
             # return the optimized code sequence
             return optimized_code_seq
@@ -174,8 +177,8 @@ class OptDriver:
             if optimized_code_seq == None:
                 optimized_code_seq = cur_seq
             else:
-                optimized_code_seq = [((c1 + c2), (i1 + i2)) \
-                                      for c1, i1 in optimized_code_seq for c2, i2 in cur_seq]
+                optimized_code_seq = [((c1 + c2), (i1 + i2), (e1 + e2)) \
+                                      for c1, i1, e1 in optimized_code_seq for c2, i2, e2 in cur_seq]
 
         # return the optimized code
         return optimized_code_seq

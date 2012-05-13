@@ -166,7 +166,7 @@ class PerfTuner:
                 err('orio.main.tuner internal error: the empirically optimized code cannot contain multiple versions')
             
             # get the optimized code
-            optimized_code, _ = cur_optimized_code_seq[0]
+            optimized_code, _, externals = cur_optimized_code_seq[0]
 
             # insert comments into the optimized code to include information about 
             # the best performance parameters and the input problem sizes
@@ -196,7 +196,7 @@ class PerfTuner:
             optimized_code = info_code + optimized_code
 
             # store the optimized for this problem size
-            optimized_code_seq.append((optimized_code, ptcodegen.input_params[:]))
+            optimized_code_seq.append((optimized_code, ptcodegen.input_params[:], externals))
 
         # return the optimized code
         return optimized_code_seq
