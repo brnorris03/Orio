@@ -203,6 +203,17 @@ class Transformation(object):
       h2dcopys = [Comment('copy data from host to device')]
       h2dasyncs    = []
       h2dasyncsrem = []
+
+      # -------------------------------------------------
+      tStartIdent = IdentExp('tstart')
+      tStopIdent  = IdentExp('tstop')
+      h2dcopys += [
+        VarDecl('cudaEvent_t', [tStartIdent, tStopIdent]),
+        ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(tStartIdent, UnaryExp.ADDRESSOF)])),
+        ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(tStopIdent,  UnaryExp.ADDRESSOF)])),
+        ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [tStartIdent, self.cs['int0']]))
+      ]
+
       # -------------------------------------------------
       pinnedIdents = []
       for aid,daid in self.model['arrays']:
@@ -283,6 +294,15 @@ class Transformation(object):
                                [IdentExp(daid), IdentExp(aid), FunCallExp(IdentExp('sizeof'), [IdentExp(aid)]),
                                 IdentExp('cudaMemcpyHostToDevice')
                                 ]))]
+
+      # -------------------------------------------------
+      h2dcopys += [
+        ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [tStopIdent, self.cs['int0']])),
+        ExpStmt(FunCallExp(IdentExp('cudaEventSynchronize'), [tStopIdent])),
+        ExpStmt(FunCallExp(IdentExp('cudaEventElapsedTime'),
+                                   [UnaryExp(IdentExp('orcu_transfer'), UnaryExp.ADDRESSOF),
+                                    tStartIdent, tStopIdent]))
+      ]
 
       # -------------------------------------------------
       # malloc block-level result var
@@ -1081,20 +1101,22 @@ class Transformation(object):
         
         #--------------------------------------------------------------------------------------------------------------
         # cuda timing calls
+        eventStartIdent = IdentExp('start')
+        eventStopIdent = IdentExp('stop')
         self.newstmts['timerStart'] = [
           VarDecl('cudaEvent_t', ['start', 'stop']),
-          ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(IdentExp('start'), UnaryExp.ADDRESSOF)])),
-          ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(IdentExp('stop'),  UnaryExp.ADDRESSOF)])),
-          ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [IdentExp('start'), self.cs['int0']]))
+          ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(eventStartIdent, UnaryExp.ADDRESSOF)])),
+          ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(eventStopIdent,  UnaryExp.ADDRESSOF)])),
+          ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [eventStartIdent, self.cs['int0']]))
         ]
         self.newstmts['timerStop'] = [
-          ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [IdentExp('stop'), self.cs['int0']])),
-          ExpStmt(FunCallExp(IdentExp('cudaEventSynchronize'), [IdentExp('stop')])),
+          ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [eventStopIdent, self.cs['int0']])),
+          ExpStmt(FunCallExp(IdentExp('cudaEventSynchronize'), [eventStopIdent])),
           ExpStmt(FunCallExp(IdentExp('cudaEventElapsedTime'),
-                                     [UnaryExp(IdentExp(self.cs['prefix'] + 'elapsed'), UnaryExp.ADDRESSOF),
-                                      IdentExp('start'), IdentExp('stop')])),
-          ExpStmt(FunCallExp(IdentExp('cudaEventDestroy'), [IdentExp('start')])),
-          ExpStmt(FunCallExp(IdentExp('cudaEventDestroy'), [IdentExp('stop')]))
+                                     [UnaryExp(IdentExp('orcu_elapsed'), UnaryExp.ADDRESSOF),
+                                      eventStartIdent, eventStopIdent])),
+          ExpStmt(FunCallExp(IdentExp('cudaEventDestroy'), [eventStartIdent])),
+          ExpStmt(FunCallExp(IdentExp('cudaEventDestroy'), [eventStopIdent]))
         ]
 
         #--------------------------------------------------------------------------------------------------------------

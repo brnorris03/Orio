@@ -52,6 +52,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         best_coord = None
         top_coords = {}
         best_perf_cost = self.MAXFLOAT
+        corr_transfer  = self.MAXFLOAT
         
         # start the timer
         start_time = time.time()
@@ -75,22 +76,25 @@ class Exhaustive(orio.main.tuner.search.search.Search):
             # compare to the best result
             pcost_items = perf_costs.items()
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
-            for coord_str, perf_cost in pcost_items:
+            for coord_str, (perf_cost,transfer_costs) in pcost_items:
                 coord_val = eval(coord_str)
                 #info('cost: %s' % (perf_cost))
                 floatNums = [float(x) for x in perf_cost]
+                transferFloats = [float(x) for x in transfer_costs]
 
                 if len(perf_cost) == 1:
                     mean_perf_cost = sum(floatNums)
                 else:
                     mean_perf_cost = sum(floatNums[1:]) / (len(perf_cost)-1)
+                mean_transfer = sum(transferFloats) / len(transfer_costs)
 
-                info('coordinate: %s, average cost: %s, all costs: %s' % (coord_val, mean_perf_cost, perf_cost))
+                info('coordinate: %s, average cost: %s, all costs: %s, average transfer time: %s' % (coord_val, mean_perf_cost, perf_cost, mean_transfer))
                 
                 if mean_perf_cost < best_perf_cost and perf_cost > 0.0:
                     best_coord = coord_val
                     best_perf_cost = mean_perf_cost
-                    info('>>>> best coordinate found: %s, average cost: %e' % (coord_val, mean_perf_cost))
+                    corr_transfer  = mean_transfer
+                    info('>>>> best coordinate found: %s, average cost: %e, average transfer time: %s' % (coord_val, mean_perf_cost, mean_transfer))
 
 
             # check if the time is up
@@ -117,7 +121,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         info('----- end exhaustive search -----')
         
         # return the best coordinate
-        return best_coord,best_perf_cost,search_time,len(coords)
+        return best_coord,(best_perf_cost,corr_transfer),search_time,len(coords)
     
     # Private methods       
     #--------------------------------------------------

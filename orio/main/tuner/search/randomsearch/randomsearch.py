@@ -108,7 +108,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
             # compare to the best result
             pcost_items = perf_costs.items()
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
-            for i, (coord_str, perf_cost) in enumerate(pcost_items):
+            for i, (coord_str, (perf_cost,_)) in enumerate(pcost_items):
                 coord_val = eval(coord_str)
                 #info('%s %s' % (coord_val,perf_cost))
                 perf_params = self.coordToPerfParams(coord_val)

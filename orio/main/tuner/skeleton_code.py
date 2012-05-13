@@ -418,14 +418,14 @@ int main(int argc, char *argv[])
 {
   /*@ prologue @*/
 
-  float orcu_elapsed;
+  float orcu_elapsed, orcu_transfer;
   int orio_i;
   for (orio_i=0; orio_i<ORIO_REPS; orio_i++)
   {
     
     /*@ tested code @*/
 
-    printf("{'/*@ coordinate @*/' : %g}\n", orcu_elapsed);
+    printf("{'/*@ coordinate @*/' : (%g,%g)}\n", orcu_elapsed, orcu_transfer);
   }
   
   /*@ epilogue @*/

@@ -97,6 +97,10 @@ class Search:
 
         # find the coordinate resulting in the best performance
         best_coord,best_perf,search_time,runs = self.searchBestCoord()
+        corr_transfer = self.MAXFLOAT
+        if isinstance(best_perf,tuple): #unpack optionally
+          corr_transfer = best_perf[1]
+          best_perf     = best_perf[0]
 
         # if no best coordinate can be found
         if best_coord == None:
@@ -105,7 +109,8 @@ class Search:
                  'constraints might prune out the entire search space.')
         else:
             info('----- begin summary -----')
-            info(' best coordinate: %s=%s, cost=%e, inputs=%s, search_time=%.2f, runs=%d' % (best_coord, self.coordToPerfParams(best_coord), best_perf, str(self.input_params), search_time, runs))
+            info(' best coordinate: %s=%s, cost=%e, transfer_time=%e, inputs=%s, search_time=%.2f, runs=%d' % \
+                 (best_coord, self.coordToPerfParams(best_coord), best_perf, corr_transfer, str(self.input_params), search_time, runs))
             info('----- end summary -----')
 
                 
@@ -144,7 +149,7 @@ class Search:
         '''
 
         perf_costs = self.getPerfCosts([coord])
-        [perf_cost,] = perf_costs.values()
+        [(perf_cost,_),] = perf_costs.values()
         return perf_cost
 
     def getTransformTime(self):

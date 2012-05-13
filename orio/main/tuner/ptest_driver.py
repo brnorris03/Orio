@@ -291,24 +291,23 @@ class PerfTestDriver:
                     #info('out: %s' % out)
                     perf_costs={}
                     perf_costs_reps=[]
+                    transfers=[]
                     for line in out: 
                         if line.strip().startswith('{'): 
                             output = line.strip()
                             rep=eval(str(output))
                             key=rep.keys()[0]
-                            val=rep[key]
-                            perf_costs_reps.append(val)
-                            perf_costs[key]=perf_costs_reps
-                            #break
+                            perf_costs_reps.append(rep[key][0])
+                            transfers.append(rep[key][1])
+                            perf_costs[key]=(perf_costs_reps,transfers)
                         else:
                             parts = line.strip().split('@')
                             err(parts[0], 0, False)
-                            #raise Exception
                             rep=eval(str(parts[1]))
                             key=rep.keys()[0]
-                            val=float('inf') # skip this test
-                            perf_costs_reps.append(val)
-                            perf_costs[key]=perf_costs_reps
+                            perf_costs_reps.append(float('inf'))
+                            transfers.append(float('inf'))
+                            perf_costs[key]=(perf_costs_reps,transfers)
                 #if output: perf_costs = eval(str(output))
             except Exception, e:
                 err('orio.main.tuner.ptest_driver: failed to process test result, command was "%s", output: "%s\n --> %s: %s' %
