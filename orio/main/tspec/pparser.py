@@ -13,7 +13,8 @@ keywords = [
     'build', 'build_command', 'batch_command', 'status_command', 'num_procs', 'libs',
     'input_params', 'input_vars', 'static', 'dynamic', 'void', 'char', 'short', 'int', 'long', 'float', 'double', '__device__',
     'performance_params', 'performance_counter', 'method', 'repetitions',
-    'search', 'time_limit', 'total_runs', 'algorithm'
+    'search', 'time_limit', 'total_runs', 'algorithm',
+    'init_file', 'decl_file'
 ]
 
 # map of reserved keywords
@@ -180,6 +181,8 @@ def p_arg_type(p):
                 | TIME_LIMIT
                 | TOTAL_RUNS
                 | LIBS
+                | INIT_FILE
+                | DECL_FILE
     '''
     p[0] = (p[1], p.lineno(1))
 

@@ -21,6 +21,7 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
           decl static double A[m*n*Nos*dof] = random;
           decl static double x[m*n*dof]     = random;
           decl static double y[m*n*dof]     = 0;
+          decl static int offsets[Nos]      = {-m*dof,-dof,0,dof,m*dof};
         }
         def build {
           arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
@@ -33,12 +34,6 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
 
   int nrows=m*n;
   int ndiags=Nos;
-  int offsets[ndiags];
-  offsets[0]=-m*dof;
-  offsets[1]=-dof;
-  offsets[2]=0;
-  offsets[3]=dof;
-  offsets[4]=m*dof;
 
   /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, preferL1Size=PL, unrollInner=UIF)
 

@@ -107,6 +107,7 @@ class Transformation(object):
       '''Create declarations of device-side variables corresponding to host-side variables'''
       intarrays = self.model['intarrays']
       hostDecls = [
+        ExpStmt(FunCallExp(IdentExp('cudaDeviceSynchronize'), [])),
         Comment('declare variables'),
         VarDecl('double', map(lambda x: '*'+x[1], self.model['idents']))
       ]
@@ -127,15 +128,20 @@ class Transformation(object):
         deallocs += [ExpStmt(FunCallExp(IdentExp('cudaFree'), [IdentExp(dvar)]))]
 
       # perform run-time sanity check
+      errorChecks = []
       errIdent = IdentExp('err')
-      deallocs += [
+      errorChecks += [
         VarDeclInit('cudaError_t', IdentExp('err'), FunCallExp(IdentExp('cudaGetLastError'), [])),
         IfStmt(BinOpExp(IdentExp('cudaSuccess'), errIdent, BinOpExp.NE),
                ExpStmt(FunCallExp(IdentExp('printf'),
                                   [StringLitExp('CUDA runtime error: %s@'), FunCallExp(IdentExp('cudaGetErrorString'), [errIdent])])))
       ]
+      #errorChecks += [
+      #  ExpStmt(FunCallExp(IdentExp('sleep'), [NumLitExp(1, NumLitExp.INT)]))
+      #]
       
       self.newstmts['deallocs'] = deallocs
+      self.newstmts['errorChecks'] = errorChecks
 
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -228,23 +234,19 @@ class Transformation(object):
           aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
         mallocs += [
           ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
-                             [CastExpr('void**', UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF)),
-                              #self.cs['nbytes']
+                             [UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF),
                               aidbytes
-                              ]))]
+                              ])),
+          ExpStmt(FunCallExp(IdentExp('cudaHostRegister'),
+                                     [IdentExp(aid),
+                                      aidbytes,
+                                      IdentExp('cudaHostRegisterPortable')
+                                      ]))
+        ]
+        pinnedIdents += [aid] # remember to unregister at the end
         # memcopy rhs arrays device to host
         if aid in self.model['rhs_arrays']:
           if self.streamCount > 1:
-            # pin host memory while streaming
-            mallocs += [
-              ExpStmt(FunCallExp(IdentExp('cudaHostRegister'),
-                                         [IdentExp(aid),
-                                          #self.cs['nbytes'],
-                                          aidbytes,
-                                          IdentExp('cudaHostRegisterPortable')
-                                          ]))
-            ]
-            pinnedIdents += [aid] # remember to unregister at the end
             h2dasyncs += [
               ExpStmt(FunCallExp(IdentExp('cudaMemcpyAsync'),
                                  [BinOpExp(IdentExp(daid),      self.cs['soffset'], BinOpExp.ADD),
@@ -265,7 +267,6 @@ class Transformation(object):
             h2dcopys += [
               ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
                                  [IdentExp(daid), IdentExp(aid),
-                                  #self.cs['nbytes'],
                                   aidbytes,
                                   IdentExp('cudaMemcpyHostToDevice')
                                   ]))]
@@ -282,16 +283,33 @@ class Transformation(object):
         ]
 
       for aid,daid in self.model['intarrays']:
+        if self.tinfo is None:
+          aidbytes = FunCallExp(IdentExp('sizeof'), [IdentExp(aid)])
+        else:
+          aidtinfo = filter(lambda x: x[2] == aid, self.tinfo.ivar_decls)
+          if len(aidtinfo) == 0:
+            raise Exception, ('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
+          else:
+            aidtinfo = aidtinfo[0]
+          aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
         mallocs += [
           ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
-                             [CastExpr('void**', UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF)),
-                              FunCallExp(IdentExp('sizeof'), [IdentExp(aid)])
-                              ]))]
+                             [UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF),
+                              aidbytes
+                              ])),
+          ExpStmt(FunCallExp(IdentExp('cudaHostRegister'),
+                                     [IdentExp(aid),
+                                      aidbytes,
+                                      IdentExp('cudaHostRegisterPortable')
+                                      ]))
+        ]
+        pinnedIdents += [aid]
         # memcopy rhs arrays device to host
         if aid in self.model['rhs_arrays']:
           h2dcopys += [
             ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
-                               [IdentExp(daid), IdentExp(aid), FunCallExp(IdentExp('sizeof'), [IdentExp(aid)]),
+                               [IdentExp(daid), IdentExp(aid),
+                                aidbytes,
                                 IdentExp('cudaMemcpyHostToDevice')
                                 ]))]
 
@@ -309,7 +327,7 @@ class Transformation(object):
       if self.model['isReduction']:
         mallocs += [
           ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
-                             [CastExpr('void**', UnaryExp(IdentExp(self.cs['dev'] + self.model['lhss'][0]), UnaryExp.ADDRESSOF)),
+                             [UnaryExp(IdentExp(self.cs['dev'] + self.model['lhss'][0]), UnaryExp.ADDRESSOF),
                               BinOpExp(ParenthExp(BinOpExp(self.cs['gridx'], self.cs['int1'], BinOpExp.ADD)),
                                        self.cs['sizeofDbl'],
                                        BinOpExp.MUL)
@@ -405,8 +423,9 @@ class Transformation(object):
                              ExpStmt(FunCallExp(IdentExp('cudaStreamSynchronize'), [ArrayRefExp(IdentExp('stream'), self.cs['istream'])])))]
 
       # unregister any pinned memory
+      deregs = []
       for var in pinnedIdents:
-        d2hcopys += [ExpStmt(FunCallExp(IdentExp('cudaHostUnregister'), [IdentExp(var)]))]
+        deregs += [ExpStmt(FunCallExp(IdentExp('cudaHostUnregister'), [IdentExp(var)]))]
 
       # -------------------------------------------------
       # reset L1 cache size preference to the default
@@ -418,6 +437,7 @@ class Transformation(object):
       self.newstmts['mallocs']  = mallocs
       self.newstmts['h2dcopys'] = h2dcopys
       self.newstmts['d2hcopys'] = d2hcopys
+      self.newstmts['deallocs'] += deregs
 
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -793,8 +813,8 @@ class Transformation(object):
         if isinstance(loop_body3, ForStmt):
           if self.unrollInner > 1:
             loop_body3 = CompStmt([Pragma('unroll ' + str(self.unrollInner)), loop_body3])
-          else:
-            loop_body3 = CompStmt([Pragma('unroll'), loop_body3])
+          #else:
+          #  loop_body3 = CompStmt([Pragma('unroll'), loop_body3])
         
         #--------------------------------------------------
         if self.domain == None:
@@ -1165,6 +1185,7 @@ class Transformation(object):
           + self.newstmts['d2hcopys']
           + self.newstmts['streamDeallocs']
           + self.newstmts['deallocs']
+          + self.newstmts['errorChecks']
           + self.newstmts['testNewOutput']
         )
         return transformed_stmt
