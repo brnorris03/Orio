@@ -74,6 +74,8 @@ class PerfTestCodeGen(object):
             else:
                 if is_static:
                     dim_code = '[%s]' % ']['.join(vdims)
+                    if rhs.startswith('{'):
+                      dim_code += '='+rhs
                     decls.append('%s %s%s;' % (vtype, vname, dim_code))
                 else:
                     ptr_code = '*' * len(vdims)
@@ -174,7 +176,7 @@ class PerfTestCodeGen(object):
         for _, vtype, vname, vdims, rhs in input_decls:
 
             # skip if it does not have an initial value (i.e. RHS == None)
-            if rhs == None:
+            if rhs == None or rhs.startswith('{'):
                 continue
         
 
@@ -303,7 +305,7 @@ class PerfTestCodeGen(object):
         # create code for the prologue section
         prologue_code = ''
         if not self.decl_file:
-            prologue_code += ('%s();' % self.malloc_func_name) + '\n'
+            prologue_code += ('%s();' % self.malloc_func_name) + '\n  '
         prologue_code += ('%s();' % self.init_func_name) + '\n'
 
         # create code for the epilogue section

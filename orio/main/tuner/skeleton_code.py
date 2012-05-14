@@ -409,19 +409,18 @@ SEQ_DEFAULT_CUDA = r'''
 #include <math.h>
 #include <limits.h>
 #include <time.h>
+#include <unistd.h>
 #include <cuda.h>
 
 /*@ global @*/
 /*@ external @*/
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   /*@ prologue @*/
 
-  float orcu_elapsed, orcu_transfer;
-  int orio_i;
-  for (orio_i=0; orio_i<ORIO_REPS; orio_i++)
-  {
+  cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
+  float orcu_elapsed=0.0, orcu_transfer=0.0;
+  for (int orio_i=0; orio_i<ORIO_REPS; orio_i++) {
     
     /*@ tested code @*/
 
