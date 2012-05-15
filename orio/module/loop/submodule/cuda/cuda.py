@@ -26,7 +26,6 @@ int main( void ) {
         fprintf( fp, "'minor',%d\n", prop.minor );
         fprintf( fp, "'clockRate',%d\n", prop.clockRate );
         fprintf( fp, "'deviceOverlap',%d\n", prop.deviceOverlap );
-        fprintf( fp, "'asyncEngineCount',%d\n", prop.asyncEngineCount );
         fprintf( fp, "'kernelExecTimeoutEnabled',%d\n", prop.kernelExecTimeoutEnabled );
         fprintf( fp, "'totalGlobalMem',%ld\n", prop.totalGlobalMem );
         fprintf( fp, "'totalConstMem',%ld\n", prop.totalConstMem );
@@ -56,7 +55,6 @@ int main( void ) {
         fprintf( fp, "'minor',%d\n", 0 );
         fprintf( fp, "'clockRate',%d\n", 1147000 );
         fprintf( fp, "'deviceOverlap',%d\n", 1 );
-        fprintf( fp, "'asyncEngineCount',%d\n", 2 );
         fprintf( fp, "'kernelExecTimeoutEnabled',%d\n", 0 );
         fprintf( fp, "'totalGlobalMem',%lld\n", 5636292608 );
         fprintf( fp, "'totalConstMem',%d\n", 65536 );
@@ -159,9 +157,6 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                       overlap = props['deviceOverlap']
                       if overlap == 0:
                         errors += '%s=%s: deviceOverlap=%s, overlap of data transfer and kernel execution is not supported\n' % (aname, rhs, overlap)
-                      asyncs = props['asyncEngineCount']
-                      if asyncs == 0:
-                        errors += '%s=%s: device asyncEngineCount=%s, overlap of data transfer and kernel execution is not supported\n' % (aname, rhs, asyncs)
                       concs = props['concurrentKernels']
                       if concs == 0:
                         errors += '%s=%s: device concurrentKernels=%s, concurrent kernel execution is not supported\n' % (aname, rhs, concs)
