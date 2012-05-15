@@ -199,7 +199,7 @@ class Search:
             
             # test if the performance parameters are valid
             try:
-                is_valid = eval(self.constraint, perf_params)
+                is_valid = eval(self.constraint, perf_params, dict(self.input_params))
             except Exception, e:
                 err('failed to evaluate the constraint expression: "%s"\n%s %s' % (self.constraint,e.__class__.__name__, e))
 
