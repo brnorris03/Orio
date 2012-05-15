@@ -106,8 +106,12 @@ class Transformation(object):
     def createDVarDecls(self):
       '''Create declarations of device-side variables corresponding to host-side variables'''
       intarrays = self.model['intarrays']
-      hostDecls = [
-        ExpStmt(FunCallExp(IdentExp('cudaDeviceSynchronize'), [])),
+      hostDecls = []
+      if self.devProps['major'] < 2:
+        hostDecls = [ExpStmt(FunCallExp(IdentExp('cudaThreadSynchronize'), []))]
+      else:
+        hostDecls = [ExpStmt(FunCallExp(IdentExp('cudaDeviceSynchronize'), []))]
+      hostDecls += [
         Comment('declare variables'),
         VarDecl('double', map(lambda x: '*'+x[1], self.model['idents']))
       ]
@@ -214,9 +218,6 @@ class Transformation(object):
       tStartIdent = IdentExp('tstart')
       tStopIdent  = IdentExp('tstop')
       h2dcopys += [
-        VarDecl('cudaEvent_t', [tStartIdent, tStopIdent]),
-        ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(tStartIdent, UnaryExp.ADDRESSOF)])),
-        ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(tStopIdent,  UnaryExp.ADDRESSOF)])),
         ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [tStartIdent, self.cs['int0']]))
       ]
 
@@ -236,17 +237,19 @@ class Transformation(object):
           ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
                              [UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF),
                               aidbytes
-                              ])),
-          ExpStmt(FunCallExp(IdentExp('cudaHostRegister'),
-                                     [IdentExp(aid),
-                                      aidbytes,
-                                      IdentExp('cudaHostRegisterPortable')
-                                      ]))
+                              ]))
         ]
-        pinnedIdents += [aid] # remember to unregister at the end
         # memcopy rhs arrays device to host
         if aid in self.model['rhs_arrays']:
           if self.streamCount > 1:
+            mallocs += [
+              ExpStmt(FunCallExp(IdentExp('cudaHostRegister'),
+                                         [IdentExp(aid),
+                                          aidbytes,
+                                          IdentExp('cudaHostRegisterPortable')
+                                          ]))
+            ]
+            pinnedIdents += [aid] # remember to unregister at the end
             h2dasyncs += [
               ExpStmt(FunCallExp(IdentExp('cudaMemcpyAsync'),
                                  [BinOpExp(IdentExp(daid),      self.cs['soffset'], BinOpExp.ADD),
@@ -296,14 +299,8 @@ class Transformation(object):
           ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
                              [UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF),
                               aidbytes
-                              ])),
-          ExpStmt(FunCallExp(IdentExp('cudaHostRegister'),
-                                     [IdentExp(aid),
-                                      aidbytes,
-                                      IdentExp('cudaHostRegisterPortable')
-                                      ]))
+                              ]))
         ]
-        pinnedIdents += [aid]
         # memcopy rhs arrays device to host
         if aid in self.model['rhs_arrays']:
           h2dcopys += [
@@ -1124,9 +1121,6 @@ class Transformation(object):
         eventStartIdent = IdentExp('start')
         eventStopIdent = IdentExp('stop')
         self.newstmts['timerStart'] = [
-          VarDecl('cudaEvent_t', ['start', 'stop']),
-          ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(eventStartIdent, UnaryExp.ADDRESSOF)])),
-          ExpStmt(FunCallExp(IdentExp('cudaEventCreate'), [UnaryExp(eventStopIdent,  UnaryExp.ADDRESSOF)])),
           ExpStmt(FunCallExp(IdentExp('cudaEventRecord'), [eventStartIdent, self.cs['int0']]))
         ]
         self.newstmts['timerStop'] = [
@@ -1135,8 +1129,6 @@ class Transformation(object):
           ExpStmt(FunCallExp(IdentExp('cudaEventElapsedTime'),
                                      [UnaryExp(IdentExp('orcu_elapsed'), UnaryExp.ADDRESSOF),
                                       eventStartIdent, eventStopIdent])),
-          ExpStmt(FunCallExp(IdentExp('cudaEventDestroy'), [eventStartIdent])),
-          ExpStmt(FunCallExp(IdentExp('cudaEventDestroy'), [eventStopIdent]))
         ]
 
         #--------------------------------------------------------------------------------------------------------------

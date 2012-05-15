@@ -417,18 +417,19 @@ SEQ_DEFAULT_CUDA = r'''
 
 int main(int argc, char *argv[]) {
   /*@ prologue @*/
-
-  cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
+  cudaSetDeviceFlags(cudaDeviceBlockingSync);
   float orcu_elapsed=0.0, orcu_transfer=0.0;
+  cudaEvent_t tstart, tstop, start, stop;
+  cudaEventCreate(&tstart); cudaEventCreate(&tstop);
+  cudaEventCreate(&start);  cudaEventCreate(&stop);
   for (int orio_i=0; orio_i<ORIO_REPS; orio_i++) {
-    
     /*@ tested code @*/
-
     printf("{'/*@ coordinate @*/' : (%g,%g)}\n", orcu_elapsed, orcu_transfer);
   }
+  cudaEventDestroy(tstart); cudaEventDestroy(tstop);
+  cudaEventDestroy(start);  cudaEventDestroy(stop);
   
   /*@ epilogue @*/
-
   return 0;
 }
 '''
