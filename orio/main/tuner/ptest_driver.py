@@ -297,8 +297,12 @@ class PerfTestDriver:
                             output = line.strip()
                             rep=eval(str(output))
                             key=rep.keys()[0]
-                            perf_costs_reps.append(rep[key][0])
-                            transfers.append(rep[key][1])
+                            if isinstance(rep[key],tuple):
+                              perf_costs_reps.append(rep[key][0])
+                              transfers.append(rep[key][1])
+                            else:
+                              perf_costs_reps.append(rep[key])
+                              transfers.append(float('inf'))
                             perf_costs[key]=(perf_costs_reps,transfers)
                         else:
                             parts = line.strip().split('@')
