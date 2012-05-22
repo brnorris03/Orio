@@ -27,12 +27,12 @@ class MSimplex(orio.main.tuner.search.search.Search):
 
     # algorithm-specific argument names
     __X0 = 'x0'                           # default: all 0's (ie, [0,0,0])
-    __SEARCH_DIST = 'search_distance'       # default: 1
-    __REFL_COEF = 'reflection_coef'       # default: 1.0
-    __EXP_COEF = 'expansion_coef'         # default: 2.0
-    __CONT_COEF = 'contraction_coef'      # default: 0.5
+    __SEARCH_DIST = 'search_distance'       # default: 1    #now, orio isn't parsing this at all. So it's always 1. See pparser.py
+    __REFL_COEF = 'reflection_coef'       # default: [1.0]
+    __EXP_COEF = 'expansion_coef'         # default: [2.0]
+    __CONT_COEF = 'contraction_coef'      # default: [0.5]
     __SHRI_COEF = 'shrinkage_coef'        # default: 0.5
-    __EDGE_LENGTH = 'edge_length'         # default: 5
+    __SIM_SIZE = 'size'         # default: 5
     
     
     __CACHE_SIZE = 20                     # used for last_simplex_moves
@@ -52,7 +52,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
 
         # set all algorithm-specific arguments to their default values
         self.search_distance = 1
-        self.edge_length = 5
+        self.sim_size = max(self.dim_uplimits)
         self.refl_coefs = [1.0]
         self.exp_coefs = [2.0]
         self.cont_coefs = [0.5]
@@ -64,6 +64,11 @@ class MSimplex(orio.main.tuner.search.search.Search):
 
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
+        
+        
+        if len(self.refl_coefs)!=0 or len(self.exp_coefs)!=0 or len(self.cont_coefs)!=0:
+            err('msimplex: reflection, expansion, or contraction coefficient can only be one value!!!!')
+        
 
         # complain if both the search time limit and the total number of search runs are undefined
         if self.time_limit <= 0 and self.total_runs <= 0:
@@ -302,8 +307,8 @@ class MSimplex(orio.main.tuner.search.search.Search):
                 perf_costs.pop()
                 simplex.append(next_coord)
                 perf_costs.append(next_perf_cost)
-                if self.__dupCoord(simplex):
-                    info('msimplex: duplicate coordinates in simplex after the above operation')
+                #if self.__dupCoord(simplex):
+                    #info('msimplex: duplicate coordinates in simplex after the above operation')
                     
             
             # increment the number of runs
@@ -357,11 +362,11 @@ class MSimplex(orio.main.tuner.search.search.Search):
                 self.x0 = rhs           
                     
             # edge length
-            elif vname == self.__EDGE_LENGTH:
+            elif vname == self.__SIM_SIZE:
                 if not isinstance(rhs, int) or rhs <= 0:
                     err('%s argument "%s" must be a positive integer'
                            % (self.__class__.__name__, vname))
-                self.edge_length = rhs
+                self.sim_size = rhs
                 
                 
             # reflection coefficient
@@ -491,7 +496,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
         return coord
 
     def __dupCoord(self, simplex):
-        info('simplex: %s' % (simplex))
+        info('simplex with dup coords: %s' % (simplex))
         simplex = map(lambda x: tuple(x), simplex)
         return len(simplex) != len(set(simplex))
 
@@ -515,7 +520,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
         
         for i in range(0, self.total_dims):
             coord = list(self.x0)
-            coord[i] += self.edge_length
+            coord[i] += self.sim_size-1
             iuplimit = self.dim_uplimits[i]
             if coord[i] >= iuplimit:
                 coord[i] = iuplimit-1

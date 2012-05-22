@@ -15,7 +15,7 @@ keywords = [
     'performance_params', 'performance_counter', 'method', 'repetitions',
     'search', 'time_limit', 'total_runs', 'algorithm',
     'init_file', 'decl_file', 'msimplex_reflection_coef', 'msimplex_expansion_coef',
-    'msimplex_contraction_coef', 'msimplex_shrinkage_coef', 'msimplex_search_distance', 'msimplex_edge_length', 'msimplex_x0',
+    'msimplex_contraction_coef', 'msimplex_shrinkage_coef', 'msimplex_size', 'msimplex_x0',
     'simplex_reflection_coef', 'simplex_expansion_coef',
     'simplex_contraction_coef', 'simplex_shrinkage_coef', 'simplex_local_distance'
 ]
@@ -190,8 +190,7 @@ def p_arg_type(p):
                 | MSIMPLEX_REFLECTION_COEF
                 | MSIMPLEX_CONTRACTION_COEF
                 | MSIMPLEX_SHRINKAGE_COEF
-                | MSIMPLEX_SEARCH_DISTANCE
-                | MSIMPLEX_EDGE_LENGTH
+                | MSIMPLEX_SIZE
                 | MSIMPLEX_X0   
                 | SIMPLEX_EXPANSION_COEF
                 | SIMPLEX_REFLECTION_COEF
