@@ -104,10 +104,10 @@ class MSimplex(orio.main.tuner.search.search.Search):
         best_global_perf_cost = self.MAXFLOAT
         
         # record the number of runs
-        runs = 0
+        self.runs = 0
         
         # start the timer
-        start_time = time.time()
+        self.start_time = time.time()
 
         # execute the Nelder-Mead Simplex method
             
@@ -117,14 +117,14 @@ class MSimplex(orio.main.tuner.search.search.Search):
         # randomly initialize a simplex in the search space
         simplex = self.__initSimplex()
 
-        info('\n(run %s) initial simplex: %s' % (runs+1, simplex))
-
         # get the performance cost of each coordinate in the simplex
         perf_costs = map(self.getPerfCost, simplex)
         perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), perf_costs)
         
         
         self.localmin = False
+        
+        self.breakFlag = False
 
         while True:
 
@@ -140,14 +140,14 @@ class MSimplex(orio.main.tuner.search.search.Search):
             perf_costs = list(perf_costs)
 
                 
-            info('-> (run %s) simplex: %s' % (runs+1, simplex))
+            info('-> (run %s) simplex: %s' % (self.runs+1, simplex))
 
             # check if the time is up
-            if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
+            if self.time_limit > 0 and (time.time()-self.start_time) > self.time_limit:
                 info('msimplex: time is up')
                 break
             
-            if self.total_runs > 0 and runs >= self.total_runs:
+            if self.total_runs > 0 and self.runs >= self.total_runs:
                 info('msimplex: total runs limit reached')
                 break   
             
@@ -157,23 +157,55 @@ class MSimplex(orio.main.tuner.search.search.Search):
             
                 
             # termination criteria: a loop is present
-            if str(simplex) in last_simplex_moves:
-                info('-> encountered a loop: %s' % simplex)
+            #if str(simplex) in last_simplex_moves:
+                #info('-> encountered a loop: %s' % simplex)
                 #break
 
             # record the last several simplex moves (used for the termination criteria)
-            last_simplex_moves.append(str(simplex))
-            while len(last_simplex_moves) > self.__CACHE_SIZE:
-                last_simplex_moves.pop(0)
+            #last_simplex_moves.append(str(simplex))
+            #while len(last_simplex_moves) > self.__CACHE_SIZE:
+                #last_simplex_moves.pop(0)
                 
             # best coordinate
             best_coord = simplex[0]
             best_perf_cost = perf_costs[0]
             
+
+            
+            
+            # replace simplex's best vertex with a better unvisited neighbor if 
+            if simplex[1:] == simplex[:-1]:
+                while not self.localmin:
+                    neighbor = self.__chooseRandomNeighbor(best_coord, simplex, best_coord)
+                    #if neighbor == best_coord:
+                     #   continue
+                     
+                    if self.breakFlag:
+                        break
+                     
+                    cost = self.getPerfCost(neighbor)
+                    cost = cost[0] if len(cost) == 1 else sum(cost[1:])/(len(cost)-1)
+                    if cost < best_perf_cost:
+                        simplex[0] = neighbor
+                        best_coord = neighbor
+                        perf_costs[0] = cost
+                        best_perf_cost = cost
+                        info('msimplex: replaces best vertex with neighbor %s after arriving at a 1 point simplex' % best_coord)
+                        break
+                    
+                if self.breakFlag:
+                    break
+                
+                if self.localmin:
+                    info('msimplex: local minimum reached at a 1 point simplex')
+                    break
+                    
+            
             
             if best_global_coord == None or best_coord != old_best_global_coord:
                 best_global_coord = 'notNone'
-                self.__initAvailableNeighbors(best_coord, simplex)
+                #self.__initAvailableNeighbors(best_coord, simplex)
+                self.used_neighbors = []
 
             # worst coordinate
             worst_coord = simplex[len(simplex)-1]
@@ -248,7 +280,12 @@ class MSimplex(orio.main.tuner.search.search.Search):
                 info('msimplex: outer contraction coord: %s' % (cont_coord))
                 
                 if cont_coord == refl_coord:
-                    cont_coord = self.__chooseNeighbor(simplex, cont_coord)
+                    #cont_coord = self.__chooseNeighbor(simplex, cont_coord)
+                    cont_coord = self.__chooseRandomNeighbor(best_coord, simplex, cont_coord)
+                    
+                    if self.breakFlag:
+                        break
+                    
                     temp = self.getPerfCost(cont_coord)
                     cont_perf_cost = temp[0] if len(temp)==1 else sum(temp[1:])/(len(temp)-1)
                     
@@ -274,7 +311,12 @@ class MSimplex(orio.main.tuner.search.search.Search):
                 info('msimplex: inner contraction coord: %s' % (cont_coord))
                 
                 if cont_coord == worst_coord:
-                    cont_coord = self.__chooseNeighbor(simplex, cont_coord)
+                    #cont_coord = self.__chooseNeighbor(simplex, cont_coord)
+                    cont_coord = self.__chooseRandomNeighbor(best_coord, simplex, cont_coord)
+                    
+                    if self.breakFlag:
+                        break
+                    
                     temp = self.getPerfCost(cont_coord)
                     cont_perf_cost = temp[0] if len(temp)==1 else sum(temp[1:])/(len(temp)-1)
 
@@ -294,7 +336,12 @@ class MSimplex(orio.main.tuner.search.search.Search):
                 info('msimplex: starts shrinkage')
                 ssimplex = self.__getShrinkage(best_coord, simplex)
                 ssimplex = map(self.__forceInBound, ssimplex)
-                ssimplex[1:] = map((lambda x,y: x if x!=y else self.__chooseNeighbor(simplex, x)), ssimplex[1:], simplex[1:])
+                #ssimplex[1:] = map((lambda x,y: x if x!=y else self.__chooseNeighbor(simplex, x)), ssimplex[1:], simplex[1:])
+                ssimplex[1:] = map((lambda x,y: x if x!=y else self.__chooseRandomNeighbor(best_coord, simplex, x)), ssimplex[1:], simplex[1:])
+                
+                if self.breakFlag:
+                    break
+                
                 simplex = ssimplex
                 perf_costs = map(self.getPerfCost, simplex)
                 perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), perf_costs)
@@ -312,7 +359,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
                     
             
             # increment the number of runs
-            runs += 1
+            self.runs += 1
             
             
                 
@@ -325,12 +372,12 @@ class MSimplex(orio.main.tuner.search.search.Search):
             
             
         # compute the total search time
-        search_time = time.time() - start_time
+        search_time = time.time() - self.start_time
                                                                      
         info('----- end simplex search -----')
  
         # return the best coordinate
-        return best_global_coord, best_global_perf_cost, search_time, runs
+        return best_global_coord, best_global_perf_cost, search_time, self.runs
 
     # Private methods
     #-----------------------------------------------------
@@ -476,6 +523,50 @@ class MSimplex(orio.main.tuner.search.search.Search):
         return coord
         
         
+    def __chooseRandomNeighbor(self, bestVertex, simplex, coord):
+        
+        
+        while len(self.used_neighbors)-3**self.total_dims < 0:
+            
+            
+            
+            if self.time_limit > 0 and (time.time()-self.start_time) > self.time_limit:
+                info('msimplex: time is up while choosing a random neighbor')
+                self.breakFlag = True
+                return coord
+            
+            if self.total_runs > 0 and self.runs >= self.total_runs:
+                info('msimplex: total runs limit reached while choosing a random neighbor')
+                self.breakFlag = True
+                return coord
+            
+            
+            
+            
+            neighbor = map(lambda x: x+random.randrange(0, 2), bestVertex)
+            if neighbor in self.used_neighbors:
+                continue
+            
+            bounded_neighbor = self.__forceInBound(neighbor)
+            
+            if neighbor != bounded_neighbor:
+                self.used_neighbors.append(neighbor)
+            
+            neighbor = bounded_neighbor
+            
+            if neighbor in self.used_neighbors:
+                continue
+            
+            self.used_neighbors.append(neighbor)
+            
+            if not neighbor in simplex:
+                info('neighbor chosen: %s' % (neighbor))
+                return neighbor
+        
+        self.localmin = True
+        return coord
+            
+                
         
         
 
