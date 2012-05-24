@@ -31,8 +31,8 @@ def recCoords(x, y, progress):
         yfile.write(', %s' % (y))
         
     elif progress == 'done':
-        xfile.write(', %s]' % (x))
-        yfile.write(', %s]' % (y))
+        xfile.write(', %s];' % (x))
+        yfile.write(', %s];' % (y))
         xfile.close()
         yfile.close()
     else:
