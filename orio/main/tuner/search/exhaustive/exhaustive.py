@@ -67,7 +67,9 @@ class Exhaustive(orio.main.tuner.search.search.Search):
                 coords.append(coord)
             else:
                 break
-
+        
+        recFlag = True
+        
         # evaluate every coordinate in the search space
         while True:
 
@@ -98,10 +100,11 @@ class Exhaustive(orio.main.tuner.search.search.Search):
                     info('>>>> best coordinate found: %s, average cost: %e, average transfer time: %s' % (coord_val, mean_perf_cost, mean_transfer))
             
             # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
-            #progress = 'init' if best_coord == None else 'continue'
-            #IOtime = recCoords(time.time()-start_time, best_perf_cost, progress)
+            progress = 'init' if recFlag else 'continue'
+            recFlag = False
+            IOtime = recCoords(time.time()-start_time, best_perf_cost, progress)
             # don't include time on recording data in the tuning time
-            #start_time += IOtime
+            start_time += IOtime
 
             # check if the time is up
             if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
