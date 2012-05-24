@@ -66,7 +66,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
         self.__readAlgoArgs()
         
         
-        if len(self.refl_coefs)!=0 or len(self.exp_coefs)!=0 or len(self.cont_coefs)!=0:
+        if len(self.refl_coefs)!=1 or len(self.exp_coefs)!=1 or len(self.cont_coefs)!=1:
             err('msimplex: reflection, expansion, or contraction coefficient can only be one value!!!!')
         
 
