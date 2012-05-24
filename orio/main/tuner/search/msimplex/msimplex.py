@@ -556,7 +556,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
         
         while len(self.used_neighbors)-3**self.total_dims < 0:
             
-            info('msimplex: size of used neighbors: %s' % (len(self.used_neighbors)))
+            #info('msimplex: size of used neighbors: %s' % (len(self.used_neighbors)))
             
             if self.time_limit > 0 and (time.time()-self.start_time) > self.time_limit:
                 info('msimplex: time is up while choosing a random neighbor')
