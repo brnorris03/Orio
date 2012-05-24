@@ -528,7 +528,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
         
         while len(self.used_neighbors)-3**self.total_dims < 0:
             
-            
+            info('msimplex: size of used neighbors: %s' % (len(self.used_neighbors)))
             
             if self.time_limit > 0 and (time.time()-self.start_time) > self.time_limit:
                 info('msimplex: time is up while choosing a random neighbor')
@@ -543,7 +543,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
             
             
             
-            neighbor = map(lambda x: x+random.randrange(0, 2), bestVertex)
+            neighbor = map(lambda x: x+random.randrange(-1, 2), bestVertex)
             if neighbor in self.used_neighbors:
                 continue
             
@@ -587,9 +587,11 @@ class MSimplex(orio.main.tuner.search.search.Search):
         return coord
 
     def __dupCoord(self, simplex):
-        info('simplex with dup coords: %s' % (simplex))
         simplex = map(lambda x: tuple(x), simplex)
-        return len(simplex) != len(set(simplex))
+        result = len(simplex) != len(set(simplex))
+        if result:
+            info('simplex with dup coords: %s' % (simplex))
+        return result
 
     #-----------------------------------------------------
 
