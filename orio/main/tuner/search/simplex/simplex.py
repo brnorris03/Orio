@@ -9,6 +9,7 @@
 import random, sys, time
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
+from orio.main.tuner.stat_record import recCoords
 
 #-----------------------------------------------------
 
@@ -107,6 +108,8 @@ class Simplex(orio.main.tuner.search.search.Search):
             # get the performance cost of each coordinate in the simplex
             perf_costs = map(self.getPerfCost, simplex)
             perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), perf_costs)
+            
+            
 
             while True:
 
@@ -118,7 +121,15 @@ class Simplex(orio.main.tuner.search.search.Search):
                 simplex, perf_costs = zip(*sorted_simplex_cost)
                 simplex = list(simplex)
                 perf_costs = list(perf_costs)
-
+                
+                
+                # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
+                progress = 'init' if best_global_coord == None else 'continue'
+                IOtime = recCoords(time.time()-start_time, perf_costs[0], progress)
+                # don't include time on recording data in the tuning time
+                start_time += IOtime
+                
+                
                 # remove bogus values (0 time)
                 indicestoremove = []
                 for i in range(0,len(perf_costs)):
@@ -303,6 +314,9 @@ class Simplex(orio.main.tuner.search.search.Search):
         search_time = time.time() - start_time
                                                                      
         info('----- end simplex search -----')
+        
+        # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
+        recCoords(time.time()-start_time, best_global_perf_cost, 'done')
  
         # return the best coordinate
         return best_global_coord, best_global_perf_cost, search_time, runs
