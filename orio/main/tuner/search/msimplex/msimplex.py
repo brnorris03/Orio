@@ -8,6 +8,7 @@
 import random, sys, time
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
+from orio.main.tuner.stat_record import recCoords
 
 #-----------------------------------------------------
 
@@ -23,6 +24,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
       expansion_coef            the expansion coefficient
       contraction_coef          the contraction coefficient
       shrinkage_coef            the shrinkage coefficient
+      size                      the size of the initial simplex
     '''
 
     # algorithm-specific argument names
@@ -32,7 +34,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
     __EXP_COEF = 'expansion_coef'         # default: [2.0]
     __CONT_COEF = 'contraction_coef'      # default: [0.5]
     __SHRI_COEF = 'shrinkage_coef'        # default: 0.5
-    __SIM_SIZE = 'size'         # default: 5
+    __SIM_SIZE = 'size'                   # default: max dimension of the search space
     
     
     __CACHE_SIZE = 20                     # used for last_simplex_moves
@@ -40,7 +42,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
     #-----------------------------------------------------
 
     def __init__(self, params):
-        '''To instantiate a Nelder-Mead simplex search engine'''
+        '''To instantiate a Modified Nelder-Mead simplex search engine'''
         
         orio.main.tuner.search.search.Search.__init__(self, params)
 
@@ -65,7 +67,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
         
-        
+        # complain if more than 1 value is given for the reflection, expansion, or contraction coefficient.
         if len(self.refl_coefs)!=1 or len(self.exp_coefs)!=1 or len(self.cont_coefs)!=1:
             err('msimplex: reflection, expansion, or contraction coefficient can only be one value!!!!')
         
@@ -85,7 +87,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
         '''
         
 
-        info('\n----- begin simplex search -----')
+        info('\n----- begin msimplex search -----')
 
         # check for parallel search
         if self.use_parallel_search:
@@ -109,7 +111,6 @@ class MSimplex(orio.main.tuner.search.search.Search):
         # start the timer
         self.start_time = time.time()
 
-        # execute the Nelder-Mead Simplex method
             
         # list of the last several moves (used for termination criteria)
         last_simplex_moves = []
@@ -119,15 +120,19 @@ class MSimplex(orio.main.tuner.search.search.Search):
 
         # get the performance cost of each coordinate in the simplex
         perf_costs = map(self.getPerfCost, simplex)
+        
+        # if repetition is more than 1, ignore the first measurement, and average the other ones
         perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), perf_costs)
         
-        
+        # flag to tell whether or not local min has reached
         self.localmin = False
         
+        # a flag to break when search has run for long enough
         self.breakFlag = False
 
         while True:
-
+            
+            #record the previous best coordinate. We need to clear the visited neighbors cache if the best vertex has changed.
             old_best_global_coord = simplex[0]
 
             # sort the simplex coordinates in an increasing order of performance costs
@@ -138,7 +143,13 @@ class MSimplex(orio.main.tuner.search.search.Search):
             simplex, perf_costs = zip(*sorted_simplex_cost)
             simplex = list(simplex)
             perf_costs = list(perf_costs)
-
+            
+            
+            # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
+            progress = 'init' if best_global_coord == None else 'continue'
+            IOtime = recCoords(time.time()-self.start_time, perf_costs[0], progress)
+            # don't include time on recording data in the tuning time
+            self.start_time += IOtime
                 
             info('-> (run %s) simplex: %s' % (self.runs+1, simplex))
 
@@ -147,10 +158,12 @@ class MSimplex(orio.main.tuner.search.search.Search):
                 info('msimplex: time is up')
                 break
             
+            # stop when the number of runs has been reached
             if self.total_runs > 0 and self.runs >= self.total_runs:
                 info('msimplex: total runs limit reached')
                 break   
             
+            # stop when local minimum is obtained
             if self.localmin:
                 info('msimplex: local minimum reached')
                 break
@@ -166,6 +179,8 @@ class MSimplex(orio.main.tuner.search.search.Search):
             #while len(last_simplex_moves) > self.__CACHE_SIZE:
                 #last_simplex_moves.pop(0)
                 
+            
+            
             # best coordinate
             best_coord = simplex[0]
             best_perf_cost = perf_costs[0]
@@ -173,13 +188,12 @@ class MSimplex(orio.main.tuner.search.search.Search):
 
             
             
-            # replace simplex's best vertex with a better unvisited neighbor if 
+            # replace simplex's best vertex with a better unvisited neighbor if simplex has been reduced to a point
             if simplex[1:] == simplex[:-1]:
                 while not self.localmin:
                     neighbor = self.__chooseRandomNeighbor(best_coord, simplex, best_coord)
-                    #if neighbor == best_coord:
-                     #   continue
-                     
+
+                    # break out the loop if the search method has run long enough                     
                     if self.breakFlag:
                         break
                      
@@ -192,7 +206,8 @@ class MSimplex(orio.main.tuner.search.search.Search):
                         best_perf_cost = cost
                         info('msimplex: replaces best vertex with neighbor %s after arriving at a 1 point simplex' % best_coord)
                         break
-                    
+                
+                # break out the loop if the search method has run long enough       
                 if self.breakFlag:
                     break
                 
@@ -201,7 +216,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
                     break
                     
             
-            
+            # re-init cache of visited neighbors (called used_neighbors) if the old best vertex differs from the new best vertex or this is the first iteration
             if best_global_coord == None or best_coord != old_best_global_coord:
                 best_global_coord = 'notNone'
                 #self.__initAvailableNeighbors(best_coord, simplex)
@@ -283,6 +298,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
                     #cont_coord = self.__chooseNeighbor(simplex, cont_coord)
                     cont_coord = self.__chooseRandomNeighbor(best_coord, simplex, cont_coord)
                     
+                    # break out the loop if the search method has run long enough 
                     if self.breakFlag:
                         break
                     
@@ -314,6 +330,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
                     #cont_coord = self.__chooseNeighbor(simplex, cont_coord)
                     cont_coord = self.__chooseRandomNeighbor(best_coord, simplex, cont_coord)
                     
+                    # break out the loop if the search method has run long enough 
                     if self.breakFlag:
                         break
                     
@@ -339,6 +356,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
                 #ssimplex[1:] = map((lambda x,y: x if x!=y else self.__chooseNeighbor(simplex, x)), ssimplex[1:], simplex[1:])
                 ssimplex[1:] = map((lambda x,y: x if x!=y else self.__chooseRandomNeighbor(best_coord, simplex, x)), ssimplex[1:], simplex[1:])
                 
+                # break out the loop if the search method has run long enough 
                 if self.breakFlag:
                     break
                 
@@ -362,10 +380,15 @@ class MSimplex(orio.main.tuner.search.search.Search):
             self.runs += 1
             
             
+            
+            
                 
         # get the best simplex coordinate and its performance cost
         best_global_coord = simplex[0]
         best_global_perf_cost = perf_costs[0]
+        
+        # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
+        recCoords(time.time()-self.start_time, perf_costs[0], 'done')
 
         info('-> best simplex coordinate: %s, cost: %e' %
                 (best_global_coord, best_global_perf_cost))
@@ -478,6 +501,8 @@ class MSimplex(orio.main.tuner.search.search.Search):
                        (self.__class__.__name__, vname))
     
     def __intersectCoords(self, coords1, coords2):
+        '''return a list which is the intersection of coords1 and coords2, both lists of coordinates. A coordinate is a list of numbers
+        this method is not used but just kept here for future reference'''
         coords1 = map(lambda x: str(x), coords1)
         coords2 = map(lambda x: str(x), coords2)
         coords1 = set(coords1)
@@ -489,6 +514,8 @@ class MSimplex(orio.main.tuner.search.search.Search):
     
     
     def __removeCommonCoords(self, coords1, coords2):
+        '''return a list which is coords1 with elements removed that are present in coords2
+        this method is not used but just kept here for future reference'''
         coords1 = map(lambda x: str(x), coords1)
         coords2 = map(lambda x: str(x), coords2)
         coords1 = set(coords1)
@@ -499,6 +526,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
         return result
     
     def __initAvailableNeighbors(self, bestVertex, simplex):
+        '''return a list of available neighbors given a best vertex. Not used any more. See __chooseRandomNeighbor'''
         neighbors = self.getNeighbors(bestVertex, self.search_distance)
         visited_neighbors = self.__intersectCoords(neighbors, simplex)
         self.avail_neighbors = self.__removeCommonCoords(neighbors, visited_neighbors)
@@ -508,7 +536,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
     #-----------------------------------------------------
 
     def __chooseNeighbor(self, simplex, coord):
-        
+        '''return a random neighbor of coord, from the list of available neighbors generated initally by __initAvailableNeighbors. Not used any more. See __chooseRandomNeighbor'''
         while len(self.avail_neighbors)>0:
             ipos = random.randrange(0, len(self.avail_neighbors))
             neighbor = self.avail_neighbors.pop(ipos)
@@ -524,7 +552,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
         
         
     def __chooseRandomNeighbor(self, bestVertex, simplex, coord):
-        
+        '''return a random neighbor of bestVertex. If no such neighbor, return coord'''
         
         while len(self.used_neighbors)-3**self.total_dims < 0:
             
@@ -542,8 +570,11 @@ class MSimplex(orio.main.tuner.search.search.Search):
             
             
             
+            lb = self.search_distance
+            lb = -lb
+            ub = self.search_distance
             
-            neighbor = map(lambda x: x+random.randrange(-1, 2), bestVertex)
+            neighbor = map(lambda x: x+random.randrange(lb, ub+1), bestVertex)
             if neighbor in self.used_neighbors:
                 continue
             
@@ -581,12 +612,14 @@ class MSimplex(orio.main.tuner.search.search.Search):
                     'please use the exhaustive search.') % self.__class__.__name__)
 
     def __forceInBound(self, coord):
+        '''rounds coord and constrain it within the bound of search space, and return the new coord'''
         coord = map(lambda x: int(round(x)), coord)
         coord = map(lambda x: x if x>=0 else 0, coord)
         coord = map(lambda x,y: x if x<y else y-1, coord, self.dim_uplimits)
         return coord
 
     def __dupCoord(self, simplex):
+        '''check whether or not simplex has two coords that are identical'''
         simplex = map(lambda x: tuple(x), simplex)
         result = len(simplex) != len(set(simplex))
         if result:
