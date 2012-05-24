@@ -130,7 +130,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         info('----- end exhaustive search -----')
         
         # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
-        #recCoords(time.time()-start_time, best_perf_cost, 'done')
+        recCoords(time.time()-start_time, best_perf_cost, 'done')
         
         # return the best coordinate
         return best_coord,(best_perf_cost,corr_transfer),search_time,len(coords)
