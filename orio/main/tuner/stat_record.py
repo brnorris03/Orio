@@ -6,7 +6,7 @@ Created on May 24, 2012
 from orio.main.util.globals import *
 import time   
     
-def recCoords(x, y, info, progress):
+def recCoords(x, y, extra, progress):
     ''' record x and y coordinates in a format that could be read in by Matlab/octave
     progress
     init: first record
@@ -26,17 +26,17 @@ def recCoords(x, y, info, progress):
     if progress == 'init':
         xfile.write('x = [%s' % (x))
         yfile.write('y = [%s' % (y))
-        info.write('info = {%s' % (info))
+        info.write('info = {%s' % (extra))
         
     elif progress == 'continue':
         xfile.write(', %s' % (x))
         yfile.write(', %s' % (y))
-        info.write(', %s' % (info))
+        info.write(', %s' % (extra))
         
     elif progress == 'done':
         xfile.write(', %s];' % (x))
         yfile.write(', %s];' % (y))
-        info.write(', %s};' % (info))
+        info.write(', %s};' % (extra))
         xfile.close()
         yfile.close()
         info.close()
