@@ -26,17 +26,17 @@ def recCoords(x, y, extra, progress):
     if progress == 'init':
         xfile.write('x = [%s' % (x))
         yfile.write('y = [%s' % (y))
-        info.write('info = {%s' % (extra))
+        info.write('info = {"%s"' % (extra))
         
     elif progress == 'continue':
         xfile.write(', %s' % (x))
         yfile.write(', %s' % (y))
-        info.write(', %s' % (extra))
+        info.write(', "%s"' % (extra))
         
     elif progress == 'done':
         xfile.write(', %s];' % (x))
         yfile.write(', %s];' % (y))
-        info.write(', %s};' % (extra))
+        info.write(', "%s"};' % (extra))
         xfile.close()
         yfile.close()
         info.close()
