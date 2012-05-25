@@ -55,6 +55,7 @@ class Simplex(orio.main.tuner.search.search.Search):
         self.cont_coefs = [0.5]
         self.shri_coef = 0.5
         self.x0 = [0] * self.total_dims
+        self.sim_size = max(self.dim_uplimits)
 
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
