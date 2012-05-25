@@ -101,22 +101,22 @@ class PerfTestDriver:
             err('orio.main.tuner.ptest_driver: cannot open file for writing: %s' % self.src_name)
             
         if self.first:
-          if self.language != 'cuda' and not self.tinfo.timer_file and not (os.path.exists(self.timer_file)):
-              # Generate the timing routine file
-              try: 
-                  f = open(self.timer_file, 'w')
-                  f.write(self.timer_code)
-                  f.close()
-              except:
-                  err('orio.main.tuner.ptest_driver:  cannot open file for writing: timer_cpu.c')
+            if self.language != 'cuda' and not self.tinfo.timer_file and not (os.path.exists(self.timer_file)):
+                # Generate the timing routine file
+                try: 
+                    f = open(self.timer_file, 'w')
+                    f.write(self.timer_code)
+                    f.close()
+                except:
+                    err('orio.main.tuner.ptest_driver:  cannot open file for writing: timer_cpu.c')
   
-          if not os.path.exists(self.original_src_name):
-              try:
-                  f = open(self.original_src_name, 'w')
-                  f.write(test_code)
-                  f.close()
-              except:
-                  err('orio.main.tuner.ptest_driver:  cannot open file for writing: %s' % self.original_src_name)
+            if not os.path.exists(self.original_src_name):
+                try:
+                    f = open(self.original_src_name, 'w')
+                    f.write(test_code)
+                    f.close()
+                except:
+                    err('orio.main.tuner.ptest_driver:  cannot open file for writing: %s' % self.original_src_name)
         return
   
     #-----------------------------------------------------
@@ -324,11 +324,11 @@ class PerfTestDriver:
 
         # compare original and transformed codes' results
         if Globals().validationMode and Globals().executedOriginal:
-          cmd = 'diff ./newexec.out ./origexec.out'
-          info(' running diff:\n\t' + cmd)
-          status = os.system(cmd)
-          if status:
-            err('orio.main.tuner.ptest_driver: results of transformed code differ from the original: "%s"' % status)
+            cmd = 'diff ./newexec.out ./origexec.out'
+            info(' running diff:\n\t' + cmd)
+            status = os.system(cmd)
+            if status:
+                err('orio.main.tuner.ptest_driver: results of transformed code differ from the original: "%s"' % status)
 
         # return the performance costs dictionary
         return perf_costs
