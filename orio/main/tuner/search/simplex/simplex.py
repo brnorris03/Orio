@@ -33,6 +33,7 @@ class Simplex(orio.main.tuner.search.search.Search):
     __EXP_COEF = 'expansion_coef'         # default: 2.0
     __CONT_COEF = 'contraction_coef'      # default: 0.5
     __SHRI_COEF = 'shrinkage_coef'        # default: 0.5
+    __X0       =  'x0'                    # default: all 0's
 
     #-----------------------------------------------------
 
@@ -53,6 +54,7 @@ class Simplex(orio.main.tuner.search.search.Search):
         self.exp_coefs = [2.0]
         self.cont_coefs = [0.5]
         self.shri_coef = 0.5
+        self.x0 = [0] * self.total_dims
 
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
@@ -71,6 +73,9 @@ class Simplex(orio.main.tuner.search.search.Search):
         
         '''
         
+        
+        if len(self.x0) != self.total_dims:
+            err('orio.main.tuner.search.simplex: initial coordiniate x0 has to match the total dimensions')
 
         info('\n----- begin simplex search -----')
 
@@ -93,15 +98,21 @@ class Simplex(orio.main.tuner.search.search.Search):
         
         # start the timer
         start_time = time.time()
+        
+        simplex = None
 
         # execute the Nelder-Mead Simplex method
         while True:
             
             # list of the last several moves (used for termination criteria)
             last_simplex_moves = []
-
-            # randomly initialize a simplex in the search space
-            simplex = self.__initRandomSimplex(simplex_records)
+            
+            
+            # initialize a simplex in the search space
+            if simplex == None:
+                simplex = self.__initSimplex()
+            else:
+                simplex = self.__initRandomSimplex(simplex_records)
 
             info('\n(run %s) initial simplex: %s' % (runs+1, simplex))
 
@@ -147,6 +158,7 @@ class Simplex(orio.main.tuner.search.search.Search):
 
                 # check if the time is up
                 if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
+                    info('simplex: time is up')
                     break
                 
                 # termination criteria: a loop is present
@@ -307,10 +319,12 @@ class Simplex(orio.main.tuner.search.search.Search):
             
             # check if the time is up
             if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
+                info('simplex: time is up')
                 break
             
             # check if the maximum limit of runs is reached
             if self.total_runs > 0 and runs >= self.total_runs:
+                info('simplex: total runs reached')
                 break
             
         # compute the total search time
@@ -397,6 +411,18 @@ class Simplex(orio.main.tuner.search.search.Search):
                     
                 self.shri_coef = rhs
                 
+            # x0
+            elif vname == self.__X0:
+                if isinstance(rhs, list):
+                    for n in rhs:
+                        if not isinstance(n, int) or rhs < 0:
+                            err('%s argument "%s" must be integers greater than or equal to 0'
+                                   % (self.__class__.__name__, vname))
+                else:
+                    err('%s argument "%s" must be integers greater than or equal to 0'
+                                   % (self.__class__.__name__, vname))
+                self.x0 = rhs  
+                
             # unrecognized algorithm-specific argument
             else:
                 err('man.tuner.search.simplex.simplex: unrecognized %s algorithm-specific argument: "%s"' %
@@ -414,7 +440,71 @@ class Simplex(orio.main.tuner.search.search.Search):
         if self.space_size < self.__simplex_size:
             err(('orio.main.tuner.search.simplex.simplex:  the search space is too small for %s algorithm. ' +
                     'please use the exhaustive search.') % self.__class__.__name__)
+            
+    #-----------------------------------------------------
+    
+    
+    def __dupCoord(self, simplex):
+        '''check whether or not simplex has two coords that are identical'''
+        simplex = map(lambda x: tuple(x), simplex)
+        result = len(simplex) != len(set(simplex))
+        if result:
+            info('simplex with dup coords: %s' % (simplex))
+        return result
 
+    #-----------------------------------------------------
+    
+    
+    def __initSimplex(self):
+        '''initialize a right-angled simplex in the search space'''
+
+        
+        coord = list(self.x0)
+        for i in range(0, self.total_dims):
+            iuplimit = self.dim_uplimits[i]
+            #if coord[i] >= iuplimit:
+             #   coord[i] = iuplimit-1
+            #elif coord[i] < 0:
+             #   coord[i] = 0
+            if coord[i] >= iuplimit or coord[i] < 0:
+                err('msimplex: initial point x0 out of bound!')
+                
+        simplex = [coord]
+        
+        
+        
+        for i in range(0, self.total_dims):
+            coord = list(self.x0)
+            
+            axis = coord[i]
+            iuplimit = self.dim_uplimits[i]
+            pos = iuplimit - axis - 1
+            neg = axis
+            
+            prefer = self.sim_size-1
+            
+            if prefer <= pos:
+                coord[i] += prefer
+            elif prefer <= neg:
+                coord[i] -= prefer
+            elif pos >= neg:
+                coord[i] += pos
+            else:
+                coord[i] -= neg
+            
+            
+            
+            #coord[i] += self.sim_size-1
+            #iuplimit = self.dim_uplimits[i]
+            #if coord[i] >= iuplimit:
+            #    coord[i] = iuplimit-1
+            
+            simplex.append(coord)
+            
+        if self.__dupCoord(simplex):
+            err('msimplex: simplex created has duplicate!!')
+        
+        return simplex
     #-----------------------------------------------------
 
     def __initRandomSimplex(self, simplex_records):
