@@ -147,7 +147,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
             
             # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
             progress = 'init' if best_global_coord == None else 'continue'
-            IOtime = recCoords(time.time()-self.start_time, perf_costs[0], progress)
+            IOtime = recCoords(time.time()-self.start_time, perf_costs[0], simplex[0], progress)
             # don't include time on recording data in the tuning time
             self.start_time += IOtime
                 
@@ -388,7 +388,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
         best_global_perf_cost = perf_costs[0]
         
         # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
-        recCoords(time.time()-self.start_time, perf_costs[0], 'done')
+        recCoords(time.time()-self.start_time, perf_costs[0], simplex[0], 'done')
 
         info('-> best simplex coordinate: %s, cost: %e' %
                 (best_global_coord, best_global_perf_cost))
@@ -635,10 +635,12 @@ class MSimplex(orio.main.tuner.search.search.Search):
         coord = list(self.x0)
         for i in range(0, self.total_dims):
             iuplimit = self.dim_uplimits[i]
-            if coord[i] >= iuplimit:
-                coord[i] = iuplimit-1
-            elif coord[i] < 0:
-                coord[i] = 0
+            #if coord[i] >= iuplimit:
+             #   coord[i] = iuplimit-1
+            #elif coord[i] < 0:
+             #   coord[i] = 0
+            if coord[i] >= iuplimit or coord[i] < 0:
+                err('msimplex: initial point x0 out of bound!')
                 
         simplex = [coord]
         
@@ -646,10 +648,30 @@ class MSimplex(orio.main.tuner.search.search.Search):
         
         for i in range(0, self.total_dims):
             coord = list(self.x0)
-            coord[i] += self.sim_size-1
+            
+            axis = coord[i]
             iuplimit = self.dim_uplimits[i]
-            if coord[i] >= iuplimit:
-                coord[i] = iuplimit-1
+            pos = iuplimit - axis - 1
+            neg = axis
+            
+            prefer = self.sim_size-1
+            
+            if prefer <= pos:
+                coord[i] += prefer
+            elif prefer <= neg:
+                coord[i] -= prefer
+            elif pos >= neg:
+                coord[i] += pos
+            else:
+                coord[i] -= neg
+            
+            
+            
+            #coord[i] += self.sim_size-1
+            #iuplimit = self.dim_uplimits[i]
+            #if coord[i] >= iuplimit:
+            #    coord[i] = iuplimit-1
+            
             simplex.append(coord)
             
         if self.__dupCoord(simplex):
