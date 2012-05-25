@@ -108,6 +108,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
 
             # check if the time is up
             if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
+                info('exhaustive search: time limit reached')
                 break
 
             # get to all the next coordinates in the search space
