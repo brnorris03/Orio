@@ -397,7 +397,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
         # compute the total search time
         search_time = time.time() - self.start_time
                                                                      
-        info('----- end simplex search -----')
+        info('----- end msimplex search -----')
  
         # return the best coordinate
         return best_global_coord, best_global_perf_cost, search_time, self.runs
