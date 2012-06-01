@@ -146,10 +146,10 @@ class MSimplex(orio.main.tuner.search.search.Search):
             
             
             # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
-            progress = 'init' if best_global_coord == None else 'continue'
-            IOtime = recCoords(time.time()-self.start_time, perf_costs[0], simplex[0], progress)
+            #progress = 'init' if best_global_coord == None else 'continue'
+            #IOtime = recCoords(time.time()-self.start_time, perf_costs[0], simplex[0], progress)
             # don't include time on recording data in the tuning time
-            self.start_time += IOtime
+            #self.start_time += IOtime
                 
             info('-> (run %s) simplex: %s' % (self.runs+1, simplex))
 
@@ -388,7 +388,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
         best_global_perf_cost = perf_costs[0]
         
         # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
-        recCoords(time.time()-self.start_time, perf_costs[0], simplex[0], 'done')
+        #recCoords(time.time()-self.start_time, perf_costs[0], simplex[0], 'done')
 
         info('-> best simplex coordinate: %s, cost: %e' %
                 (best_global_coord, best_global_perf_cost))
