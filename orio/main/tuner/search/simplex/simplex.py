@@ -136,14 +136,14 @@ class Simplex(orio.main.tuner.search.search.Search):
                 
                 
                 # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
-                progress = 'init' if best_global_coord == None else 'continue'
-                if best_global_coord == None:
-                    best_global_coord = 'notNone'
-                result = perf_costs[0] if perf_costs[0] < best_global_perf_cost else best_global_perf_cost
-                best_coord_thus_far = simplex[0] if perf_costs[0] < best_global_perf_cost else best_global_coord
-                IOtime = recCoords(time.time()-start_time, result, best_coord_thus_far, progress)
+                #progress = 'init' if best_global_coord == None else 'continue'
+                #if best_global_coord == None:
+                    #best_global_coord = 'notNone'
+                #result = perf_costs[0] if perf_costs[0] < best_global_perf_cost else best_global_perf_cost
+                #best_coord_thus_far = simplex[0] if perf_costs[0] < best_global_perf_cost else best_global_coord
+                #IOtime = recCoords(time.time()-start_time, result, best_coord_thus_far, progress)
                 # don't include time on recording data in the tuning time
-                start_time += IOtime
+                #start_time += IOtime
                 
                 
                 # remove bogus values (0 time)
@@ -335,7 +335,7 @@ class Simplex(orio.main.tuner.search.search.Search):
         info('----- end simplex search -----')
         
         # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
-        recCoords(time.time()-start_time, best_global_perf_cost, best_global_coord, 'done')
+        #recCoords(time.time()-start_time, best_global_perf_cost, best_global_coord, 'done')
  
         # return the best coordinate
         return best_global_coord, best_global_perf_cost, search_time, runs
