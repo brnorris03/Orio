@@ -6,7 +6,7 @@ Created on May 24, 2012
 from orio.main.util.globals import *
 import time   
     
-def recCoords(x, y, extra="", progress):
+def recCoords(x, y, extra="", progress=""):
     ''' record x and y coordinates in a format that could be read in by Matlab/octave
     record extra information that corresponds to (x,y) as well. By default, there's no extra info (that is, empty string)
     progress
