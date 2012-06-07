@@ -578,9 +578,13 @@ class Transformation(object):
         def collectIntIdsClosure(inferredInts):
           def collectIntIds(n):
             # constrained C
-            if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN and isinstance(n.lhs, IdentExp) and n.lhs.name in inferredInts:
-              idents = loop_lib.collectNode(collectIdents, n.rhs)
-              return idents
+            #  typeof(\forall x \in collectIdents(expr)) == int if
+            #   int_id = expr or int_id int_op expr
+            if isinstance(n, BinOpExp) and isinstance(n.lhs, IdentExp) and n.lhs.name in inferredInts:
+              if n.op_type != BinOpExp.EQ_ASGN and n.op_type != BinOpExp.LT: # and so forth depending on the typing rules
+                return []
+              else:
+                return loop_lib.collectNode(collectIdents, n.rhs)
             else: return []
           return collectIntIds
         lhs_ids = loop_lib.collectNode(collectLhsIds, loop_body)
@@ -628,9 +632,11 @@ class Transformation(object):
         kernelParams = [FieldDecl('const int', x) for x in ubound_ids]
 
         int_ids = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIds, loop_body)))
-        int_ids_pass2 = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIdsClosure(int_ids), loop_body)))
-        ktempints += filter(lambda x: x in lhs_ids, list(int_ids))
-        kdeclints = list(int_ids.difference(ktempints))
+        inferredInts = list(int_ids) + indices + ubound_ids
+        #int_ids_pass2 = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body)))
+        int_ids_pass2 = set(loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body))
+        ktempints += filter(lambda x: x in lhs_ids, list(int_ids_pass2))
+        kdeclints = list(int_ids_pass2.difference(ktempints))
         if str(lbound_exp) != '0':
           lbound_id = self.cs['prefix'] + 'var' + str(g.Globals().getcounter())
           self.model['lbound'] = VarDeclInit('int', IdentExp(lbound_id), lbound_exp)

@@ -12,14 +12,15 @@ void FormJacobian2D(double lambda, int m, int n, double *x, double *dia) {
           arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
         }
         def input_params {
+          param Nos = 5;
           param lambda = 6;
-          param m[] = [4,8,16,32];
-          param n[] = [4,8,16,32];
-          constraint c1 = (m==n);
+          param M[] = [4,8,16,32];
+          param N[] = [4,8,16,32];
+          constraint c1 = (M==N);
         }
         def input_vars {
-          decl dynamic double x[m*n] = random;
-          decl dynamic double dia[5*m*n] = 0;
+          decl dynamic double x[M*N] = random;
+          decl dynamic double dia[Nos*M*N] = 0;
         }
         def performance_counter {
           arg method = 'basic timer';
@@ -27,12 +28,14 @@ void FormJacobian2D(double lambda, int m, int n, double *x, double *dia) {
         }
   ) @*/
 
-  int nrows     = m*n;
-  double hx     = 1.0/(m-1);
-  double hy     = 1.0/(n-1);
-  double sc     = hx*hy*lambda;
-  double hxdhy  = hx/hy;
-  double hydhx  = hy/hx;
+  int m        = M;
+  int n        = N;
+  int nrows    = m*n;
+  double hx    = 1.0/(m-1);
+  double hy    = 1.0/(n-1);
+  double sc    = hx*hy*lambda;
+  double hxdhy = hx/hy;
+  double hydhx = hy/hx;
 
 
   /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, preferL1Size=PL)
