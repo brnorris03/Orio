@@ -1,10 +1,9 @@
-void FormFunction3D(double lambda, int m, int n, int p, double* X, double *F) {
+void FormJacobian3D(double lambda, int m, int n, int p, double *x, double *dia) {
   register int i;
   /*@ begin PerfTuning(
         def performance_params {
           param TC[] = range(32,1025,32);
           param BC[] = range(14,113,14);
-          param SC[] = range(1,6);
           param PL[] = [16,48];
           param CFLAGS[] = map(join, product(['', '-O1', '-O2', '-O3']));
         }
@@ -12,6 +11,7 @@ void FormFunction3D(double lambda, int m, int n, int p, double* X, double *F) {
           arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
         }
         def input_params {
+          param Nos = 7;
           param lambda = 6;
           param M[] = [4,8,16,32];
           param N[] = [4,8,16,32];
@@ -19,15 +19,14 @@ void FormFunction3D(double lambda, int m, int n, int p, double* X, double *F) {
           constraint c1 = (M==N) and (N==P);
         }
         def input_vars {
-          decl dynamic double X[M*N*P] = random;
-          decl dynamic double F[M*N*P] = 0;
+          decl dynamic double x[M*N*P] = random;
+          decl dynamic double dia[Nos*M*N*P] = 0;
         }
         def performance_counter {
           arg method = 'basic timer';
           arg repetitions = 6;
         }
   ) @*/
-
   int m          = M;
   int n          = N;
   int p          = P;
@@ -40,28 +39,34 @@ void FormFunction3D(double lambda, int m, int n, int p, double* X, double *F) {
   double hyhzdhx = hy*hz/hx;
   double hxhydhz = hx*hy/hz;
 
-  /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, streamCount=SC, preferL1Size=PL)
+  /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, preferL1Size=PL)
 
   for(i=0; i<=nrows-1; i++) {
     if (i<m*n || i>=nrows-m*n || i%(m*n)<m || i%(m*n)>=m*n-m || i%m==0 || i%m==m-1) {
-      F[i] = X[i];
+      dia[i+3*nrows] = 1.0;
     } else {
-      F[i] = (2*X[i+3*nrows] - X[i+2*nrows] - X[i+4*nrows])*hyhzdhx
-           + (2*X[i+3*nrows] - X[i+  nrows] - X[i+5*nrows])*hxhzdhy
-           + (2*X[i+3*nrows] - X[i        ] - X[i+6*nrows])*hxhydhz;
-           - sc*exp(X[i+3*nrows]);
+      dia[i        ] = -hxhydhz;
+      dia[i+  nrows] = -hxhzdhy;
+      dia[i+2*nrows] = -hyhzdhx;
+      dia[i+3*nrows] = 2.0*(hyhzdhx+hxhzdhy+hxhydhz) - sc*exp(x[i]);
+      dia[i+4*nrows] = -hyhzdhx;
+      dia[i+5*nrows] = -hxhzdhy;
+      dia[i+6*nrows] = -hxhydhz;
     }
   }
 
   ) @*/
   for(i=0; i<=nrows-1; i++) {
     if (i<m*n || i>=nrows-m*n || i%(m*n)<m || i%(m*n)>=m*n-m || i%m==0 || i%m==m-1) {
-      F[i] = X[i];
+      dia[i+3*nrows] = 1.0;
     } else {
-      F[i] = (2*X[i+3*nrows] - X[i+2*nrows] - X[i+4*nrows])*hyhzdhx
-           + (2*X[i+3*nrows] - X[i+  nrows] - X[i+5*nrows])*hxhzdhy
-           + (2*X[i+3*nrows] - X[i        ] - X[i+6*nrows])*hxhydhz;
-           - sc*exp(X[i+3*nrows]);
+      dia[i        ] = -hxhydhz;
+      dia[i+  nrows] = -hxhzdhy;
+      dia[i+2*nrows] = -hyhzdhx;
+      dia[i+3*nrows] = 2.0*(hyhzdhx+hxhzdhy+hxhydhz) - sc*exp(x[i]);
+      dia[i+4*nrows] = -hyhzdhx;
+      dia[i+5*nrows] = -hxhzdhy;
+      dia[i+6*nrows] = -hxhydhz;
     }
   }
   /*@ end @*/
