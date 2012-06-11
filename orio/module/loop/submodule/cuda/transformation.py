@@ -632,10 +632,10 @@ class Transformation(object):
         kernelParams = [FieldDecl('const int', x) for x in ubound_ids]
 
         int_ids = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIds, loop_body)))
-        inferredInts = list(int_ids) + indices + ubound_ids
+        inferredInts = indices + ubound_ids
         #int_ids_pass2 = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body)))
         int_ids_pass2 = set(loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body))
-        ktempints += filter(lambda x: x in lhs_ids, list(int_ids_pass2))
+        ktempints += filter(lambda x: x in lhs_ids, list(int_ids))
         kdeclints = list(int_ids_pass2.difference(ktempints))
         if str(lbound_exp) != '0':
           lbound_id = self.cs['prefix'] + 'var' + str(g.Globals().getcounter())
