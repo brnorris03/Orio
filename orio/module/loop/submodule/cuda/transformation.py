@@ -571,7 +571,7 @@ class Transformation(object):
           if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN:
             return loop_lib.collectNode(collectIdents, n.rhs)
           else: return []
-        def collectIntIds(n):
+        def collectArraySubscripts(n):
           if isinstance(n, ArrayRefExp):
             return loop_lib.collectNode(collectIdents, n.sub_exp)
           else: return []
@@ -631,22 +631,23 @@ class Transformation(object):
         ubound_ids = reduce(lambda acc,item: acc+item, ubound_idss, [])
         kernelParams = [FieldDecl('const int', x) for x in ubound_ids]
 
-        int_ids = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIds, loop_body)))
-        inferredInts = indices + ubound_ids
-        #int_ids_pass2 = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body)))
-        int_ids_pass2 = set(loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body))
-        ktempints += filter(lambda x: x in lhs_ids, list(int_ids))
-        kdeclints = list(int_ids_pass2.difference(ktempints))
+        arraySubs = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectArraySubscripts, loop_body)))
+        inferredInts = list(arraySubs) + indices + ubound_ids
+        int_ids_pass2 = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body)))
+        #int_ids_pass2 = set(loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body))
+        ktempints += filter(lambda x: x in lhs_ids, list(arraySubs)) # kernel temporary integer vars
+        kdeclints = int_ids_pass2.difference(ktempints) # kernel integer parameters
+        intarrays = list(int_ids_pass2.intersection(array_ids))
+        kdeclints = list(kdeclints.difference(intarrays))
         if str(lbound_exp) != '0':
           lbound_id = self.cs['prefix'] + 'var' + str(g.Globals().getcounter())
           self.model['lbound'] = VarDeclInit('int', IdentExp(lbound_id), lbound_exp)
           kdeclints += [lbound_id]
-        intarrays = list(int_ids_pass2.intersection(array_ids))
         array_ids = array_ids.difference(intarrays)
 
         # collect all identifiers from the loop body
         loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
-        lbi = set(filter(lambda x: x not in (indices+ubound_ids+list(int_ids)+list(int_ids_pass2)), loop_body_ids))
+        lbi = set(filter(lambda x: x not in (indices+ubound_ids+list(arraySubs)+list(int_ids_pass2)), loop_body_ids))
 
         if self.model['isReduction']:
             lbi = lbi.difference(set(lhs_ids))
