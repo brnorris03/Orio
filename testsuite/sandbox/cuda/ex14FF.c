@@ -46,10 +46,10 @@ void FormFunction3D(double lambda, int m, int n, int p, double* X, double *F) {
     if (i<m*n || i>=nrows-m*n || i%(m*n)<m || i%(m*n)>=m*n-m || i%m==0 || i%m==m-1) {
       F[i] = X[i];
     } else {
-      F[i] = (2*X[i+3*nrows] - X[i+2*nrows] - X[i+4*nrows])*hyhzdhx
-           + (2*X[i+3*nrows] - X[i+  nrows] - X[i+5*nrows])*hxhzdhy
-           + (2*X[i+3*nrows] - X[i        ] - X[i+6*nrows])*hxhydhz;
-           - sc*exp(X[i+3*nrows]);
+      F[i] = (2*X[i] - X[i-1  ] - X[i+1  ])*hyhzdhx
+           + (2*X[i] - X[i-m  ] - X[i+m  ])*hxhzdhy
+           + (2*X[i] - X[i-m*n] - X[i+m*n])*hxhydhz
+           - sc*exp(X[i]);
     }
   }
 
@@ -58,10 +58,10 @@ void FormFunction3D(double lambda, int m, int n, int p, double* X, double *F) {
     if (i<m*n || i>=nrows-m*n || i%(m*n)<m || i%(m*n)>=m*n-m || i%m==0 || i%m==m-1) {
       F[i] = X[i];
     } else {
-      F[i] = (2*X[i+3*nrows] - X[i+2*nrows] - X[i+4*nrows])*hyhzdhx
-           + (2*X[i+3*nrows] - X[i+  nrows] - X[i+5*nrows])*hxhzdhy
-           + (2*X[i+3*nrows] - X[i        ] - X[i+6*nrows])*hxhydhz;
-           - sc*exp(X[i+3*nrows]);
+      F[i] = (2*X[i] - X[i-1  ] - X[i+1  ])*hyhzdhx
+           + (2*X[i] - X[i-m  ] - X[i+m  ])*hxhzdhy
+           + (2*X[i] - X[i-m*n] - X[i+m*n])*hxhydhz
+           - sc*exp(X[i]);
     }
   }
   /*@ end @*/
