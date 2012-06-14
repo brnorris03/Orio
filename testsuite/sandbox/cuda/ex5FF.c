@@ -43,7 +43,9 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
     if (i<m || i>=nrows-m || i%m==0 || i%m==m-1) {
       F[i] = X[i];
     } else {
-      F[i] = (2*X[i+2*nrows] - X[i+nrows] - X[i+3*nrows])*hydhx + (2*X[i+2*nrows] - X[i] - X[i+4*nrows])*hxdhy - sc*exp(X[i+2*nrows]);
+      F[i] = (2*X[i] - X[i-1] - X[i+1])*hydhx
+           + (2*X[i] - X[i-m] - X[i+m])*hxdhy
+           - sc*exp(X[i]);
     }
   }
 
@@ -53,7 +55,9 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
     if (i<m || i>=nrows-m || i%m==0 || i%m==m-1) {
       F[i] = X[i];
     } else {
-      F[i] = (2*X[i+2*nrows] - X[i+nrows] - X[i+3*nrows])*hydhx + (2*X[i+2*nrows] - X[i] - X[i+4*nrows])*hxdhy - sc*exp(X[i+2*nrows]);
+      F[i] = (2*X[i] - X[i-1] - X[i+1])*hydhx
+           + (2*X[i] - X[i-m] - X[i+m])*hxdhy
+           - sc*exp(X[i]);
     }
   }
 
