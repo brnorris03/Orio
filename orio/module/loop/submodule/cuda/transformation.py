@@ -580,11 +580,13 @@ class Transformation(object):
             # constrained C
             #  typeof(\forall x \in collectIdents(expr)) == int if
             #   int_id = expr or int_id int_op expr
-            if isinstance(n, BinOpExp) and isinstance(n.lhs, IdentExp) and n.lhs.name in inferredInts:
-              if n.op_type != BinOpExp.EQ_ASGN and n.op_type != BinOpExp.LT: # and so forth depending on the typing rules
-                return []
-              else:
-                return loop_lib.collectNode(collectIdents, n.rhs)
+            if isinstance(n, BinOpExp):
+              if isinstance(n.lhs, IdentExp) and n.lhs.name in inferredInts:
+                if n.op_type != BinOpExp.EQ_ASGN and n.op_type != BinOpExp.LT and n.op_type != BinOpExp.MOD: # and so forth depending on the typing rules
+                  return []
+                else:
+                  return loop_lib.collectNode(collectIdents, n.rhs)
+              else: return loop_lib.collectNode(collectIntIds, n.lhs)
             else: return []
           return collectIntIds
         lhs_ids = loop_lib.collectNode(collectLhsIds, loop_body)
