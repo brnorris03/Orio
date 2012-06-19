@@ -1,4 +1,4 @@
-void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos, int dof) {
+void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NOS, int DOF) {
 
   register int i,j;
   int col;
@@ -8,24 +8,25 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
           param BC[]  = range(14,113,14);
           param UIF[] = range(1,8);
           param PL[]  = [16,48];
-          param CFLAGS[] = map(join, product(['', '-use_fast_math'], ['', '-Xptxas -dlcm=cg']));
+          param CFLAGS[] = map(join, product(['', '-O1', '-O2', '-O3']));
+        }
+        def input_params {
+          param M[] = [16,32,64,128,256];
+          param N[] = [16,32,64,128,256];
+          param P[] = [16,32,64,128,256];
+          param NOS = 7;
+          param DOF = 1;
+          constraint c1 = (M==N);
+          constraint c2 = (N==P);
+        }
+        def input_vars {
+          decl static double A[M*N*P*NOS*DOF] = random;
+          decl static double x[M*N*P*DOF]     = random;
+          decl static double y[M*N*P*DOF]     = 0;
+          decl static int offsets[NOS]        = {-M*N*DOF,-M*DOF,-DOF,0,DOF,M*DOF,M*N*DOF};
         }
         def build {
           arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
-        }
-        def input_params {
-          param m[]   = [16,32,64,128,256];
-          param n[]   = [16,32,64,128,256];
-          param p[]   = [16,32,64,128,256];
-          param Nos[] = [7];
-          param dof[] = [1];
-          constraint c1 = (m==n);
-          constraint c2 = (n==p);
-        }
-        def input_vars {
-          decl static double A[m*n*p*Nos*dof] = random;
-          decl static double x[m*n*p*dof]     = random;
-          decl static double y[m*n*p*dof]     = 0;
         }
         def performance_counter {
           arg method = 'basic timer';
@@ -33,16 +34,8 @@ void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos
         }
   ) @*/
 
-  int nrows=m*n*p;
-  int ndiags=Nos;
-  int offsets[ndiags];
-  offsets[0]=-m*n*dof;
-  offsets[1]=-m*dof;
-  offsets[2]=-dof;
-  offsets[3]=0;
-  offsets[4]=dof;
-  offsets[5]=m*dof;
-  offsets[6]=m*n*dof;
+  int nrows=M*N*P;
+  int ndiags=NOS*DOF;
 
   /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, preferL1Size=PL, unrollInner=UIF)
 
