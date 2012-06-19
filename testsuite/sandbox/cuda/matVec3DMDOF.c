@@ -37,6 +37,7 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
   int nrows=M*N*P*DOF;
   int ndiags=NOS*DOF;
   int d=0;
+  int dof=DOF;
 
   /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, preferL1Size=PL, unrollInner=UIF)
 
@@ -45,7 +46,7 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
       col = i+offsets[d];
       if(col>=0&&col<nrows)
         y[i] += A[i+j*nrows] * x[col];
-      if(j%DOF==DOF-1)
+      if(j%dof==dof-1)
         d++;
     }
   }
@@ -57,7 +58,7 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
       col = i+offsets[d];
       if(col>=0&&col<nrows)
         y[i] += A[i+j*nrows] * x[col];
-      if(j%DOF==DOF-1)
+      if(j%dof==dof-1)
         d++;
     }
   }
