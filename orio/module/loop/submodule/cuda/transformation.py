@@ -647,15 +647,25 @@ class Transformation(object):
           kdeclints += [lbound_id]
         array_ids = array_ids.difference(intarrays)
 
+        ktempdbls = []
+        if self.model['isReduction']:
+            for var in lhs_ids:
+                tempIdent = self.cs['prefix'] + 'var' + str(g.Globals().getcounter())
+                ktempdbls += [tempIdent]
+                rrLhs = lambda n: IdentExp(tempIdent) if (isinstance(n, IdentExp) and n.name == var) else n
+                loop_body = loop_lib.rewriteNode(rrLhs, loop_body)
+        else:
+          ktempdbls = filter(lambda x: x not in array_ids, list(lhs_ids))
+                  
         # collect all identifiers from the loop body
         loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
         lbi = set(filter(lambda x: x not in (indices+ubound_ids+list(arraySubs)+list(int_ids_pass2)), loop_body_ids))
 
         if self.model['isReduction']:
             lbi = lbi.difference(set(lhs_ids))
-        scalar_ids = list(lbi.difference(array_ids))
+        scalar_ids = list(lbi.difference(array_ids).difference(ktempdbls))
         dev = self.cs['dev']
-        lbi = lbi.difference(scalar_ids)
+        lbi = lbi.difference(scalar_ids+ktempdbls)
         idents = list(lbi)
         if self.model['isReduction']:
           idents += [lhs_ids[0]]
@@ -672,14 +682,6 @@ class Transformation(object):
         kernelParams += [FieldDecl('int*', x) for x in intarrays]
         kernelParams += [FieldDecl('double', x) for x in scalar_ids]
         kernelParams += [FieldDecl('double*', x) for x in lbi]
-
-        ktempdbls = []
-        if self.model['isReduction']:
-            for var in lhs_ids:
-                tempIdent = IdentExp(self.cs['prefix'] + 'var' + str(g.Globals().getcounter()))
-                ktempdbls += [tempIdent]
-                rrLhs = lambda n: tempIdent if (isinstance(n, IdentExp) and n.name == var) else n
-                loop_body = loop_lib.rewriteNode(rrLhs, loop_body)
 
         collectLhsExprs = lambda n: [n.lhs] if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN else []
         loop_lhs_exprs = loop_lib.collectNode(collectLhsExprs, loop_body)
@@ -809,9 +811,12 @@ class Transformation(object):
                     loop_body3 = loop_lib.rewriteNode(rrLhsExprs, loop_body3)
                     cacheWrites += [ExpStmt(BinOpExp(varExp, sharedVarExp, BinOpExp.EQ_ASGN))]
 
-        if self.model['isReduction']:
+        if len(ktempdbls) > 0:
+          if self.model['isReduction']:
             for temp in ktempdbls:
-                kernelStmts += [VarDeclInit('double', temp, self.cs['int0'])]
+                kernelStmts += [VarDeclInit('double', IdentExp(temp), self.cs['int0'])]
+          else:
+            kernelStmts += [VarDecl('double', map(lambda x: IdentExp(x), ktempdbls))]
         if len(ktempints) > 0:
             kernelStmts += [VarDecl('int', map(lambda x: IdentExp(x), ktempints))]
 

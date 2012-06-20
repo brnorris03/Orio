@@ -1,5 +1,7 @@
-void FormFunction2DMDOF(double lambda, int M, int N, double* X, double *F){
+void FormFunction2DMDOF(double GRASHOF, double PRANDTL, double LID, int M, int N, double* x, double *f){
   register int i;
+  double u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
+
   /*@ begin PerfTuning(
         def performance_params {
           param TC[] = range(32,1025,32);
@@ -12,27 +14,29 @@ void FormFunction2DMDOF(double lambda, int M, int N, double* X, double *F){
           arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
         }
         def input_params {
-          param lambda = 6;
           param M[] = [4,8,16,32];
           param N[] = [4,8,16,32];
           constraint c1 = (M==N);
         }
         def input_vars {
-          decl dynamic double X[M*N] = random;
-          decl dynamic double F[M*N] = 0;
+          decl dynamic double x[M*N] = random;
+          decl dynamic double f[M*N] = 0;
+          decl double GRASHOF = random;
+          decl double PRANDTL = random;
+          decl double LID     = random;
         }
         def performance_counter {
           arg method = 'basic timer';
           arg repetitions = 6;
         }
   ) @*/
-  double grashof,prandtl,lid;
-  double u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
 
+  double grashof = GRASHOF;
+  double prandtl = PRANDTL;
+  double lid     = LID;
   int m     = M;
   int n     = N;
-  int nrows = m*n;
-
+  int nrows = m*n*4;
   double dhx = m-1;
   double dhy = n-1;
   double hx = 1.0/dhx;
@@ -42,130 +46,132 @@ void FormFunction2DMDOF(double lambda, int M, int N, double* X, double *F){
 
   /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, streamCount=SC, preferL1Size=PL)
 
-  for(i=0; i<=nrows-1; i++){
-    if(i<m){
-      f[i].u     = x[i].u;
-      f[i].v     = x[i].v;
-      f[i].omega = x[i].omega + (x[i+1].u - x[i].u)*dhy;
-      f[i].temp  = x[i].temp  - x[i+1].temp;
+  for(i=0; i<=nrows-1; i+=4){
+    if(i<4*m){
+      f[i]   = x[i];
+      f[i+1] = x[i+1];
+      f[i+2] = x[i+2] + (x[i+4] - x[i])*dhy;
+      f[i+3] = x[i+3] - x[i+7];
     }else
-    if(i>=nrows-m){
-      f[i].u     = x[i].u - lid;
-      f[i].v     = x[i].v;
-      f[i].omega = x[i].omega + (x[i].u - x[i-1].u)*dhy;
-      f[i].temp  = x[i].temp  - x[i-1].temp;
+    if(i>=nrows-4*m){
+      f[i]   = x[i] - lid;
+      f[i+1] = x[i+1];
+      f[i+2] = x[i+2] + (x[i] - x[i-4])*dhy;
+      f[i+3] = x[i+3] - x[i-1];
     }else
-    if(i%m==0){
-      f[i].u     = x[i].u;
-      f[i].v     = x[i].v;
-      f[i].omega = x[i].omega - (x[i+1].v - x[i].v)*dhx;
-      f[i].temp  = x[i].temp;
+    if(i%(4*m)==0){
+      f[i]   = x[i];
+      f[i+1] = x[i+1];
+      f[i+2] = x[i+2] - (x[i+5] - x[i+1])*dhx;
+      f[i+3] = x[i+3];
     }else
-    if(i%m==m-1){
-      f[i].u     = x[i].u;
-      f[i].v     = x[i].v;
-      f[i].omega = x[i].omega - (x[i].v - x[i-1].v)*dhx;
-      f[i].temp  = x[i].temp  - (grashof>0);
+    if(i%(4*m)==4*m-4){
+      f[i]   = x[i];
+      f[i+1] = x[i+1];
+      f[i+2] = x[i+2] - (x[i+1] - x[i-3])*dhx;
+      f[i+3] = x[i+3] - (grashof>0);
     }else{
-      vx  = x[i].u;
+      vx  = x[i];
       avx = fabs(vx);
-      vxp = .5*(vx+avx);
-      vxm = .5*(vx-avx);
-      vy  = x[i].v;
+      vxp = 0.5*(vx+avx);
+      vxm = 0.5*(vx-avx);
+      vy  = x[i+1];
       avy = fabs(vy);
-      vyp = .5*(vy+avy);
-      vym = .5*(vy-avy);
+      vyp = 0.5*(vy+avy);
+      vym = 0.5*(vy-avy);
 
-      u      = x[i].u;
-      uxx    = (2.0*u - x[i-1].u - x[i+1].u)*hydhx;
-      uyy    = (2.0*u - x[i-m].u - x[i+m].u)*hxdhy;
-      f[i].u = uxx + uyy - .5*(x[i+m].omega-x[i-m].omega)*hx;
+      u    = x[i];
+      uxx  = (2.0*u - x[i-4] - x[i+4])*hydhx;
+      uyy  = (2.0*u - x[i-4*m] - x[i+4*m])*hxdhy;
+      f[i] = uxx + uyy - 0.5*(x[i+4*m+3]-x[i-4*m+3])*hx;
 
-      u      = x[i].v;
-      uxx    = (2.0*u - x[i-1].v - x[i+1].v)*hydhx;
-      uyy    = (2.0*u - x[i-m].v - x[i+m].v)*hxdhy;
-      f[i].v = uxx + uyy + .5*(x[i+1].omega-x[i-1].omega)*hy;
+      u      = x[i+1];
+      uxx    = (2.0*u - x[i-3] - x[i+5])*hydhx;
+      uyy    = (2.0*u - x[i-4*m+1] - x[i+4*m+1])*hxdhy;
+      f[i+1] = uxx + uyy + 0.5*(x[i+6]-x[i-2])*hy;
 
-      u          = x[i].omega;
-      uxx        = (2.0*u - x[i-1].omega - x[i+1].omega)*hydhx;
-      uyy        = (2.0*u - x[i-m].omega - x[i+m].omega)*hxdhy;
-      f[i].omega = uxx + uyy + (vxp*(u - x[i-1].omega) + vxm*(x[i+1].omega - u)) * hy +
-            (vyp*(u - x[i-m].omega) + vym*(x[i+m].omega - u)) * hx - .5 * grashof * (x[i+1].temp - x[i-1].temp) * hy;
+      u      = x[i+2];
+      uxx    = (2.0*u - x[i-2] - x[i+6])*hydhx;
+      uyy    = (2.0*u - x[i-4*m+2] - x[i+4*m+2])*hxdhy;
+      f[i+2] = uxx + uyy + (vxp*(u - x[i-2]) + vxm*(x[i+6] - u)) * hy +
+            (vyp*(u - x[i-4*m+2]) + vym*(x[i+4*m+2] - u)) * hx - 0.5 * grashof * (x[i+7] - x[i-1]) * hy;
 
-      u         = x[i].temp;
-      uxx       = (2.0*u - x[i-1].temp - x[i+1].temp)*hydhx;
-      uyy       = (2.0*u - x[i-m].temp - x[i+m].temp)*hxdhy;
-      f[i].temp =  uxx + uyy  + prandtl * ((vxp*(u - x[i-1].temp) + vxm*(x[i+1].temp - u)) * hy +
-            (vyp*(u - x[i-m].temp) + vym*(x[i+m].temp - u)) * hx);
+      u      = x[i+3];
+      uxx    = (2.0*u - x[i-1] - x[i+7])*hydhx;
+      uyy    = (2.0*u - x[i-4*m+3] - x[i+4*m+3])*hxdhy;
+      f[i+3] =  uxx + uyy  + prandtl * ((vxp*(u - x[i-1]) + vxm*(x[i+7] - u)) * hy +
+            (vyp*(u - x[i-4*m+3]) + vym*(x[i+4*m+3] - u)) * hx);
     }
   }
 
   ) @*/
 
-  for(i=0; i<=nrows-1; i++){
+  // Field struct is inlined into the linearized array: e.g. x[i].u + x[i].v is now x[i] + x[i+1].
+  //   - field order/sequence is [u,v,omega,temp]
+  for(i=0; i<=nrows-1; i+=4){
     /* bottom edge */
-    if(i<m){
-      f[i].u     = x[i].u;
-      f[i].v     = x[i].v;
-      f[i].omega = x[i].omega + (x[i+1].u - x[i].u)*dhy;
-      f[i].temp  = x[i].temp  - x[i+1].temp;
+    if(i<4*m){
+      f[i]   = x[i];
+      f[i+1] = x[i+1];
+      f[i+2] = x[i+2] + (x[i+4] - x[i])*dhy;
+      f[i+3] = x[i+3] - x[i+7];
     }else
     /* top edge */
-    if(i>=nrows-m){
-      f[i].u     = x[i].u - lid;
-      f[i].v     = x[i].v;
-      f[i].omega = x[i].omega + (x[i].u - x[i-1].u)*dhy;
-      f[i].temp  = x[i].temp  - x[i-1].temp;
+    if(i>=nrows-4*m){
+      f[i]   = x[i] - lid;
+      f[i+1] = x[i+1];
+      f[i+2] = x[i+2] + (x[i] - x[i-4])*dhy;
+      f[i+3] = x[i+3] - x[i-1];
     }else
     /* left edge */
-    if(i%m==0){
-      f[i].u     = x[i].u;
-      f[i].v     = x[i].v;
-      f[i].omega = x[i].omega - (x[i+1].v - x[i].v)*dhx;
-      f[i].temp  = x[i].temp;
+    if(i%(4*m)==0){
+      f[i]   = x[i];
+      f[i+1] = x[i+1];
+      f[i+2] = x[i+2] - (x[i+5] - x[i+1])*dhx;
+      f[i+3] = x[i+3];
     }else
     /* right edge */
-    if(i%m==m-1){
-      f[i].u     = x[i].u;
-      f[i].v     = x[i].v;
-      f[i].omega = x[i].omega - (x[i].v - x[i-1].v)*dhx;
-      f[i].temp  = x[i].temp  - (grashof>0);
+    if(i%(4*m)==4*m-4){
+      f[i]   = x[i];
+      f[i+1] = x[i+1];
+      f[i+2] = x[i+2] - (x[i+1] - x[i-3])*dhx;
+      f[i+3] = x[i+3] - (grashof>0);
     }else{
       /* convective coefficients for upwinding */
-      vx  = x[i].u;
+      vx  = x[i];
       avx = fabs(vx);
-      vxp = .5*(vx+avx);
-      vxm = .5*(vx-avx);
-      vy  = x[i].v;
+      vxp = 0.5*(vx+avx);
+      vxm = 0.5*(vx-avx);
+      vy  = x[i+1];
       avy = fabs(vy);
-      vyp = .5*(vy+avy);
-      vym = .5*(vy-avy);
+      vyp = 0.5*(vy+avy);
+      vym = 0.5*(vy-avy);
 
       /* U velocity */
-      u      = x[i].u;
-      uxx    = (2.0*u - x[i-1].u - x[i+1].u)*hydhx;
-      uyy    = (2.0*u - x[i-m].u - x[i+m].u)*hxdhy;
-      f[i].u = uxx + uyy - .5*(x[i+m].omega-x[i-m].omega)*hx;
+      u    = x[i];
+      uxx  = (2.0*u - x[i-4] - x[i+4])*hydhx;
+      uyy  = (2.0*u - x[i-4*m] - x[i+4*m])*hxdhy;
+      f[i] = uxx + uyy - 0.5*(x[i+4*m+3]-x[i-4*m+3])*hx;
 
       /* V velocity */
-      u      = x[i].v;
-      uxx    = (2.0*u - x[i-1].v - x[i+1].v)*hydhx;
-      uyy    = (2.0*u - x[i-m].v - x[i+m].v)*hxdhy;
-      f[i].v = uxx + uyy + .5*(x[i+1].omega-x[i-1].omega)*hy;
+      u      = x[i+1];
+      uxx    = (2.0*u - x[i-3] - x[i+5])*hydhx;
+      uyy    = (2.0*u - x[i-4*m+1] - x[i+4*m+1])*hxdhy;
+      f[i+1] = uxx + uyy + 0.5*(x[i+6]-x[i-2])*hy;
 
       /* Omega */
-      u          = x[i].omega;
-      uxx        = (2.0*u - x[i-1].omega - x[i+1].omega)*hydhx;
-      uyy        = (2.0*u - x[i-m].omega - x[i+m].omega)*hxdhy;
-      f[i].omega = uxx + uyy + (vxp*(u - x[i-1].omega) + vxm*(x[i+1].omega - u)) * hy +
-            (vyp*(u - x[i-m].omega) + vym*(x[i+m].omega - u)) * hx - .5 * grashof * (x[i+1].temp - x[i-1].temp) * hy;
+      u      = x[i+2];
+      uxx    = (2.0*u - x[i-2] - x[i+6])*hydhx;
+      uyy    = (2.0*u - x[i-4*m+2] - x[i+4*m+2])*hxdhy;
+      f[i+2] = uxx + uyy + (vxp*(u - x[i-2]) + vxm*(x[i+6] - u)) * hy +
+            (vyp*(u - x[i-4*m+2]) + vym*(x[i+4*m+2] - u)) * hx - 0.5 * grashof * (x[i+7] - x[i-1]) * hy;
 
       /* Temperature */
-      u         = x[i].temp;
-      uxx       = (2.0*u - x[i-1].temp - x[i+1].temp)*hydhx;
-      uyy       = (2.0*u - x[i-m].temp - x[i+m].temp)*hxdhy;
-      f[i].temp =  uxx + uyy  + prandtl * ((vxp*(u - x[i-1].temp) + vxm*(x[i+1].temp - u)) * hy +
-            (vyp*(u - x[i-m].temp) + vym*(x[i+m].temp - u)) * hx);
+      u      = x[i+3];
+      uxx    = (2.0*u - x[i-1] - x[i+7])*hydhx;
+      uyy    = (2.0*u - x[i-4*m+3] - x[i+4*m+3])*hxdhy;
+      f[i+3] =  uxx + uyy  + prandtl * ((vxp*(u - x[i-1]) + vxm*(x[i+7] - u)) * hy +
+            (vyp*(u - x[i-4*m+3]) + vym*(x[i+4*m+3] - u)) * hx);
     }
   }
   /*@ end @*/
