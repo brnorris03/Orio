@@ -782,7 +782,7 @@ class Transformation(object):
                     VarDecl('__shared__ double', [sharedVar + '[' + str(self.threadCount) + ']'])
                 ]
                 sharedVarExp = ArrayRefExp(IdentExp(sharedVar), threadIdx)
-                varExp       = ArrayRefExp(IdentExp(var), tidIdent)
+                varExp       = ArrayRefExp(IdentExp(var), index_id)
                 
                 # cache reads
                 if var in rhs_array_ids:
