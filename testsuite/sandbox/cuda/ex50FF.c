@@ -19,8 +19,8 @@ void FormFunction2DMDOF(double GRASHOF, double PRANDTL, double LID, int M, int N
           constraint c1 = (M==N);
         }
         def input_vars {
-          decl dynamic double x[M*N] = random;
-          decl dynamic double f[M*N] = 0;
+          decl dynamic double x[M*N*4] = random;
+          decl dynamic double f[M*N*4] = 0;
           decl double GRASHOF = random;
           decl double PRANDTL = random;
           decl double LID     = random;
