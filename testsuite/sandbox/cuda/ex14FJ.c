@@ -43,7 +43,7 @@ void FormJacobian3D(double lambda, int m, int n, int p, double *x, double *dia) 
 
   for(i=0; i<=nrows-1; i++) {
     if (i<m*n || i>=nrows-m*n || i%(m*n)<m || i%(m*n)>=m*n-m || i%m==0 || i%m==m-1) {
-      dia[i+3*nrows] = 1.0;
+      dia[i] = 1.0;
     } else {
       dia[i        ] = -hxhydhz;
       dia[i+  nrows] = -hxhzdhy;
@@ -58,7 +58,7 @@ void FormJacobian3D(double lambda, int m, int n, int p, double *x, double *dia) 
   ) @*/
   for(i=0; i<=nrows-1; i++) {
     if (i<m*n || i>=nrows-m*n || i%(m*n)<m || i%(m*n)>=m*n-m || i%m==0 || i%m==m-1) {
-      dia[i+3*nrows] = 1.0;
+      dia[i] = 1.0;
     } else {
       dia[i        ] = -hxhydhz;
       dia[i+  nrows] = -hxhzdhy;
