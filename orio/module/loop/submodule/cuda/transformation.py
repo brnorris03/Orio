@@ -815,8 +815,8 @@ class Transformation(object):
           if self.model['isReduction']:
             for temp in ktempdbls:
                 kernelStmts += [VarDeclInit('double', IdentExp(temp), self.cs['int0'])]
-          else:
-            kernelStmts += [VarDecl('double', map(lambda x: IdentExp(x), ktempdbls))]
+          #else:
+          #  kernelStmts += [VarDecl('double', map(lambda x: IdentExp(x), ktempdbls))]
         if len(ktempints) > 0:
             kernelStmts += [VarDecl('int', map(lambda x: IdentExp(x), ktempints))]
 
