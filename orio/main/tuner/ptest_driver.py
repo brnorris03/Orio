@@ -8,11 +8,6 @@ from orio.main.util.globals import *
 
 #-----------------------------------------------------
 
-# define an integer counter used for file naming 
-counter = 0
-
-#-----------------------------------------------------
-
 class PerfTestDriver:
     '''
     The performance-testing driver used to compile and execute the testing code
@@ -37,9 +32,6 @@ class PerfTestDriver:
         self.compile_time=0
         self.extra_compiler_opts = ''
         
-        global counter
-        counter += 1
-
         if not (language == 'c' or language == 'fortran' or language == 'cuda'):
             err('orio.main.tuner.ptest_driver: unknown output language specified: %s' % language)
         self.language = language
@@ -47,23 +39,20 @@ class PerfTestDriver:
         self.__PTEST_FNAME=Globals().out_prefix+self.__PTEST_FNAME
 
         if language == 'c': 
-            self.src_name  = self.__PTEST_FNAME + str(counter) + '.c'
-            self.src_name2 = self.__PTEST_FNAME + str(counter) + '_preprocessed.c'
-            self.original_src_name = self.__PTEST_FNAME + str(counter) + '_original.c'
+            self.ext = '.c'
         elif language == 'cuda':
-            self.src_name  = self.__PTEST_FNAME + str(counter) + '.cu'
-            self.src_name2 = self.__PTEST_FNAME + str(counter) + '_preprocessed.cu'
-            self.original_src_name = self.__PTEST_FNAME + str(counter) + '_original.cu'
+            self.ext = '.cu'
         else:
-            self.src_name  = self.__PTEST_FNAME + str(counter) + '.F90'
-            self.src_name2 = self.__PTEST_FNAME + str(counter) + '_preprocessed.F90'
-            self.original_src_name = self.__PTEST_FNAME + str(counter) + '_original.F90'
+            self.ext = '.F90'
         
-        self.exe_name = self.__PTEST_FNAME + str(counter) + '.exe'
-        self.original_exe_name = self.__PTEST_FNAME + str(counter) + '_original.exe'
+        self.src_name  = self.__PTEST_FNAME + self.ext
+        self.src_name2 = self.__PTEST_FNAME + '_preprocessed' + self.ext
+        self.original_src_name = self.__PTEST_FNAME + '_original' + self.ext
+        self.exe_name = self.__PTEST_FNAME + '.exe'
+        self.original_exe_name = self.__PTEST_FNAME + '_original.exe'
         if self.language == 'cuda':
-            self.obj_name = self.__PTEST_FNAME + str(counter) + '.o'
-            self.original_obj_name = self.__PTEST_FNAME + str(counter) + '_original.o'
+            self.obj_name = self.__PTEST_FNAME + '.o'
+            self.original_obj_name = self.__PTEST_FNAME + '_original.o'
 
         if not self.tinfo.timer_file:
             if self.language == 'c': self.timer_file = 'timer_cpu.c'
@@ -90,8 +79,14 @@ class PerfTestDriver:
 
     #-----------------------------------------------------
 
-    def __write(self, test_code):
+    def __write(self, test_code, perf_param=None):
         '''Write the test code into a file'''
+
+        if perf_param is not None:
+            suffix = ''
+            for pname, pval in perf_param.items():
+                suffix += '_%s_%s' % (pname, pval)
+            self.src_name = self.__PTEST_FNAME + suffix + self.ext
 
         try:
             f = open(self.src_name, 'w')
@@ -355,7 +350,7 @@ class PerfTestDriver:
         '''
 
         # write the testing code
-        self.__write(test_code)
+        self.__write(test_code, perf_param=perf_param)
 
         # preprocess source code, e.g., run pbound if enabled
         self.__preprocess()
