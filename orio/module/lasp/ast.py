@@ -1,9 +1,9 @@
-#
+#==============================================================================
 #  AST
-#
-#----------------------------------------------------------------------------------------------------------------------
+#==============================================================================
+
 import sys
-import codegen
+
 #----------------------------------------------------------------------------------------------------------------------
 class Node(object):
     ''' Abstract base class for AST nodes. '''
@@ -15,7 +15,8 @@ class Node(object):
         
     def __repr__(self):
         '''Return a string representation for this AST object'''
-        return codegen.CodeGen().generate(self)
+        import orio.module.lasp.printer as printer
+        return printer.Printer().generate(self)
 
     def __str__(self):
         '''Return a string representation for this AST object'''
@@ -67,10 +68,29 @@ class NodeVisitor(object):
         method = 'visit_' + node.__class__.__name__
         visitor = getattr(self, method, self.generic_visit)
         return visitor(node)
-        
+
     def generic_visit(self, node):
-        for c in node.kids:
-            self.visit(c)
+        for k in node.kids:
+            self.visit(k)
+
+    def rewriteTD(self, r, n):
+        nn = r(n)
+        kids = getattr(n, 'kids', False)
+        if kids:
+            nkids = []
+            for k in n.kids:
+                nkids += [self.rewriteTD(r, k)]
+            nn.kids = nkids
+        elif isinstance(nn, list):
+            nn = map(lambda e: self.rewriteTD(r, e), nn)
+        return nn
+
+    def collectTD(self, f, n):
+        acc = f(n)
+        kids = getattr(n, 'kids', [])
+        for k in kids:
+            acc += self.collectTD(f, k)
+        return acc
 #----------------------------------------------------------------------------------------------------------------------
 
 
@@ -108,7 +128,6 @@ class IdentExp(Exp):
     def __init__(self, name, coord=None):
         super(IdentExp, self).__init__(coord)
         self.name = name
-        self.kids = [name]
 
 #----------------------------------------------------------
 class ArrayRefExp(Exp):
@@ -268,12 +287,12 @@ class FunDec(Stmt):
 
     def __init__(self, name, return_type, modifiers, param_decs, body, coord=None):
         super(FunDec, self).__init__(coord)
-        self.name = name
-        self.return_type = return_type
-        self.modifiers = modifiers
-        self.params = param_decs
-        self.body = body
         self.kids = [name, return_type, modifiers, param_decs, body]
+        self.name = self.kids[0]
+        self.return_type = self.kids[1]
+        self.modifiers = self.kids[2]
+        self.params = self.kids[3]
+        self.body = self.kids[4]
 
 #----------------------------------------------------------
 class TransformStmt(Stmt):

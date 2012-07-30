@@ -1,0 +1,8 @@
+PLUS
+in
+  x: scalar, y: scalar
+out
+  z: scalar
+{
+  z = x + y
+}
