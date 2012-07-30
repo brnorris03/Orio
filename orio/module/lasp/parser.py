@@ -5,8 +5,7 @@
 import sys, os
 import orio.tool.ply.lex, orio.tool.ply.yacc
 import orio.main.util.globals as g
-import ast
-import codegen
+import orio.module.lasp.ast as ast
 
 #----------------------------------------------------------------------------------------------------------------------
 # LEXER
@@ -262,23 +261,26 @@ def p_error(p):
 
 
 #----------------------------------------------------------------------------------------------------------------------
-def getParser(start_line_no):
-    '''Create the parser for the annotations language'''
+def parse(text):
+  '''Lex, parse and create the HL AST for the DSL text'''
 
-    # create the lexer and parser
-    l = LASPLexer()
-    l.build(debug=0, optimize=0)
-    parser = orio.tool.ply.yacc.yacc(debug=0, optimize=0, tabmodule='parsetab', write_tables=0,
-                                     outputdir=os.path.abspath('.'))
-
-    # return the parser
-    return parser
-    
-
-#----------------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
   l = LASPLexer()
   l.build(debug=0, optimize=0)
+
+  # Remove the old parse table
+  parsetabfile = os.path.join(os.path.abspath('.'), 'parsetab.py')
+  try: os.remove(parsetabfile)
+  except: pass
+
+  parser = orio.tool.ply.yacc.yacc(debug=0, optimize=0, tabmodule='parsetab', write_tables=0,
+                                   outputdir=os.path.abspath('.'))
+  theresult = parser.parse(text, lexer=l, debug=0)
+  return theresult
+
+
+  
+#----------------------------------------------------------------------------------------------------------------------
+if __name__ == "__main__":
   for i in range(1, len(sys.argv)):
     #print "About to lex %s" % sys.argv[i]
     f = open(sys.argv[i], "r")
@@ -288,15 +290,7 @@ if __name__ == "__main__":
     # Test the lexer; just print out all tokens founds
     #l.test(s)
 
-    # Remove the old parse table
-    parsetabfile = os.path.join(os.path.abspath('.'), 'parsetab.py')
-    try: os.remove(parsetabfile)
-    except: pass
-
-    parser = orio.tool.ply.yacc.yacc(debug=0, optimize=0, tabmodule='parsetab', write_tables=0,
-                                     outputdir=os.path.abspath('.'))
-
-    theresult = parser.parse(s, lexer=l, debug=0)
+    parse(s)
     print >>sys.stderr, '[parser] Successfully parsed %s' % sys.argv[i]
 
 
