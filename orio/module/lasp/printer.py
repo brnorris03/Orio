@@ -1,17 +1,18 @@
-#
-# The code generator (i.e. unparser) for the AST classes for CUDA
-#
+#==============================================================================
+# The unparser of the AST nodes
+#==============================================================================
 
-import ast
 import orio.main.util.globals as g
+import orio.module.lasp.ast as ast
 
-class CodeGen:
-    '''The code generator for AST classes'''
+#------------------------------------------------------------------------------
+class Printer(object):
+    '''The printer of AST nodes'''
 
     def __init__(self):
         pass
 
-    #----------------------------------------------
+    #--------------------------------------------------------------------------
     def generate(self, tnode, indent='  ', extra_indent='  '):
         '''To generate code that corresponds to the given AST'''
 
@@ -150,17 +151,17 @@ class CodeGen:
             s += self.generate(tnode.ty, indent, extra_indent) + ' ' + self.generate(tnode.name, indent, extra_indent)
 
         elif isinstance(tnode, ast.FunDec):
-            s += indent + ' '.join(tnode.modifiers) + ' '
-            s += self.generate(tnode.return_type, indent, extra_indent) + ' '
-            s += self.generate(tnode.name, indent, extra_indent) + '('
-            s += ', '.join(map(self.generate, tnode.params)) + ') '
-            s += self.generate(tnode.body, indent, extra_indent)
+            s += indent + ' '.join(tnode.kids[2]) + ' '
+            s += self.generate(tnode.kids[1], indent, extra_indent) + ' '
+            s += self.generate(tnode.kids[0], indent, extra_indent) + '('
+            s += ', '.join(map(self.generate, tnode.kids[3])) + ') '
+            s += self.generate(tnode.kids[4], indent, extra_indent)
 
         elif isinstance(tnode, ast.TransformStmt):
             g.err('orio.module.lasp.codegen: a transformation statement is never generated as an output')
 
         else:
-            g.err('orio.module.lasp.codegen: unrecognized type of AST: %s' % tnode.__class__.__name__)
+            g.err('orio.module.lasp.codegen: unrecognized type of AST: (%s, %s)' % (tnode.__class__.__name__,tnode))
 
         return s
-
+    #--------------------------------------------------------------------------

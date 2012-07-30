@@ -1,20 +1,13 @@
-void MatMult_SeqSG(double* A, double* x, double* y, int m, int n, int p, int nos, int dof) {
+void MatMult_SeqSG(double* A, double* x, double* y, int M, int N, int P, int NOS, int DOF) {
 
   register int i,j;
 
-  int nrows=m*n*p;
-  int ndiags=Nos;
-  int offsets[ndiags];
-  offsets[0]=-m*n*dof;
-  offsets[1]=-m*dof;
-  offsets[2]=-dof;
-  offsets[3]=0;
-  offsets[4]=dof;
-  offsets[5]=m*dof;
-  offsets[6]=m*n*dof;
+  int nrows=M*N*P;
+  int ndiags=NOS;
+  int offsets[NOS]={-M*N*DOF,-M*DOF,-DOF,0,DOF,M*DOF,M*N*DOF};
   int col;
 
-/*@ begin Loop(transform CUDA(threadCount=32, blockCount=14, preferL1Size=16, unrollInner=2)
+  /*@ begin Loop(transform CUDA(threadCount=32, blockCount=14, preferL1Size=16, unrollInner=2)
 
   for(i=0; i<=nrows-1; i++) {
     for(j=0; j<=ndiags-1; j++){
