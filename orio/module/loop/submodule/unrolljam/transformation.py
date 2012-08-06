@@ -118,7 +118,7 @@ class Transformation:
             return tnode  
               
         else:
-            err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
+            err('orio.module.loop.submodule.unrolljam.transformation.__addIdentWithExp internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
     
     #-----------------------------------------
     
@@ -214,7 +214,7 @@ class Transformation:
             binOpExprs |= self.__analyzeForNewVars(tnode.exp)
               
         else:
-            err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
+            err('orio.module.loop.submodule.unrolljam.transformation.__analyzeForNewVars internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
             
         return binOpExprs
     
@@ -243,6 +243,8 @@ class Transformation:
             var_names |= self.__extractFromBinOp(tnode.sub_exp)
         elif isinstance(tnode, orio.module.loop.ast.IdentExp):
             var_names |= set([tnode.name])
+        elif isinstance(tnode, orio.module.loop.ast.FunCallExp):
+            return var_names
         elif isinstance(tnode, orio.module.loop.ast.BinOpExp):
             if isinstance(tnode.lhs, orio.module.loop.ast.ParenthExp):
                 var_names |= self.__extractFromBinOp(tnode.lhs.exp)
@@ -256,7 +258,7 @@ class Transformation:
             elif isinstance(tnode.lhs, orio.module.loop.ast.NumLitExp):
                 pass
             else:
-                err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.lhs.__class__.__name__)
+                err('orio.module.loop.submodule.unrolljam.transformation.__extractFromBinOp.BinOpExp internal error: unexpected AST type: "%s"' % tnode.lhs.__class__.__name__)
                 
             if isinstance(tnode.rhs, orio.module.loop.ast.ParenthExp):
                 var_names |= self.__extractFromBinOp(tnode.rhs.exp)
@@ -270,11 +272,11 @@ class Transformation:
             elif isinstance(tnode.rhs, orio.module.loop.ast.NumLitExp):
                 pass
             else:
-                err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.rhs.__class__.__name__)
+                err('orio.module.loop.submodule.unrolljam.transformation.__extractFromBinOp internal error: unexpected AST type: "%s"' % tnode.rhs.__class__.__name__)
                 
             self.newVarsOp |= set([tnode.op_type])
         else:
-            err('orio.module.loop.submodule.unrolljam.transformation internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
+            err('orio.module.loop.submodule.unrolljam.transformation.__extractFromBinOp. internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
     
         return var_names
     
@@ -415,7 +417,7 @@ class Transformation:
         lbound_name = 'orio_lbound'+str(g.Globals().getcounter())
         lbound_name_exp = orio.module.loop.ast.IdentExp(lbound_name)
         lbound_init = orio.module.loop.ast.VarDeclInit('int', lbound_name_exp, new_lbound_exp)
-        loop = self.flib.createForLoop(index_id, lbound_name_exp, new_ubound_exp,
+        loop = self.flib.createForLoop(index_id, new_lbound_exp, new_ubound_exp,
                                             new_stride_exp, unrolled_loop_body)
         
         # generate the cleanup-loop lower-bound expression
@@ -456,7 +458,7 @@ class Transformation:
         cleanup_lbound_name_exp = orio.module.loop.ast.IdentExp(cleanup_lbound_name)
         cleanup_lbound_init = orio.module.loop.ast.VarDeclInit('int', cleanup_lbound_name_exp, cleanup_lbound_exp)
         
-        cleanup_loop = self.flib.createForLoop(index_id, cleanup_lbound_name_exp, ubound_exp,
+        cleanup_loop = self.flib.createForLoop(index_id, cleanup_lbound_exp, ubound_exp,
                                                stride_exp, loop_body)
         
         
@@ -469,9 +471,9 @@ class Transformation:
                 omp_pragma = orio.module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
             else:
                 omp_pragma = orio.module.loop.ast.Pragma('omp parallel for')     
-            stmts = [omp_pragma, lbound_init, loop, cleanup_lbound_init, cleanup_loop]
+            stmts = [omp_pragma, loop, cleanup_loop]
         else:
-            stmts = [lbound_init, loop, cleanup_lbound_init, cleanup_loop]
+            stmts = [loop, cleanup_loop]
         transformed_stmt = orio.module.loop.ast.CompStmt(stmts)
 
         # return the transformed statement
