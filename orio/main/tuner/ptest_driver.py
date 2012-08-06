@@ -8,6 +8,8 @@ from orio.main.util.globals import *
 
 #-----------------------------------------------------
 
+perftest_counter = 0
+
 class PerfTestDriver:
     '''
     The performance-testing driver used to compile and execute the testing code
@@ -31,6 +33,9 @@ class PerfTestDriver:
         self.use_parallel_search = use_parallel_search
         self.compile_time=0
         self.extra_compiler_opts = ''
+        
+        global perftest_counter 
+        perftest_counter += 1 
         
         if not (language == 'c' or language == 'fortran' or language == 'cuda'):
             err('orio.main.tuner.ptest_driver: unknown output language specified: %s' % language)
@@ -82,14 +87,19 @@ class PerfTestDriver:
     def __write(self, test_code, perf_param=None):
         '''Write the test code into a file'''
 
+        global perftest_counter 
+        suffix = str(perftest_counter)
+        perftest_counter += 1
+        self.src_name = self.__PTEST_FNAME + suffix + self.ext
+        paraminfo = '/*'
         if perf_param is not None:
-            suffix = ''
             for pname, pval in perf_param.items():
-                suffix += '@%s@%s' % (pname, pval)
-            self.src_name = self.__PTEST_FNAME + suffix + self.ext
+                paraminfo += '%s:%s\n' % (pname, pval)
+        paraminfo += '*/'
 
         try:
             f = open(self.src_name, 'w')
+            f.write(paraminfo)
             f.write(test_code)
             f.close()
         except:
