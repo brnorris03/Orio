@@ -495,9 +495,9 @@ class PerfTestSkeletonCode:
         if not match_obj:
             err('main.tuner.skeleton_code:  missing "tested code" tag in the skeleton code')
 
-        match_obj = re.search(self.__VALIDATION_TAG, code)
-        if not match_obj:
-            warn('main.tuner.skeleton_code:  missing "validation code" tag in the skeleton code')
+        #match_obj = re.search(self.__VALIDATION_TAG, code)
+        #if not match_obj:
+        #    warn('main.tuner.skeleton_code:  missing "validation code" tag in the skeleton code')
 
         match_obj = re.search(self.__COORD_TAG, code)
         if not match_obj:
@@ -523,9 +523,9 @@ class PerfTestSkeletonCode:
             if not match_obj:
                 err('main.tuner.skeleton_code:  missing "tested code" tag in the switch body statement')
             
-            match_obj = re.search(self.__VALIDATION_TAG, switch_body_code)
-            if not match_obj:
-                err('main.tuner.skeleton_code:  missing "validation code" tag in the switch body statement')
+            #match_obj = re.search(self.__VALIDATION_TAG, switch_body_code)
+            #if not match_obj:
+            #    err('main.tuner.skeleton_code:  missing "validation code" tag in the switch body statement')
             
             match_obj = re.search(self.__COORD_TAG, switch_body_code)
             if not match_obj:
