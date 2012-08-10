@@ -307,7 +307,7 @@ def p_error(p):
 def getParser(start_symbol):
     '''Create the parser'''
     _ = orio.tool.ply.lex.lex()
-    parser = orio.tool.ply.yacc.yacc(method='LALR', debug=0, start=start_symbol)
+    parser = orio.tool.ply.yacc.yacc(method='LALR', debug=0, start=start_symbol, check_recursion=0, tabmodule="pparsetab")
     return parser
 
 
