@@ -19,7 +19,6 @@ Options:
                                  Orio-built code, e.g., tauex
   -e, --erase-annot              remove annotations from the output
   -h, --help                     display this message
-  -k, --keep-temps               do not remove intermediate generated files
   -o <file>, --output=<file>     place the output in <file> (only valid when processing 
                                  single files)
   -p, --output-prefix=<string>   generate output filename from input filename by prepending 
