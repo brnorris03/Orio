@@ -101,9 +101,9 @@ class Randomsearch(orio.main.tuner.search.search.Search):
             #sys.exit()
             try:
                 perf_costs = self.getPerfCosts(coords)
-            except:
+            except Exception, e:
                 perf_costs[str(coords[0])]=[self.MAXFLOAT]
-                info('FAILED')
+                info('FAILED: %s %s' % (e.__class__.__name__, e))
                 fruns +=1
             # compare to the best result
             pcost_items = perf_costs.items()

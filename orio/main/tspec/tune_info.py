@@ -14,7 +14,7 @@ class TuningInfo:
     '''
 
     def __init__(self, build_info, pcount_info, search_info, pparam_info, iparam_info, 
-                 ivar_info, ptest_code_info):
+                 ivar_info, ptest_code_info, validation_info):
         '''
         Tuning parameters specified by the user in the tuning spec.
         '''
@@ -27,6 +27,7 @@ class TuningInfo:
         iparam_params, iparam_constraints = iparam_info
         ivar_decls, ivar_decl_file, ivar_init_file = ivar_info
         ptest_skeleton_code_file, = ptest_code_info
+        validation_file, expected_output = validation_info
 
         # build arguments
         self.pre_build_cmd = build_info.get('prebuild_cmd') # command to run before invoking build_cmd
@@ -68,6 +69,10 @@ class TuningInfo:
 
         # performance-test code
         self.ptest_skeleton_code_file = ptest_skeleton_code_file    # default: None
+        
+        # validation info
+        self.validation_file = validation_file
+        self.expected_output = expected_output
 
     #-----------------------------------------------------------
 
@@ -120,6 +125,8 @@ class TuningInfo:
         s += ' input-variable declaration file: %s \n' % self.ivar_decl_file
         s += ' input-variable initialization file: %s \n' % self.ivar_init_file
         s += ' performance-test skeleton code file: %s \n' % self.ptest_skeleton_code_file
+        s += ' validation file: %s \n' % self.validation_file
+        s += ' expected output: %s \n' % self.expected_output
         return s
 
 #--------------------------------------------------------------
@@ -678,6 +685,56 @@ class TuningInfoGen:
 
     #-----------------------------------------------------------
 
+    def __genValidationInfo(self, stmt_seq, def_line_no):
+        '''To generate information about the input variables'''
+
+        VALIDATION_FILE = 'validation_file'
+        EXPECTED_OUTPUT = 'expected_output'
+
+        validation_file = None
+        expected_output = None
+
+        # iterate over each statement
+        for stmt in stmt_seq:
+            # get the statement keyword and its line number
+            keyw = stmt[0]
+            line_no = stmt[1]
+            
+            # capture any unexpected statements
+            if keyw not in ('arg'):
+                err('orio.main.tspec.tune_info: %s: unexpected statement type: "%s"' % (line_no, keyw))
+                
+            # evaluate arguments
+            if keyw == 'arg':
+                
+                # unpack the statement
+                _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
+                
+                # declaration code
+                if id_name == VALIDATION_FILE:
+                    if not isinstance(rhs, str):
+                        err('orio.main.tspec.tune_info: %s: validation file must be a string' % rhs_line_no)
+                        
+                    if not os.path.exists(rhs):
+                        err('orio.main.tspec.tune_info: %s: cannot find the validation file: "%s"' % (rhs_line_no, rhs))
+                        
+                    validation_file = rhs
+
+                # expected output
+                elif id_name == EXPECTED_OUTPUT:
+                    expected_output = rhs
+                
+                # unknown argument name
+                else:
+                    err('orio.main.tspec.tune_info: %s: unknown validation argument: "%s"' % (id_line_no, id_name))
+                    
+        if validation_file == None:
+            err('orio.main.tspec.tune_info: missing validation file.')
+                
+        return (validation_file, expected_output)
+
+    #-----------------------------------------------------------
+
     def generate(self, stmt_seq):
         '''To generate tuning information from the given sequence of statements'''
 
@@ -689,6 +746,7 @@ class TuningInfoGen:
         INPUT_PARAMS = 'input_params'
         INPUT_VARS = 'input_vars'
         PTEST_CODE = 'performance_test_code'
+        VALIDATION = 'validation'
 
         # all expected definition information
         build_info = None
@@ -698,6 +756,7 @@ class TuningInfoGen:
         iparam_info = ([], [])
         ivar_info = None
         ptest_code_info = (None, )
+        validation_info = (None, None)
 
         # iterate over each statement
         for stmt in stmt_seq:
@@ -718,7 +777,7 @@ class TuningInfoGen:
 
             # unknown definition name
             if dname not in (BUILD, PERF_COUNTER, SEARCH, PERF_PARAMS, INPUT_PARAMS, 
-                             INPUT_VARS, PTEST_CODE):
+                             INPUT_VARS, PTEST_CODE, VALIDATION):
                 err('orio.main.tspec.tune_info: %s: unknown definition name: "%s"' % (dname_line_no, dname))
                 
             
@@ -801,6 +860,10 @@ class TuningInfoGen:
                 (ptest_skeleton_code_file, ) = self.__genPerfTestCodeInfo(body_stmt_seq, line_no)
                 ptest_code_info = (ptest_skeleton_code_file,)
 
+            # performance-test code definition
+            elif dname == VALIDATION:
+                validation_info = self.__genValidationInfo(body_stmt_seq, line_no)
+
         # check if the build definition is missing
         if build_info == None:
             err('orio.main.tspec.tune_info:  missing build definition in the tuning specification')
@@ -811,6 +874,6 @@ class TuningInfoGen:
             
         # return the tuning information
         return TuningInfo(build_info, pcount_info, search_info, pparam_info, iparam_info,
-                          ivar_info, ptest_code_info)
+                          ivar_info, ptest_code_info, validation_info)
 
 

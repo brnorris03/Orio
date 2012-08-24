@@ -17,7 +17,8 @@ keywords = [
     'init_file', 'decl_file', 'msimplex_reflection_coef', 'msimplex_expansion_coef',
     'msimplex_contraction_coef', 'msimplex_shrinkage_coef', 'msimplex_size', 'msimplex_x0',
     'simplex_reflection_coef', 'simplex_expansion_coef',
-    'simplex_contraction_coef', 'simplex_shrinkage_coef', 'simplex_local_distance', 'simplex_x0'
+    'simplex_contraction_coef', 'simplex_shrinkage_coef', 'simplex_local_distance', 'simplex_x0',
+    'validation', 'validation_file', 'expected_output'
 ]
 
 # map of reserved keywords
@@ -134,6 +135,7 @@ def p_def_type(p):
                 | INPUT_PARAMS
                 | INPUT_VARS
                 | SEARCH
+                | VALIDATION
     '''
     p[0] = (p[1], p.lineno(1))
 
@@ -197,7 +199,9 @@ def p_arg_type(p):
                 | SIMPLEX_CONTRACTION_COEF
                 | SIMPLEX_SHRINKAGE_COEF
                 | SIMPLEX_LOCAL_DISTANCE    
-                | SIMPLEX_X0   
+                | SIMPLEX_X0
+                | VALIDATION_FILE
+                | EXPECTED_OUTPUT
     '''
     p[0] = (p[1], p.lineno(1))
 

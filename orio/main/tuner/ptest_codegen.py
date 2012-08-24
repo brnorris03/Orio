@@ -16,17 +16,19 @@ class PerfTestCodeGen(object):
     malloc_func_name = 'malloc_arrays'
     dalloc_func_name = 'dalloc_arrays'
     init_func_name   = 'init_input_vars'
+    validation_func_name = 'isValid'
 
     #-----------------------------------------------------
 
     def __init__(self, input_params, input_decls, decl_file, init_file, skeleton_code_file, language='c',
-                 random_seed=None, use_parallel_search=False):
+                 random_seed=None, use_parallel_search=False, validation_file=''):
         '''To instantiate the testing code generator'''
         
         self.input_params = input_params
         self.input_decls = input_decls
         self.decl_file = decl_file
         self.init_file = init_file
+        self.validation_file = validation_file
         self.skeleton_code_file = skeleton_code_file
         self.use_parallel_search = use_parallel_search
 
@@ -38,6 +40,7 @@ class PerfTestCodeGen(object):
 
         self.__checkDeclFile()
         self.__checkInitFile()
+        self.__checkValidationFile()
         scode = self.__checkSkeletonCodeFile()
         self.ptest_skeleton_code = skeleton_code.PerfTestSkeletonCode(scode, use_parallel_search, language)
         
@@ -251,6 +254,29 @@ class PerfTestCodeGen(object):
 
     #-----------------------------------------------------
 
+    def __checkValidationFile(self):
+        '''To check the validation file'''
+
+        if not self.validation_file:
+            return
+
+        # read the content of the file
+        try:
+            f = open(self.validation_file)
+            code = f.read()
+            f.close()
+        except:
+            err('orio.main.tuner.ptest_codegen:  cannot read file: "%s"' % self.init_file)
+
+        # check if the file contains the initialization function
+        func_re = r'%s\(' % self.validation_func_name
+        match_obj = re.search(func_re, code)
+        if not match_obj:
+            err (('orio.main.tuner.ptest_codegen: no validation function (named "%s") can be found in the ' +
+                    'validation file: "%s"') % (self.validation_func_name, self.validation_file))
+
+    #-----------------------------------------------------
+
     def __checkSkeletonCodeFile(self):
         '''To check the skeleton-code file, and return the skeleton code'''
 
@@ -296,11 +322,20 @@ class PerfTestCodeGen(object):
         else:
             init_code = 'void %s() {\n%s\n}\n' % (self.init_func_name, self.init_code)
 
+        # generate the validation code
+        include_validation_code = ''
+        validation_code = ''
+        if self.validation_file:
+            include_validation_code = '#include "%s"\n' % self.validation_file
+            validation_code = 'if (!%s()) printf("validation function %s returned a false/zero");' \
+                                % (self.validation_func_name, self.validation_func_name)
+        
         # create code for the global definition section
         global_code = ''
         global_code += iparam_code + '\n'
         global_code += decl_code + '\n'
         global_code += init_code + '\n'
+        global_code += include_validation_code + '\n'
 
         # create code for the prologue section
         prologue_code = ''
@@ -309,14 +344,13 @@ class PerfTestCodeGen(object):
         prologue_code += ('%s();' % self.init_func_name) + '\n'
 
         # create code for the epilogue section
-        # TODO: Here we should put validation with original results
         epilogue_code = ''
         if not self.decl_file:
             epilogue_code += ('%s();' % self.dalloc_func_name) + '\n'
 
         # get the performance-testing code
         ptest_code = self.ptest_skeleton_code.insertCode(global_code, prologue_code,
-                                                         epilogue_code, code_map)
+                                                         epilogue_code, validation_code, code_map)
 
         # return the performance-testing code
         return ptest_code
