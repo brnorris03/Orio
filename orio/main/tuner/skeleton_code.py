@@ -89,8 +89,10 @@ int main(int argc, char *argv[]) {
     orio_t_end = getClock();
     orio_t = orio_t_end - orio_t_start;
     printf("{'/*@ coordinate @*/' : %g}\n", orio_t);
+    if (orio_i==0) {
+      /*@ validation code @*/
+    }
   }
-  /*@ validation code @*/
   
   /*@ epilogue @*/
   return 0;
