@@ -2,7 +2,7 @@
   def build
   {
   arg build_command = 'gcc -O3 -fopenmp -DDYNAMIC'; 
-  arg libs = '-lm -lrt';
+  arg libs = '-lm';
   }
   
   def performance_counter  
@@ -72,6 +72,11 @@
   arg decl_file = 'decl.h';
   arg init_file = 'init.c';
   }
+
+  def validation {
+    arg validation_file = 'validation.c';
+  }
+
 ) @*/
 
 #define max(x,y)    ((x) > (y)? (x) : (y))

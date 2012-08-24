@@ -75,15 +75,13 @@ SEQ_DEFAULT = r'''
 
 extern double getClock(); 
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   /*@ prologue @*/
 
-  double orio_t_start, orio_t_end, orio_t, orio_t_min = (double)LONG_MAX;
+  double orio_t_start, orio_t_end, orio_t = (double)LONG_MAX;
   int orio_i;
 
-  for (orio_i=0; orio_i<ORIO_REPS; orio_i++)
-  {
+  for (orio_i=0; orio_i<ORIO_REPS; orio_i++) {
     orio_t_start = getClock();
     
     /*@ tested code @*/
@@ -91,18 +89,12 @@ int main(int argc, char *argv[])
     orio_t_end = getClock();
     orio_t = orio_t_end - orio_t_start;
     printf("{'/*@ coordinate @*/' : %g}\n", orio_t);
-    if (orio_t < orio_t_min) orio_t_min = orio_t;
   }
-  
-  /*
-  printf("{'/*@ coordinate @*/' : %g}", orio_t_min);
-  */
+  /*@ validation code @*/
   
   /*@ epilogue @*/
-
   return 0;
 }
-
 '''
 
 #-----------------------------------------------------
@@ -495,9 +487,9 @@ class PerfTestSkeletonCode:
         if not match_obj:
             err('main.tuner.skeleton_code:  missing "tested code" tag in the skeleton code')
 
-        #match_obj = re.search(self.__VALIDATION_TAG, code)
-        #if not match_obj:
-        #    warn('main.tuner.skeleton_code:  missing "validation code" tag in the skeleton code')
+        match_obj = re.search(self.__VALIDATION_TAG, code)
+        if not match_obj:
+            warn('main.tuner.skeleton_code:  missing "validation code" tag in the skeleton code')
 
         match_obj = re.search(self.__COORD_TAG, code)
         if not match_obj:
@@ -523,9 +515,9 @@ class PerfTestSkeletonCode:
             if not match_obj:
                 err('main.tuner.skeleton_code:  missing "tested code" tag in the switch body statement')
             
-            #match_obj = re.search(self.__VALIDATION_TAG, switch_body_code)
-            #if not match_obj:
-            #    err('main.tuner.skeleton_code:  missing "validation code" tag in the switch body statement')
+            match_obj = re.search(self.__VALIDATION_TAG, switch_body_code)
+            if not match_obj:
+                err('main.tuner.skeleton_code:  missing "validation code" tag in the switch body statement')
             
             match_obj = re.search(self.__COORD_TAG, switch_body_code)
             if not match_obj:
@@ -533,7 +525,7 @@ class PerfTestSkeletonCode:
 
     #-----------------------------------------------------
 
-    def insertCode(self, global_code, prologue_code, epilogue_code, tested_code_map):
+    def insertCode(self, global_code, prologue_code, epilogue_code, validation_code, tested_code_map):
         '''
         Insert code fragments into the skeleton driver code.
         
@@ -589,13 +581,12 @@ class PerfTestSkeletonCode:
             code = re.sub(self.__COORD_TAG, coord_key, code)
             code = re.sub(self.__TCODE_TAG, tcode, code)
 
-        # TODO: validation code from user (or generated)
-        validation_code = ''
+        # insert the validation code
         code = re.sub(self.__VALIDATION_TAG, validation_code, code)
+
         # return the performance-testing code
-        
         return code
-  
+
 
 class PerfTestSkeletonCodeFortran:
     '''The skeleton code used in the performance testing'''
