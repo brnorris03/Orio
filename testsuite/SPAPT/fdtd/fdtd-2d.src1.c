@@ -106,6 +106,12 @@
   decl static double ey[nx+1][ny] = random;
   decl static double hz[nx][ny] = random;
   }
+
+  def validation {
+    arg validation_file = 'validation.c';
+  }
+
+
 ) @*/   
 
 
