@@ -180,6 +180,7 @@ class BinOpExp(Exp):
     EQMINUS = 32
     EQMULT  = 33
     EQDIV   = 34
+    EQMOD   = 35
     COMMA   = 40
 
     def __init__(self, op_type, lhs, rhs, coord=None):
