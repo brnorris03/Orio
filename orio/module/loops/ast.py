@@ -12,7 +12,7 @@ class Node(object):
     def __repr__(self):
         '''Return a string representation for this AST object'''
         import orio.module.loops.printer as printer
-        return printer.Printer().generate(self)
+        return printer.CodeGen_C().generate(self)
 
     def __str__(self):
         '''Return a string representation of this object'''
@@ -148,7 +148,6 @@ class UnaryExp(Exp):
     PLUS      = 1
     MINUS     = 2
     LNOT      = 3
-    TRANSPOSE = 4
     PRE_INC   = 10
     PRE_DEC   = 11
     POST_INC  = 12
@@ -252,15 +251,6 @@ class WhileStmt(Stmt):
         self.test = test
         self.stmt = stmt
         self.kids = [test, stmt]
-
-#----------------------------------------------------------
-class VarInit(Stmt):
-
-    def __init__(self, var_name, init_exp=None, coord=None):
-        super(VarInit, self).__init__(coord)
-        self.var_name  = var_name
-        self.init_exp  = init_exp
-        self.kids = [var_name, init_exp]
 
 #----------------------------------------------------------
 class VarDec(Stmt):
