@@ -17,7 +17,7 @@ class CodeGen:
         #    from orio.module.loop.codegen_cuda import CodeGen_CUDA
         #    self.generator = CodeGen_CUDA()
         else:
-            g.err('orio.module.loops.printer: Unknown language specified for code generation: %s' % language)
+            g.err(__name__+': Unknown language specified for code generation: %s' % language)
         pass
 
     #----------------------------------------------
@@ -81,7 +81,7 @@ class CodeGen_C(CodeGen):
             elif tnode.op_type == tnode.ADDRESSOF:
                 s = '&' + s
             else:
-                g.err('orio.module.loop.codegen internal error: unknown unary operator type: %s' % tnode.op_type)
+                g.err(__name__+': internal error: unknown unary operator type: %s' % tnode.op_type)
 
         elif isinstance(tnode, ast.BinOpExp):
             s += self.generate(tnode.lhs, indent, extra_indent)
@@ -126,7 +126,7 @@ class CodeGen_C(CodeGen):
             elif tnode.op_type == tnode.COMMA:
                 s += ','
             else:
-                g.err('orio.module.loops.printer internal error: unknown binary operator type: %s' % tnode.op_type)
+                g.err(__name__+': internal error: unknown binary operator type: %s' % tnode.op_type)
             s += self.generate(tnode.rhs, indent, extra_indent)
 
         elif isinstance(tnode, ast.ParenExp):
@@ -199,11 +199,14 @@ class CodeGen_C(CodeGen):
             s += ', '.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.params))
             s += ')' + self.generate(tnode.body, indent, extra_indent)
 
+        elif isinstance(tnode, ast.Pragma):
+            s += '#pragma ' + str(tnode.pstring) + '\n'
+
         elif isinstance(tnode, ast.TransformStmt):
-            g.err('orio.module.loop.codegen internal error: a transformation statement is never generated as an output')
+            g.err(__name__+': internal error: a transformation statement is never generated as an output')
 
         else:
-            g.err('orio.module.loop.codegen internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
+            g.err(__name__+': internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
 
         return s
 #----------------------------------------------------------------------------------------------------------------------

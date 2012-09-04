@@ -116,6 +116,7 @@ class LoopsLexer:
 #----------------------------------------------------------------------------------------------------------------------
 tokens = LoopsLexer.tokens
 start = 'annotation'
+__start_line_no = 1
 #----------------------------------------------------------------------------------------------------------------------
 def p_annotation(p):
     '''annotation : statements'''
@@ -382,7 +383,11 @@ def p_empty(p):
 
 
 #----------------------------------------------------------------------------------------------------------------------
-def parse(text):
+def parse(start_line_no, text):
+
+    # set the starting line number
+    global __start_line_no
+    __start_line_no = start_line_no
 
     l = LoopsLexer()
     l.build(debug=0, optimize=0)

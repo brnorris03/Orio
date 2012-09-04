@@ -292,4 +292,13 @@ class TransformStmt(Stmt):
         self.stmt = stmt
         self.kids = [name, args, stmt]
 
+#----------------------------------------------------------
+class Pragma(Stmt):
+
+    def __init__(self, pstring, coord=None):
+        super(Pragma, self).__init__(coord)
+        self.pstring = pstring
+        self.kids = [pstring]
+#----------------------------------------------------------------------------------------------------------------------
+
 
