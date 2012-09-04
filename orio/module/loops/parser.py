@@ -12,8 +12,21 @@ class LoopsLexer:
         pass
 
     keywords = [
-        'if', 'else', 'for', 'transform',
-        'and', 'or', 'not'
+        'if', 'else',
+        'for', #'do', 'while',
+        #'return', 'break', 'continue', 'goto', 
+        #'switch', 'case', 'default',
+
+        'char', 'short', 'int', 'long', 'float', 'double',
+        #'signed', 'unsigned', 'sizeof',
+
+        #'auto', 'register', 'static', 'extern',
+        #'const', 'restrict', 'volatile',
+
+        #'void', 'inline',
+        #'enum', 'struct', 'typedef', 'union',
+
+        'transform'
     ]
 
     reserved = {}
@@ -24,22 +37,13 @@ class LoopsLexer:
         # literals (identifier, integer, float, string)
         'ID', 'ICONST', 'FCONST', 'SCONST',
         
-        # operators (+,-,*,/,%,||,&&,!,<,<=,>,>=,==,!=)
-        'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
         'LOR', 'LAND', 'LNOT',
-        'LT', 'LE', 'GT', 'GE', 'EQ', 'NE',
+        'LT', 'LE', 'GT', 'GE', 'EE', 'NE',
     
         # assignment (=, *=, /=, %=, +=, -=)
-        'EQUALS', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'PLUSEQUAL', 'MINUSEQUAL',
+        'EQ', 'MULTEQ', 'DIVEQ', 'MODEQ', 'PLUSEQ', 'MINUSEQ',
     
-        # increment/decrement (++,--)
-        'PLUSPLUS', 'MINUSMINUS',
-    
-        # delimeters ( ) [ ] { } , ; :
-        'LPAREN', 'RPAREN',
-        'LBRACKET', 'RBRACKET',
-        'LBRACE', 'RBRACE',
-        'COMMA', 'SEMI', 'COLON', 'PERIOD',
+        'PP', 'MM', # increment/decrement (++,--)
         'LINECOMMENT'
     ]
 
@@ -71,7 +75,7 @@ class LoopsLexer:
     t_PP      = r'\+\+'
     t_MM      = r'--'
     
-    literals = "+-*/%()[]{},;:'."
+    literals = "+-*/%()[]{},;:."
 
     # integer literal
     t_ICONST  = r'\d+'
@@ -80,7 +84,7 @@ class LoopsLexer:
     t_FCONST  = r'((\d+)(\.\d*)([eE](\+|-)?(\d+))? | (\d+)[eE](\+|-)?(\d+))'
     
     # string literal
-    t_SCONST  = r'\"([^\\\n]|(\\.))*?\"'
+    t_SCONST  = r'\"([^\\\n]|(\\.))*?\"|\'([^\\\n]|(\\.))*?\''
     
     def t_ID(self, t):
         r'[A-Za-z_]([A-Za-z0-9_\.]*[A-Za-z0-9_]+)*'
@@ -124,7 +128,7 @@ def p_annotation(p):
 
 def p_statements_1(p):
     'statements : empty'
-    p[0] = [p[1]]
+    p[0] = p[1]
     
 def p_statements_2(p):
     '''statements : statements statement'''
@@ -153,11 +157,11 @@ def p_compound_statement(p):
     p[0] = ast.CompStmt(p[2], p.lineno(1))
 
 def p_conditional_statement_1(p):
-    '''conditional_statement : IF '(' expression ')' statement'''
+    '''conditional_statement : IF '(' expr ')' statement'''
     p[0] = ast.IfStmt(p[3], p[5], None, p.lineno(1))
     
 def p_conditional_statement_2(p):
-    '''conditional_statement : IF '(' expression ')' statement ELSE statement'''
+    '''conditional_statement : IF '(' expr ')' statement ELSE statement'''
     p[0] = ast.IfStmt(p[3], p[5], p[7], p.lineno(1))
 
 def p_iteration_statement(p):
@@ -168,17 +172,21 @@ def p_transform_statement(p):
     '''transform_statement : TRANSFORM ID '(' transform_args ')' statement'''
     p[0] = ast.TransformStmt(p[2], p[4], p[6], p.lineno(1))
 
-def p_transform_args_1(p):
+def p_transform_args1(p):
     '''transform_args : empty'''
+    p[0] = []
+
+def p_transform_args2(p):
+    '''transform_args : transform_arg'''
     p[0] = [p[1]]
 
-def p_transform_args_2(p):
+def p_transform_args3(p):
     '''transform_args : transform_args ',' transform_arg'''
     p[1].append(p[3])
     p[0] = p[1]
 
 def p_transform_arg(p):
-    '''transform_arg : ID '=' expression'''
+    '''transform_arg : ID EQ expr'''
     p[0] = [p[1], p[3], p.lineno(1)]
 
 
@@ -186,7 +194,7 @@ def p_transform_arg(p):
 precedence = (
     ('left', ','),
     # throw
-    ('left', 'EQ', 'EQPLUS', 'EQMINUS', 'EQMULT', 'EQDIV', 'EQMOD'), # <<, >>, &, |, ^
+    ('left', 'EQ', 'PLUSEQ', 'MINUSEQ', 'MULTEQ', 'DIVEQ', 'MODEQ'), # <<=, >>=, &=, |=, ^=
     # ?:
     ('left', 'LOR'),
     ('left', 'LAND'),
@@ -198,7 +206,7 @@ precedence = (
     # <<, >>
     ('left', '+', '-'),
     ('left', '*', '/', '%'),
-    ('right', 'LNOT', 'PP', 'MM', '+', '-', ), # ~, &, 
+    ('right', 'LNOT', 'PP', 'MM', 'UPLUS', 'UMINUS', ), # ~, &, *, (type), sizeof,  
 )
 
 #------------------------------------------------------------------------------
@@ -210,12 +218,25 @@ def p_expression_opt_2(p):
     'expression_opt : expr'
     p[0] = p[1]
 
+def p_expr_dec(p):
+    '''expr : ty expr'''
+    p[0] = ast.VarDec(p[1], [p[2]], True, p.lineno(1))
+
+def p_ty(p):
+    '''ty : CHAR
+          | SHORT
+          | INT
+          | LONG
+          | FLOAT
+          | DOUBLE '''
+    p[0] = p[1]
+
 def p_expr_seq(p):
     '''expr : expr ',' expr'''
-    p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.COMMA, p.lineno(1))
+    p[0] = ast.BinOpExp(ast.BinOpExp.COMMA, p[1], p[3], p.lineno(1))
 
 def p_expr_assign1(p):
-    '''expr : expr '=' expr'''
+    '''expr : expr EQ expr'''
     p[0] = ast.BinOpExp(ast.BinOpExp.EQ, p[1], p[3], p.lineno(1))
 
 def p_expr_assign2(p):
@@ -304,11 +325,11 @@ def p_expr_pre2(p):
     p[0] = ast.UnaryExp(ast.UnaryExp.PRE_DEC, p[2], p.lineno(1))
 
 def p_expr_pre3(p):
-    '''expr : '+' expr'''
+    '''expr : '+' expr %prec UPLUS'''
     p[0] = ast.UnaryExp(ast.UnaryExp.PLUS, p[2], p.lineno(1))
 
 def p_expr_pre4(p):
-    '''expr : '-' expr'''
+    '''expr : '-' expr %prec UMINUS'''
     p[0] = ast.UnaryExp(ast.UnaryExp.MINUS, p[2], p.lineno(1))
 
 def p_expr_pre5(p):
@@ -317,11 +338,11 @@ def p_expr_pre5(p):
 
 #------------------------------------------------------------------------------
 def p_expr_arrayref(p):
-    '''expr : expression '[' expression ']' '''
+    '''expr : expr '[' expr ']' '''
     p[0] = ast.ArrayRefExp(p[1], p[3], p.lineno(1))
 
 def p_expr_funcall(p):
-    '''expr : expression '(' arg_exprs ')' '''
+    '''expr : expr '(' arg_exprs ')' '''
     p[0] = ast.CallExp(p[1], p[3], p.lineno(1))
 
 def p_arg_exprs_1(p):
@@ -335,11 +356,11 @@ def p_arg_exprs_2(p):
 
 #------------------------------------------------------------------------------
 def p_expr_post1(p):
-    'expr : expression PP'
+    'expr : expr PP'
     p[0] = ast.UnaryExp(ast.UnaryExp.POST_INC, p[1], p.lineno(1))
 
 def p_expr_post2(p):
-    'expr : expression MM'
+    'expr : expr MM'
     p[0] = ast.UnaryExp(ast.UnaryExp.POST_DEC, p[1], p.lineno(1))
 
 def p_expr_primary1(p):
@@ -359,7 +380,7 @@ def p_expr_primary4(p):
     p[0] = ast.LitExp(ast.LitExp.STRING, p[1], p.lineno(1))
 
 def p_expr_primary5(p):
-    '''expr : '(' expression ')' '''
+    '''expr : '(' expr ')' '''
     p[0] = ast.ParenExp(p[2], p.lineno(1))
 
 
@@ -378,6 +399,9 @@ def find_column(inputtxt,token):
 def p_empty(p):
     'empty :'
     p[0] = []
+
+def p_error(p):
+    g.err(__name__+": error in input line #%s, at token-type '%s', token-value '%s'" % (p.lineno, p.type, p.value))
 #----------------------------------------------------------------------------------------------------------------------
 
 
@@ -415,7 +439,8 @@ if __name__ == "__main__":
         # Test the lexer; just print out all tokens founds
         #l.test(s)
         
-        parse(s)
+        tree = parse(1, s)
+        print tree
         print >>sys.stderr, '[parser] Successfully parsed %s' % sys.argv[i]
 
 

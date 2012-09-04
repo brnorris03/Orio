@@ -1,8 +1,8 @@
 #----------------------------------------------------------------------------------------------------------------------
-class SubModule:
+class SubModule(object):
     '''Transformation submodule.'''
 
-    def __init__(self, perf_params, transf_args, stmt, language='C'):
+    def __init__(self, perf_params, transf_args, stmt, language='C', tinfo=None):
         '''
         To instantiate a transformation submodule used to transform the annotated code.
         
@@ -16,6 +16,7 @@ class SubModule:
         self.transf_args = transf_args
         self.language = language
         self.stmt = stmt
+        self.tinfo = tinfo
 
 
     def transform(self):
