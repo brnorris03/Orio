@@ -27,7 +27,7 @@ class Transformation:
 
     def __transformStmt(self, stmt):
         '''Apply code transformation on the given statement'''
- 
+        
         if isinstance(stmt, ast.ExpStmt):
             return stmt
         

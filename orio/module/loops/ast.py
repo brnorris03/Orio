@@ -255,10 +255,11 @@ class WhileStmt(Stmt):
 #----------------------------------------------------------
 class VarDec(Stmt):
 
-    def __init__(self, type_name, var_inits, coord=None):
+    def __init__(self, type_name, var_inits, isnested=False, coord=None):
         super(VarDec, self).__init__(coord)
         self.type_name = type_name
         self.var_inits = var_inits
+        self.isnested = isnested
         self.kids = [type_name, var_inits]
 
 #----------------------------------------------------------
