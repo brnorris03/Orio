@@ -89,7 +89,7 @@ class CodeGen_C(CodeGen):
                 s += '+'
             elif tnode.op_type == tnode.MINUS:
                 s += '-'
-            elif tnode.op_type == tnode.MUL:
+            elif tnode.op_type == tnode.MULT:
                 s += '*'
             elif tnode.op_type == tnode.DIV:
                 s += '/'
@@ -137,6 +137,9 @@ class CodeGen_C(CodeGen):
             for stmt in tnode.stmts:
                 s += self.generate(stmt, indent + extra_indent, extra_indent)
             s += indent + '}\n'
+
+        elif isinstance(tnode, ast.ExpStmt):
+            s += indent + self.generate(tnode.exp, indent, extra_indent) + ';\n'
 
         elif isinstance(tnode, ast.IfStmt):
             s += indent + 'if (' + self.generate(tnode.test, indent, extra_indent) + ') '
@@ -186,9 +189,12 @@ class CodeGen_C(CodeGen):
                 s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
 
         elif isinstance(tnode, ast.VarDec):
-            s += indent + str(tnode.type_name) + ' '
+            if not tnode.isnested:
+                s += indent
+            s += str(tnode.type_name) + ' '
             s += ', '.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.var_inits))
-            s += ';\n'
+            if not tnode.isnested:
+                s += ';\n'
 
         elif isinstance(tnode, ast.ParamDec):
             s += indent + str(tnode.ty) + ' ' + str(tnode.name)
@@ -200,7 +206,7 @@ class CodeGen_C(CodeGen):
             s += ')' + self.generate(tnode.body, indent, extra_indent)
 
         elif isinstance(tnode, ast.Pragma):
-            s += '#pragma ' + str(tnode.pstring) + '\n'
+            s += indent + '#pragma ' + str(tnode.pstring) + '\n'
 
         elif isinstance(tnode, ast.TransformStmt):
             g.err(__name__+': internal error: a transformation statement is never generated as an output')
