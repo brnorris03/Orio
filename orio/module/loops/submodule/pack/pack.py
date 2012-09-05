@@ -1,6 +1,6 @@
 from orio.module.loops.submodule.submodule import SubModule
 import orio.module.loops.submodule.pack.transformation as transformation
-#import orio.main.util.globals as g
+import orio.main.util.globals as g
 
 #----------------------------------------------------------------------------------------------------------------------
 class Pack(SubModule):
@@ -15,24 +15,50 @@ class Pack(SubModule):
         '''Process the given transformation arguments'''
 
         # expected argument names
+        PREFETCH = 'prefetch'
 
         # all expected transformation arguments
         args = []
 
+        # iterate over all transformation arguments
+        for aname, rhs, line_no in transf_args:
+
+            # evaluate the RHS expression
+            try:
+                rhs = eval(str(rhs), perf_params)
+            except Exception, e:
+                g.err(__name__+': at line %s, failed to evaluate the argument expression: %s\n --> %s: %s'
+                      % (line_no, rhs, e.__class__.__name__, e))
+
+            if aname == PREFETCH:
+                args += [(rhs, line_no)]
+
+            # unknown argument name
+            else:
+                g.err(__name__+': %s: unrecognized transformation argument: "%s"' % (line_no, aname))
+
         # check semantics of the transformation arguments
-        args = self.checkTransfArgs(args)
+        argss = self.checkTransfArgs(args)
         
         # return information about the transformation arguments
-        return args
+        return argss
 
     #--------------------------------------------------------------------------
 
     def checkTransfArgs(self, args):
         '''Check the semantics of the given transformation arguments'''
 
-        # evaluate the pragma directives
-        _ = args
+        # evaluate the arguments
         checked = []
+        for rhs, line_no in args:
+            if isinstance(rhs, str):
+                checked = [rhs]
+            else:
+                if ((not isinstance(rhs, list) and not isinstance(rhs, tuple)) or
+                    not reduce(lambda x,y: x and y, map(lambda x: isinstance(x, str), rhs), True)):
+                    g.err(__name__+':%s: pragma directives must be a list/tuple of strings: %s'
+                          % (line_no, rhs))
+                checked = rhs
 
         # return information about the transformation arguments
         return checked

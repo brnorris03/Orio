@@ -314,7 +314,7 @@ class PerfTestCodeGen(object):
         else:
             decl_code = self.decl_code + '\n'
             decl_code += 'void %s() {\n%s\n}\n' % (self.malloc_func_name, self.malloc_code)
-            decl_code += 'void %s() {\n%s}\n'   % (self.dalloc_func_name, self.dalloc_code)
+            #decl_code += 'void %s() {\n%s}\n'   % (self.dalloc_func_name, self.dalloc_code)
 
         # generate the initialization code
         if self.init_file:
@@ -345,8 +345,8 @@ class PerfTestCodeGen(object):
 
         # create code for the epilogue section
         epilogue_code = ''
-        if not self.decl_file:
-            epilogue_code += ('%s();' % self.dalloc_func_name) + '\n'
+        #if not self.decl_file:
+        #    epilogue_code += ('%s();' % self.dalloc_func_name) + '\n'
 
         # get the performance-testing code
         ptest_code = self.ptest_skeleton_code.insertCode(global_code, prologue_code,
