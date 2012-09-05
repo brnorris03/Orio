@@ -9,6 +9,8 @@ class Pragma(SubModule):
     def __init__(self, perf_params=None, transf_args=None, stmt=None, language='C', tinfo=None):
         super(Pragma, self).__init__(perf_params, transf_args, stmt, language, tinfo)
 
+    #--------------------------------------------------------------------------
+
     def readTransfArgs(self, perf_params, transf_args):
         '''Process the given transformation arguments'''
 
@@ -42,7 +44,7 @@ class Pragma(SubModule):
         # return information about the transformation arguments
         return pragmas
 
-    #-----------------------------------------------------------------
+    #--------------------------------------------------------------------------
 
     def checkTransfArgs(self, pragmas):
         '''Check the semantics of the given transformation arguments'''
@@ -61,19 +63,7 @@ class Pragma(SubModule):
         # return information about the transformation arguments
         return pragmas
 
-    #-----------------------------------------------------------------
-
-    def insertPragmas(self, pragmas, stmt):
-        '''To apply pragma directive insertion'''
-
-        # perform the pragma directive insertion
-        t = transformation.Transformation(pragmas, stmt)
-        transformed_stmt = t.transform()
-
-        # return the transformed statement
-        return transformed_stmt
-
-    #-----------------------------------------------------------------
+    #--------------------------------------------------------------------------
 
     def transform(self):
         '''Performs code transformations'''
@@ -81,8 +71,9 @@ class Pragma(SubModule):
         # read all transformation arguments
         pragmas = self.readTransfArgs(self.perf_params, self.transf_args)
 
-        # perform the pragma directive insertion 
-        transformed_stmt = self.insertPragmas(pragmas, self.stmt)
+        # perform the transformation 
+        t = transformation.Transformation(pragmas, self.stmt)
+        transformed_stmt = t.transform()
 
         # return the transformed statement
         return transformed_stmt
