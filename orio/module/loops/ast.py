@@ -144,14 +144,27 @@ class CallExp(Exp):
         self.kids = [exp, args]
 
 #----------------------------------------------------------
+class CastExp(Exp):
+
+    def __init__(self, castto, exp, coord=None):
+        super(CastExp, self).__init__(coord)
+        self.castto = castto
+        self.exp = exp
+        self.kids = [castto, exp]
+
+#----------------------------------------------------------
 class UnaryExp(Exp):
     PLUS      = 1
     MINUS     = 2
     LNOT      = 3
+    BNOT      = 4
+    SIZEOF    = 5
     PRE_INC   = 10
     PRE_DEC   = 11
     POST_INC  = 12
     POST_DEC  = 13
+    DEREF     = 20
+    ADDRESSOF = 21
 
     def __init__(self, op_type, exp, coord=None):
         super(UnaryExp, self).__init__(coord)
@@ -175,12 +188,24 @@ class BinOpExp(Exp):
     LOR     = 20
     LAND    = 21
     EQ      = 30
-    EQPLUS  = 31
-    EQMINUS = 32
-    EQMULT  = 33
-    EQDIV   = 34
-    EQMOD   = 35
+    PLUSEQ  = 31
+    MINUSEQ = 32
+    MULTEQ  = 33
+    DIVEQ   = 34
+    MODEQ   = 35
     COMMA   = 40
+    BOR     = 50
+    BAND    = 51
+    BXOR    = 52
+    BSHL    = 53
+    BSHR    = 54
+    BSHLEQ  = 55
+    BSHREQ  = 56
+    BANDEQ  = 57
+    BXOREQ  = 58
+    BOREQ   = 59
+    DOT     = 60
+    SELECT  = 61
 
     def __init__(self, op_type, lhs, rhs, coord=None):
         super(BinOpExp, self).__init__(coord)
@@ -188,6 +213,16 @@ class BinOpExp(Exp):
         self.lhs = lhs
         self.rhs = rhs
         self.kids = [op_type, lhs, rhs]
+
+#----------------------------------------------------------
+class TernaryExp(Exp):
+
+    def __init__(self, test, true_exp, false_exp, coord=None):
+        super(IfStmt, self).__init__(coord)
+        self.test = test
+        self.true_exp = true_exp
+        self.false_exp = false_exp
+        self.kids = [test, true_exp, false_exp]
 
 #----------------------------------------------------------
 class ParenExp(Exp):

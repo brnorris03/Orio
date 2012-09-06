@@ -60,6 +60,10 @@ class CodeGen_C(CodeGen):
             s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.args))
             s += ')'
 
+        elif isinstance(tnode, ast.CastExp):
+            s += '(' + self.generate(tnode.castto, indent, extra_indent) + ')'
+            s += self.generate(tnode.exp, indent, extra_indent)
+
         elif isinstance(tnode, ast.UnaryExp):
             s += self.generate(tnode.exp, indent, extra_indent)
             if tnode.op_type == tnode.PLUS:
@@ -68,6 +72,8 @@ class CodeGen_C(CodeGen):
                 s = '-' + s
             elif tnode.op_type == tnode.LNOT:
                 s = '!' + s
+            elif tnode.op_type == tnode.BNOT:
+                s = '~' + s
             elif tnode.op_type == tnode.PRE_INC:
                 s = ' ++' + s
             elif tnode.op_type == tnode.PRE_DEC:
@@ -80,6 +86,8 @@ class CodeGen_C(CodeGen):
                 s = '*' + s
             elif tnode.op_type == tnode.ADDRESSOF:
                 s = '&' + s
+            elif tnode.op_type == tnode.SIZEOF:
+                s = 'sizeof ' + s
             else:
                 g.err(__name__+': internal error: unknown unary operator type: %s' % tnode.op_type)
 
@@ -113,21 +121,50 @@ class CodeGen_C(CodeGen):
                 s += '&&'
             elif tnode.op_type == tnode.EQ:
                 s += '='
-            elif tnode.op_type == tnode.EQPLUS:
+            elif tnode.op_type == tnode.PLUSEQ:
                 s += '+='
-            elif tnode.op_type == tnode.EQMINUS:
+            elif tnode.op_type == tnode.MINUSEQ:
                 s += '-='
-            elif tnode.op_type == tnode.EQMULT:
+            elif tnode.op_type == tnode.MULTEQ:
                 s += '*='
-            elif tnode.op_type == tnode.EQDIV:
+            elif tnode.op_type == tnode.DIVEQ:
                 s += '/='
-            elif tnode.op_type == tnode.EQMOD:
+            elif tnode.op_type == tnode.MODEQ:
                 s += '%='
             elif tnode.op_type == tnode.COMMA:
                 s += ','
+            elif tnode.op_type == tnode.BOR:
+                s += '|'
+            elif tnode.op_type == tnode.BAND:
+                s += '&'
+            elif tnode.op_type == tnode.BXOR:
+                s += '^'
+            elif tnode.op_type == tnode.BSHL:
+                s += '<<'
+            elif tnode.op_type == tnode.BSHR:
+                s += '>>'
+            elif tnode.op_type == tnode.BSHLEQ:
+                s += '<<='
+            elif tnode.op_type == tnode.BSHREQ:
+                s += '>>='
+            elif tnode.op_type == tnode.BANDEQ:
+                s += '&='
+            elif tnode.op_type == tnode.BXOREQ:
+                s += '^='
+            elif tnode.op_type == tnode.BOREQ:
+                s += '|='
+            elif tnode.op_type == tnode.DOT:
+                s += '.'
+            elif tnode.op_type == tnode.SELECT:
+                s += '->'
             else:
                 g.err(__name__+': internal error: unknown binary operator type: %s' % tnode.op_type)
             s += self.generate(tnode.rhs, indent, extra_indent)
+
+        elif isinstance(tnode, ast.TernaryExp):
+            s += self.generate(tnode.test, indent, extra_indent) + '?'
+            s += self.generate(tnode.true_exp, indent, extra_indent) + ':'
+            s += self.generate(tnode.false_exp, indent, extra_indent)
 
         elif isinstance(tnode, ast.ParenExp):
             s += '(' + self.generate(tnode.exp, indent, extra_indent) + ')'

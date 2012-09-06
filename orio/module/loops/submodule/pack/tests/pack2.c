@@ -1,5 +1,6 @@
 void PackAligned(double* src, double* dest, const int stride, const int nelms, const int cnt) {
 
+  // __builtin_prefetch (&src[isrc], 1, 1);
   /*@ begin PerfTuning (
         def performance_params {
           param PTRS[] = [('src')];
