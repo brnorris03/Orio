@@ -46,7 +46,7 @@ class CodeGen_C(CodeGen):
             s += indent + '/*' + tnode.text + '*/\n'
             
         elif isinstance(tnode, ast.LitExp):
-            s += str(tnode.val)
+            s += str(tnode.val).encode('string-escape')
 
         elif isinstance(tnode, ast.IdentExp):
             s += str(tnode.name)
