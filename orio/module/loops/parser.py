@@ -18,7 +18,7 @@ class LoopsLexer:
         #'switch', 'case', 'default',
 
         'char', 'short', 'int', 'long', 'float', 'double',
-        #'signed', 'unsigned', 'sizeof',
+        'sizeof', #'signed', 'unsigned',
 
         #'auto', 'register', 'static', 'extern',
         #'const', 'restrict', 'volatile',
@@ -37,11 +37,15 @@ class LoopsLexer:
         # literals (identifier, integer, float, string)
         'ID', 'ICONST', 'FCONST', 'SCONST',
         
+        # operators
         'LOR', 'LAND', 'LNOT',
         'LT', 'LE', 'GT', 'GE', 'EE', 'NE',
+        'BSHL', 'BSHR',
+        'SELECT',
     
-        # assignment (=, *=, /=, %=, +=, -=)
+        # assignment operators
         'EQ', 'MULTEQ', 'DIVEQ', 'MODEQ', 'PLUSEQ', 'MINUSEQ',
+        'BSHLEQ', 'BSHREQ', 'BANDEQ', 'BXOREQ', 'BOREQ',
     
         'PP', 'MM', # increment/decrement (++,--)
         'LINECOMMENT'
@@ -62,6 +66,9 @@ class LoopsLexer:
     t_GE      = r'>='
     t_EE      = r'=='
     t_NE      = r'!='
+    t_BSHL    = r'<<'
+    t_BSHR    = r'>>'
+    t_SELECT  = r'->'
     
     # assignment operators
     t_EQ      = r'='
@@ -70,12 +77,17 @@ class LoopsLexer:
     t_MODEQ   = r'%='
     t_PLUSEQ  = r'\+='
     t_MINUSEQ = r'-='
+    t_BSHLEQ  = r'<<='
+    t_BSHREQ  = r'>>='
+    t_BANDEQ  = r'&='
+    t_BXOREQ  = r'^='
+    t_BOREQ   = r'\|='
     
     # increment/decrement
     t_PP      = r'\+\+'
     t_MM      = r'--'
     
-    literals = "+-*/%()[]{},;:."
+    literals = "+-*/%()[]{},;:.~&|^?"
 
     # integer literal
     t_ICONST  = r'\d+'
@@ -193,20 +205,19 @@ def p_transform_arg(p):
 #------------------------------------------------------------------------------
 precedence = (
     ('left', ','),
-    # throw
-    ('left', 'EQ', 'PLUSEQ', 'MINUSEQ', 'MULTEQ', 'DIVEQ', 'MODEQ'), # <<=, >>=, &=, |=, ^=
-    # ?:
+    ('right', 'EQ', 'PLUSEQ', 'MINUSEQ', 'MULTEQ', 'DIVEQ', 'MODEQ', 'BSHLEQ', 'BSHREQ', 'BANDEQ', 'BXOREQ', 'BOREQ'),
     ('left', 'LOR'),
     ('left', 'LAND'),
-    # |
-    # ^
-    # &
+    ('left', '|'),
+    ('left', '^'),
+    ('left', '&'),
     ('left', 'EE', 'NE'),
     ('left', 'LT', 'GT', 'LE', 'GE'),
-    # <<, >>
+    ('left', 'BSHL', 'BSHR'),
     ('left', '+', '-'),
     ('left', '*', '/', '%'),
-    ('right', 'LNOT', 'PP', 'MM', 'UPLUS', 'UMINUS', ), # ~, &, *, (type), sizeof,  
+    ('right', 'LNOT', '~', 'PP', 'MM', 'UPLUS', 'UMINUS', 'DEREF', 'ADDRESSOF', 'SIZEOF'),
+    ('left', '.', 'SELECT')
 )
 
 #------------------------------------------------------------------------------
@@ -219,8 +230,21 @@ def p_expression_opt_2(p):
     p[0] = p[1]
 
 def p_expr_dec(p):
-    '''expr : ty expr'''
+    '''expr : tyexpr expr'''
     p[0] = ast.VarDec(p[1], [p[2]], True, p.lineno(1))
+
+def p_tyexpr(p):
+    '''tyexpr : ty stars'''
+    p[0] = [p[1], p[2]]
+
+def p_stars1(p):
+    '''stars : empty'''
+    p[0] = p[1]
+
+def p_stars2(p):
+    '''stars : stars '*' '''
+    p[1].append(p[2])
+    p[0] = p[1]
 
 def p_ty(p):
     '''ty : CHAR
@@ -235,29 +259,54 @@ def p_expr_seq(p):
     '''expr : expr ',' expr'''
     p[0] = ast.BinOpExp(ast.BinOpExp.COMMA, p[1], p[3], p.lineno(1))
 
+def p_expr_ternary(p):
+    '''expr : expr '?' expr ':' expr'''
+    p[0] = ast.TernaryExp(p[1], p[3], p[5], p.lineno(1))
+
+#------------------------------------------------------------------------------
 def p_expr_assign1(p):
     '''expr : expr EQ expr'''
     p[0] = ast.BinOpExp(ast.BinOpExp.EQ, p[1], p[3], p.lineno(1))
 
 def p_expr_assign2(p):
     '''expr : expr MULTEQ expr'''
-    p[0] = ast.BinOpExp(ast.BinOpExp.EQMULT, p[1], p[3], p.lineno(1))
+    p[0] = ast.BinOpExp(ast.BinOpExp.MULTEQ, p[1], p[3], p.lineno(1))
 
 def p_expr_assign3(p):
     '''expr : expr DIVEQ expr'''
-    p[0] = ast.BinOpExp(ast.BinOpExp.EQDIV, p[1], p[3], p.lineno(1))
+    p[0] = ast.BinOpExp(ast.BinOpExp.DIVEQ, p[1], p[3], p.lineno(1))
 
 def p_expr_assign4(p):
     '''expr : expr MODEQ expr'''
-    p[0] = ast.BinOpExp(ast.BinOpExp.EQMOD, p[1], p[3], p.lineno(1))
+    p[0] = ast.BinOpExp(ast.BinOpExp.MODEQ, p[1], p[3], p.lineno(1))
 
 def p_expr_assign5(p):
     '''expr : expr PLUSEQ expr'''
-    p[0] = ast.BinOpExp(ast.BinOpExp.EQPLUS, p[1], p[3], p.lineno(1))
+    p[0] = ast.BinOpExp(ast.BinOpExp.PLUSEQ, p[1], p[3], p.lineno(1))
 
 def p_expr_assign6(p):
     '''expr : expr MINUSEQ expr'''
-    p[0] = ast.BinOpExp(ast.BinOpExp.EQMINUS, p[1], p[3], p.lineno(1))
+    p[0] = ast.BinOpExp(ast.BinOpExp.MINUSEQ, p[1], p[3], p.lineno(1))
+
+def p_expr_assign7(p):
+    '''expr : expr BSHLEQ expr'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.BSHLEQ, p[1], p[3], p.lineno(1))
+
+def p_expr_assign8(p):
+    '''expr : expr BSHREQ expr'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.BSHREQ, p[1], p[3], p.lineno(1))
+
+def p_expr_assign9(p):
+    '''expr : expr BANDEQ expr'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.BANDEQ, p[1], p[3], p.lineno(1))
+
+def p_expr_assign10(p):
+    '''expr : expr BXOREQ expr'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.BXOREQ, p[1], p[3], p.lineno(1))
+
+def p_expr_assign11(p):
+    '''expr : expr BOREQ expr'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.BOREQ, p[1], p[3], p.lineno(1))
 
 #------------------------------------------------------------------------------
 def p_expr_log1(p):
@@ -267,6 +316,19 @@ def p_expr_log1(p):
 def p_expr_log2(p):
     'expr : expr LAND expr'
     p[0] = ast.BinOpExp(ast.BinOpExp.LAND, p[1], p[3], p.lineno(1))
+
+#------------------------------------------------------------------------------
+def p_expr_bit1(p):
+    '''expr : expr '|' expr'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.BOR, p[1], p[3], p.lineno(1))
+
+def p_expr_bit2(p):
+    '''expr : expr '^' expr'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.BXOR, p[1], p[3], p.lineno(1))
+
+def p_expr_bit3(p):
+    '''expr : expr '&' expr'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.BAND, p[1], p[3], p.lineno(1))
 
 #------------------------------------------------------------------------------
 def p_expr_rel1(p):
@@ -294,6 +356,15 @@ def p_expr_rel6(p):
     p[0] = ast.BinOpExp(ast.BinOpExp.GE, p[1], p[3], p.lineno(1))
 
 #------------------------------------------------------------------------------
+def p_expr_shift1(p):
+    '''expr : expr BSHL expr'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.BSHL, p[1], p[3], p.lineno(1))
+
+def p_expr_shift2(p):
+    '''expr : expr BSHR expr'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.BSHR, p[1], p[3], p.lineno(1))
+
+#------------------------------------------------------------------------------
 def p_expr_add1(p):
     '''expr : expr '+' expr'''
     p[0] = ast.BinOpExp(ast.BinOpExp.PLUS, p[1], p[3], p.lineno(1))
@@ -316,6 +387,15 @@ def p_expr_mult3(p):
     p[0] = ast.BinOpExp(ast.BinOpExp.MOD, p[1], p[3], p.lineno(1))
 
 #------------------------------------------------------------------------------
+def p_expr_select1(p):
+    '''expr : expr '.' expr'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.DOT, p[1], p[3], p.lineno(1))
+
+def p_expr_select2(p):
+    '''expr : expr SELECT expr'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.SELECT, p[1], p[3], p.lineno(1))
+
+#------------------------------------------------------------------------------
 def p_expr_pre1(p):
     'expr : PP expr'
     p[0] = ast.UnaryExp(ast.UnaryExp.PRE_INC, p[2], p.lineno(1))
@@ -336,6 +416,22 @@ def p_expr_pre5(p):
     '''expr : LNOT expr'''
     p[0] = ast.UnaryExp(ast.UnaryExp.LNOT, p[2], p.lineno(1))
 
+def p_expr_pre6(p):
+    '''expr : '~' expr'''
+    p[0] = ast.UnaryExp(ast.UnaryExp.BNOT, p[2], p.lineno(1))
+
+def p_expr_pre7(p):
+    '''expr : '*' expr %prec DEREF'''
+    p[0] = ast.UnaryExp(ast.UnaryExp.DEREF, p[2], p.lineno(1))
+
+def p_expr_pre8(p):
+    '''expr : '&' expr %prec ADDRESSOF'''
+    p[0] = ast.UnaryExp(ast.UnaryExp.ADDRESSOF, p[2], p.lineno(1))
+
+def p_expr_pre9(p):
+    '''expr : SIZEOF expr'''
+    p[0] = ast.UnaryExp(ast.UnaryExp.SIZEOF, p[2], p.lineno(1))
+
 #------------------------------------------------------------------------------
 def p_expr_arrayref(p):
     '''expr : expr '[' expr ']' '''
@@ -354,6 +450,10 @@ def p_arg_exprs_2(p):
     p[1].append(p[3])
     p[0] = p[1]
 
+def p_expr_cast(p):
+    '''expr : '(' tyexpr ')' expr '''
+    p[0] = ast.CastExp(p[2], p[4], p.lineno(1))
+
 #------------------------------------------------------------------------------
 def p_expr_post1(p):
     'expr : expr PP'
@@ -363,6 +463,7 @@ def p_expr_post2(p):
     'expr : expr MM'
     p[0] = ast.UnaryExp(ast.UnaryExp.POST_DEC, p[1], p.lineno(1))
 
+#------------------------------------------------------------------------------
 def p_expr_primary1(p):
     'expr : ID'
     p[0] = ast.IdentExp(p[1], p.lineno(1))
