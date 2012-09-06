@@ -442,10 +442,14 @@ def p_expr_funcall(p):
     p[0] = ast.CallExp(p[1], p[3], p.lineno(1))
 
 def p_arg_exprs_1(p):
-    'arg_exprs : empty' 
-    p[0] = [p[1]]
+    'arg_exprs : empty'
+    p[0] = p[1]
 
 def p_arg_exprs_2(p):
+    'arg_exprs : expr'
+    p[0] = [p[1]]
+
+def p_arg_exprs_3(p):
     '''arg_exprs : arg_exprs ',' expr''' 
     p[1].append(p[3])
     p[0] = p[1]
@@ -502,7 +506,8 @@ def p_empty(p):
     p[0] = []
 
 def p_error(p):
-    g.err(__name__+": error in input line #%s, at token-type '%s', token-value '%s'" % (p.lineno, p.type, p.value))
+    col = find_column(p.lexer.lexdata,p)
+    g.err(__name__+": unexpected token-type '%s', token-value '%s' at line %s, column %s" % (p.type, p.value, p.lineno, col))
 #----------------------------------------------------------------------------------------------------------------------
 
 
@@ -516,6 +521,7 @@ def parse(start_line_no, text):
 
     l = LoopsLexer()
     l.build(debug=0, optimize=0)
+    l.lexdata = text
     
     # Remove the old parse table
     parsetabfile = os.path.join(os.path.abspath('.'), 'parsetab_loops.py')
