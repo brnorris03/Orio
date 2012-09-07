@@ -1,18 +1,19 @@
 void PackAligned(double* src, double* dest, const int stride, const int nelms, const int cnt) {
 
-  // __builtin_prefetch (&src[isrc], 1, 1);
+  // __builtin_prefetch (&src[isrc]  , 1, 0);
+  // __builtin_prefetch (&dest[idest], 0, 0);
   /*@ begin PerfTuning (
         def performance_params {
           param PTRS[] = [('src')];
           param CFLAGS[] = map(join, product(['-fprefetch-loop-arrays']));
         }
         def input_params {
-          param nelms[] = range(8,9);
-          param cnt[] = range(8,9);
-          param stride[] = range(1,2);
+          param nelms[] = range(2,3);
+          param cnt[] = range(3,4);
+          param stride[] = range(4,5);
         }
         def input_vars {
-          decl dynamic double  src[nelms*cnt] = random;
+          decl dynamic double  src[nelms*cnt*stride] = random;
           decl dynamic double dest[nelms*cnt] = 0;
         }
         def build {
@@ -20,11 +21,12 @@ void PackAligned(double* src, double* dest, const int stride, const int nelms, c
         }
         def performance_counter {
           arg method = 'basic timer';
-          arg repetitions = 6;
+          arg repetitions = 5;
         }
   ) @*/
 
   register int i, j, isrc=0, idest=0;
+  double *init_src=src;
 
   /*@ begin Loops(transform Pack(prefetch=PTRS)
 
@@ -40,6 +42,8 @@ void PackAligned(double* src, double* dest, const int stride, const int nelms, c
 
 
   /*@ end @*/
+
+  src=init_src;
+
   /*@ end @*/
 }
-
