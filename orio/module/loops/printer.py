@@ -171,7 +171,7 @@ class CodeGen_C(CodeGen):
 
         elif isinstance(tnode, ast.CompStmt):
             s += indent + '{\n'
-            for stmt in tnode.stmts:
+            for stmt in tnode.kids:
                 s += self.generate(stmt, indent + extra_indent, extra_indent)
             s += indent + '}\n'
 

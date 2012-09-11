@@ -434,7 +434,7 @@ def p_expr_pre9(p):
 
 #------------------------------------------------------------------------------
 def p_expr_arrayref(p):
-    '''expr : expr '[' expr ']' '''
+    '''expr : primary '[' expr ']' '''
     p[0] = ast.ArrayRefExp(p[1], p[3], p.lineno(1))
 
 def p_expr_funcall(p):
@@ -468,24 +468,28 @@ def p_expr_post2(p):
     p[0] = ast.UnaryExp(ast.UnaryExp.POST_DEC, p[1], p.lineno(1))
 
 #------------------------------------------------------------------------------
+def p_expr_primary0(p):
+    'expr : primary'
+    p[0] = p[1]
+
 def p_expr_primary1(p):
-    'expr : ID'
+    'primary : ID'
     p[0] = ast.IdentExp(p[1], p.lineno(1))
 
 def p_expr_primary2(p):
-    'expr : ICONST'
+    'primary : ICONST'
     p[0] = ast.LitExp(ast.LitExp.INT, int(p[1]), p.lineno(1))
 
 def p_expr_primary3(p):
-    'expr : FCONST'
+    'primary : FCONST'
     p[0] = ast.LitExp(ast.LitExp.FLOAT, float(p[1]), p.lineno(1))
 
 def p_expr_primary4(p):
-    'expr : SCONST'
+    'primary : SCONST'
     p[0] = ast.LitExp(ast.LitExp.STRING, p[1], p.lineno(1))
 
 def p_expr_primary5(p):
-    '''expr : '(' expr ')' '''
+    '''primary : '(' expr ')' '''
     p[0] = ast.ParenExp(p[2], p.lineno(1))
 
 
@@ -520,7 +524,7 @@ def parse(start_line_no, text):
     __start_line_no = start_line_no
 
     l = LoopsLexer()
-    l.build(debug=0, optimize=0)
+    l.build(debug=0, optimize=1)
     l.lexdata = text
     
     # Remove the old parse table
@@ -528,7 +532,7 @@ def parse(start_line_no, text):
     try: os.remove(parsetabfile)
     except: pass
     
-    parser = orio.tool.ply.yacc.yacc(debug=0, optimize=0, tabmodule='parsetab_loops', write_tables=0,
+    parser = orio.tool.ply.yacc.yacc(debug=0, optimize=1, tabmodule='parsetab_loops', write_tables=1,
                                      outputdir=os.path.abspath('.'))
     theresult = parser.parse(text, lexer=l, debug=0)
     return theresult
