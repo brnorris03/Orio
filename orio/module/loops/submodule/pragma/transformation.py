@@ -24,7 +24,7 @@ class Transformation:
 
         # create the transformed statement
         if isinstance(self.stmt, ast.CompStmt):
-            stmts = self.stmt.stmts
+            stmts = self.stmt.kids
         else:
             stmts = [self.stmt]
         transformed_stmt = ast.CompStmt(prags + stmts)

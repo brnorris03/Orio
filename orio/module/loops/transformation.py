@@ -32,7 +32,7 @@ class Transformation:
             return stmt
         
         elif isinstance(stmt, ast.CompStmt):
-            stmt.stmts = [self.__transformStmt(s) for s in stmt.stmts]
+            stmt.kids = [self.__transformStmt(s) for s in stmt.kids]
             return stmt
 
         elif isinstance(stmt, ast.IfStmt):
