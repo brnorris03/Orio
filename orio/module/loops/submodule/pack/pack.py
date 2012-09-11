@@ -17,8 +17,8 @@ class Pack(SubModule):
         # expected argument names
         PREFETCH = 'prefetch'
 
-        # all expected transformation arguments
-        args = []
+        # default argument values
+        prefetches = []
 
         # iterate over all transformation arguments
         for aname, rhs, line_no in transf_args:
@@ -31,17 +31,17 @@ class Pack(SubModule):
                       % (line_no, rhs, e.__class__.__name__, e))
 
             if aname == PREFETCH:
-                args += [(rhs, line_no)]
+                prefetches += list(rhs)
 
             # unknown argument name
             else:
                 g.err(__name__+': %s: unrecognized transformation argument: "%s"' % (line_no, aname))
 
         # check semantics of the transformation arguments
-        argss = self.checkTransfArgs(args)
+        #argss = self.checkTransfArgs(args)
         
         # return information about the transformation arguments
-        return argss
+        return {PREFETCH:prefetches}
 
     #--------------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ class Pack(SubModule):
         args = self.readTransfArgs(self.perf_params, self.transf_args)
 
         # perform the transformation 
-        t = transformation.Transformation(args, self.stmt)
+        t = transformation.Transformation(self.stmt, args)
         transformed_stmt = t.transform()
 
         # return the transformed statement

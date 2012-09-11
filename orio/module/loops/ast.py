@@ -81,6 +81,16 @@ class NodeVisitor(object):
             nn = map(lambda e: self.rewriteTD(r, e), nn)
         return nn
 
+    def rewriteBU(self, r, n):
+        kids = getattr(n, 'kids', False)
+        if kids:
+            nkids = []
+            for k in n.kids:
+                nkids += [self.rewriteBU(r, k)]
+            n.kids = nkids
+        nn = r(n)
+        return nn
+
     def collectTD(self, f, n):
         acc = f(n)
         kids = getattr(n, 'kids', [])
@@ -254,8 +264,7 @@ class CompStmt(Stmt):
 
     def __init__(self, stmts, coord=None):
         super(CompStmt, self).__init__(coord)
-        self.stmts = stmts
-        self.kids = [stmts]
+        self.kids = stmts
 
 #----------------------------------------------------------
 class IfStmt(Stmt):
