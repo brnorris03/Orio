@@ -16,9 +16,11 @@ class Pack(SubModule):
 
         # expected argument names
         PREFETCH = 'prefetch'
+        DISTANCE = 'prefetch_distance'
 
         # default argument values
         prefetches = []
+        dist = 0
 
         # iterate over all transformation arguments
         for aname, rhs, line_no in transf_args:
@@ -33,6 +35,12 @@ class Pack(SubModule):
             if aname == PREFETCH:
                 prefetches += list(rhs)
 
+            elif aname == DISTANCE:
+                if not isinstance(rhs, int):
+                    g.err(__name__+': %s: %s must be a positive integer: %s\n' % (line_no, aname, rhs))
+                else:
+                    dist = rhs
+
             # unknown argument name
             else:
                 g.err(__name__+': %s: unrecognized transformation argument: "%s"' % (line_no, aname))
@@ -41,7 +49,7 @@ class Pack(SubModule):
         #argss = self.checkTransfArgs(args)
         
         # return information about the transformation arguments
-        return {PREFETCH:prefetches}
+        return {PREFETCH:prefetches,DISTANCE:dist}
 
     #--------------------------------------------------------------------------
 
