@@ -5,8 +5,16 @@ void PackAligned(double* src, double* dest, const int stride, const int nelms, c
   /*@ begin PerfTuning (
         def performance_params {
           param PTRS[] = [('src')];
-          param DIST[] = range(7,257,8);
-          param CFLAGS[] = map(join, product(['-fprefetch-loop-arrays']));
+          param DIST[] = range(7,16,8);
+          param CFLAGS[] = map(join, product([
+                            ' --param prefetch-latency=400',
+                            ' --param simultaneous-prefetches=6',
+                            ' --param l1-cache-line-size=128'
+                            ' --param l1-cache-size=32',
+                            ' --param l2-cache-size=2048',
+                            ' --param min-insn-to-prefetch-ratio=7',
+                            ' --param prefetch-min-insn-to-mem-ratio=4'
+              ]));
         }
         def input_params {
           param nelms[]  = range(100,101);
@@ -18,7 +26,7 @@ void PackAligned(double* src, double* dest, const int stride, const int nelms, c
           decl dynamic double dest[nelms*cnt] = 0;
         }
         def build {
-          arg build_command = 'gcc @CFLAGS';
+          arg build_command = 'gcc -fprefetch-loop-arrays @CFLAGS';
         }
         def performance_counter {
           arg method = 'basic timer';
