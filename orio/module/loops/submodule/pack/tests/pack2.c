@@ -5,12 +5,13 @@ void PackAligned(double* src, double* dest, const int stride, const int nelms, c
   /*@ begin PerfTuning (
         def performance_params {
           param PTRS[] = [('src')];
+          param DIST[] = range(7,257,8);
           param CFLAGS[] = map(join, product(['-fprefetch-loop-arrays']));
         }
         def input_params {
-          param nelms[] = range(2,3);
-          param cnt[] = range(3,4);
-          param stride[] = range(4,5);
+          param nelms[]  = range(100,101);
+          param cnt[]    = range(150,151);
+          param stride[] = range(200,201);
         }
         def input_vars {
           decl dynamic double  src[nelms*cnt*stride] = random;
@@ -28,7 +29,7 @@ void PackAligned(double* src, double* dest, const int stride, const int nelms, c
   register int i, j, isrc=0, idest=0;
   double *init_src=src;
 
-  /*@ begin Loops(transform Pack(prefetch=PTRS)
+  /*@ begin Loops(transform Pack(prefetch=PTRS, prefetch_distance=DIST)
 
   for(i=cnt; i; i--) {
     for(j=nelms; j; j--) {
