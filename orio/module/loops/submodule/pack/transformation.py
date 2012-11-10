@@ -7,6 +7,7 @@ class Transformation:
         self.stmt = stmt
         self.targs = targs
         self.toprefetch = targs['prefetch']
+        self.prefetch_distance = targs['prefetch_distance']
 
     #--------------------------------------------------------------------------
 
@@ -42,9 +43,20 @@ class Transformation:
         def addPrefetch(id):
             def rw(n):
                 if isinstance(n, ExpStmt):
-                    existsId = nv.collectTD(lambda a: [True] if isinstance(a, ArrayRefExp) and a.exp.name==id else [], n)
+                    existsId = nv.collectTD(lambda a: [(True,a.sub)] if isinstance(a, ArrayRefExp) and a.exp.name==id else [], n)
                     if len(existsId) > 0:
-                        fetch = ExpStmt(CallExp(IdentExp('__builtin_prefetch'), []))
+                        for atuple in existsId:
+                            atuple2=atuple[1]
+                            idxId = IdentExp("");
+                            if isinstance(atuple2, UnaryExp) and isinstance(atuple2.exp, IdentExp):
+                                idxId = atuple2.exp
+                            elif isinstance(atuple2, IdentExp):
+                                idxId = atuple2
+                            fetch = ExpStmt(CallExp(IdentExp('__builtin_prefetch'),
+                                                    [UnaryExp(UnaryExp.ADDRESSOF, ArrayRefExp(IdentExp(id),
+                                                                                              BinOpExp(BinOpExp.PLUS, idxId, IdentExp(self.prefetch_distance)))),
+                                                     LitExp(LitExp.INT, 0),
+                                                     LitExp(LitExp.INT, 0)]))
                         n = CompStmt([n, fetch])
                     return n
                 else:

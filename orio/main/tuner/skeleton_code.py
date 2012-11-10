@@ -43,7 +43,7 @@ double getClock()
   return((double) hack.ull );
 }
 #else
-#if !defined(__APPLE__) && !defined(_OPENMP)
+#if !defined(__APPLE__) && !defined(_OPENMP) && !defined(__GNUC__)
 double getClock()
 {
     struct timespec ts;
