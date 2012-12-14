@@ -1,8 +1,8 @@
 order
 in
-A : column matrix, x : vector, B : column matrix
+A : matrix(column), x : vector(column), B : matrix(column)
 inout
-  y : vector
+  y : vector(column)
 {
   y = A * (B * x)
 }

@@ -1,8 +1,8 @@
 DGEMV
 in
-  A : row matrix, x : vector, alpha : scalar, beta : scalar
+  A : matrix(row), x : vector(column), alpha : scalar, beta : scalar
 inout
-  y : row vector
+  y : vector(row)
 {
   y = alpha*(x'*A) + beta*y
 }

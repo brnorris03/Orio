@@ -1,8 +1,8 @@
 vadd
 in
-  w : vector, y : vector, z : vector
+  w : vector(column), y : vector(column), z : vector(column)
 out
-  x : vector
+  x : vector(column)
 {
   x = w + y + z
 }

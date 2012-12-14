@@ -1,8 +1,8 @@
 AATX
 in
- A : matrix, v : vector
+ A : matrix(column), v : vector(column)
 out 
- x : matrix
+ x : matrix(column)
 {
   x = v*(v'*A)
 }

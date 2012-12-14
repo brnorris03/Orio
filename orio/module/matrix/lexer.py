@@ -9,11 +9,12 @@
 __example = '''
 GEMVER
 in
-  A : row matrix, u1 : vector, u2 : vector, v1 : vector, v2 : vector,
+  A : matrix(column), u1 : vector(column), u2 : vector(column), 
+  v1 : vector(column), v2 : vector(column),
   a : scalar, b : scalar,
-  y : vector, z : vector
+  y : vector(column), z : vector(column)
 out
-  B : row matrix, x : vector, w : vector
+  B : matrix(column), x : vector(column), w : vector(column)
 {
   B = A + u1 * v1' + u2 * v2'
   x = b * (B' * y) + z
@@ -22,9 +23,7 @@ out
 '''
 
 import sys
-import orio.tool.ply.lex
-#from orio.main.util.globals import err
-
+import orio.tool.ply.lex as plylex
 #------------------------------------------------
 
 __start_line_no = 1
@@ -32,16 +31,23 @@ __start_line_no = 1
 #------------------------------------------------
 
 class MatrixLexer:
-    def __init__(self):
+    def __init__(self, debug=1, optimize=0, printToStderr=1):
         self.currentline = ''
+        self.debug = debug
+        self.optimize = optimize
+        self.printToStderr = printToStderr
+        self.errors = []
+        pass
         
     # reserved words
     #reserved = ['COLUMN', 'COMPRESSED', 'COORDINATE', 'FOR', 'GENERAL', 'IN', 'INOUT', 'MATRIX', 
     #           'OUT', 'ROW', 'SCALAR', 'VECTOR']
     
     # The ones that are actually currently in use
-    reserved = ['COLUMN', 'FOR', 'IN', 'INOUT', 'MATRIX', 
-                'OUT', 'ROW', 'SCALAR', 'VECTOR']
+    reserved = ['COLUMN', 'FOR', 'IN', 'INOUT', 'MATRIX', 'FORMAT',
+                'OUT', 'ROW', 'SCALAR', 'VECTOR', 'ORIENTATION',
+                'GENERAL', 'TRIANGULAR', 'UPLO', 'UPPER', 'LOWER',
+                'DIAG', 'UNIT', 'NONUNIT']
     
     tokens = reserved + [
     
@@ -143,23 +149,40 @@ class MatrixLexer:
     def t_NEWLINE(self,t):
         r'\n+'
         t.lineno += t.value.count('\n')
-        
+               
     # syntactical error
     def t_error(self,t):
-        self.err('orio.module.loop.parser: %s: syntactical error: "%s"' % ((t.lineno + __start_line_no - 1), t.value[0]))
-    
+        col = self.find_column(t.lexer.lexdata,t)
+        self.err("[matrixlexer] illegal character '%s' at line %s, column %s\n" % (t.value[0], t.lexer.lineno, col))
+        t.lexer.skip(1)
+
+    def find_column(self,input,token):
+        i = token.lexpos
+        while i > 0:
+            if input[i] == '\n': 
+              break
+            i -= 1
+        column = (token.lexpos - i) 
+        return column
+
+
     def err(self, s):
-        sys.stderr.write(s)
+        self.errors.append(s)
+        if self.printToStderr:
+          sys.stderr.write(s)
         
     def reset(self):
         self.lexer.lineno = 1
         
-    def build(self, **kwargs):
-        self.lexer = orio.tool.ply.lex.lex(object=self, **kwargs)
+    def build(self, printToStderr=False, **kwargs):
+        self.printToStderr = printToStderr
+        if not kwargs.get('debug'): kwargs['debug']=self.debug
+        if not kwargs.get('optimize'): kwargs['optimize']=self.optimize
+        self.lexer = plylex.lex(object=self, **kwargs)
         
     def test(self, data):
         self.lexer.input(data)
-        while 1:
+        while True:
             tok = self.lexer.token()
             if not tok: break
             print tok
@@ -169,7 +192,8 @@ if __name__ == "__main__":
     #lex.runmain(lexer)
     # Build the lexer and try it out
     # Build the lexer 
-    l = orio.tool.ply.lex.lex(debug=1,optimize=0) 
+    l = MatrixLexer(debug=1,optimize=0) 
+    l.build()
     for i in range(1, len(sys.argv)):
         print "About to lex %s" % sys.argv[i]
         f = open(sys.argv[i],"r")
@@ -178,9 +202,5 @@ if __name__ == "__main__":
         # print "Contents of %s: %s" % (sys.argv[i], s)
         if s == '' or s.isspace(): sys.exit(0)
         # Test the lexer; just print out all tokens founds
-        l.input(s)
-        while 1:
-            tok = l.token()
-            if not tok: break
-            print tok
+        l.test(s)
 

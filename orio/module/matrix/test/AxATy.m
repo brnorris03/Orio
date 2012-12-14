@@ -1,8 +1,8 @@
 AxATy
 in
-A : row matrix, x : vector, y : vector
+A : matrix(orientation=row), x : vector(orientation=column), y : vector(orientation=column)
 out
-  w : vector, z : vector
+  w : vector(orientation=column), z : vector(orientation=column)
 {
   w = A * x
   z = A' * y

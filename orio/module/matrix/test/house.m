@@ -1,8 +1,8 @@
-AATX
+HOUSE
 in
- v : vector, alpha : scalar
+ v : vector(column), alpha : scalar
 inout 
- A : matrix
+ A : matrix(column)
 {
   A = A - alpha*v*(v'*A)
 }
