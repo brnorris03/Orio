@@ -2,7 +2,7 @@ DSCAL
 in
   a : scalar
 inout
-  x : vector
+  x : vector(column)
 {
   x = a * x
 }

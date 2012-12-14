@@ -1,8 +1,8 @@
 AXPYDOT
 in
-  w : vector, a : scalar, v : vector, u : vector
+  w : vector(column), a : scalar, v : vector(column), u : vector(column)
 out
-  z : vector, r : scalar
+  z : vector(column), r : scalar
 {
   z = w - a * v
   r = z' * u

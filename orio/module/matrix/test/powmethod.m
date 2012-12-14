@@ -1,8 +1,8 @@
 POWMETHOD
 in
-	A : column matrix, b : vector 
+	A : matrix(column), b : vector(column)
 out
-	d : vector
+	d : vector(column)
 {
 	c = A*b
 	d = c* (c' * c)

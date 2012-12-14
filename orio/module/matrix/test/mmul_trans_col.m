@@ -1,8 +1,8 @@
 mmul
 in
-  A : column matrix, B : column matrix
+  A : matrix(column), B : matrix(column)
 out
-  C : column matrix
+  C : matrix(column)
 {
   C = A' * B'
 }

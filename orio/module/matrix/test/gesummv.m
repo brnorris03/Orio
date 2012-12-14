@@ -1,12 +1,12 @@
 GESUMMV
 in
-  A : column matrix,
-  B : column matrix,
-  x : vector,
+  A : matrix(column),
+  B : matrix(column),
+  x : vector(column),
   a : scalar,
   b : scalar
 out
-  y : vector
+  y : vector(column)
 {
   y = a * (A * x) + b * (B * x)
 }

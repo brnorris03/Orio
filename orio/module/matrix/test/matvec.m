@@ -1,8 +1,8 @@
 matvec
 in 
-	A : column matrix, x : vector
+	A : matrix(column), x : vector(column)
 out
-	y : vector
+	y : vector(column)
 {
 	y = A * x
 }
