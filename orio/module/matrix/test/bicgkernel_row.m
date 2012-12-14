@@ -1,8 +1,8 @@
 BICG
 in
-  A : row matrix, p : vector, r : vector
+  A : matrix(row), p : vector(column), r : vector(column)
 out
-  q : vector, s : vector
+  q : vector(column), s : vector(column)
 {
   q = A * p
   s = A' * r

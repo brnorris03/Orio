@@ -1,10 +1,11 @@
 GEMVER
 in
-  A : column matrix, u1 : vector, u2 : vector, v1 : vector, v2 : vector,
+  A : matrix(column), u1 : vector(column), u2 : vector(column), 
+  v1 : vector(column), v2 : vector(column),
   a : scalar, b : scalar,
-  y : vector, z : vector
+  y : vector(column), z : vector(column)
 out
-  B : column matrix, x : vector, w : vector
+  B : matrix(column), x : vector(column), w : vector(column)
 {
   B = A + u1 * v1' + u2 * v2'
   x = b * (B' * y) + z
