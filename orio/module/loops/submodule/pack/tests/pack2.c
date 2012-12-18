@@ -4,17 +4,16 @@ void PackAligned(double* src, double* dest, const int stride, const int nelms, c
   // __builtin_prefetch (&dest[idest], 0, 0);
   /*@ begin PerfTuning (
         def performance_params {
-          param PTRS[] = [('src')];
-          param DIST[] = range(7,16,8);
-          param CFLAGS[] = map(join, product([
-                            ' --param prefetch-latency=400',
-                            ' --param simultaneous-prefetches=6',
-                            ' --param l1-cache-line-size=128'
-                            ' --param l1-cache-size=32',
-                            ' --param l2-cache-size=2048',
-                            ' --param min-insn-to-prefetch-ratio=7',
-                            ' --param prefetch-min-insn-to-mem-ratio=4'
-              ]));
+          param PTRS[]            = [('src')];
+          param DIST[]            = range(7,16,8);
+          param PF_LATENCY[]      = range(400,401);
+          param PF_SIMULT_PFS[]   = range(1,7);
+          param PF_L1_LINESZ[]    = range(128,129);
+          param PF_L1_CACHESZ[]   = range(32,33);
+          param PF_L2_CACHESZ[]   = range(2048,2049);
+          param PF_MIN_INSN2PF[]  = range(7,8);
+          param PF_MIN_INSN2MEM[] = range(4,5);
+          param CFLAGS[] = map(join, product(['','-O1','-O2','-O3']));
         }
         def input_params {
           param nelms[]  = range(100,101);
@@ -26,7 +25,15 @@ void PackAligned(double* src, double* dest, const int stride, const int nelms, c
           decl dynamic double dest[nelms*cnt] = 0;
         }
         def build {
-          arg build_command = 'gcc -fprefetch-loop-arrays @CFLAGS';
+          arg build_command = 'gcc -fprefetch-loop-arrays'\
+                                    ' --param prefetch-latency=@PF_LATENCY@'\
+                                    ' --param simultaneous-prefetches=@PF_SIMULT_PFS@'\
+                                    ' --param l1-cache-line-size=@PF_L1_LINESZ@'\
+                                    ' --param l1-cache-size=@PF_L1_CACHESZ@'\
+                                    ' --param l2-cache-size=@PF_L2_CACHESZ@'\
+                                    ' --param min-insn-to-prefetch-ratio=@PF_MIN_INSN2PF@'\
+                                    ' --param prefetch-min-insn-to-mem-ratio=@PF_MIN_INSN2MEM@'\
+                                    ' @CFLAGS';
         }
         def performance_counter {
           arg method = 'basic timer';
