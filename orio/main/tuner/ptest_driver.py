@@ -161,12 +161,18 @@ class PerfTestDriver:
         # build_cmd
         cflags_tag = '@CFLAGS'
         build_cmd = self.tinfo.build_cmd
-        match_obj = re.search(cflags_tag, build_cmd)
-        if match_obj:
-          cflags_val = ''
-          if perf_param is not None:
-            cflags_val = perf_param.get('CFLAGS', '')
-          build_cmd = re.sub(cflags_tag, cflags_val, build_cmd)
+        if perf_param is not None:
+            match_obj = re.search(cflags_tag, build_cmd)
+            if match_obj:
+                build_cmd = re.sub(cflags_tag, perf_param.get('CFLAGS', ''), build_cmd)
+            while True:
+                match_obj = None
+                match_obj = re.search('@(?P<alphanum>\w*)@', build_cmd)
+                if match_obj is None:
+                    break
+                else:
+                    param_val = match_obj.group('alphanum')
+                    build_cmd = re.sub(match_obj.group(), str(perf_param.get(param_val, '')), build_cmd)
         
         if timer_objfile and not os.path.exists(timer_objfile):  
             # TODO: Too crude, need to make sure object is newer than source
