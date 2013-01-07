@@ -204,6 +204,9 @@ class CommonLib:
                           [self.collectNode(f, a) for a in n.args],
                           f(n))
         
+        elif isinstance(n, orio.module.loop.ast.CastExpr):
+            return f(n) + self.collectNode(f, n.expr)
+        
         elif isinstance(n, orio.module.loop.ast.UnaryExp):
             return f(n) + self.collectNode(f, n.exp)
         
