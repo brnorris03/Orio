@@ -44,7 +44,7 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
   for(i=0; i<=nrows-1; i++){
     for(j=0; j<=ndiags-1; j++){
       row = i+j*sbdiag;
-      col = (floor(i/ndofs)+offsets[j])*ndofs;
+      col = (floor((float)i/ndofs)+offsets[j])*ndofs;
       if(col>=0&&col<nrows)
         for(k=0; k<=ndofs-1; k++)
           y[i] += A[row+k*nrows] * x[col+k];
@@ -56,7 +56,7 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
   for(i=0; i<=nrows-1; i++){
     for(j=0; j<=ndiags-1; j++){
       row = i+j*sbdiag;
-      col = (floor(i/ndofs)+offsets[j])*ndofs;
+      col = (floor((float)i/ndofs)+offsets[j])*ndofs;
       if(col>=0&&col<nrows)
         for(k=0; k<=ndofs-1; k++)
           y[i] += A[row+k*nrows] * x[col+k];

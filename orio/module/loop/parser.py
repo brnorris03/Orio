@@ -427,6 +427,10 @@ def p_unary_expression_4(p):
     else:
         err('orio.module.loop.parser internal error: unknown unary operator')
 
+def p_unary_expression_5(p):
+    'unary_expression : LPAREN ID RPAREN unary_expression'
+    p[0] = ast.CastExpr(p[2], p[4], p.lineno(1) + __start_line_no - 1)
+
 # unary-operator
 def p_unary_operator(p):
     '''unary_operator : PLUS
