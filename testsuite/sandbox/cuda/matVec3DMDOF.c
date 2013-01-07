@@ -1,7 +1,7 @@
 void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NOS, int DOF) {
 
-  register int i,j;
-  int col;
+  register int i,j,k;
+  int col,row;
   /*@ begin PerfTuning (
         def performance_params {
           param TC[]  = range(32,1025,32);
@@ -15,12 +15,12 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
           param N[] = [16,32,64,128,256];
           param P[] = [16,32,64,128,256];
           param NOS = 7;
-          param DOF = 1;
+          param DOF = 2;
           constraint c1 = (M==N);
           constraint c2 = (N==P);
         }
         def input_vars {
-          decl static double A[M*N*P*NOS*DOF] = random;
+          decl static double A[M*N*P*DOF*NOS] = random;
           decl static double x[M*N*P*DOF]     = random;
           decl static double y[M*N*P*DOF]     = 0;
           decl static int offsets[NOS]        = {-M*N*DOF,-M*DOF,-DOF,0,DOF,M*DOF,M*N*DOF};
@@ -35,31 +35,31 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
   ) @*/
 
   int nrows=M*N*P*DOF;
-  int ndiags=NOS*DOF;
-  int d=0;
-  int dof=DOF;
+  int ndiags=NOS;
+  int ndofs=DOF;
+  int sbdiag=M*N*P*DOF*DOF;
 
   /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, preferL1Size=PL, unrollInner=UIF)
 
-  for(i=0; i<=nrows-1; i++) {
+  for(i=0; i<=nrows-1; i++){
     for(j=0; j<=ndiags-1; j++){
-      col = i+offsets[d];
+      row = i+j*sbdiag;
+      col = (floor(i/ndofs)+offsets[j])*ndofs;
       if(col>=0&&col<nrows)
-        y[i] += A[i+j*nrows] * x[col];
-      if(j%dof==dof-1)
-        d++;
+        for(k=0; k<=ndofs-1; k++)
+          y[i] += A[row+k*nrows] * x[col+k];
     }
   }
 
   ) @*/
 
-  for(i=0; i<=nrows-1; i++) {
+  for(i=0; i<=nrows-1; i++){
     for(j=0; j<=ndiags-1; j++){
-      col = i+offsets[d];
+      row = i+j*sbdiag;
+      col = (floor(i/ndofs)+offsets[j])*ndofs;
       if(col>=0&&col<nrows)
-        y[i] += A[i+j*nrows] * x[col];
-      if(j%dof==dof-1)
-        d++;
+        for(k=0; k<=ndofs-1; k++)
+          y[i] += A[row+k*nrows] * x[col+k];
     }
   }
 
