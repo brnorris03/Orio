@@ -8,7 +8,7 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
           param BC[]  = range(14,113,14);
           param UIF[] = range(1,8);
           param PL[]  = [16,48];
-          param CFLAGS[] = map(join, product(['', '-O1', '-O2', '-O3']));
+          param CFLAGS[] = map(join, product(['-O0', '-O1', '-O2', '-O3']));
         }
         def input_params {
           param M[] = [16,32,64,128,256];
@@ -20,10 +20,10 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
           constraint c2 = (N==P);
         }
         def input_vars {
-          decl static double A[M*N*P*DOF*NOS] = random;
-          decl static double x[M*N*P*DOF]     = random;
-          decl static double y[M*N*P*DOF]     = 0;
-          decl static int offsets[NOS]        = {-M*N*DOF,-M*DOF,-DOF,0,DOF,M*DOF,M*N*DOF};
+          decl dynamic double A[M*N*P*DOF*DOF*NOS] = random;
+          decl dynamic double x[M*N*P*DOF]         = random;
+          decl dynamic double y[M*N*P*DOF]         = 0;
+          decl static  int offsets[NOS]            = {-M*N*DOF,-M*DOF,-DOF,0,DOF,M*DOF,M*N*DOF};
         }
         def build {
           arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
