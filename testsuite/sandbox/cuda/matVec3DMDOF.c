@@ -15,7 +15,7 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
           param N[] = [16,32,64,128,256];
           param P[] = [16,32,64,128,256];
           param NOS = 7;
-          param DOF = 2;
+          param DOF[] = range(2,17);
           constraint c1 = (M==N);
           constraint c2 = (N==P);
         }
