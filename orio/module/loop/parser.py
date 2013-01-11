@@ -257,6 +257,14 @@ def p_expression_2(p):
     'expression : expression COMMA assignment_expression'
     p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.COMMA, p.lineno(1) + __start_line_no - 1)
 
+def p_expression_3(p):
+    'expression : ID ID'
+    p[0] = ast.VarDecl(p[1], [p[2]], p.lineno(1) + __start_line_no - 1)
+
+def p_expression_4(p):
+    'expression : ID ID EQUALS expression'
+    p[0] = ast.VarDeclInit(p[1], ast.IdentExp(p[2]), p[4], p.lineno(1) + __start_line_no - 1)
+
 # assignment_expression:
 def p_assignment_expression_1(p):
     'assignment_expression : logical_or_expression'

@@ -2,6 +2,7 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
 
   register int i,j,k;
   int col,row;
+  double ysum;
   /*@ begin PerfTuning (
         def performance_params {
           param TC[]  = range(32,1025,32);
@@ -42,25 +43,29 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
   /*@ begin Loop(transform CUDA(threadCount=TC, blockCount=BC, preferL1Size=PL, unrollInner=UIF)
 
   for(i=0; i<=nrows-1; i++){
+    ysum = 0.0;
     for(j=0; j<=ndiags-1; j++){
       row = i+j*sbdiag;
       col = (floor((float)i/ndofs)+offsets[j])*ndofs;
       if(col>=0&&col<nrows)
         for(k=0; k<=ndofs-1; k++)
-          y[i] += A[row+k*nrows] * x[col+k];
+          ysum += A[row+k*nrows] * x[col+k];
     }
+    y[i] = ysum;
   }
 
   ) @*/
 
   for(i=0; i<=nrows-1; i++){
+    ysum = 0.0;
     for(j=0; j<=ndiags-1; j++){
       row = i+j*sbdiag;
       col = (floor((float)i/ndofs)+offsets[j])*ndofs;
       if(col>=0&&col<nrows)
         for(k=0; k<=ndofs-1; k++)
-          y[i] += A[row+k*nrows] * x[col+k];
+          ysum += A[row+k*nrows] * x[col+k];
     }
+    y[i] = ysum;
   }
 
   /*@ end @*/

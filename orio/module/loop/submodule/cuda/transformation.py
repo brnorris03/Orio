@@ -540,11 +540,17 @@ class Transformation(object):
         indices = [index_id.name]
         ktempints = []
         nestedLoop = False
-        if isinstance(loop_body, ForStmt):
-          index_id2, _, ubound_exp2, _, _ = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(loop_body)
-          nestedLoop = True
-          indices += [index_id2.name]
-          ktempints += [index_id2] # declare inner index
+        lb_stmts = []
+        if isinstance(loop_body, CompStmt):
+            lb_stmts = loop_body.stmts
+        else:
+            lb_stmts = [loop_body]
+        for lb_stmt in lb_stmts:
+            if isinstance(lb_stmt, ForStmt):
+              index_id2, _, ubound_exp2, _, _ = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(lb_stmt)
+              nestedLoop = True
+              indices += [index_id2.name]
+              ktempints += [index_id2] # declare inner index
 
         # abbreviations
         loop_lib = orio.module.loop.ast_lib.common_lib.CommonLib()
@@ -656,6 +662,7 @@ class Transformation(object):
                 loop_body = loop_lib.rewriteNode(rrLhs, loop_body)
         else:
           ktempdbls = filter(lambda x: x not in array_ids, list(lhs_ids))
+          ktempdbls = filter(lambda x: x not in ktempints, list(ktempdbls))
                   
         # collect all identifiers from the loop body
         loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
@@ -815,8 +822,8 @@ class Transformation(object):
           if self.model['isReduction']:
             for temp in ktempdbls:
                 kernelStmts += [VarDeclInit('double', IdentExp(temp), self.cs['int0'])]
-          #else:
-          #  kernelStmts += [VarDecl('double', map(lambda x: IdentExp(x), ktempdbls))]
+          else:
+            kernelStmts += [VarDecl('double', map(lambda x: IdentExp(x), ktempdbls))]
         if len(ktempints) > 0:
             kernelStmts += [VarDecl('int', map(lambda x: IdentExp(x), ktempints))]
 
