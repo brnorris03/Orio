@@ -519,7 +519,7 @@ class PerfTestSkeletonCode:
             
             match_obj = re.search(self.__VALIDATION_TAG, switch_body_code)
             if not match_obj:
-                err('main.tuner.skeleton_code:  missing "validation code" tag in the switch body statement')
+                warn('main.tuner.skeleton_code:  missing "validation code" tag in the switch body statement')
             
             match_obj = re.search(self.__COORD_TAG, switch_body_code)
             if not match_obj:
