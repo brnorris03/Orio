@@ -290,9 +290,19 @@ class Transformation:
 
                 # combine the unrolled inner statement
                 if not is_comp_before and is_comp_after:
-                    stmts += ns.stmts
+                    #stmts += ns.stmts
+                    stmts += [ns.stmts]
                 else:
-                    stmts.append(ns)
+                    #stmts.append(ns)
+                    stmts += [ns]
+            # this is to preserve the order of original statements
+            if (stmts!=[] and isinstance(stmts[0],list)): # zip any nested lists
+                tuples = zip(*stmts)                      # by peeling one element from each
+                zipped = []
+                for atuple in tuples:
+                    zipped += list(atuple)
+                stmts = zipped
+                
             stmt.stmts = stmts
 
             # return the unrolled/jammed statement
