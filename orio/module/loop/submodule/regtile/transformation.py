@@ -294,7 +294,7 @@ class Transformation:
                     stmts += [ns.stmts]
                 else:
                     #stmts.append(ns)
-                    stmts += [ns]
+                    stmts.append([ns])
             # this is to preserve the order of original statements
             if (stmts!=[] and isinstance(stmts[0],list)): # zip any nested lists
                 tuples = zip(*stmts)                      # by peeling one element from each
