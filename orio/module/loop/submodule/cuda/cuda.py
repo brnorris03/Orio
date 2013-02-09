@@ -266,6 +266,16 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
       if props['major'] < 2 and props['minor'] < 3:
         g.warn("%s: running on compute capability less than 1.3 is not recommended, detected %s.%s." % (self.__class__, props['major'], props['minor']))
 
+      # set the arch to the latest supported by the device
+      bcmd = self.tinfo.build_cmd
+      if bcmd.startswith('gcc'):
+        bcmd = 'nvcc'
+      if bcmd.find('-arch') == -1:
+        bcmd += ' -arch=sm_' + str(props['major']) + str(props['minor'])
+      if self.perf_params.has_key('CFLAGS') and bcmd.find('@CFLAGS') == -1:
+        bcmd += ' @CFLAGS'
+      self.tinfo.build_cmd = bcmd
+
       # return queried device props
       return props
 
