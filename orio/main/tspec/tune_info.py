@@ -749,7 +749,7 @@ class TuningInfoGen:
         VALIDATION = 'validation'
 
         # all expected definition information
-        build_info = None
+        build_info = {'build_cmd': 'gcc -O3'}
         pcount_info = ('basic timer', 5, None, None)
         search_info = ('Exhaustive', -1, -1, [])
         pparam_info = ([], [])
@@ -864,10 +864,6 @@ class TuningInfoGen:
             elif dname == VALIDATION:
                 validation_info = self.__genValidationInfo(body_stmt_seq, line_no)
 
-        # check if the build definition is missing
-        if build_info == None:
-            err('orio.main.tspec.tune_info:  missing build definition in the tuning specification')
-            
         # check if the input variables definition is missing
         if ivar_info == None:
             err('orio.main.tspec.tune_info:  missing input variables definition in the tuning specification')
