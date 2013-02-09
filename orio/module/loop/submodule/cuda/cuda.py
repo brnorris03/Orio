@@ -81,6 +81,7 @@ int main( void ) {
 }
 '''
 #----------------------------------------------------------------------------------------------------------------------
+dev_props = None
 
 class CUDA(orio.module.loop.submodule.submodule.SubModule):
     '''The cuda transformation submodule.'''
@@ -90,11 +91,12 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         
         orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)
         self.tinfo = tinfo
+        self.props = None
 
         
     #------------------------------------------------------------------------------------------------------------------
 
-    def readTransfArgs(self, perf_params, transf_args, props):
+    def readTransfArgs(self, perf_params, transf_args):
         '''Process the given transformation arguments'''
 
         # expected argument names
@@ -109,8 +111,8 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         PREFERL1SZ  = 'preferL1Size'
 
         # default argument values
-        threadCount  = props['warpSize']
-        blockCount   = props['multiProcessorCount']
+        threadCount  = self.props['warpSize']
+        blockCount   = self.props['multiProcessorCount']
         cacheBlocks  = False
         pinHost      = False
         streamCount  = 1
@@ -130,13 +132,13 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                 g.err('orio.module.loop.submodule.cuda.cuda: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
             
             if aname == THREADCOUNT:
-                if not isinstance(rhs, int) or rhs <= 0 or rhs > props['maxThreadsPerBlock']:
-                    errors += 'line %s: %s must be a positive integer less than device limit of maxThreadsPerBlock=%s: %s\n' % (line_no, aname, props['maxThreadsPerBlock'], rhs)
+                if not isinstance(rhs, int) or rhs <= 0 or rhs > self.props['maxThreadsPerBlock']:
+                    errors += 'line %s: %s must be a positive integer less than device limit of maxThreadsPerBlock=%s: %s\n' % (line_no, aname, self.props['maxThreadsPerBlock'], rhs)
                 else:
                     threadCount = rhs
             elif aname == BLOCKCOUNT:
-                if not isinstance(rhs, int) or rhs <= 0 or rhs > props['maxGridSize'][0]:
-                    errors += 'line %s: %s must be a positive integer less than device limit of maxGridSize[0]=%s: %s\n' % (line_no, aname, props['maxGridSize'][0], rhs)
+                if not isinstance(rhs, int) or rhs <= 0 or rhs > self.props['maxGridSize'][0]:
+                    errors += 'line %s: %s must be a positive integer less than device limit of maxGridSize[0]=%s: %s\n' % (line_no, aname, self.props['maxGridSize'][0], rhs)
                 else:
                     blockCount = rhs
             elif aname == CB:
@@ -154,10 +156,10 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                     errors += 'line %s: %s must be a positive integer: %s\n' % (line_no, aname, rhs)
                 else:
                     if rhs > 1:
-                      overlap = props['deviceOverlap']
+                      overlap = self.props['deviceOverlap']
                       if overlap == 0:
                         errors += '%s=%s: deviceOverlap=%s, overlap of data transfer and kernel execution is not supported\n' % (aname, rhs, overlap)
-                      concs = props['concurrentKernels']
+                      concs = self.props['concurrentKernels']
                       if concs == 0:
                         errors += '%s=%s: device concurrentKernels=%s, concurrent kernel execution is not supported\n' % (aname, rhs, concs)
                     streamCount = rhs
@@ -180,11 +182,11 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                 if not isinstance(rhs, int) or rhs not in [16,32,48]:
                     errors += 'line %s: %s must be either 16, 32 or 48 KB: %s\n' % (line_no, aname, rhs)
                 else:
-                    major = props['major']
+                    major = self.props['major']
                     if major < 2:
-                      errors += '%s=%s: L1 cache is not resizable on compute capability less than 2.x, current comp.cap.=%s.%s\n' % (aname, rhs, major, props['minor'])
+                      errors += '%s=%s: L1 cache is not resizable on compute capability less than 2.x, current comp.cap.=%s.%s\n' % (aname, rhs, major, self.props['minor'])
                     elif major < 3 and rhs == 32:
-                      errors += '%s=%s: L1 cache cannot be set to %s on compute capability less than 3.x, current comp.cap.=%s.%s\n' % (aname, rhs, rhs, major, props['minor'])
+                      errors += '%s=%s: L1 cache cannot be set to %s on compute capability less than 3.x, current comp.cap.=%s.%s\n' % (aname, rhs, rhs, major, self.props['minor'])
                     preferL1Size = rhs
             else:
                 g.err('%s: %s: unrecognized transformation argument: "%s"' % (self.__class__, line_no, aname))
@@ -263,13 +265,13 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
 
     #------------------------------------------------------------------------------------------------------------------
 
-    def cudify(self, stmt, props, targs):
+    def cudify(self, stmt, targs):
         '''Apply CUDA transformations'''
         
         g.debug('orio.module.loop.submodule.cuda.CUDA: starting CUDA transformations')
 
         # perform transformation
-        t = transformation.Transformation(stmt, props, targs, self.tinfo)
+        t = transformation.Transformation(stmt, self.props, targs, self.tinfo)
         transformed_stmt = t.transform()
 
         # return the transformed statement
@@ -281,13 +283,17 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         '''The implementation of the abstract transform method for CUDA'''
 
         # read device properties
-        props = self.getDeviceProps()
+        global dev_props # initialize device properties only once
+        if dev_props is None:
+            dev_props = self.getDeviceProps()
+        if self.props is None:
+            self.props = dev_props
         
         # read all transformation arguments
-        targs = self.readTransfArgs(self.perf_params, self.transf_args, props)
+        targs = self.readTransfArgs(self.perf_params, self.transf_args)
         
         # perform the transformation of the statement
-        transformed_stmt = self.cudify(self.stmt, props, targs)
+        transformed_stmt = self.cudify(self.stmt, targs)
         
         return transformed_stmt
 
