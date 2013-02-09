@@ -26,9 +26,6 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
           decl dynamic double y[M*N*P*DOF]         = 0;
           decl static  int offsets[NOS]            = {-M*N*DOF,-M*DOF,-DOF,0,DOF,M*DOF,M*N*DOF};
         }
-        def build {
-          arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
-        }
   ) @*/
 
   int nrows=M*N*P*DOF;
