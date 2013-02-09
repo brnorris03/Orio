@@ -43,7 +43,7 @@ class TuningInfo:
 
         # performance counter arguments
         self.pcount_method = pcount_method             # default: 'basic timer' --> in microseconds
-        self.pcount_reps = pcount_reps                 # default: 1
+        self.pcount_reps = pcount_reps                 # default: 5
         #self.pcount_subreps = pcount_subreps           # mandatory subrepetitions (to enable timing of very small computations), default: 10
         self.random_seed = random_seed                 # default: None
         self.timing_array_size = timing_array_size     # default an odd number >= pcount_reps
@@ -750,7 +750,7 @@ class TuningInfoGen:
 
         # all expected definition information
         build_info = None
-        pcount_info = ('basic timer', 1)
+        pcount_info = ('basic timer', 5, None, None)
         search_info = ('Exhaustive', -1, -1, [])
         pparam_info = ([], [])
         iparam_info = ([], [])
