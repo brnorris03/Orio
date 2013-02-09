@@ -111,8 +111,10 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         PREFERL1SZ  = 'preferL1Size'
 
         # default argument values
-        threadCount  = self.props['warpSize']
-        blockCount   = self.props['multiProcessorCount']
+        szwarp  = self.props['warpSize']
+        smcount = self.props['multiProcessorCount']
+        threadCount  = szwarp
+        blockCount   = smcount
         cacheBlocks  = False
         pinHost      = False
         streamCount  = 1
@@ -133,12 +135,16 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
             
             if aname == THREADCOUNT:
                 if not isinstance(rhs, int) or rhs <= 0 or rhs > self.props['maxThreadsPerBlock']:
-                    errors += 'line %s: %s must be a positive integer less than device limit of maxThreadsPerBlock=%s: %s\n' % (line_no, aname, self.props['maxThreadsPerBlock'], rhs)
+                    errors += 'line %s: threadCount must be a positive integer less than device limit of maxThreadsPerBlock of %s: %s' % (line_no, self.props['maxThreadsPerBlock'], rhs)
+                elif rhs % szwarp != 0:
+                    errors += 'line %s: threadCount is not a multiple of warp size of %s: %s' % (line_no, szwarp, rhs)
                 else:
                     threadCount = rhs
             elif aname == BLOCKCOUNT:
                 if not isinstance(rhs, int) or rhs <= 0 or rhs > self.props['maxGridSize'][0]:
                     errors += 'line %s: %s must be a positive integer less than device limit of maxGridSize[0]=%s: %s\n' % (line_no, aname, self.props['maxGridSize'][0], rhs)
+                elif rhs % smcount != 0:
+                    errors += 'line %s: blockCount is not a multiple of SM count of %s: %s' % (line_no, smcount, rhs)
                 else:
                     blockCount = rhs
             elif aname == CB:
