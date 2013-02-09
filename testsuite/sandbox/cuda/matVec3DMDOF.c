@@ -9,7 +9,7 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
           param BC[]  = range(14,113,14);
           param UIF[] = range(1,8);
           param PL[]  = [16,48];
-          param CFLAGS[] = map(join, product(['-O0', '-O1', '-O2', '-O3']));
+          param CFLAGS[] = ['-O0', '-O1', '-O2', '-O3'];
         }
         def input_params {
           param M[] = [16,32,64,128,256];
@@ -28,10 +28,6 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
         }
         def build {
           arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
-        }
-        def performance_counter {
-          arg method = 'basic timer';
-          arg repetitions = 6;
         }
   ) @*/
 
