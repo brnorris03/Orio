@@ -21,13 +21,6 @@ out
           decl static double A[m*n*p*Nos*dof] = random;
           decl static double x[m*n*p*dof]     = random;
         }
-        def build {
-          arg build_command = 'nvcc -arch=sm_20';
-        }
-        def performance_counter {
-          arg method = 'basic timer';
-          arg repetitions = 10;
-        }
   ) @*/
   /*@ transform CUDA(threadCount=TC, cacheBlocks=CB, pinHostMem=PHM) @*/
   y = A * x

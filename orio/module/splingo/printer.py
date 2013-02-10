@@ -3,7 +3,7 @@
 #==============================================================================
 
 import orio.main.util.globals as g
-import orio.module.lasp.ast as ast
+import orio.module.splingo.ast as ast
 
 #------------------------------------------------------------------------------
 class Printer(object):
@@ -51,7 +51,7 @@ class Printer(object):
             elif tnode.op_type == tnode.PRE_DEC: s = ' --' + s
             elif tnode.op_type == tnode.POST_INC: s += '++ '
             elif tnode.op_type == tnode.POST_DEC: s += '-- '
-            else: g.err('orio.module.lasp.codegen: unknown unary operator type: %s' % tnode.op_type)
+            else: g.err('%s: unknown unary operator type: %s' % (self.__class__, tnode.op_type))
 
         elif isinstance(tnode, ast.BinOpExp):
             s += self.generate(tnode.lhs, indent, extra_indent)
@@ -73,7 +73,7 @@ class Printer(object):
             elif tnode.op_type == tnode.EQMINUS: s += '-='
             elif tnode.op_type == tnode.EQMULT: s += '*='
             elif tnode.op_type == tnode.EQDIV: s += '/='
-            else: g.err('orio.module.loop.codegen_cuda internal error: unknown binary operator type: %s' % tnode.op_type)
+            else: g.err('%s: unknown binary operator type: %s' % (self.__class__, tnode.op_type))
             s += self.generate(tnode.rhs, indent, extra_indent)
 
         elif isinstance(tnode, ast.ParenExp):
@@ -109,7 +109,7 @@ class Printer(object):
                     s += self.generate(tnode.false_stmt, indent + extra_indent, extra_indent)
 
         elif isinstance(tnode, ast.ForStmt):
-            if tnode.getLabel(): s += tnode.getLabel() + ':'
+            #if tnode.getLabel(): s += tnode.getLabel() + ':'
             s += indent + 'for ('
             if tnode.init:
                 s += self.generate(tnode.init, indent, extra_indent)
@@ -143,9 +143,10 @@ class Printer(object):
                 s += '=' + self.generate(tnode.init_exp, indent, extra_indent)
 
         elif isinstance(tnode, ast.VarDec):
-            s += indent + str(tnode.type_name) + ' '
+            s += str(tnode.type_name) + ' '
             s += ', '.join(map(self.generate, tnode.var_inits))
-            s += ';\n'
+            if tnode.isAtomic:
+                s = indent + s + ';\n'
 
         elif isinstance(tnode, ast.ParamDec):
             s += self.generate(tnode.ty, indent, extra_indent) + ' ' + self.generate(tnode.name, indent, extra_indent)
@@ -158,10 +159,10 @@ class Printer(object):
             s += self.generate(tnode.kids[4], indent, extra_indent)
 
         elif isinstance(tnode, ast.TransformStmt):
-            g.err('orio.module.lasp.codegen: a transformation statement is never generated as an output')
+            g.err('%s: a transformation statement is never generated as an output' % self.__class__)
 
         else:
-            g.err('orio.module.lasp.codegen: unrecognized type of AST: (%s, %s)' % (tnode.__class__.__name__,tnode))
+            g.err('%s: unrecognized type of AST: (%s, %s)' % (self.__class__, tnode.__class__.__name__,tnode))
 
         return s
     #--------------------------------------------------------------------------
