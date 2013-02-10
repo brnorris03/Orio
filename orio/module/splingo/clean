@@ -1,0 +1,2 @@
+rm tuning*.log
+rm test/*.c test/*/*.o test/*/*.c

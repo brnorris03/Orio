@@ -5,11 +5,11 @@
 import sys, os
 import orio.tool.ply.lex, orio.tool.ply.yacc
 import orio.main.util.globals as g
-import orio.module.lasp.ast as ast
+import orio.module.splingo.ast as ast
 
 #----------------------------------------------------------------------------------------------------------------------
 # LEXER
-class LASPLexer:
+class SpLingoLexer:
   def __init__(self):
     pass
 
@@ -97,7 +97,7 @@ class LASPLexer:
     t.lexer.lineno += len(t.value)
   
   def t_error(self, t):
-    g.err('orio.module.lasp.lexer: illegal character (%s) at line %s' % (t.value[0], t.lexer.lineno))
+    g.err('%s: illegal character (%s) at line %s' % (self.__class__, t.value[0], t.lexer.lineno))
 
   def build(self, **kwargs):
     self.lexer = orio.tool.ply.lex.lex(module=self, **kwargs)
@@ -120,7 +120,7 @@ class LASPLexer:
 
 #----------------------------------------------------------------------------------------------------------------------
 # GRAMMAR
-tokens = LASPLexer.tokens
+tokens = SpLingoLexer.tokens
 start = 'prog'
 def p_prog_a(p):
     '''prog : sid IN params OUT params '{' stmts '}' '''
@@ -255,7 +255,7 @@ def p_empty(p):
     p[0] = None
 
 def p_error(p):
-    g.err("orio.module.lasp.parser: error in input line #%s, at token-type '%s', token-value '%s'" % (p.lineno, p.type, p.value))
+    g.err("orio.module.splingo.parser: error in input line #%s, at token-type '%s', token-value '%s'" % (p.lineno, p.type, p.value))
 #----------------------------------------------------------------------------------------------------------------------
 
 
@@ -264,7 +264,7 @@ def p_error(p):
 def parse(text):
   '''Lex, parse and create the HL AST for the DSL text'''
 
-  l = LASPLexer()
+  l = SpLingoLexer()
   l.build(debug=0, optimize=0)
 
   # Remove the old parse table
