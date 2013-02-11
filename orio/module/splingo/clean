@@ -1,2 +1,3 @@
+rm *.pyc lextab.* parsetab.* parser.out
 rm tuning*.log
-rm test/*.c test/*/*.o test/*/*.c
+rm *.o test/*.o test/*/*.o

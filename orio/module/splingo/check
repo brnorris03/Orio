@@ -1,0 +1,17 @@
+#! /bin/sh
+
+function rundiff {
+  main.py $2
+  diff $1 $2".c" > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    echo "*** diff test failed (diff expected actual): diff" $1 $2".c"
+    diff $1 $2".c"
+    echo "***\n"
+  else
+    echo "[ok]" $2 
+  fi
+}
+
+rundiff test/plus/scal_scal.splin.ref.c test/plus/scal_scal.splin
+rundiff test/scale.splin.ref.c test/scale.splin
+

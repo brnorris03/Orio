@@ -27,16 +27,15 @@ class SpLingoLexer:
     # identifiers and literals
     'ID', 'ILIT', 'FLIT', 'SLIT',
 
-    # operators (+,-,*,/,%,||,&&,!,<,<=,>,>=,==,!=)
+    # operators (||,&&,<=,>=,==,!=)
     #'LOR', 'LAND', 'LNOT',
-    #'LT', 'LE', 'GT', 'GE', 'EE', 'NE',
+    #LE', GE', 'EE', 'NE',
 
-    # assignment (=, *=, /=, %=, +=, -=)
-    'EQ',
+    # shorthand assignment (*=, /=, %=, +=, -=)
     #'MULTEQ', 'DIVEQ', 'MODEQ', 'PLUSEQ', 'MINUSEQ',
 
     # increment/decrement (++,--)
-    #'PP', 'MM'
+    'PP', 'MM',
     'SLCOMMENT', 'MLCOMMENT'
   ]
 
@@ -46,16 +45,12 @@ class SpLingoLexer:
   # operators
   #t_LOR     = r'\|\|'
   #t_LAND    = r'&&'
-  #t_LNOT    = r'!'
-  #t_LT      = r'<'
-  #t_GT      = r'>'
   #t_LE      = r'<='
   #t_GE      = r'>='
   #t_EE      = r'=='
   #t_NE      = r'!='
   
-  # assignment operators
-  t_EQ      = r'='
+  # shorthand assignment operators
   #t_MULTEQ  = r'\*='
   #t_DIVEQ   = r'/='
   #t_MODEQ   = r'%='
@@ -63,10 +58,10 @@ class SpLingoLexer:
   #t_MINUSEQ = r'-='
   
   # increment/decrement
-  #t_PP      = r'\+\+'
-  #t_MM      = r'--'
+  t_PP      = r'\+\+'
+  t_MM      = r'--'
   
-  literals = "+-*/%()[]{},;:'."
+  literals = "+-*/%()[]{},;:'.=<>!"
   
   # integer literal
   t_ILIT    = r'\d+'
@@ -122,6 +117,8 @@ class SpLingoLexer:
 # GRAMMAR
 tokens = SpLingoLexer.tokens
 start = 'prog'
+parser = None
+elixir = None
 def p_prog_a(p):
     '''prog : sid IN params OUT params '{' stmts '}' '''
     p[0] = ast.FunDec(p[1], ast.IdentExp('void'), [], p[3]+p[5], p[7])
@@ -172,10 +169,14 @@ def p_stmts(p):
       p[0] = ast.CompStmt(p[1].stmts + [p[2]])
 
 def p_stmt_eq(p):
-    '''stmt : sid EQ exp'''
+    '''stmt : exp '''
     #TODO: ensure correpondence of stored coordinates to file positions
     coord = p.lineno(1)
-    p[0] = ast.ExpStmt(ast.BinOpExp(ast.BinOpExp.EQ, p[1], p[3], coord))
+    p[0] = ast.ExpStmt(p[1], coord)
+
+def p_stmt_dec(p):
+    '''stmt : sid exp ';' '''
+    p[0] = ast.VarDec(p[1], [p[2]], True, p.lineno(3))
 
 def p_stmt_comment(p):
     '''stmt : comment'''
@@ -187,10 +188,11 @@ def p_comment(p):
     p[0] = ast.Comment(p[1], p.lineno(1))
 #------------------------------------------------------------------------------
 
-#precedence = (
-#    ('left', '+', '-'),
-#    ('left', '*', '/', '%')
-#)
+precedence = (
+    ('left', '+', '-'),
+    ('left', '*', '/', '%'),
+    ('left', 'PP', 'MM')
+)
 #------------------------------------------------------------------------------
 def p_exp_primary(p):
     '''exp : primary'''
@@ -199,6 +201,10 @@ def p_exp_primary(p):
 def p_exp_paren(p):
     '''exp : '(' exp ')' '''
     p[0] = ast.ParenExp(p[2], p.lineno(1))
+
+def p_exp_eq(p):
+    '''exp : exp '=' exp'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.EQ, p[1], p[3], p.lineno(2))
 
 def p_exp_plus(p):
     '''exp : exp '+' exp'''
@@ -220,6 +226,14 @@ def p_exp_mod(p):
     '''exp : exp '%' exp'''
     p[0] = ast.BinOpExp(ast.BinOpExp.MOD, p[1], p[3], p.lineno(2))
 
+def p_exp_lt(p):
+    '''exp : exp '<' exp'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.LT, p[1], p[3], p.lineno(2))
+
+def p_exp_gt(p):
+    '''exp : exp '>' exp'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.GT, p[1], p[3], p.lineno(2))
+
 def p_exp_uminus(p):
     '''exp : '-' exp'''
     p[0] = ast.UnaryExp(ast.UnaryExp.MINUS, p[2], p.lineno(1))
@@ -227,6 +241,10 @@ def p_exp_uminus(p):
 def p_exp_transpose(p):
     '''exp : exp "'" '''
     p[0] = ast.UnaryExp(ast.UnaryExp.TRANSPOSE, p[1], p.lineno(2))
+
+def p_exp_postpp(p):
+    '''exp : exp PP '''
+    p[0] = ast.UnaryExp(ast.UnaryExp.POST_INC, p[1], p.lineno(2))
 #------------------------------------------------------------------------------
 
 
@@ -264,18 +282,15 @@ def p_error(p):
 def parse(text):
   '''Lex, parse and create the HL AST for the DSL text'''
 
-  l = SpLingoLexer()
-  l.build(debug=0, optimize=0)
+  global elixir
+  if elixir is None:
+    elixir = SpLingoLexer()
+    elixir.build(debug=0, optimize=1)
 
-  # Remove the old parse table
-  parsetabfile = os.path.join(os.path.abspath('.'), 'parsetab.py')
-  try: os.remove(parsetabfile)
-  except: pass
-
-  parser = orio.tool.ply.yacc.yacc(debug=0, optimize=0, tabmodule='parsetab', write_tables=0,
-                                   outputdir=os.path.abspath('.'))
-  theresult = parser.parse(text, lexer=l, debug=0)
-  return theresult
+  parser = orio.tool.ply.yacc.yacc(debug=0, optimize=1, write_tables=0,
+                                   errorlog=orio.tool.ply.yacc.NullLogger()
+                                   )
+  return parser.parse(text, lexer=elixir, debug=0)
 
 
   

@@ -19,140 +19,140 @@ class Printer(object):
         s = ''
         if isinstance(tnode, ast.Comment):
             s += indent
-            if tnode.text:
-                s += '/*' + tnode.text + '*/'
+            if tnode.kids[0]:
+                s += '/*' + tnode.kids[0] + '*/'
             s += '\n'
         
         elif isinstance(tnode, ast.LitExp):
-            if tnode.lit_type == ast.LitExp.STRING:
-                s += '"' + str(tnode.val) + '"'
+            if tnode.kids[0] == ast.LitExp.STRING:
+                s += '"' + str(tnode.kids[1]) + '"'
             else:
-                s += str(tnode.val)
+                s += str(tnode.kids[1])
 
         elif isinstance(tnode, ast.IdentExp):
-            s += str(tnode.name)
+            s += str(tnode.kids[0])
 
         elif isinstance(tnode, ast.ArrayRefExp):
-            s += self.generate(tnode.exp, indent, extra_indent)
-            s += '[' + self.generate(tnode.sub, indent, extra_indent) + ']'
+            s += self.generate(tnode.kids[0], indent, extra_indent)
+            s += '[' + self.generate(tnode.kids[1], indent, extra_indent) + ']'
 
         elif isinstance(tnode, ast.CallExp):
-            s += self.generate(tnode.exp, indent, extra_indent) + '('
-            s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.args))
+            s += self.generate(tnode.kids[0], indent, extra_indent) + '('
+            s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.kids[1]))
             s += ')'
 
         elif isinstance(tnode, ast.UnaryExp):
-            s = self.generate(tnode.exp, indent, extra_indent)
-            if   tnode.op_type == tnode.PLUS: s = '+' + s
-            elif tnode.op_type == tnode.MINUS: s = '-' + s
-            elif tnode.op_type == tnode.LNOT: s = '!' + s
-            elif tnode.op_type == tnode.TRANSPOSE: s += "'"
-            elif tnode.op_type == tnode.PRE_INC: s = ' ++' + s
-            elif tnode.op_type == tnode.PRE_DEC: s = ' --' + s
-            elif tnode.op_type == tnode.POST_INC: s += '++ '
-            elif tnode.op_type == tnode.POST_DEC: s += '-- '
-            else: g.err('%s: unknown unary operator type: %s' % (self.__class__, tnode.op_type))
+            s = self.generate(tnode.kids[1], indent, extra_indent)
+            if   tnode.kids[0] == tnode.PLUS: s = '+' + s
+            elif tnode.kids[0] == tnode.MINUS: s = '-' + s
+            elif tnode.kids[0] == tnode.LNOT: s = '!' + s
+            elif tnode.kids[0] == tnode.TRANSPOSE: s += "'"
+            elif tnode.kids[0] == tnode.PRE_INC: s = ' ++' + s
+            elif tnode.kids[0] == tnode.PRE_DEC: s = ' --' + s
+            elif tnode.kids[0] == tnode.POST_INC: s += '++ '
+            elif tnode.kids[0] == tnode.POST_DEC: s += '-- '
+            else: g.err('%s: unknown unary operator type: %s' % (self.__class__, tnode.kids[0]))
 
         elif isinstance(tnode, ast.BinOpExp):
-            s += self.generate(tnode.lhs, indent, extra_indent)
-            if   tnode.op_type == tnode.PLUS: s += '+'
-            elif tnode.op_type == tnode.MINUS: s += '-'
-            elif tnode.op_type == tnode.MULT: s += '*'
-            elif tnode.op_type == tnode.DIV: s += '/'
-            elif tnode.op_type == tnode.MOD: s += '%'
-            elif tnode.op_type == tnode.LT: s += '<'
-            elif tnode.op_type == tnode.GT: s += '>'
-            elif tnode.op_type == tnode.LE: s += '<='
-            elif tnode.op_type == tnode.GE: s += '>='
-            elif tnode.op_type == tnode.EE: s += '=='
-            elif tnode.op_type == tnode.NE: s += '!='
-            elif tnode.op_type == tnode.LOR: s += '||'
-            elif tnode.op_type == tnode.LAND: s += '&&'
-            elif tnode.op_type == tnode.EQ: s += '='
-            elif tnode.op_type == tnode.EQPLUS: s += '+='
-            elif tnode.op_type == tnode.EQMINUS: s += '-='
-            elif tnode.op_type == tnode.EQMULT: s += '*='
-            elif tnode.op_type == tnode.EQDIV: s += '/='
-            else: g.err('%s: unknown binary operator type: %s' % (self.__class__, tnode.op_type))
-            s += self.generate(tnode.rhs, indent, extra_indent)
+            s += self.generate(tnode.kids[1], indent, extra_indent)
+            if   tnode.kids[0] == tnode.PLUS: s += '+'
+            elif tnode.kids[0] == tnode.MINUS: s += '-'
+            elif tnode.kids[0] == tnode.MULT: s += '*'
+            elif tnode.kids[0] == tnode.DIV: s += '/'
+            elif tnode.kids[0] == tnode.MOD: s += '%'
+            elif tnode.kids[0] == tnode.LT: s += '<'
+            elif tnode.kids[0] == tnode.GT: s += '>'
+            elif tnode.kids[0] == tnode.LE: s += '<='
+            elif tnode.kids[0] == tnode.GE: s += '>='
+            elif tnode.kids[0] == tnode.EE: s += '=='
+            elif tnode.kids[0] == tnode.NE: s += '!='
+            elif tnode.kids[0] == tnode.LOR: s += '||'
+            elif tnode.kids[0] == tnode.LAND: s += '&&'
+            elif tnode.kids[0] == tnode.EQ: s += '='
+            elif tnode.kids[0] == tnode.EQPLUS: s += '+='
+            elif tnode.kids[0] == tnode.EQMINUS: s += '-='
+            elif tnode.kids[0] == tnode.EQMULT: s += '*='
+            elif tnode.kids[0] == tnode.EQDIV: s += '/='
+            else: g.err('%s: unknown binary operator type: %s' % (self.__class__, tnode.kids[0]))
+            s += self.generate(tnode.kids[2], indent, extra_indent)
 
         elif isinstance(tnode, ast.ParenExp):
-            s += '(' + self.generate(tnode.exp, indent, extra_indent) + ')'
+            s += '(' + self.generate(tnode.kids[0], indent, extra_indent) + ')'
 
         elif isinstance(tnode, ast.ExpStmt):
-            s += indent + self.generate(tnode.exp, indent, extra_indent) + ';\n'
+            s += indent + self.generate(tnode.kids[0], indent, extra_indent) + ';\n'
 
         elif isinstance(tnode, ast.CompStmt):
             s += indent + '{\n'
-            for stmt in tnode.stmts:
+            for stmt in tnode.kids:
                 s += self.generate(stmt, indent + extra_indent, extra_indent)
             s += indent + '}\n'
 
         elif isinstance(tnode, ast.IfStmt):
-            s += indent + 'if (' + self.generate(tnode.test, indent, extra_indent) + ') '
-            if isinstance(tnode.true_stmt, ast.CompStmt):
-                tstmt_s = self.generate(tnode.true_stmt, indent, extra_indent)
+            s += indent + 'if (' + self.generate(tnode.kids[0], indent, extra_indent) + ') '
+            if isinstance(tnode.kids[1], ast.CompStmt):
+                tstmt_s = self.generate(tnode.kids[1], indent, extra_indent)
                 s += tstmt_s[tstmt_s.index('{'):]
-                if tnode.false_stmt:
+                if tnode.kids[2]:
                     s = s[:-1] + ' else '
             else:
                 s += '\n'
-                s += self.generate(tnode.true_stmt, indent + extra_indent, extra_indent)
-                if tnode.false_stmt:
+                s += self.generate(tnode.kids[1], indent + extra_indent, extra_indent)
+                if tnode.kids[2]:
                     s += indent + 'else '
-            if tnode.false_stmt:
-                if isinstance(tnode.false_stmt, ast.CompStmt):
-                    tstmt_s = self.generate(tnode.false_stmt, indent, extra_indent)
+            if tnode.kids[2]:
+                if isinstance(tnode.kids[2], ast.CompStmt):
+                    tstmt_s = self.generate(tnode.kids[2], indent, extra_indent)
                     s += tstmt_s[tstmt_s.index('{'):]
                 else:
                     s += '\n'
-                    s += self.generate(tnode.false_stmt, indent + extra_indent, extra_indent)
+                    s += self.generate(tnode.kids[2], indent + extra_indent, extra_indent)
 
         elif isinstance(tnode, ast.ForStmt):
             #if tnode.getLabel(): s += tnode.getLabel() + ':'
             s += indent + 'for ('
-            if tnode.init:
-                s += self.generate(tnode.init, indent, extra_indent)
+            if tnode.kids[0]:
+                s += self.generate(tnode.kids[0], indent, extra_indent)
             s += '; '
-            if tnode.test:
-                s += self.generate(tnode.test, indent, extra_indent)
+            if tnode.kids[1]:
+                s += self.generate(tnode.kids[1], indent, extra_indent)
             s += '; '
-            if tnode.iter:
-                s += self.generate(tnode.iter, indent, extra_indent)
+            if tnode.kids[2]:
+                s += self.generate(tnode.kids[2], indent, extra_indent)
             s += ') '
-            if isinstance(tnode.stmt, ast.CompStmt): 
-                stmt_s = self.generate(tnode.stmt, indent, extra_indent)
+            if isinstance(tnode.kids[3], ast.CompStmt): 
+                stmt_s = self.generate(tnode.kids[3], indent, extra_indent)
                 s += stmt_s[stmt_s.index('{'):]
             else:
                 s += '\n'
-                s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
+                s += self.generate(tnode.kids[3], indent + extra_indent, extra_indent)
 
         elif isinstance(tnode, ast.WhileStmt):
-            s += indent + 'while (' + self.generate(tnode.test, indent, extra_indent)
+            s += indent + 'while (' + self.generate(tnode.kids[0], indent, extra_indent)
             s += ') '
-            if isinstance(tnode.stmt, ast.CompStmt): 
-                stmt_s = self.generate(tnode.stmt, indent, extra_indent)
+            if isinstance(tnode.kids[1], ast.CompStmt): 
+                stmt_s = self.generate(tnode.kids[1], indent, extra_indent)
                 s += stmt_s[stmt_s.index('{'):]
             else:
                 s += '\n'
-                s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
+                s += self.generate(tnode.kids[1], indent + extra_indent, extra_indent)
 
         elif isinstance(tnode, ast.VarInit):
-            s += self.generate(tnode.var_name, indent, extra_indent)
-            if tnode.init_exp:
-                s += '=' + self.generate(tnode.init_exp, indent, extra_indent)
+            s += self.generate(tnode.kids[0], indent, extra_indent)
+            if tnode.kids[1]:
+                s += '=' + self.generate(tnode.kids[1], indent, extra_indent)
 
         elif isinstance(tnode, ast.VarDec):
-            s += str(tnode.type_name) + ' '
-            s += ', '.join(map(self.generate, tnode.var_inits))
+            s += str(tnode.kids[0]) + ' '
+            s += ', '.join(map(self.generate, tnode.kids[1]))
             if tnode.isAtomic:
                 s = indent + s + ';\n'
 
         elif isinstance(tnode, ast.ParamDec):
-            s += self.generate(tnode.ty, indent, extra_indent) + ' ' + self.generate(tnode.name, indent, extra_indent)
+            s += self.generate(tnode.kids[0], indent, extra_indent) + ' ' + self.generate(tnode.kids[1], indent, extra_indent)
 
         elif isinstance(tnode, ast.FunDec):
-            s += indent + ' '.join(tnode.kids[2]) + ' '
+            s += ' '.join(tnode.kids[2]) + ''
             s += self.generate(tnode.kids[1], indent, extra_indent) + ' '
             s += self.generate(tnode.kids[0], indent, extra_indent) + '('
             s += ', '.join(map(self.generate, tnode.kids[3])) + ') '
