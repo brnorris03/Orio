@@ -4,5 +4,5 @@ in
 out
   y: vector
 {
-  y = alpha * y
+  y = alpha * x
 }
