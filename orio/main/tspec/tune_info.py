@@ -811,7 +811,7 @@ class TuningInfoGen:
             # performance counter definition
             elif dname == PERF_COUNTER:
                 pcount_method, pcount_reps, random_seed, timing_array_size = self.__genPerfCounterInfo(body_stmt_seq, line_no)
-                default_p_method, default_p_reps = pcount_info
+                default_p_method, default_p_reps, _, _ = pcount_info
                 if pcount_method == None:
                     pcount_method = default_p_method
                 if pcount_reps == None:
