@@ -258,10 +258,12 @@ class Transformation:
                 var_names |= self.__extractFromBinOp(tnode.lhs)
             elif isinstance(tnode.lhs, orio.module.loop.ast.IdentExp):
                 var_names |= set([tnode.lhs.name])
+            elif isinstance(tnode.lhs, orio.module.loop.ast.FunCallExp):
+                var_names = reduce(set.union, map(self.__extractFromBinOp, tnode.lhs.args), var_names)
             elif isinstance(tnode.lhs, orio.module.loop.ast.NumLitExp):
                 pass
             else:
-                err('orio.module.loop.submodule.unrolljam.transformation.__extractFromBinOp.BinOpExp internal error: unexpected AST type: "%s"' % tnode.lhs.__class__.__name__)
+                err('orio.module.loop.submodule.unrolljam.transformation.__extractFromBinOp.BinOpExp internal error: unexpected AST type: "%s", lhs: %s' % (tnode.lhs.__class__.__name__,tnode.lhs))
                 
             if isinstance(tnode.rhs, orio.module.loop.ast.ParenthExp):
                 var_names |= self.__extractFromBinOp(tnode.rhs.exp)
@@ -272,14 +274,16 @@ class Transformation:
                 var_names |= self.__extractFromBinOp(tnode.rhs)
             elif isinstance(tnode.rhs, orio.module.loop.ast.IdentExp):
                 var_names |= set([tnode.rhs.name])
+            elif isinstance(tnode.rhs, orio.module.loop.ast.FunCallExp):
+                var_names = reduce(set.union, map(self.__extractFromBinOp, tnode.rhs.args), var_names)
             elif isinstance(tnode.rhs, orio.module.loop.ast.NumLitExp):
                 pass
             else:
-                err('orio.module.loop.submodule.unrolljam.transformation.__extractFromBinOp internal error: unexpected AST type: "%s"' % tnode.rhs.__class__.__name__)
+                err('orio.module.loop.submodule.unrolljam.transformation.__extractFromBinOp internal error: unexpected AST type: "%s", rhs: %s' % (tnode.rhs.__class__.__name__,tnode.rhs))
                 
             self.newVarsOp |= set([tnode.op_type])
         else:
-            err('orio.module.loop.submodule.unrolljam.transformation.__extractFromBinOp. internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
+            err('orio.module.loop.submodule.unrolljam.transformation.__extractFromBinOp. internal error: unexpected AST type: "%s", node: %s' % (tnode.__class__.__name__,tnode))
     
         return var_names
     
