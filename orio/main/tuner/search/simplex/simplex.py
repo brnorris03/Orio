@@ -67,13 +67,14 @@ class Simplex(orio.main.tuner.search.search.Search):
 
     #-----------------------------------------------------
     # Method required by the search interface
-    def searchBestCoord(self):
+    def searchBestCoord(self, startCoord=None):
         '''
         Search for the coordinate that yields the best performance parameters.
         
+        @param startCoord: Starting coordinate (optional)
         
         '''
-        
+        # TODO: implement startCoord support
         
         if len(self.x0) != self.total_dims:
             err('orio.main.tuner.search.simplex: initial coordiniate x0 has to match the total dimensions')
