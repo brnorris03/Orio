@@ -44,11 +44,13 @@ class Extern(orio.main.tuner.search.search.Search):
                     'total number of search runs to be defined') % self.__class__.__name__)
      
     # Method required by the search interface
-    def searchBestCoord(self):
+    def searchBestCoord(self, startCoord=None):
         '''
         To explore the search space and retun the coordinate that yields the best performance
         (i.e. minimum performance cost).
         '''
+        
+        # TODO: implement startCoord support
 
         info('\n----- begin extern eval  -----')
 
