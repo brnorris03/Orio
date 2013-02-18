@@ -73,7 +73,7 @@ class SpLingoLexer:
   t_SLIT    = r'\"([^\\\n]|(\\.))*?\"'
 
   def t_ID(self, t):
-    r'[A-Za-z_]([A-Za-z0-9_\.]*[A-Za-z0-9_]+)*'
+    r'[A-Za-z_]([A-Za-z0-9_]*[A-Za-z0-9_]+)*'
     t.type = self.reserved.get(t.value, 'ID')
     return t
 
@@ -139,25 +139,28 @@ def p_params(p):
 
 def p_param(p):
     '''param : sid ':' type'''
-    tname = reduce(lambda acc,item: acc+'.'+item, p[3][1:], p[3][0])
-    p[0] = ast.ParamDec(ast.IdentExp(tname), p[1])
+    #tname = reduce(lambda acc,item: acc+'.'+item, p[3][1:], p[3][0])
+    p[0] = ast.ParamDec(p[3], p[1])
 
 def p_type(p):
-    '''type : qual MATRIX
+    '''type : MATRIX subty
             | VECTOR
             | SCALAR'''
     if len(p) == 3:
-        p[0] = [p[2]] + p[1]
+      if p[2] is None:
+        p[0] = ast.IdentExp(p[1])
+      else:
+        p[0] = ast.QualIdentExp(p[1], p[2])
     else:
-        p[0] = [p[1]]
+      p[0] = ast.IdentExp(p[1])
 
-def p_qual(p):
-    '''qual : DIA
+def p_subty(p):
+    '''subty : "." DIA
             | empty'''
     if p[1] is None:
-      p[0] = []
+      p[0] = None
     else:
-      p[0] = [p[1]]
+      p[0] = ast.IdentExp(p[2])
 
 #------------------------------------------------------------------------------
 def p_stmts(p):
@@ -189,6 +192,9 @@ def p_comment(p):
 #------------------------------------------------------------------------------
 
 precedence = (
+    ('left', ','),
+    ('right', '='),
+    ('left', '<', '>'),
     ('left', '+', '-'),
     ('left', '*', '/', '%'),
     ('left', 'PP', 'MM')
@@ -201,6 +207,10 @@ def p_exp_primary(p):
 def p_exp_paren(p):
     '''exp : '(' exp ')' '''
     p[0] = ast.ParenExp(p[2], p.lineno(1))
+
+def p_exp_seq(p):
+    '''exp : exp ',' exp'''
+    p[0] = ast.BinOpExp(ast.BinOpExp.COMMA, p[1], p[3], p.lineno(2))
 
 def p_exp_eq(p):
     '''exp : exp '=' exp'''

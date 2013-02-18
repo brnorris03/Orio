@@ -20,7 +20,7 @@ if __name__ == "__main__":
   # tune
   
   # pretty-print
-  text = printer.Printer().generate(ast2, '')
+  text = printer.Printer().pp(ast2, '')
   print text
   f = open(sys.argv[-1] + '.c', 'w')
   f.write(text)
