@@ -261,11 +261,12 @@ class VarInit(Stmt):
 #----------------------------------------------------------
 class VarDec(Stmt):
 
-    def __init__(self, type_name, var_inits, isAtomic, coord=None):
+    def __init__(self, type_name, var_inits, isAtomic, quals=[], coord=None):
         super(VarDec, self).__init__(coord)
         self.isAtomic = isAtomic
         self.type_name = type_name
         self.var_inits = var_inits
+        self.quals = quals
 
 #----------------------------------------------------------
 class ParamDec(Stmt):
