@@ -1,3 +1,5 @@
 rm *.pyc lextab.* parsetab.* parser.out
 rm tuning*.log
 rm *.o test/*.o test/*/*.o
+rm *.splin.c test/*.splin.c test/*/*.splin.c
+
