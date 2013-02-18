@@ -1,0 +1,8 @@
+MV
+in
+	A : matrix, x : vector
+out
+	y : vector
+{
+  y = A * x
+}

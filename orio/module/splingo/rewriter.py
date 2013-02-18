@@ -3,6 +3,7 @@
 #==============================================================================
 from orio.module.splingo.ast import *
 import orio.module.splingo.parser as parser
+import operator
 
 #------------------------------------------------------------------------------
 def s2t(sym, s):
@@ -17,7 +18,9 @@ class Rewriter(object):
     '''Instantiate a code transformation object'''
     
     self.st = {} # symbol table
+    self.st['itrs'] = [{},{},{}]
     self.existVecs = False
+    self.existMats = False
 
   #----------------------------------------------------------------------------
   def transform(self, n):
@@ -27,49 +30,81 @@ class Rewriter(object):
     trav = NodeVisitor()
     
     # todo: containers should be type-parametric and type-inferred with double as default
-    def param2ty(conty, ty, toMarkVecs):
+    def param2ty(conty, ty, toMarkVecs, len=None):
       def f(n):
-        if isinstance(n, ParamDec):
-          if n.kids[0].kids[0] == conty:
-            self.st[str(n.kids[1])] = ty
-            if toMarkVecs and n.kids[0].kids[0] == 'vector':
+        if isinstance(n, ParamDec) and n.ty.name == conty:
+          self.st[str(n.name)] = {'srcty':conty, 'genty':ty, 'len':len}
+          if toMarkVecs:
+            self.conLengths = len
+            if n.ty.name == 'vector':
               self.existVecs = True
-            return ParamDec(IdentExp(ty), n.kids[1])
-          else:
-            return n
+            elif n.ty.name == 'matrix':
+              self.existMats = True
+              #if isinstance(n.ty, QualIdentExp):
+              #  print n.ty.qual
+          return ParamDec(IdentExp(ty), n.name)
         else:
           return n
       return f
 
     def isAssign(n):
-      if isinstance(n, ExpStmt) and isinstance(n.kids[0], BinOpExp) and n.kids[0].kids[0] == BinOpExp.EQ:
-        return True
-      else:
-        return False
+      return isinstance(n, ExpStmt) and isinstance(n.exp, BinOpExp) and n.exp.oper == BinOpExp.EQ
 
-    def expandVecs(n):
+    def getForStmt(idx, beg, end, upd, stmt):
+      return ForStmt(s2t('exp', idx + ' = ' + beg), s2t('exp', idx + '<' + end), s2t('exp', upd), stmt)
+
+    def expandCons(n):
       if isAssign(n):
-        def g(t1): # add indexing exprs to vector refs
-          if isinstance(t1, IdentExp) and self.st.has_key(t1.kids[0]) and self.st[t1.kids[0]] == 'double*':
-            return ArrayRefExp(t1, IdentExp('i'))
+        def g(t1):
+          '''Add indexing exprs to container refs'''
+          if isinstance(t1, IdentExp) and self.st.has_key(t1.name):
+            ninfo = self.st[t1.name]
+            if ninfo['srcty'] == 'vector':
+              self.st['itrs'][0].update({ninfo['len'][0]: 'i1'})
+              return ArrayRefExp(t1, IdentExp('i1'))
+            elif ninfo['srcty'] == 'matrix':
+              self.st['itrs'][0].update({ninfo['len'][0]: 'i1'})
+              self.st['itrs'][1].update({ninfo['len'][1]: 'i2'})
+              sub = s2t('exp', ninfo['len'][0] + ' * i2 + i1')
+              return ArrayRefExp(t1, sub)
+            else:
+              return t1
           else:
             return t1
         n1 = trav.rewriteBU(g, n)
-        return CompStmt([s2t('stmt', 'int i;'),
-                        ForStmt(s2t('exp', 'i = 0'), s2t('exp', 'i<n'), s2t('exp', 'i++'), n1)
-                        ])
-      elif isinstance(n, FunDec) and self.existVecs: # add container length parameter
-        n.kids[3] = [ParamDec(IdentExp('int'), IdentExp('n'))] + n.kids[3]
 
-        if isinstance(n.kids[4].kids[0].kids, list): # peel off nested compound stmt in the body
-          n.kids[4].kids = n.kids[4].kids[0].kids
+        dims = reduce(operator.concat, map(dict.keys,   self.st['itrs']), [])
+        itrs = reduce(operator.concat, map(dict.values, self.st['itrs']), [])
+        decl_itrs = s2t('stmt', 'int ' + ', '.join(itrs) + ';')
+        
+        if self.existMats:
+          return CompStmt([decl_itrs,
+                           getForStmt(itrs[1], '0', dims[1], itrs[1] + '++',
+                                      getForStmt(itrs[0], '0', dims[0], itrs[0] + '++', n1))
+                          ])
+        else:
+          return CompStmt([decl_itrs,
+                           getForStmt(itrs[0], '0', dims[0], itrs[0] + '++', n1)
+                          ])
+      elif isinstance(n, FunDec):
+        # add container length parameters
+        lengths = map(lambda x: ParamDec(IdentExp('int'), IdentExp(x)),
+                      reduce(operator.concat, map(dict.keys, self.st['itrs']), []))
+        n.params = lengths + n.params
+
+        # peel off nested compound stmt in the body
+        if len(n.body.stmts) == 1 and isinstance(n.body.stmts[0], CompStmt):
+          n.body = n.body.stmts[0]
         return n
       else:
         return n
     
     n1 = trav.rewriteTD(param2ty('scalar', 'double',  False), n)
-    nf = trav.rewriteTD(param2ty('vector', 'double*', True), n1)
-    if self.existVecs:
-      nf = trav.rewriteBU(expandVecs, nf)
+    n2 = trav.rewriteTD(param2ty('vector', 'double*', True, ['dim1']), n1)
+    nf = trav.rewriteTD(param2ty('matrix', 'double*', True, ['dim1','dim2']), n2)
+    if self.existVecs or self.existMats:
+      nf = trav.rewriteBU(expandCons, nf)
 
     return nf
+
+

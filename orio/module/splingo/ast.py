@@ -11,12 +11,11 @@ class Node(object):
     def __init__(self, coord=None):
         '''Create an abstract syntax tree node'''
         self.coord = coord
-        self.kids = []
         
     def __repr__(self):
         '''Return a string representation for this AST object'''
         import orio.module.splingo.printer as printer
-        return printer.Printer().generate(self)
+        return printer.Printer().pp(self)
 
     def __str__(self):
         '''Return a string representation for this AST object'''
@@ -56,49 +55,37 @@ class Node(object):
             buf.write(' (at %s)' % self.coord)
         buf.write('\n')
 
-        for c in self.kids:
-            c.show(buf, offset + 2, attrnames, showcoord)
 #----------------------------------------------------------------------------------------------------------------------
 
 
 
 #----------------------------------------------------------------------------------------------------------------------
 class NodeVisitor(object):
-    def visit(self, node):
-        method = 'visit_' + node.__class__.__name__
-        visitor = getattr(self, method, self.generic_visit)
-        return visitor(node)
-
-    def generic_visit(self, node):
-        for k in node.kids:
-            self.visit(k)
 
     def rewriteTD(self, r, n):
         nn = r(n)
-        kids = getattr(nn, 'kids', False)
-        if kids:
-            nkids = []
-            for k in nn.kids:
-                nkids += [self.rewriteTD(r, k)]
-            nn.kids = nkids
-        elif isinstance(nn, list):
-            nn = map(lambda e: self.rewriteTD(r, e), nn)
+        d = getattr(nn, '__dict__', False)
+        if d:
+          for k in d.keys():
+            d[k] = self.rewriteTD(r, d[k])
+        elif isinstance(nn,list):
+          nn = map(lambda e: self.rewriteTD(r, e), nn)
         return nn
 
     def collectTD(self, f, n):
         acc = f(n)
-        kids = getattr(n, 'kids', [])
-        for k in kids:
-            acc += self.collectTD(f, k)
+        d = getattr(n, '__dict__', [])
+        for k in d.keys():
+          acc += self.collectTD(f, d[k])
         return acc
 
     def rewriteBU(self, r, n):
-        kids = getattr(n, 'kids', False)
-        if kids:
-            nkids = []
-            for k in n.kids:
-                nkids += [self.rewriteBU(r, k)]
-            n.kids = nkids
+        d = getattr(n, '__dict__', False)
+        if d:
+          dd = {}
+          for k in d.keys():
+            dd[k] = self.rewriteBU(r, d[k])
+          n.__dict__ = dd
         elif isinstance(n, list):
             return map(lambda e: self.rewriteBU(r, e), n)
         return r(n)
@@ -111,7 +98,7 @@ class Comment(Node):
 
     def __init__(self, comment, coord=None):
         super(Comment, self).__init__(coord)
-        self.kids = [comment]
+        self.comment = comment
 
 #----------------------------------------------------------------------------------------------------------------------
 class Exp(Node):
@@ -128,28 +115,39 @@ class LitExp(Exp):
     
     def __init__(self, val, lit_type, coord=None):
         super(LitExp, self).__init__(coord)
-        self.kids = [lit_type, val]
+        self.lit_type = lit_type
+        self.val = val
 
 #----------------------------------------------------------
 class IdentExp(Exp):
 
     def __init__(self, name, coord=None):
         super(IdentExp, self).__init__(coord)
-        self.kids = [name]
+        self.name = name
+
+#----------------------------------------------------------
+class QualIdentExp(Exp):
+
+    def __init__(self, name, ident, coord=None):
+        super(QualIdentExp, self).__init__(coord)
+        self.name = name
+        self.qual = ident
 
 #----------------------------------------------------------
 class ArrayRefExp(Exp):
 
     def __init__(self, exp, sub, coord=None):
         super(ArrayRefExp, self).__init__(coord)
-        self.kids = [exp, sub]
+        self.exp = exp
+        self.sub = sub
 
 #----------------------------------------------------------
 class CallExp(Exp):
 
     def __init__(self, exp, args, coord=None):
         super(CallExp, self).__init__(coord)
-        self.kids = [exp, args]
+        self.exp  = exp
+        self.args = args
 
 #----------------------------------------------------------
 class UnaryExp(Exp):
@@ -164,7 +162,8 @@ class UnaryExp(Exp):
 
     def __init__(self, op_type, exp, coord=None):
         super(UnaryExp, self).__init__(coord)
-        self.kids = [op_type, exp]
+        self.oper = op_type
+        self.exp  = exp
 
 #----------------------------------------------------------
 class BinOpExp(Exp):
@@ -186,17 +185,20 @@ class BinOpExp(Exp):
     EQMINUS = 32
     EQMULT = 33
     EQDIV = 34
+    COMMA = 40
 
     def __init__(self, op_type, lhs, rhs, coord=None):
         super(BinOpExp, self).__init__(coord)
-        self.kids = [op_type, lhs, rhs]
+        self.oper = op_type
+        self.lhs  = lhs
+        self.rhs  = rhs
 
 #----------------------------------------------------------
 class ParenExp(Exp):
 
     def __init__(self, exp, coord=None):
         super(ParenExp, self).__init__(coord)
-        self.kids = [exp]
+        self.exp = exp
 
 
 
@@ -212,42 +214,49 @@ class ExpStmt(Stmt):
 
     def __init__(self, exp, coord=None):
         super(ExpStmt, self).__init__(coord)
-        self.kids = [exp]
+        self.exp  = exp
 
 #----------------------------------------------------------
 class CompStmt(Stmt):
 
     def __init__(self, stmts, coord=None):
         super(CompStmt, self).__init__(coord)
-        self.kids = stmts
+        self.stmts = stmts
 
 #----------------------------------------------------------
 class IfStmt(Stmt):
 
     def __init__(self, test, true_stmt, false_stmt=None, coord=None):
         super(IfStmt, self).__init__(coord)
-        self.kids = [test, true_stmt, false_stmt]
+        self.test = test
+        self.then_s = true_stmt
+        self.else_s = false_stmt
 
 #----------------------------------------------------------
 class ForStmt(Stmt):
 
     def __init__(self, init, test, itr, stmt, coord=None):
         super(ForStmt, self).__init__(coord)
-        self.kids = [init, test, itr, stmt]
+        self.init = init
+        self.test = test
+        self.itr  = itr
+        self.stmt = stmt
 
 #----------------------------------------------------------
 class WhileStmt(Stmt):
 
     def __init__(self, test, stmt, coord=None):
         super(WhileStmt, self).__init__(coord)
-        self.kids = [test, stmt]
+        self.test = test
+        self.stmt = stmt
 
 #----------------------------------------------------------
 class VarInit(Stmt):
 
     def __init__(self, var_name, init_exp=None, coord=None):
         super(VarInit, self).__init__(coord)
-        self.kids = [var_name, init_exp]
+        self.var_name = var_name
+        self.init_exp = init_exp
 
 #----------------------------------------------------------
 class VarDec(Stmt):
@@ -255,27 +264,35 @@ class VarDec(Stmt):
     def __init__(self, type_name, var_inits, isAtomic, coord=None):
         super(VarDec, self).__init__(coord)
         self.isAtomic = isAtomic
-        self.kids = [type_name, var_inits]
+        self.type_name = type_name
+        self.var_inits = var_inits
 
 #----------------------------------------------------------
 class ParamDec(Stmt):
 
     def __init__(self, ty, name, coord=None):
         super(ParamDec, self).__init__(coord)
-        self.kids = [ty, name]
+        self.ty   = ty
+        self.name = name
 
 #----------------------------------------------------------
 class FunDec(Stmt):
 
     def __init__(self, name, return_type, modifiers, param_decs, body, coord=None):
         super(FunDec, self).__init__(coord)
-        self.kids = [name, return_type, modifiers, param_decs, body]
+        self.name   = name
+        self.rtype  = return_type
+        self.quals  = modifiers
+        self.params = param_decs
+        self.body   = body
 
 #----------------------------------------------------------
 class TransformStmt(Stmt):
 
     def __init__(self, name, args, stmt, coord=None):
         super(TransformStmt, self).__init__(coord)
-        self.kids = [name, args, stmt]
+        self.name = name
+        self.args = args
+        self.stmt = stmt
 
 
