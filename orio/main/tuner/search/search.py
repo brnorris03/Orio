@@ -88,7 +88,7 @@ class Search:
     
     #----------------------------------------------------------
 
-    def search(self):
+    def search(self, startCoord=None):
         '''To initiate the search process and return the best performance parameters'''
 
         # if the search space is empty
@@ -96,7 +96,7 @@ class Search:
             return {}
 
         # find the coordinate resulting in the best performance
-        best_coord,best_perf,search_time,runs = self.searchBestCoord()
+        best_coord,best_perf,search_time,runs = self.searchBestCoord(startCoord)
         corr_transfer = self.MAXFLOAT
         if isinstance(best_perf,tuple): #unpack optionally
           corr_transfer = best_perf[1]

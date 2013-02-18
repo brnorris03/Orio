@@ -33,11 +33,12 @@ class Exhaustive(orio.main.tuner.search.search.Search):
 
     #-----------------------------------------------------
     # Method required by the search interface
-    def searchBestCoord(self):
+    def searchBestCoord(self, startCoord=None):
         '''
         Explore the search space and return the coordinate that yields the best performance
         (i.e. minimum performance cost).
         
+        @param startCoord: Starting coordinate (optional)
         @return:  A list of coordinates
         '''
 
@@ -57,9 +58,21 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         
         # start the timer
         start_time = time.time()
-
-        # start from the origin coordinate (i.e. [0,0,...])
-        coord = [0] * self.total_dims 
+        
+        if startCoord:
+            if len(startCoord) != self.total_dims:
+                warn("orio.main.tuner.search.exhaustive: " + 
+                     "Invalid starting coordinate %s specified," + 
+                     " expected %d elements, but was given %d" 
+                     % (startCoord, self.total_dims, len(startCoord)))
+                startCoord = None
+            else:
+                coord = startCoord
+                
+        if not startCoord:
+            # start from the origin coordinate (i.e. [0,0,...])
+            coord = [0] * self.total_dims 
+            
         coords = [coord]
         while len(coords) < coord_count:
             coord = self.__getNextCoord(coord)

@@ -52,11 +52,13 @@ class Annealing(orio.main.tuner.search.search.Search):
     #--------------------------------------------------
     # Method required by the search interface
 
-    def searchBestCoord(self):
+    def searchBestCoord(self, startCoord=None):
         '''
         To explore the search space and return the coordinate that yields the best performance
         (i.e. minimum performance cost).
         '''
+        
+        # TODO: implement startCoord support
 
         info('\n----- begin simulated annealing search -----')
 
