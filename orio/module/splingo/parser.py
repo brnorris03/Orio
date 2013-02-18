@@ -16,7 +16,8 @@ class SpLingoLexer:
   keywords = [
     'scalar', 'vector', 'matrix',
     'in', 'out', #'inout',
-    'dia'
+    'dia',
+    'register', 'auto', 'extern', 'static'
   ]
 
   reserved = {}
@@ -178,8 +179,12 @@ def p_stmt_eq(p):
     p[0] = ast.ExpStmt(p[1], coord)
 
 def p_stmt_dec(p):
-    '''stmt : sid exp ';' '''
-    p[0] = ast.VarDec(p[1], [p[2]], True, p.lineno(3))
+    '''stmt :       sid exp ';'
+            | quals sid exp ';' '''
+    if len(p) == 4:
+      p[0] = ast.VarDec(p[1], [p[2]], True, [], p.lineno(3))
+    else:
+      p[0] = ast.VarDec(p[2], [p[3]], True, p[1], p.lineno(4))
 
 def p_stmt_comment(p):
     '''stmt : comment'''
@@ -189,6 +194,22 @@ def p_comment(p):
     '''comment : SLCOMMENT
                | MLCOMMENT'''
     p[0] = ast.Comment(p[1], p.lineno(1))
+
+def p_quals(p):
+    '''quals : qual
+             | quals qual'''
+    if len(p) == 2:
+      p[0] = [p[1]]
+    else:
+      p[0] = p[1].append(p[2])
+
+def p_qual(p):
+    '''qual : REGISTER
+            | AUTO
+            | EXTERN
+            | STATIC '''
+    p[0] = p[1]
+
 #------------------------------------------------------------------------------
 
 precedence = (
@@ -255,6 +276,14 @@ def p_exp_transpose(p):
 def p_exp_postpp(p):
     '''exp : exp PP '''
     p[0] = ast.UnaryExp(ast.UnaryExp.POST_INC, p[1], p.lineno(2))
+
+def p_exp_postmm(p):
+    '''exp : exp MM '''
+    p[0] = ast.UnaryExp(ast.UnaryExp.POST_DEC, p[1], p.lineno(2))
+
+def p_exp_array(p):
+    '''exp : exp '[' exp ']' '''
+    p[0] = ast.ArrayRefExp(p[1], p[3], p.lineno(2))
 #------------------------------------------------------------------------------
 
 
