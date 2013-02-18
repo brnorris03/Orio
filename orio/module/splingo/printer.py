@@ -144,6 +144,8 @@ class Printer(object):
                 s += '=' + self.pp(n.init_exp, indent)
 
         elif isinstance(n, VarDec):
+            if len(n.quals) > 0:
+              s += ''.join(n.quals) + ' '
             s += str(n.type_name) + ' '
             s += ', '.join(map(self.pp, n.var_inits))
             if n.isAtomic:

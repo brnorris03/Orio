@@ -21,6 +21,7 @@ class Rewriter(object):
     self.st['itrs'] = [{},{},{}]
     self.existVecs = False
     self.existMats = False
+    self.applyOnce = {}
 
   #----------------------------------------------------------------------------
   def transform(self, n):
@@ -60,8 +61,11 @@ class Rewriter(object):
           if isinstance(t1, IdentExp) and self.st.has_key(t1.name):
             ninfo = self.st[t1.name]
             if ninfo['srcty'] == 'vector':
-              self.st['itrs'][0].update({ninfo['len'][0]: 'i1'})
-              return ArrayRefExp(t1, IdentExp('i1'))
+              if self.existMats and t1.name == n.exp.lhs.name:
+                return ArrayRefExp(t1, IdentExp('i2'))
+              else:
+                self.st['itrs'][0].update({ninfo['len'][0]: 'i1'})
+                return ArrayRefExp(t1, IdentExp('i1'))
             elif ninfo['srcty'] == 'matrix':
               self.st['itrs'][0].update({ninfo['len'][0]: 'i1'})
               self.st['itrs'][1].update({ninfo['len'][1]: 'i2'})
@@ -78,9 +82,25 @@ class Rewriter(object):
         decl_itrs = s2t('stmt', 'int ' + ', '.join(itrs) + ';')
         
         if self.existMats:
+          if not self.applyOnce.get('cacheLhs', None):
+            cachedLhs = None
+            def cacheLhs(t2):
+              if isAssign(t2):
+                cachedLhs = t2.exp.lhs
+                t2.exp.lhs = IdentExp('tmp1')
+                t2.exp.oper = BinOpExp.EQPLUS
+                self.applyOnce['cacheLhs'] = cachedLhs
+                return t2
+              else:
+                return t2
+            n1 = trav.rewriteTD(cacheLhs, n1)
           return CompStmt([decl_itrs,
+                           s2t('stmt', 'register double tmp1;'),
                            getForStmt(itrs[1], '0', dims[1], itrs[1] + '++',
-                                      getForStmt(itrs[0], '0', dims[0], itrs[0] + '++', n1))
+                                      CompStmt([s2t('stmt', 'tmp1 = 0.0'),
+                                                getForStmt(itrs[0], '0', dims[0], itrs[0] + '++', n1),
+                                                s2t('stmt', repr(self.applyOnce['cacheLhs']) + ' = tmp1')
+                                                ]))
                           ])
         else:
           return CompStmt([decl_itrs,
