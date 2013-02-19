@@ -113,6 +113,7 @@ class PerfTuner:
         # search runs
         search_time_limit = 60 * tinfo.search_time_limit
         search_total_runs = tinfo.search_total_runs
+        search_resume = tinfo.search_resume
 
         # get the search-algorithm-specific arguments
         search_opts = dict(tinfo.search_opts)
@@ -135,6 +136,7 @@ class PerfTuner:
                                        'pparam_constraint':pparam_constraint,
                                        'search_time_limit':search_time_limit, 
                                        'search_total_runs':search_total_runs, 
+                                       'search_resume':search_resume,
                                        'search_opts':search_opts,
                                        'ptcodegen':ptcodegen, 
                                        'ptdriver':ptdriver, 'odriver':self.odriver,
