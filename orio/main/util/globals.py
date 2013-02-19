@@ -4,6 +4,7 @@
 # For copying information, see the file LICENSE
 
 import logging, os, sys, traceback
+from matplotlib_logger import MatplotlibLogger
 
 
 class Globals:
@@ -18,6 +19,7 @@ class Globals:
 
         def __init__(self,cmdline={}):
             
+            self.loggers = {}
             self.language = 'c'         # default language is C
             self.error_pre = "\x1B[00;31m"
             self.error_post = "\x1B[00m"
@@ -106,30 +108,33 @@ class Globals:
             else:
                 self.logging = True
             if 'logger' in cmdline.keys():
-                self.logger = logging.getLogger(cmdline['logger'])
+                thelogger = logging.getLogger(cmdline['logger'])
             else:
-                self.logger = logging.getLogger("Orio")
+                thelogger = logging.getLogger("Orio")
             if 'logfile' in cmdline.keys():
                 self.logfile = cmdline['logfile']
             else:
                 self.logfile = 'tuning' + str(os.getpid()) + '.log'        
-            self.logger.addHandler(logging.FileHandler(filename=self.logfile))
+            thelogger.addHandler(logging.FileHandler(filename=self.logfile))
             # Because commands are output with extra formatting, for now do not use the logger for stderr output
             #streamhandler = logging.StreamHandler()
             #streamhandler.setLevel(logging.INFO)
             #self.logger.addHandler(streamhandler)
-            
+            self.loggers['TuningLog'] = thelogger
+          
+            self.loggers['Matplotlib'] = MatplotlibLogger().getLogger()
+      
     
             # Enable debugging
             self.debug_level = 5
             if 'ORIO_DEBUG' in os.environ.keys() and os.environ['ORIO_DEBUG'] == '1': 
                 self.debug = True
-                self.logger.setLevel(logging.DEBUG)
+                self.loggers['TuningLog'].setLevel(logging.DEBUG)
                 if 'ORIO_DEBUG_LEVEL' in os.environ.keys():
                     self.debug_level = os.environ['ORIO_DEBUG_LEVEL']
             else: 
                 self.debug = False
-                self.logger.setLevel(logging.INFO)
+                self.loggers['TuningLog'].setLevel(logging.INFO)
             
             # counters
             self.counter = 0
@@ -148,6 +153,8 @@ class Globals:
             
             pass
 
+        def addLogger(self, thelogger):
+            self.loggers.add(thelogger)
 
         def test(self):
             """ Test method, return singleton id """
@@ -184,30 +191,30 @@ Various error-handling related miscellanea
 
 def err(errmsg='',errcode=1, doexit=True):
     sys.stderr.write(Globals().error_pre + 'ERROR: ' + errmsg + Globals().error_post + '\n')
-    Globals().logger.error(errmsg + '\n' + '\n'.join(traceback.format_stack()))
+    Globals().loggers['TuningLog'].error(errmsg + '\n' + '\n'.join(traceback.format_stack()))
     if Globals().debug:
         traceback.print_stack()
     if doexit: sys.exit(errcode)
 
 def warn(msg='',end = '\n', pre='', post=''):
     sys.stderr.write(pre + 'WARNING: ' +  msg + post + end)
-    Globals().logger.warning(msg)
+    Globals().loggers['TuningLog'].warning(msg)
 
 def info(msg='', end='\n', pre='', post='', logging=True):
     if Globals().verbose:
         sys.stdout.write(pre + msg + post + end)
     
     if Globals().logging:
-        Globals().logger.info(msg)
+        Globals().loggers['TuningLog'].info(msg)
 
 def debug(msg='', end='\n', pre='', post='', logging=True, level=5):
     if Globals().debug and level <= Globals().debug_level:
         sys.stdout.write(pre + 'DEBUG:' + str(msg) + post + end)
         if logging:
-            Globals().logger.debug(msg)
+            Globals().loggers['TuningLog'].debug(msg)
         
 def exit(msg='',code=1, doexit=True,pre='',post=''): 
     if msg != '': 
         sys.stderr.write(pre + 'ERROR: ' + msg + post + '\n')  
-    Globals().logger.error(msg)
+    Globals().loggers['TuningLog'].error(msg)
     if doexit: sys.exit(code)

@@ -13,8 +13,10 @@ keywords = [
     'build', 'build_command', 'batch_command', 'status_command', 'num_procs', 'libs',
     'input_params', 'input_vars', 'static', 'dynamic', 'void', 'char', 'short', 'int', 'long', 'float', 'double', '__device__',
     'performance_params', 'performance_counter', 'method', 'repetitions',
-    'search', 'time_limit', 'total_runs', 'algorithm',
-    'init_file', 'decl_file', 'msimplex_reflection_coef', 'msimplex_expansion_coef',
+    'search', 'time_limit', 'total_runs', 'resume', 'algorithm',
+    'init_file', 'decl_file',
+    'exhaustive_start_coord',
+    'msimplex_reflection_coef', 'msimplex_expansion_coef',
     'msimplex_contraction_coef', 'msimplex_shrinkage_coef', 'msimplex_size', 'msimplex_x0',
     'simplex_reflection_coef', 'simplex_expansion_coef',
     'simplex_contraction_coef', 'simplex_shrinkage_coef', 'simplex_local_distance', 'simplex_x0',
@@ -185,9 +187,11 @@ def p_arg_type(p):
                 | ALGORITHM
                 | TIME_LIMIT
                 | TOTAL_RUNS
+                | RESUME
                 | LIBS
                 | INIT_FILE
                 | DECL_FILE
+                | EXHAUSTIVE_START_COORD
                 | MSIMPLEX_EXPANSION_COEF
                 | MSIMPLEX_REFLECTION_COEF
                 | MSIMPLEX_CONTRACTION_COEF

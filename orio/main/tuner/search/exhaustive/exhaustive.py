@@ -20,6 +20,8 @@ class Exhaustive(orio.main.tuner.search.search.Search):
 
         orio.main.tuner.search.search.Search.__init__(self, params)
 
+        self.start_coord = None
+      
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
 
@@ -154,11 +156,18 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         
     def __readAlgoArgs(self):
         '''To read all algorithm-specific arguments'''
-                
+        
         for vname, rhs in self.search_opts.iteritems():
-            err('orio.main.tuner.search.exhaustive: unrecognized %s algorithm-specific argument: "%s"' %
-                   (self.__class__.__name__, vname))
-            sys.exit(1)
+            if vname == 'start_coord':
+                if not isinstance(rhs,list):
+                    err('%s argument "%s" must be a list of coordinate indices' % (self.__class__.__name__,'start_coord'))
+                elif len(rhs) != self.total_dims:
+                    err('%s dimension of start_coord must be %d, but was instead %d' % (self.__class__.__name__, self.total_dims, len(rhs)))
+                self.start_coord = rhs
+            else:
+                err('orio.main.tuner.search.exhaustive: unrecognized %s algorithm-specific argument: "%s"' %
+                    (self.__class__.__name__, vname))
+                sys.exit(1)
 
     #--------------------------------------------------
 
