@@ -25,6 +25,8 @@ class Search:
         else: self.time_limit = -1
         if 'search_total_runs' in params.keys(): self.total_runs = params['search_total_runs']
         else: self.total_runs = -1
+        if 'search_resume' in params.keys(): self.resume = params['search_resume']
+        else: self.resume = False
         if 'search_opts' in params.keys(): self.search_opts = params['search_opts']
         else: self.search_opts = {}
 
@@ -44,7 +46,9 @@ class Search:
         #print self.dim_uplimits    
         #res='Space %d %d %1.3e' % (self.total_dims-num_bins,num_bins,self.space_size)        
         #info(res)
-        #sys.exit()
+        #sys.exit()		
+
+        #print str(params['ptdriver'].tinfo)
         
         if 'use_parallel_search' in params.keys(): self.use_parallel_search = params['use_parallel_search']
         else: self.use_parallel_search = False
@@ -94,6 +98,14 @@ class Search:
         # if the search space is empty
         if self.total_dims == 0:
             return {}
+
+
+        if self.resume:
+            startCoord = self.search_opts.get('start_coord')
+            if not isinstance(startCoord,list):
+              err('%s argument "%s" must be a list of coordinate indices' % (self.__class__.__name__,'start_coord'))
+            if not startCoord:
+                startCoord = self.__findLastCoord()
 
         # find the coordinate resulting in the best performance
         best_coord,best_perf,search_time,runs = self.searchBestCoord(startCoord)
@@ -477,4 +489,7 @@ class Search:
         # return the best neighboring coordinate and its performance cost
         return (best_coord, best_perf_cost)
     
-
+    def __findLastCoord(self):
+        from stat import S_ISREG, ST_MTIME, ST_MODE
+        coord = None
+        return coord
