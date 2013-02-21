@@ -1,0 +1,25 @@
+'devId',-1
+'name','Tesla C2070'
+'major',2
+'minor',0
+'clockRate',1147000
+'deviceOverlap',1
+'kernelExecTimeoutEnabled',0
+'totalGlobalMem',5636292608
+'totalConstMem',65536
+'memPitch',2147483647
+'textureAlignment',512
+'multiProcessorCount',14
+'sharedMemPerBlock',49152
+'regsPerBlock',32768
+'warpSize',32
+'maxThreadsPerBlock',1024
+'maxThreadsDim',(1024,1024,64)
+'maxGridSize',(65535,65535,65535)
+'integrated',0
+'canMapHostMemory',1
+'computeMode',0
+'maxTexture1D',65536
+'maxTexture2D',(65536,65535)
+'maxTexture3D',(2048,2048,2048)
+'concurrentKernels',1
