@@ -1,0 +1,1631 @@
+/----------------------------------------------------------\\
+|      _   __ ______ __ __  ______  ______   __  _____     |
+|     / | / // ____// //_/ / ____/ / __ _ / / _|/ __  /    |
+|    /  |/ // __/  / ,<   / /     / /__/   / / / / / /     |
+|   / /|  // /___ / /| | / /_ _  / /___   /_/ / / / /      |
+|  /_/ |_//_____//_/ |_|/_____/ /______/ /_/ /_/ /_/       |
+|                                                          |
+|----------------------------------------------------------|
+|                                                          |
+| NekCEM :  Nek5000 for Computational ElectroMagnetics     |
+|           Open Source Spectal Element DG Maxwell Solver  |
+| Source :  https://svn.mcs.anl.gov/repos/NEKCEM           |
+|                                                          |
+\\----------------------------------------------------------/
+                                                              
+
+ MPI_thread safety check: required=    3, provided=    0
+ Number of processors:           1
+ REAL    wdsize      :           8
+ INTEGER wdsize      :           4
+ call data_init2
+ IFCEM=  T
+ \n Preprocessor options::  
+   MOAB off at compile time
+   MPI on: -DNO_MPI not defined
+   GPU on with -DGPU
+   OpenMP off: -DOMP not defined
+ \n Mesh options:: 
+   IFHEX=  T  (hexahedral )
+   IFTET=  F  (tetrahedral)
+ \n Available basis:: 
+   IFDG     =  T  (SEDG   )
+   IFNEDELEC=  F  (Nedelec)
+
+
+  Beginning session:
+  /home-2/bnorris/NEKCEM/examples/gpu1.5G_N=8/3dbox.rea                         
+
+ 
+ done: data_init2::  3.513097763061523E-003  sec
+ call read_init2
+ timer accuracy:   2.3841858E-08 sec
+
+ open .rea file
+ param           1  2.997920000000000E+017
+ param           2  8.854200000000000E-021
+ param           3  1.256600000000000E-015
+ param           4   1.00000000000000     
+ param           5  0.000000000000000E+000
+ param           6  0.000000000000000E+000
+ param           7  0.000000000000000E+000
+ param           8  0.000000000000000E+000
+ param           9  0.000000000000000E+000
+ param          10  1.000000000000000E+020
+ param          11   10.0000000000000     
+ param          12  0.200000000000000     
+ param          13   10.0000000000000     
+ param          14  0.000000000000000E+000
+ param          15   10.0000000000000     
+ param          16   1.00000000000000     
+ param          17  0.000000000000000E+000
+ param          18  0.000000000000000E+000
+ param          19  0.000000000000000E+000
+ param          20   5.00000000000000     
+ param          21  0.000000000000000E+000
+ param          22  0.000000000000000E+000
+ param          23  0.000000000000000E+000
+ param          24  0.000000000000000E+000
+ param          25  0.000000000000000E+000
+ param          26  0.000000000000000E+000
+ param          27   3.00000000000000     
+ param          28  0.000000000000000E+000
+ param          29  0.000000000000000E+000
+ param          30  0.000000000000000E+000
+ param          31  0.000000000000000E+000
+ param          32  0.000000000000000E+000
+ param          33  0.000000000000000E+000
+ param          34  0.000000000000000E+000
+ param          35  0.000000000000000E+000
+ param          36  0.000000000000000E+000
+ param          37  0.000000000000000E+000
+ param          38  0.000000000000000E+000
+ param          39  0.000000000000000E+000
+ param          40  0.000000000000000E+000
+ param          41  0.000000000000000E+000
+ param          42  0.000000000000000E+000
+ param          43  0.000000000000000E+000
+ param          44  0.000000000000000E+000
+ param          45  0.000000000000000E+000
+ param          46  0.000000000000000E+000
+ param          47  0.000000000000000E+000
+ param          48  0.000000000000000E+000
+ param          49  0.140000000000000     
+ param          50  0.000000000000000E+000
+ param          51  0.000000000000000E+000
+ param          52  0.000000000000000E+000
+ param          53  0.000000000000000E+000
+ param          54  0.000000000000000E+000
+ param          55  0.000000000000000E+000
+ param          56  0.000000000000000E+000
+ param          57  0.000000000000000E+000
+ param          58  0.000000000000000E+000
+ param          59  0.000000000000000E+000
+ param          60  0.000000000000000E+000
+ param          61  0.000000000000000E+000
+ param          62  0.000000000000000E+000
+ param          63  0.000000000000000E+000
+ param          64  0.000000000000000E+000
+ param          65  0.000000000000000E+000
+ param          66  0.000000000000000E+000
+ param          67  0.000000000000000E+000
+ param          68  0.000000000000000E+000
+ param          69  0.000000000000000E+000
+ param          70  0.000000000000000E+000
+ param          71  0.000000000000000E+000
+ param          72  0.000000000000000E+000
+ param          73  0.000000000000000E+000
+ param          74  0.000000000000000E+000
+ param          75  0.000000000000000E+000
+ param          76  0.000000000000000E+000
+ param          77   1.00000000000000     
+ param          78   2.00000000000000     
+ param          79  1.000000000000000E-005
+ param          80   4.00000000000000     
+ param          81  0.000000000000000E+000
+ param          82   1.00000000000000     
+ param          83  0.000000000000000E+000
+ param          84  0.000000000000000E+000
+ param          85  0.000000000000000E+000
+ param          86  0.000000000000000E+000
+ param          87  0.000000000000000E+000
+ param          88  0.000000000000000E+000
+ param          89  0.000000000000000E+000
+ param          90  0.000000000000000E+000
+ param          91  0.000000000000000E+000
+ param          92  0.000000000000000E+000
+ param          93   1.00000000000000     
+ param          94  0.000000000000000E+000
+ param          95  0.000000000000000E+000
+ param          96  0.000000000000000E+000
+ param          97  0.000000000000000E+000
+ param          98  0.000000000000000E+000
+ param          99  0.000000000000000E+000
+ param         100  0.000000000000000E+000
+ param         101  0.000000000000000E+000
+ param         102  0.000000000000000E+000
+ param         103  0.000000000000000E+000
+ nelgt/nelgv/lelt:       27       27     1005
+ lx1  /lx2  /lx3 :        8        8        8
+ gfdm/ifgtp/ifre2 F T F
+ start reading mesh
+ opening file:
+dummy.rea                                                                                                                           
+3                                                                                                                                   
+1                      number of fields                                                                                             
+#                                                                                                                                   
+#    comments                                                                                                                       
+#                                                                                                                                   
+#                                                                                                                                   
+#========================================================                                                                           
+#                                                                                                                                   
+Box                                                                                                                                 
+-10 -10 -10 (number of elements in x,y,z)                                                                                           
+Reading  1000 =    10    10    10 elements for box  1.
+-1   1   1              (x0,x1,gain)                                                                                                
+-1   1   1              (x0,x1,gain)                                                                                                
+-1   1   1              (x0,x1,gain)                                                                                                
+ this is ifld01:           2           2
+P  ,P  ,P  ,P  ,P  ,P          (bc's)                                                                                               
+   3   6getcv:P  
+   3   6getcv:P  
+   3   6getcv:P  
+   3   6getcv:P  
+   3   6getcv:P  
+   3   6getcv:P  
+ CBC2P  P  P  P  P  P             2
+ Beginning construction of new mesh.        1000          10          10
+          10
+ call   mapelpr, mapping elements to processors
+ call   set_proc_map()
+ ifgtp/gfdm/zper T F F
+ done:: set_proc_map()
+ RANK     0 IEG       1       2       3       4       5       6       7       8
+                      9      10      11      12      13      14      15      16
+                     17      18      19      20      21      22      23      24
+                     25      26      27      28      29      30      31      32
+                     33      34      35      36      37      38      39      40
+                     41      42      43      44      45      46      47      48
+                     49      50      51      52      53      54      55      56
+                     57      58      59      60      61      62      63      64
+                     65      66      67      68      69      70      71      72
+                     73      74      75      76      77      78      79      80
+                     81      82      83      84      85      86      87      88
+                     89      90      91      92      93      94      95      96
+                     97      98      99     100     101     102     103     104
+                    105     106     107     108     109     110     111     112
+                    113     114     115     116     117     118     119     120
+                    121     122     123     124     125     126     127     128
+                    129     130     131     132     133     134     135     136
+                    137     138     139     140     141     142     143     144
+                    145     146     147     148     149     150     151     152
+                    153     154     155     156     157     158     159     160
+                    161     162     163     164     165     166     167     168
+                    169     170     171     172     173     174     175     176
+                    177     178     179     180     181     182     183     184
+                    185     186     187     188     189     190     191     192
+                    193     194     195     196     197     198     199     200
+                    201     202     203     204     205     206     207     208
+                    209     210     211     212     213     214     215     216
+                    217     218     219     220     221     222     223     224
+                    225     226     227     228     229     230     231     232
+                    233     234     235     236     237     238     239     240
+                    241     242     243     244     245     246     247     248
+                    249     250     251     252     253     254     255     256
+                    257     258     259     260     261     262     263     264
+                    265     266     267     268     269     270     271     272
+                    273     274     275     276     277     278     279     280
+                    281     282     283     284     285     286     287     288
+                    289     290     291     292     293     294     295     296
+                    297     298     299     300     301     302     303     304
+                    305     306     307     308     309     310     311     312
+                    313     314     315     316     317     318     319     320
+                    321     322     323     324     325     326     327     328
+                    329     330     331     332     333     334     335     336
+                    337     338     339     340     341     342     343     344
+                    345     346     347     348     349     350     351     352
+                    353     354     355     356     357     358     359     360
+                    361     362     363     364     365     366     367     368
+                    369     370     371     372     373     374     375     376
+                    377     378     379     380     381     382     383     384
+                    385     386     387     388     389     390     391     392
+                    393     394     395     396     397     398     399     400
+                    401     402     403     404     405     406     407     408
+                    409     410     411     412     413     414     415     416
+                    417     418     419     420     421     422     423     424
+                    425     426     427     428     429     430     431     432
+                    433     434     435     436     437     438     439     440
+                    441     442     443     444     445     446     447     448
+                    449     450     451     452     453     454     455     456
+                    457     458     459     460     461     462     463     464
+                    465     466     467     468     469     470     471     472
+                    473     474     475     476     477     478     479     480
+                    481     482     483     484     485     486     487     488
+                    489     490     491     492     493     494     495     496
+                    497     498     499     500     501     502     503     504
+                    505     506     507     508     509     510     511     512
+                    513     514     515     516     517     518     519     520
+                    521     522     523     524     525     526     527     528
+                    529     530     531     532     533     534     535     536
+                    537     538     539     540     541     542     543     544
+                    545     546     547     548     549     550     551     552
+                    553     554     555     556     557     558     559     560
+                    561     562     563     564     565     566     567     568
+                    569     570     571     572     573     574     575     576
+                    577     578     579     580     581     582     583     584
+                    585     586     587     588     589     590     591     592
+                    593     594     595     596     597     598     599     600
+                    601     602     603     604     605     606     607     608
+                    609     610     611     612     613     614     615     616
+                    617     618     619     620     621     622     623     624
+                    625     626     627     628     629     630     631     632
+                    633     634     635     636     637     638     639     640
+                    641     642     643     644     645     646     647     648
+                    649     650     651     652     653     654     655     656
+                    657     658     659     660     661     662     663     664
+                    665     666     667     668     669     670     671     672
+                    673     674     675     676     677     678     679     680
+                    681     682     683     684     685     686     687     688
+                    689     690     691     692     693     694     695     696
+                    697     698     699     700     701     702     703     704
+                    705     706     707     708     709     710     711     712
+                    713     714     715     716     717     718     719     720
+                    721     722     723     724     725     726     727     728
+                    729     730     731     732     733     734     735     736
+                    737     738     739     740     741     742     743     744
+                    745     746     747     748     749     750     751     752
+                    753     754     755     756     757     758     759     760
+                    761     762     763     764     765     766     767     768
+                    769     770     771     772     773     774     775     776
+                    777     778     779     780     781     782     783     784
+                    785     786     787     788     789     790     791     792
+                    793     794     795     796     797     798     799     800
+                    801     802     803     804     805     806     807     808
+                    809     810     811     812     813     814     815     816
+                    817     818     819     820     821     822     823     824
+                    825     826     827     828     829     830     831     832
+                    833     834     835     836     837     838     839     840
+                    841     842     843     844     845     846     847     848
+                    849     850     851     852     853     854     855     856
+                    857     858     859     860     861     862     863     864
+                    865     866     867     868     869     870     871     872
+                    873     874     875     876     877     878     879     880
+                    881     882     883     884     885     886     887     888
+                    889     890     891     892     893     894     895     896
+                    897     898     899     900     901     902     903     904
+                    905     906     907     908     909     910     911     912
+                    913     914     915     916     917     918     919     920
+                    921     922     923     924     925     926     927     928
+                    929     930     931     932     933     934     935     936
+                    937     938     939     940     941     942     943     944
+                    945     946     947     948     949     950     951     952
+                    953     954     955     956     957     958     959     960
+                    961     962     963     964     965     966     967     968
+                    969     970     971     972     973     974     975     976
+                    977     978     979     980     981     982     983     984
+                    985     986     987     988     989     990     991     992
+                    993     994     995     996     997     998     999    1000
+ element load imbalance:            0        1000        1000
+ done :: mapelpr, mapping elements to processors\n
+ read mesh time:: 1.6793E-02 seconds 
+ done :: close .rea file   0.18372E-01 sec
+
+ done: readat2 ::  1.838755607604980E-002  sec
+ call para_init2
+ done: para_init2
+ setup mesh topology
+   Right-handed check complete for1000 elements. OK.
+   0   2nid:0,  GTP BC:  P    P    P    P    P    P  
+           0        1000       30150        6000  Fgbtuple           8
+   setvert3d:   8      127000      343000      127000      127000
+   call usrsetvert
+   done :: usrsetvert
+
+   gs_setup: 0 unique labels shared
+   setup_ds time 6.4765E-02 seconds   0  8      127000        1000
+ setup_dgds2:: init
+           0        1000       30150        6000  Fgbtuple          10
+   setvert3d:  10      217000      729000      217000      217000
+   call usrsetvert
+   done :: usrsetvert
+
+ set_vert time:: 1.7956E-02 seconds 
+   gs_setup: 0 unique labels shared
+ gs_setup time:: 7.3837E-02 seconds 
+ setup_dsdg2 time:: 9.3291E-02 seconds   1  8      217000        1000
+ done :: setup mesh topology
+ .
+ npts/nelt/nxyz/nxzfl      512000        1000         512      384000
+ call usrdat
+ done :: usrdat
+
+ call set_options
+ IFMAXWELL    T
+ IFSCHROD     F
+ IFDRIFT      F
+ IFDRUDE      F
+ IFLOREN      F
+ IFBEAM       F
+ IFWAKE       F
+ IFMOVW       F
+ IFFILTER     F
+ IFNAPY       F
+ IFWAKET      F
+ IFVARDT      F
+ IFPBG        F
+ IFDIELEC     F
+ IFPOISSON    T
+ IFGMRES      T
+ IFCG         F
+ IFIC         F
+ IFSOL        T
+ IFSRC        F
+ IFSCAT       F
+ IFSFTF       F
+ IFCENTRAL    F
+ IFUPWIND     T
+ IFDEALIAS    F
+ IFTM         F
+ IFTE         T
+ IFEIG        F
+ IFEXP        F
+ IFRK45       T
+ IFRK44       F
+ IFRK33       F
+ IFRK22       F
+ IFSIM5       F
+ IFSIM4       F
+ IFSIM3       F
+ IFSIM2       F
+ IFSIM1       F
+ IFDTCTL      F
+ IFPEC        F
+ IFPML        F
+ IFDTN        F
+ IFNM         F
+ IFRESTART    F
+ 
+ cspeed   =   1.00000000000000     
+ permit_0 =   1.00000000000000     
+ permea_0 =   1.00000000000000     
+ nmscale  =   1.00000000000000     
+ 
+ done :: set_options
+
+ call setlog
+ IFSTRS = F
+ IFCHAR = F
+ IFAXIS = F
+ IFMVBD = F
+ IFMELT = F
+ IFMODEL= F
+ IFKEPS = F
+   
+ IFVCOR = T
+ IFINTQ = F
+ IFCWUZ = F
+ IFSWALL= F
+ IFGEOM = F
+ IFSURT = F
+ IFWCNO = F
+ IFCEM  = T
+   
+ IFADVC for field           1    =  F
+ IFNONL for field           1    =  F
+   
+ IFADVC for field           2    =  F
+ IFNONL for field           2    =  T
+ done :: setlog
+
+ call gengeom
+ genwz
+ gencoor
+ geom1
+ Vol:   8.00000000000142        8.00000000000142     
+ volumn
+ setdef
+ done :: generate geomerty data
+  
+ done :: gengeom
+
+ call usrdat2
+ done :: usrdat2
+
+ call geom_reset
+ this is bm2:  4.916296687936172E-005
+ Vol:   248.050213442394        248.050213442394     
+ done :: usrdat2
+
+ call set_unr   
+ done :: set_unr
+
+ call load_semhat_weighted
+ done :: load_semhat_weighted
+
+ dofs:                     0      512000           0
+ \n Preprocessor options::  
+   hpm off: -DHPM not defined
+ \n
+ IFMAXWELL    T
+ IFSCHROD     F
+ IFDRIFT      F
+ IFDRUDE      F
+ IFLOREN      F
+ IFBEAM       F
+ IFWAKE       F
+ IFMOVW       F
+ IFFILTER     F
+ IFNAPY       F
+ IFWAKET      F
+ IFVARDT      F
+ IFPBG        F
+ IFDIELEC     F
+ IFPOISSON    T
+ IFGMRES      T
+ IFCG         F
+ IFIC         F
+ IFSOL        T
+ IFSRC        F
+ IFSCAT       F
+ IFSFTF       F
+ IFCENTRAL    F
+ IFUPWIND     T
+ IFDEALIAS    F
+ IFTM         F
+ IFTE         T
+ IFEIG        F
+ IFEXP        F
+ IFRK45       T
+ IFRK44       F
+ IFRK33       F
+ IFRK22       F
+ IFSIM5       F
+ IFSIM4       F
+ IFSIM3       F
+ IFSIM2       F
+ IFSIM1       F
+ IFDTCTL      F
+ IFPEC        F
+ IFPML        F
+ IFDTN        F
+ IFNM         F
+ IFRESTART    F
+ 
+ cspeed   =   1.00000000000000     
+ permit_0 =   1.00000000000000     
+ permea_0 =   1.00000000000000     
+ nmscale  =   1.00000000000000     
+ 
+ start: initialize geom and fields
+ done: initialization geom/fields
+ start: cem_set_fc_ptr, volume index j=cemface(i)
+ done: cem_set_fc_ptr, ncemface=       384000
+ npts      512000           8           8           8        1000
+ permit_max=   1.00000000000000     
+ permit_min=   1.00000000000000     
+ permea_max=   1.00000000000000     
+ permea_min=   1.00000000000000     
+ start: cem_maxwell_materials
+ done: cem_maxwell_materials
+ done: inverse mass matrix
+ \n dxmin=  6.413558552358367E-002
+ dt=  1.282711710471673E-002 , CFL=  0.200000000000000     
+ usersol: done, IFSOL= T
+ userini: done, IFSOL= T
+
+         0 1000   31    7  217   512000 0.000E+00 1.283E-02 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.00E+00 CPU: L2  
+         0 1000   31    7  217   512000 0.000E+00 1.283E-02 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.00E+00 CPU: Linf
+ userchk: done, ifrestart= F
+ IFDOUBLE= T
+ param(81)=           0
+ param(82)=           1
+ param(83)=           0
+ dumpno   =           0
+ IFRK,IFSIM T F
+ param(17): defined as   0.000000000000000E+000
+ initial time=  0.000000000000000E+000 , final time=  1.000000000000000E+020
+ total nsteps=          10
+ iocomm=          10 , iostep=          10
+ . 
+ ============================
+ ========  BEGIN RUN ========
+ ============================
+ istep=     1    to        10
+ tt== lpts1      514560      512000           7        1000         512
+ tt== lx1           8           8           8        1005
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::   1.79756903648376     
+         local_grad3_gpu::gpu_time1::   1.77127361297607     
+                          gpu_time2::  2.629399299621582E-002
+ ----------------------------------::
+ tt== lpts1      514560      512000           7        1000         512
+ tt== lx1           8           8           8        1005
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  3.233861923217773E-002
+         local_grad3_gpu::gpu_time1::  7.186651229858398E-003
+                          gpu_time2::  2.515101432800293E-002
+ ----------------------------------::
+ cem_maxwell                  (sec)::   1.83156824111938     
+ cem_maxwell_restrict_to_face (sec)::  9.868144989013672E-003
+ cem_maxwell_flux             (sec)::  1.667761802673340E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.465269088745117E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.241777420043945E-003
+ cem_maxwell_op               (sec)::   1.86682152748108     
+ rk_maxwell_ab                (sec)::  1.192927360534668E-002
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.884834289550781E-003
+         local_grad3_gpu::gpu_time1::  5.395650863647461E-003
+                          gpu_time2::  4.488706588745117E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.821176528930664E-003
+         local_grad3_gpu::gpu_time1::  5.082607269287109E-003
+                          gpu_time2::  4.738330841064453E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  2.101230621337891E-002
+ cem_maxwell_restrict_to_face (sec)::  4.685163497924805E-003
+ cem_maxwell_flux             (sec)::  1.561355590820312E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.354881286621094E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.198623657226562E-003
+ cem_maxwell_op               (sec)::  4.986500740051270E-002
+ rk_maxwell_ab                (sec)::  7.488012313842773E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.906768798828125E-003
+         local_grad3_gpu::gpu_time1::  5.392074584960938E-003
+                          gpu_time2::  4.514217376708984E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  1.037597656250000E-002
+         local_grad3_gpu::gpu_time1::  5.619049072265625E-003
+                          gpu_time2::  4.756689071655273E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  2.159380912780762E-002
+ cem_maxwell_restrict_to_face (sec)::  4.664421081542969E-003
+ cem_maxwell_flux             (sec)::  1.569652557373047E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.353689193725586E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.197193145751953E-003
+ cem_maxwell_op               (sec)::  5.050587654113770E-002
+ rk_maxwell_ab                (sec)::  7.514238357543945E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.849071502685547E-003
+         local_grad3_gpu::gpu_time1::  5.317211151123047E-003
+                          gpu_time2::  4.531383514404297E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  1.005125045776367E-002
+         local_grad3_gpu::gpu_time1::  5.322217941284180E-003
+                          gpu_time2::  4.728794097900391E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  2.119946479797363E-002
+ cem_maxwell_restrict_to_face (sec)::  4.664659500122070E-003
+ cem_maxwell_flux             (sec)::  1.563954353332520E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.365848541259766E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.194570541381836E-003
+ cem_maxwell_op               (sec)::  5.006456375122070E-002
+ rk_maxwell_ab                (sec)::  7.452487945556641E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  1.010251045227051E-002
+         local_grad3_gpu::gpu_time1::  5.361318588256836E-003
+                          gpu_time2::  4.740953445434570E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  1.007223129272461E-002
+         local_grad3_gpu::gpu_time1::  5.349159240722656E-003
+                          gpu_time2::  4.723072052001953E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.302356719970703E-003
+ gs_op_fields per step        (sec)::  3.181529045104980E-002
+ gs_op_fields total           (sec)::  3.181529045104980E-002
+ cem_maxwell                  (sec)::  2.147603034973145E-002
+ cem_maxwell_restrict_to_face (sec)::  4.807710647583008E-003
+ cem_maxwell_flux             (sec)::  1.555013656616211E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.385637283325195E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.190994262695312E-003
+ cem_maxwell_op               (sec)::  5.041098594665527E-002
+ rk_maxwell_ab                (sec)::  7.455348968505859E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  5.794310569763184E-002
+ cem_maxwell_op_rk per istep  (sec)::   2.10986614227295     
+ ----------------------------------::
+
+    istep   nelt  nels  N  npt1    npts   time  dt     HXerr     HYerr     HZerr     EXerr     EYerr     EZerr  cpu_t   cpu_t_pts
+
+         1 1000   31    7  217   512000 1.283E-02 1.283E-02 8.877E-12 5.083E-12 5.083E-12 3.256E-14 3.737E-13 3.737E-13 2.110E+00 4.12E-06 CPU: L2  
+         1 1000   31    7  217   512000 1.283E-02 1.283E-02 2.898E-11 1.671E-11 1.663E-11 1.423E-13 5.624E-12 5.591E-12 2.110E+00 4.12E-06 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  1.038098335266113E-002
+         local_grad3_gpu::gpu_time1::  5.640745162963867E-003
+                          gpu_time2::  4.739761352539062E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  1.005649566650391E-002
+         local_grad3_gpu::gpu_time1::  5.304574966430664E-003
+                          gpu_time2::  4.751682281494141E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  2.173900604248047E-002
+ cem_maxwell_restrict_to_face (sec)::  4.656076431274414E-003
+ cem_maxwell_flux             (sec)::  1.551270484924316E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.360364913940430E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.214597702026367E-003
+ cem_maxwell_op               (sec)::  5.048298835754395E-002
+ rk_maxwell_ab                (sec)::  7.456064224243164E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.955644607543945E-003
+         local_grad3_gpu::gpu_time1::  5.308628082275391E-003
+                          gpu_time2::  4.646778106689453E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.835481643676758E-003
+         local_grad3_gpu::gpu_time1::  5.118608474731445E-003
+                          gpu_time2::  4.716396331787109E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  2.109742164611816E-002
+ cem_maxwell_restrict_to_face (sec)::  4.663467407226562E-003
+ cem_maxwell_flux             (sec)::  1.554203033447266E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.378723144531250E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.193378448486328E-003
+ cem_maxwell_op               (sec)::  4.987525939941406E-002
+ rk_maxwell_ab                (sec)::  7.462024688720703E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.966850280761719E-003
+         local_grad3_gpu::gpu_time1::  5.290031433105469E-003
+                          gpu_time2::  4.676580429077148E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.964466094970703E-003
+         local_grad3_gpu::gpu_time1::  5.254030227661133E-003
+                          gpu_time2::  4.710197448730469E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  2.123260498046875E-002
+ cem_maxwell_restrict_to_face (sec)::  4.672050476074219E-003
+ cem_maxwell_flux             (sec)::  1.555323600769043E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.383014678955078E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.195762634277344E-003
+ cem_maxwell_op               (sec)::  5.003714561462402E-002
+ rk_maxwell_ab                (sec)::  7.456541061401367E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  1.031851768493652E-002
+         local_grad3_gpu::gpu_time1::  5.646944046020508E-003
+                          gpu_time2::  4.671335220336914E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.605884552001953E-003
+         local_grad3_gpu::gpu_time1::  5.176067352294922E-003
+                          gpu_time2::  4.429578781127930E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  2.123165130615234E-002
+ cem_maxwell_restrict_to_face (sec)::  4.674673080444336E-003
+ cem_maxwell_flux             (sec)::  1.583766937255859E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.383491516113281E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.199100494384766E-003
+ cem_maxwell_op               (sec)::  5.032706260681152E-002
+ rk_maxwell_ab                (sec)::  7.461309432983398E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  1.013422012329102E-002
+         local_grad3_gpu::gpu_time1::  5.504369735717773E-003
+                          gpu_time2::  4.629611968994141E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  1.006269454956055E-002
+         local_grad3_gpu::gpu_time1::  5.078077316284180E-003
+                          gpu_time2::  4.984378814697266E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.282806396484375E-003
+ gs_op_fields per step        (sec)::  3.167104721069336E-002
+ gs_op_fields total           (sec)::  6.334209442138672E-002
+ cem_maxwell                  (sec)::  2.151226997375488E-002
+ cem_maxwell_restrict_to_face (sec)::  4.660844802856445E-003
+ cem_maxwell_flux             (sec)::  1.551818847656250E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.373477935791016E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.197669982910156E-003
+ cem_maxwell_op               (sec)::  5.026268959045410E-002
+ rk_maxwell_ab                (sec)::  7.457256317138672E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  5.780911445617676E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.288665771484375     
+ ----------------------------------::
+
+         2 1000   31    7  217   512000 2.565E-02 1.283E-02 1.747E-11 9.916E-12 9.916E-12 1.250E-13 1.658E-12 1.658E-12 2.399E+00 2.34E-06 CPU: L2  
+         2 1000   31    7  217   512000 2.565E-02 1.283E-02 5.653E-11 3.245E-11 3.219E-11 4.800E-13 2.592E-11 2.502E-11 2.399E+00 2.34E-06 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  1.020193099975586E-002
+         local_grad3_gpu::gpu_time1::  5.431413650512695E-003
+                          gpu_time2::  4.770040512084961E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.696483612060547E-003
+         local_grad3_gpu::gpu_time1::  5.018234252929688E-003
+                          gpu_time2::  4.677772521972656E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  2.120018005371094E-002
+ cem_maxwell_restrict_to_face (sec)::  4.687786102294922E-003
+ cem_maxwell_flux             (sec)::  1.550960540771484E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.367279052734375E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.203630447387695E-003
+ cem_maxwell_op               (sec)::  4.996895790100098E-002
+ rk_maxwell_ab                (sec)::  7.464647293090820E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  1.030158996582031E-002
+         local_grad3_gpu::gpu_time1::  5.629539489746094E-003
+                          gpu_time2::  4.671812057495117E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.557247161865234E-003
+         local_grad3_gpu::gpu_time1::  5.520820617675781E-003
+                          gpu_time2::  4.036188125610352E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  2.115535736083984E-002
+ cem_maxwell_restrict_to_face (sec)::  4.952430725097656E-003
+ cem_maxwell_flux             (sec)::  1.551556587219238E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.383729934692383E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.188848495483398E-003
+ cem_maxwell_op               (sec)::  5.019640922546387E-002
+ rk_maxwell_ab                (sec)::  7.452726364135742E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.473396301269531E-003
+         local_grad3_gpu::gpu_time1::  4.563808441162109E-003
+                          gpu_time2::  3.909349441528320E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.536100387573242E-003
+         local_grad3_gpu::gpu_time1::  4.489660263061523E-003
+                          gpu_time2::  4.045963287353516E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.831793785095215E-002
+ cem_maxwell_restrict_to_face (sec)::  4.703283309936523E-003
+ cem_maxwell_flux             (sec)::  1.563692092895508E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.374431610107422E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.201961517333984E-003
+ cem_maxwell_op               (sec)::  4.723501205444336E-002
+ rk_maxwell_ab                (sec)::  7.453918457031250E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.486509323120117E-003
+         local_grad3_gpu::gpu_time1::  4.580736160278320E-003
+                          gpu_time2::  3.905296325683594E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.509874343872070E-003
+         local_grad3_gpu::gpu_time1::  4.459857940673828E-003
+                          gpu_time2::  4.049539566040039E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.829957962036133E-002
+ cem_maxwell_restrict_to_face (sec)::  4.658460617065430E-003
+ cem_maxwell_flux             (sec)::  1.551342010498047E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.573272705078125E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.197193145751953E-003
+ cem_maxwell_op               (sec)::  4.724240303039551E-002
+ rk_maxwell_ab                (sec)::  7.476568222045898E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.509874343872070E-003
+         local_grad3_gpu::gpu_time1::  4.594564437866211E-003
+                          gpu_time2::  3.915071487426758E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.504629135131836E-003
+         local_grad3_gpu::gpu_time1::  4.467487335205078E-003
+                          gpu_time2::  4.036664962768555E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.282567977905273E-003
+ gs_op_fields per step        (sec)::  3.160190582275391E-002
+ gs_op_fields total           (sec)::  9.480571746826172E-002
+ cem_maxwell                  (sec)::  1.831960678100586E-002
+ cem_maxwell_restrict_to_face (sec)::  4.660129547119141E-003
+ cem_maxwell_flux             (sec)::  1.551246643066406E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.380868911743164E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.191471099853516E-003
+ cem_maxwell_op               (sec)::  4.706501960754395E-002
+ rk_maxwell_ab                (sec)::  7.834672927856445E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  5.496716499328613E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.279752254486084     
+ ----------------------------------::
+
+         3 1000   31    7  217   512000 3.848E-02 1.283E-02 2.574E-11 1.448E-11 1.448E-11 2.708E-13 3.845E-12 3.845E-12 2.678E+00 1.74E-06 CPU: L2  
+         3 1000   31    7  217   512000 3.848E-02 1.283E-02 8.228E-11 4.627E-11 4.563E-11 9.622E-13 6.180E-11 6.157E-11 2.678E+00 1.74E-06 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.896827697753906E-003
+         local_grad3_gpu::gpu_time1::  4.833936691284180E-003
+                          gpu_time2::  4.062414169311523E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.535146713256836E-003
+         local_grad3_gpu::gpu_time1::  4.499435424804688E-003
+                          gpu_time2::  4.035472869873047E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.875519752502441E-002
+ cem_maxwell_restrict_to_face (sec)::  4.660129547119141E-003
+ cem_maxwell_flux             (sec)::  1.551675796508789E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.370378494262695E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.196716308593750E-003
+ cem_maxwell_op               (sec)::  4.749941825866699E-002
+ rk_maxwell_ab                (sec)::  7.459163665771484E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.488178253173828E-003
+         local_grad3_gpu::gpu_time1::  4.583835601806641E-003
+                          gpu_time2::  3.904104232788086E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.382724761962891E-003
+         local_grad3_gpu::gpu_time1::  4.597187042236328E-003
+                          gpu_time2::  4.785060882568359E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.951479911804199E-002
+ cem_maxwell_restrict_to_face (sec)::  6.303310394287109E-003
+ cem_maxwell_flux             (sec)::  1.684212684631348E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.442380905151367E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.239870071411133E-003
+ cem_maxwell_op               (sec)::  5.134272575378418E-002
+ rk_maxwell_ab                (sec)::  7.616996765136719E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.473157882690430E-003
+         local_grad3_gpu::gpu_time1::  4.571914672851562E-003
+                          gpu_time2::  3.900766372680664E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.486270904541016E-003
+         local_grad3_gpu::gpu_time1::  4.456281661987305E-003
+                          gpu_time2::  4.029750823974609E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.828098297119141E-002
+ cem_maxwell_restrict_to_face (sec)::  4.656314849853516E-003
+ cem_maxwell_flux             (sec)::  1.547861099243164E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.463838577270508E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.208398818969727E-003
+ cem_maxwell_op               (sec)::  4.708838462829590E-002
+ rk_maxwell_ab                (sec)::  7.813930511474609E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.480548858642578E-003
+         local_grad3_gpu::gpu_time1::  4.573822021484375E-003
+                          gpu_time2::  3.906488418579102E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.503198623657227E-003
+         local_grad3_gpu::gpu_time1::  4.470586776733398E-003
+                          gpu_time2::  4.032611846923828E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.828551292419434E-002
+ cem_maxwell_restrict_to_face (sec)::  4.676103591918945E-003
+ cem_maxwell_flux             (sec)::  1.551079750061035E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.406141281127930E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.190279006958008E-003
+ cem_maxwell_op               (sec)::  4.706907272338867E-002
+ rk_maxwell_ab                (sec)::  7.464885711669922E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.465290069580078E-003
+         local_grad3_gpu::gpu_time1::  4.554033279418945E-003
+                          gpu_time2::  3.911018371582031E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.505582809448242E-003
+         local_grad3_gpu::gpu_time1::  4.461050033569336E-003
+                          gpu_time2::  4.044294357299805E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.309270858764648E-003
+ gs_op_fields per step        (sec)::  3.161907196044922E-002
+ gs_op_fields total           (sec)::  0.126476287841797     
+ cem_maxwell                  (sec)::  1.827120780944824E-002
+ cem_maxwell_restrict_to_face (sec)::  4.661321640014648E-003
+ cem_maxwell_flux             (sec)::  1.555132865905762E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.380630493164062E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.192424774169922E-003
+ cem_maxwell_op               (sec)::  4.705715179443359E-002
+ rk_maxwell_ab                (sec)::  7.452249526977539E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  5.457305908203125E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.278232097625732     
+ ----------------------------------::
+
+         4 1000   31    7  217   512000 5.131E-02 1.283E-02 3.362E-11 1.870E-11 1.870E-11 4.614E-13 6.555E-12 6.555E-12 2.957E+00 1.44E-06 CPU: L2  
+         4 1000   31    7  217   512000 5.131E-02 1.283E-02 1.063E-10 5.976E-11 5.774E-11 1.568E-12 1.040E-10 1.053E-10 2.957E+00 1.44E-06 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.857011795043945E-003
+         local_grad3_gpu::gpu_time1::  4.789590835571289E-003
+                          gpu_time2::  4.066944122314453E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.541584014892578E-003
+         local_grad3_gpu::gpu_time1::  4.490137100219727E-003
+                          gpu_time2::  4.050970077514648E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.869726181030273E-002
+ cem_maxwell_restrict_to_face (sec)::  4.659414291381836E-003
+ cem_maxwell_flux             (sec)::  1.562523841857910E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.396604537963867E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.197193145751953E-003
+ cem_maxwell_op               (sec)::  4.757595062255859E-002
+ rk_maxwell_ab                (sec)::  7.720470428466797E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.453130722045898E-003
+         local_grad3_gpu::gpu_time1::  4.554748535156250E-003
+                          gpu_time2::  3.898143768310547E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.520841598510742E-003
+         local_grad3_gpu::gpu_time1::  4.462718963623047E-003
+                          gpu_time2::  4.057645797729492E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.828360557556152E-002
+ cem_maxwell_restrict_to_face (sec)::  4.664897918701172E-003
+ cem_maxwell_flux             (sec)::  1.550674438476562E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.403995513916016E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.194808959960938E-003
+ cem_maxwell_op               (sec)::  4.705452919006348E-002
+ rk_maxwell_ab                (sec)::  7.456302642822266E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.460760116577148E-003
+         local_grad3_gpu::gpu_time1::  4.556894302368164E-003
+                          gpu_time2::  3.903627395629883E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.501052856445312E-003
+         local_grad3_gpu::gpu_time1::  4.467010498046875E-003
+                          gpu_time2::  4.033565521240234E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.827645301818848E-002
+ cem_maxwell_restrict_to_face (sec)::  4.652976989746094E-003
+ cem_maxwell_flux             (sec)::  1.554536819458008E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.379915237426758E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.201007843017578E-003
+ cem_maxwell_op               (sec)::  4.705595970153809E-002
+ rk_maxwell_ab                (sec)::  7.461071014404297E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.481502532958984E-003
+         local_grad3_gpu::gpu_time1::  4.568099975585938E-003
+                          gpu_time2::  3.913402557373047E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.502483367919922E-003
+         local_grad3_gpu::gpu_time1::  4.467725753784180E-003
+                          gpu_time2::  4.034519195556641E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.829624176025391E-002
+ cem_maxwell_restrict_to_face (sec)::  4.657030105590820E-003
+ cem_maxwell_flux             (sec)::  1.553106307983398E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.393266677856445E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.189325332641602E-003
+ cem_maxwell_op               (sec)::  4.706740379333496E-002
+ rk_maxwell_ab                (sec)::  7.458686828613281E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.485078811645508E-003
+         local_grad3_gpu::gpu_time1::  4.569768905639648E-003
+                          gpu_time2::  3.914833068847656E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.511066436767578E-003
+         local_grad3_gpu::gpu_time1::  4.478693008422852E-003
+                          gpu_time2::  4.032135009765625E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.661176681518555E-003
+ gs_op_fields per step        (sec)::  3.169641494750976E-002
+ gs_op_fields total           (sec)::  0.158482074737549     
+ cem_maxwell                  (sec)::  1.830697059631348E-002
+ cem_maxwell_restrict_to_face (sec)::  4.663228988647461E-003
+ cem_maxwell_flux             (sec)::  1.588678359985352E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.385160446166992E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.189802169799805E-003
+ cem_maxwell_op               (sec)::  4.743218421936035E-002
+ rk_maxwell_ab                (sec)::  7.457256317138672E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  5.495738983154297E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.274086475372314     
+ ----------------------------------::
+
+         5 1000   31    7  217   512000 6.414E-02 1.283E-02 4.112E-11 2.257E-11 2.257E-11 6.864E-13 9.348E-12 9.348E-12 3.231E+00 1.26E-06 CPU: L2  
+         5 1000   31    7  217   512000 6.414E-02 1.283E-02 1.289E-10 7.471E-11 7.228E-11 2.290E-12 1.432E-10 1.465E-10 3.231E+00 1.26E-06 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.784532546997070E-003
+         local_grad3_gpu::gpu_time1::  4.724502563476562E-003
+                          gpu_time2::  4.059553146362305E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.534669876098633E-003
+         local_grad3_gpu::gpu_time1::  4.489660263061523E-003
+                          gpu_time2::  4.045009613037109E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.861906051635742E-002
+ cem_maxwell_restrict_to_face (sec)::  4.662036895751953E-003
+ cem_maxwell_flux             (sec)::  1.551771163940430E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.375385284423828E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.208637237548828E-003
+ cem_maxwell_op               (sec)::  4.738330841064453E-002
+ rk_maxwell_ab                (sec)::  7.457733154296875E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.503198623657227E-003
+         local_grad3_gpu::gpu_time1::  4.562854766845703E-003
+                          gpu_time2::  3.939867019653320E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.496999740600586E-003
+         local_grad3_gpu::gpu_time1::  4.465341567993164E-003
+                          gpu_time2::  4.031181335449219E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.831078529357910E-002
+ cem_maxwell_restrict_to_face (sec)::  4.640102386474609E-003
+ cem_maxwell_flux             (sec)::  1.555776596069336E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.378961563110352E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.195285797119141E-003
+ cem_maxwell_op               (sec)::  4.708337783813477E-002
+ rk_maxwell_ab                (sec)::  7.464885711669922E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.474349975585938E-003
+         local_grad3_gpu::gpu_time1::  4.571437835693359E-003
+                          gpu_time2::  3.902673721313477E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.497476577758789E-003
+         local_grad3_gpu::gpu_time1::  4.460096359252930E-003
+                          gpu_time2::  4.036903381347656E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.827859878540039E-002
+ cem_maxwell_restrict_to_face (sec)::  4.660606384277344E-003
+ cem_maxwell_flux             (sec)::  1.640701293945312E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.384206771850586E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.184080123901367E-003
+ cem_maxwell_op               (sec)::  4.791498184204102E-002
+ rk_maxwell_ab                (sec)::  7.822990417480469E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.697748184204102E-003
+         local_grad3_gpu::gpu_time1::  4.755496978759766E-003
+                          gpu_time2::  3.942012786865234E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.558273315429688E-003
+         local_grad3_gpu::gpu_time1::  4.518985748291016E-003
+                          gpu_time2::  4.038810729980469E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.856112480163574E-002
+ cem_maxwell_restrict_to_face (sec)::  4.669427871704102E-003
+ cem_maxwell_flux             (sec)::  1.551747322082520E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.390167236328125E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.196477890014648E-003
+ cem_maxwell_op               (sec)::  4.733490943908691E-002
+ rk_maxwell_ab                (sec)::  7.648229598999023E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.676052093505859E-003
+         local_grad3_gpu::gpu_time1::  4.767417907714844E-003
+                          gpu_time2::  3.908157348632812E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.557081222534180E-003
+         local_grad3_gpu::gpu_time1::  4.465818405151367E-003
+                          gpu_time2::  4.091024398803711E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.533384323120117E-003
+ gs_op_fields per step        (sec)::  3.175675868988037E-002
+ gs_op_fields total           (sec)::  0.190540552139282     
+ cem_maxwell                  (sec)::  1.858520507812500E-002
+ cem_maxwell_restrict_to_face (sec)::  4.699468612670898E-003
+ cem_maxwell_flux             (sec)::  1.575088500976562E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.373716354370117E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.199815750122070E-003
+ cem_maxwell_op               (sec)::  4.760932922363281E-002
+ rk_maxwell_ab                (sec)::  7.460117340087891E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  5.514430999755859E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.275556087493896     
+ ----------------------------------::
+
+         6 1000   31    7  217   512000 7.696E-02 1.283E-02 4.829E-11 2.616E-11 2.616E-11 9.351E-13 1.192E-11 1.192E-11 3.506E+00 1.14E-06 CPU: L2  
+         6 1000   31    7  217   512000 7.696E-02 1.283E-02 1.506E-10 9.308E-11 8.925E-11 3.142E-12 1.728E-10 1.777E-10 3.506E+00 1.14E-06 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.791208267211914E-003
+         local_grad3_gpu::gpu_time1::  4.725217819213867E-003
+                          gpu_time2::  4.065990447998047E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.524417877197266E-003
+         local_grad3_gpu::gpu_time1::  4.482030868530273E-003
+                          gpu_time2::  4.042148590087891E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.861929893493652E-002
+ cem_maxwell_restrict_to_face (sec)::  4.667758941650391E-003
+ cem_maxwell_flux             (sec)::  1.586794853210449E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.385637283325195E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.187656402587891E-003
+ cem_maxwell_op               (sec)::  4.772853851318359E-002
+ rk_maxwell_ab                (sec)::  7.457017898559570E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.720159530639648E-003
+         local_grad3_gpu::gpu_time1::  4.817008972167969E-003
+                          gpu_time2::  3.902912139892578E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.522272109985352E-003
+         local_grad3_gpu::gpu_time1::  4.475355148315430E-003
+                          gpu_time2::  4.046916961669922E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.854252815246582E-002
+ cem_maxwell_restrict_to_face (sec)::  4.652023315429688E-003
+ cem_maxwell_flux             (sec)::  1.552748680114746E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.383491516113281E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.195762634277344E-003
+ cem_maxwell_op               (sec)::  4.730153083801270E-002
+ rk_maxwell_ab                (sec)::  7.476806640625000E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.751392364501953E-003
+         local_grad3_gpu::gpu_time1::  4.806518554687500E-003
+                          gpu_time2::  3.944635391235352E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.516311645507812E-003
+         local_grad3_gpu::gpu_time1::  4.470825195312500E-003
+                          gpu_time2::  4.045009613037109E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.857781410217285E-002
+ cem_maxwell_restrict_to_face (sec)::  4.662752151489258E-003
+ cem_maxwell_flux             (sec)::  1.550960540771484E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.405187606811523E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.397464752197266E-003
+ cem_maxwell_op               (sec)::  4.755306243896484E-002
+ rk_maxwell_ab                (sec)::  9.762048721313477E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.854078292846680E-003
+         local_grad3_gpu::gpu_time1::  5.525827407836914E-003
+                          gpu_time2::  4.328012466430664E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.617162704467773E-003
+         local_grad3_gpu::gpu_time1::  4.520416259765625E-003
+                          gpu_time2::  4.096746444702148E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.981043815612793E-002
+ cem_maxwell_restrict_to_face (sec)::  4.766225814819336E-003
+ cem_maxwell_flux             (sec)::  1.571965217590332E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.381345748901367E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.196954727172852E-003
+ cem_maxwell_op               (sec)::  4.887485504150391E-002
+ rk_maxwell_ab                (sec)::  7.704257965087891E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.281873703002930E-003
+         local_grad3_gpu::gpu_time1::  4.921197891235352E-003
+                          gpu_time2::  4.360198974609375E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.509397506713867E-003
+         local_grad3_gpu::gpu_time1::  4.470825195312500E-003
+                          gpu_time2::  4.038572311401367E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.289958953857422E-003
+ gs_op_fields per step        (sec)::  3.178909846714565E-002
+ gs_op_fields total           (sec)::  0.222523689270020     
+ cem_maxwell                  (sec)::  1.911091804504395E-002
+ cem_maxwell_restrict_to_face (sec)::  4.657030105590820E-003
+ cem_maxwell_flux             (sec)::  1.553940773010254E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.383729934692383E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.181695938110352E-003
+ cem_maxwell_op               (sec)::  4.787302017211914E-002
+ rk_maxwell_ab                (sec)::  7.496118545532227E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  5.543375015258789E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.279588699340820     
+ ----------------------------------::
+
+         7 1000   31    7  217   512000 8.979E-02 1.283E-02 5.521E-11 2.954E-11 2.954E-11 1.198E-12 1.416E-11 1.416E-11 3.786E+00 1.06E-06 CPU: L2  
+         7 1000   31    7  217   512000 8.979E-02 1.283E-02 1.733E-10 1.091E-10 1.036E-10 4.196E-12 1.892E-10 1.951E-10 3.786E+00 1.06E-06 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.806943893432617E-003
+         local_grad3_gpu::gpu_time1::  4.738569259643555E-003
+                          gpu_time2::  4.068136215209961E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.514404296875000E-003
+         local_grad3_gpu::gpu_time1::  4.487991333007812E-003
+                          gpu_time2::  4.026412963867188E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.862549781799316E-002
+ cem_maxwell_restrict_to_face (sec)::  5.833864212036133E-003
+ cem_maxwell_flux             (sec)::  1.765966415405273E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.348205566406250E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.187894821166992E-003
+ cem_maxwell_op               (sec)::  5.065536499023438E-002
+ rk_maxwell_ab                (sec)::  7.463216781616211E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.731603622436523E-003
+         local_grad3_gpu::gpu_time1::  4.813671112060547E-003
+                          gpu_time2::  3.917455673217773E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.501052856445312E-003
+         local_grad3_gpu::gpu_time1::  4.465818405151367E-003
+                          gpu_time2::  4.034757614135742E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.854395866394043E-002
+ cem_maxwell_restrict_to_face (sec)::  4.646301269531250E-003
+ cem_maxwell_flux             (sec)::  1.560211181640625E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.455970764160156E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.203630447387695E-003
+ cem_maxwell_op               (sec)::  4.745221138000488E-002
+ rk_maxwell_ab                (sec)::  7.484912872314453E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.227037429809570E-003
+         local_grad3_gpu::gpu_time1::  5.327463150024414E-003
+                          gpu_time2::  3.899097442626953E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.031368255615234E-003
+         local_grad3_gpu::gpu_time1::  4.228353500366211E-003
+                          gpu_time2::  3.802537918090820E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.857066154479980E-002
+ cem_maxwell_restrict_to_face (sec)::  4.649877548217773E-003
+ cem_maxwell_flux             (sec)::  1.552581787109375E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.382061004638672E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.186702728271484E-003
+ cem_maxwell_op               (sec)::  4.731583595275879E-002
+ rk_maxwell_ab                (sec)::  7.485151290893555E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.906364440917969E-003
+         local_grad3_gpu::gpu_time1::  4.757642745971680E-003
+                          gpu_time2::  4.148721694946289E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.509874343872070E-003
+         local_grad3_gpu::gpu_time1::  4.473924636840820E-003
+                          gpu_time2::  4.035711288452148E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.872873306274414E-002
+ cem_maxwell_restrict_to_face (sec)::  4.647016525268555E-003
+ cem_maxwell_flux             (sec)::  1.551532745361328E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.380868911743164E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.192901611328125E-003
+ cem_maxwell_op               (sec)::  4.746508598327637E-002
+ rk_maxwell_ab                (sec)::  7.452249526977539E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.758783340454102E-003
+         local_grad3_gpu::gpu_time1::  4.802227020263672E-003
+                          gpu_time2::  3.955841064453125E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.547782897949219E-003
+         local_grad3_gpu::gpu_time1::  4.508018493652344E-003
+                          gpu_time2::  4.039525985717773E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.301403045654297E-003
+ gs_op_fields per step        (sec)::  3.202611207962036E-002
+ gs_op_fields total           (sec)::  0.256208896636963     
+ cem_maxwell                  (sec)::  1.861238479614258E-002
+ cem_maxwell_restrict_to_face (sec)::  4.654884338378906E-003
+ cem_maxwell_flux             (sec)::  1.553249359130859E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.395650863647461E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.187656402587891E-003
+ cem_maxwell_op               (sec)::  4.738330841064453E-002
+ rk_maxwell_ab                (sec)::  7.462501525878906E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  5.491423606872559E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.277997970581055     
+ ----------------------------------::
+
+         8 1000   31    7  217   512000 1.026E-01 1.283E-02 6.196E-11 3.278E-11 3.278E-11 1.469E-12 1.615E-11 1.615E-11 4.064E+00 9.92E-07 CPU: L2  
+         8 1000   31    7  217   512000 1.026E-01 1.283E-02 1.964E-10 1.218E-10 1.147E-10 5.372E-12 1.924E-10 1.986E-10 4.064E+00 9.92E-07 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  9.484291076660156E-003
+         local_grad3_gpu::gpu_time1::  5.418539047241211E-003
+                          gpu_time2::  4.065513610839844E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.522033691406250E-003
+         local_grad3_gpu::gpu_time1::  4.472017288208008E-003
+                          gpu_time2::  4.049777984619141E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.930737495422363E-002
+ cem_maxwell_restrict_to_face (sec)::  4.646539688110352E-003
+ cem_maxwell_flux             (sec)::  1.549673080444336E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.371809005737305E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.188848495483398E-003
+ cem_maxwell_op               (sec)::  4.801154136657715E-002
+ rk_maxwell_ab                (sec)::  7.500171661376953E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.649349212646484E-003
+         local_grad3_gpu::gpu_time1::  4.747390747070312E-003
+                          gpu_time2::  3.901720046997070E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.505344390869141E-003
+         local_grad3_gpu::gpu_time1::  4.466056823730469E-003
+                          gpu_time2::  4.039049148559570E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.848101615905762E-002
+ cem_maxwell_restrict_to_face (sec)::  4.649400711059570E-003
+ cem_maxwell_flux             (sec)::  1.548743247985840E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.387306213378906E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.196001052856445E-003
+ cem_maxwell_op               (sec)::  4.720139503479004E-002
+ rk_maxwell_ab                (sec)::  7.448911666870117E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.664131164550781E-003
+         local_grad3_gpu::gpu_time1::  4.744768142700195E-003
+                          gpu_time2::  3.918886184692383E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.093833923339844E-003
+         local_grad3_gpu::gpu_time1::  4.286527633666992E-003
+                          gpu_time2::  3.807306289672852E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.800942420959473E-002
+ cem_maxwell_restrict_to_face (sec)::  4.739999771118164E-003
+ cem_maxwell_flux             (sec)::  1.595759391784668E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.472421646118164E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.191947937011719E-003
+ cem_maxwell_op               (sec)::  4.737186431884766E-002
+ rk_maxwell_ab                (sec)::  7.449388504028320E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.701562881469727E-003
+         local_grad3_gpu::gpu_time1::  4.793643951416016E-003
+                          gpu_time2::  3.907680511474609E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.493185043334961E-003
+         local_grad3_gpu::gpu_time1::  4.462718963623047E-003
+                          gpu_time2::  4.030227661132812E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.851129531860352E-002
+ cem_maxwell_restrict_to_face (sec)::  4.659652709960938E-003
+ cem_maxwell_flux             (sec)::  1.640248298645020E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.362987518310547E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.190517425537109E-003
+ cem_maxwell_op               (sec)::  4.812741279602051E-002
+ rk_maxwell_ab                (sec)::  7.475614547729492E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.672475814819336E-003
+         local_grad3_gpu::gpu_time1::  4.758358001708984E-003
+                          gpu_time2::  3.913879394531250E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.491039276123047E-003
+         local_grad3_gpu::gpu_time1::  4.460334777832031E-003
+                          gpu_time2::  4.030466079711914E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.321668624877930E-003
+ gs_op_fields per step        (sec)::  3.203574816385905E-002
+ gs_op_fields total           (sec)::  0.288321733474731     
+ cem_maxwell                  (sec)::  1.846861839294434E-002
+ cem_maxwell_restrict_to_face (sec)::  4.655122756958008E-003
+ cem_maxwell_flux             (sec)::  1.555371284484863E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.377531051635742E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.189802169799805E-003
+ cem_maxwell_op               (sec)::  4.724526405334473E-002
+ rk_maxwell_ab                (sec)::  7.469177246093750E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  5.478715896606445E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.275664806365967     
+ ----------------------------------::
+
+         9 1000   31    7  217   512000 1.154E-01 1.283E-02 6.859E-11 3.594E-11 3.594E-11 1.741E-12 1.805E-11 1.805E-11 4.339E+00 9.42E-07 CPU: L2  
+         9 1000   31    7  217   512000 1.154E-01 1.283E-02 2.165E-10 1.314E-10 1.225E-10 6.630E-12 1.843E-10 1.902E-10 4.339E+00 9.42E-07 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.860588073730469E-003
+         local_grad3_gpu::gpu_time1::  4.775285720825195E-003
+                          gpu_time2::  4.085063934326172E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.539915084838867E-003
+         local_grad3_gpu::gpu_time1::  4.476070404052734E-003
+                          gpu_time2::  4.063367843627930E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.873421669006348E-002
+ cem_maxwell_restrict_to_face (sec)::  4.670619964599609E-003
+ cem_maxwell_flux             (sec)::  1.558375358581543E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.394458770751953E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.204107284545898E-003
+ cem_maxwell_op               (sec)::  4.758739471435547E-002
+ rk_maxwell_ab                (sec)::  7.447957992553711E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.672237396240234E-003
+         local_grad3_gpu::gpu_time1::  4.756927490234375E-003
+                          gpu_time2::  3.915309906005859E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.504152297973633E-003
+         local_grad3_gpu::gpu_time1::  4.463434219360352E-003
+                          gpu_time2::  4.040241241455078E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.848387718200684E-002
+ cem_maxwell_restrict_to_face (sec)::  4.658460617065430E-003
+ cem_maxwell_flux             (sec)::  1.585006713867188E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.385398864746094E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.195524215698242E-003
+ cem_maxwell_op               (sec)::  4.757380485534668E-002
+ rk_maxwell_ab                (sec)::  7.472991943359375E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.712053298950195E-003
+         local_grad3_gpu::gpu_time1::  4.810333251953125E-003
+                          gpu_time2::  3.901243209838867E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.510589599609375E-003
+         local_grad3_gpu::gpu_time1::  4.469633102416992E-003
+                          gpu_time2::  4.040956497192383E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.853489875793457E-002
+ cem_maxwell_restrict_to_face (sec)::  4.651784896850586E-003
+ cem_maxwell_flux             (sec)::  1.554512977600098E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.378246307373047E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.196477890014648E-003
+ cem_maxwell_op               (sec)::  4.730677604675293E-002
+ rk_maxwell_ab                (sec)::  7.460832595825195E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.680105209350586E-003
+         local_grad3_gpu::gpu_time1::  4.770755767822266E-003
+                          gpu_time2::  3.908872604370117E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.537530899047852E-003
+         local_grad3_gpu::gpu_time1::  4.503011703491211E-003
+                          gpu_time2::  4.034280776977539E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  1.853203773498535E-002
+ cem_maxwell_restrict_to_face (sec)::  4.658937454223633E-003
+ cem_maxwell_flux             (sec)::  1.549339294433594E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.400657653808594E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.209590911865234E-003
+ cem_maxwell_op               (sec)::  4.729485511779785E-002
+ rk_maxwell_ab                (sec)::  7.467746734619141E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.685588836669922E-003
+         local_grad3_gpu::gpu_time1::  4.765748977661133E-003
+                          gpu_time2::  3.919363021850586E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  8.508920669555664E-003
+         local_grad3_gpu::gpu_time1::  4.464387893676758E-003
+                          gpu_time2::  4.044055938720703E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  7.803678512573242E-003
+ gs_op_fields per step        (sec)::  3.213465213775635E-002
+ gs_op_fields total           (sec)::  0.321346521377563     
+ cem_maxwell                  (sec)::  1.850724220275879E-002
+ cem_maxwell_restrict_to_face (sec)::  5.235910415649414E-003
+ cem_maxwell_flux             (sec)::  1.902341842651367E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.450248718261719E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.243684768676758E-003
+ cem_maxwell_op               (sec)::  5.146074295043945E-002
+ rk_maxwell_ab                (sec)::  7.598400115966797E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  5.911540985107422E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.279031515121460     
+ ----------------------------------::
+
+        10 1000   31    7  217   512000 1.283E-01 1.283E-02 7.513E-11 3.904E-11 3.904E-11 2.012E-12 2.007E-11 2.007E-11 4.619E+00 9.02E-07 CPU: L2  
+        10 1000   31    7  217   512000 1.283E-01 1.283E-02 2.364E-10 1.386E-10 1.280E-10 7.935E-12 1.684E-10 1.735E-10 4.619E+00 9.02E-07 CPU: Linf
+
+ max timestep=       10; estimated remaining time (min)=      0.00
+ \n Preprocessor options::  
+ cputime:  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000
+ 
+ SRC=F, TM=F, TE=T, CENTRAL=F, UPWIND=T, PML=F, PEC=F EIG=F, EXP=F, RK45=T, RK4=F, RK3=F, RK2=FSIM5=F, SIM4=F, SIM3=F, SIM2=F, SIM1=F
+ DEALIAS=F, SCAT=F, SFTF=F, NM=F, DIELEC=F, FILTER=F, SOL=T, POISSON=T, DRUDE=F, LORENTZ=F, WAKE=F, NAPOLY=F, BEAM=F, Dealias_M=  8, Krylov_Dim=  1\n
+ \n
+ setup: time2/time1/time2-time1:: 1.3617E+09 1.3617E+09 4.9171E-01 sec 
+ solve: time2/time1/time2-time1:: 1.3617E+09 1.3617E+09 5.2306E+00 sec 
+ total: time2/time1/time2-time1:: 1.3617E+09 1.3617E+09 5.7223E+00 sec 
+ setup: wtime2/wtime1/wtime2-wtime1:: 0.0000E+00 0.0000E+00 0.0000E+00 sec 
+ solve: wtime2/wtime1/wtime2-wtime1:: 0.0000E+00 0.0000E+00 0.0000E+00 sec 
+ total: wtime2/wtime1/wtime2-wtime1:: 0.0000E+00 0.0000E+00 0.0000E+00 sec 
+ \n
+ call cpu_time: totalu @@   0.000000000000000E+000
+ =======================================
+    Job successfully completed !!!!   
+ =======================================
+ time averaged over np=           1
+ setup wtime (avg/nid0/max):: 0.0000E+00 0.0000E+00 0.0000E+00 sec 
+ solve wtime (avg/nid0/max):: 0.0000E+00 0.0000E+00 0.0000E+00 sec 
+ total wtime (avg/nid0/max):: 0.0000E+00 0.0000E+00 0.0000E+00 sec 
+ setup  time (avg/nid0/max):: 4.9171E-01 4.9171E-01 4.9171E-01 sec 
+ solve  time (avg/nid0/max):: 5.2306E+00 5.2306E+00 5.2306E+00 sec 
+ total  time (avg/nid0/max):: 5.7223E+00 5.7223E+00 5.7223E+00 sec 
+ total comp            :: 4.6185E+00 sec 
+ total communication   :: 3.2135E-01 sec 
+ total io time         :: 0.0000E+00 sec 
+ total chk time        :: 3.5639E-02 sec 
+ computation   /step   :: 4.6185E-01 sec 
+ communication /step   :: 3.2135E-02 sec 
+ io time       /step   :: 0.0000E+00 sec 
+ comp time /step/pts   :: 9.0206E-07 sec 
+ io   time /step/pts   :: 0.0000E+00 sec 
+ io swaptime           :: 0.0000E+00 sec 
+ io/comp  (/step/pts)  :: 0.0000E+00 %   
+ communication/comp    :: 6.9578E+00 %   
+ =======================================
+ \n
+           0  normal exit.

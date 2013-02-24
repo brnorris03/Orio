@@ -1,0 +1,1627 @@
+/----------------------------------------------------------\\
+|      _   __ ______ __ __  ______  ______   __  _____     |
+|     / | / // ____// //_/ / ____/ / __ _ / / _|/ __  /    |
+|    /  |/ // __/  / ,<   / /     / /__/   / / / / / /     |
+|   / /|  // /___ / /| | / /_ _  / /___   /_/ / / / /      |
+|  /_/ |_//_____//_/ |_|/_____/ /______/ /_/ /_/ /_/       |
+|                                                          |
+|----------------------------------------------------------|
+|                                                          |
+| NekCEM :  Nek5000 for Computational ElectroMagnetics     |
+|           Open Source Spectal Element DG Maxwell Solver  |
+| Source :  https://svn.mcs.anl.gov/repos/NEKCEM           |
+|                                                          |
+\\----------------------------------------------------------/
+                                                              
+
+ MPI_thread safety check: required=    3, provided=    0
+ Number of processors:           1
+ REAL    wdsize      :           8
+ INTEGER wdsize      :           4
+ call data_init2
+ IFCEM=  T
+ \n Preprocessor options::  
+   MOAB off at compile time
+   MPI on: -DNO_MPI not defined
+   GPU off at compile time
+   OpenMP off: -DOMP not defined
+ \n Mesh options:: 
+   IFHEX=  T  (hexahedral )
+   IFTET=  F  (tetrahedral)
+ \n Available basis:: 
+   IFDG     =  T  (SEDG   )
+   IFNEDELEC=  F  (Nedelec)
+
+
+  Beginning session:
+  /home-2/bnorris/NEKCEM/examples/gpu1.5G_N=8/3dbox.rea                         
+
+ 
+ done: data_init2::  3.493785858154297E-003  sec
+ call read_init2
+ timer accuracy:   7.1525574E-08 sec
+
+ open .rea file
+ param           1  2.997920000000000E+017
+ param           2  8.854200000000000E-021
+ param           3  1.256600000000000E-015
+ param           4   1.00000000000000     
+ param           5  0.000000000000000E+000
+ param           6  0.000000000000000E+000
+ param           7  0.000000000000000E+000
+ param           8  0.000000000000000E+000
+ param           9  0.000000000000000E+000
+ param          10  1.000000000000000E+020
+ param          11   10.0000000000000     
+ param          12  0.200000000000000     
+ param          13   10.0000000000000     
+ param          14  0.000000000000000E+000
+ param          15   10.0000000000000     
+ param          16   1.00000000000000     
+ param          17  0.000000000000000E+000
+ param          18  0.000000000000000E+000
+ param          19  0.000000000000000E+000
+ param          20   5.00000000000000     
+ param          21  0.000000000000000E+000
+ param          22  0.000000000000000E+000
+ param          23  0.000000000000000E+000
+ param          24  0.000000000000000E+000
+ param          25  0.000000000000000E+000
+ param          26  0.000000000000000E+000
+ param          27   3.00000000000000     
+ param          28  0.000000000000000E+000
+ param          29  0.000000000000000E+000
+ param          30  0.000000000000000E+000
+ param          31  0.000000000000000E+000
+ param          32  0.000000000000000E+000
+ param          33  0.000000000000000E+000
+ param          34  0.000000000000000E+000
+ param          35  0.000000000000000E+000
+ param          36  0.000000000000000E+000
+ param          37  0.000000000000000E+000
+ param          38  0.000000000000000E+000
+ param          39  0.000000000000000E+000
+ param          40  0.000000000000000E+000
+ param          41  0.000000000000000E+000
+ param          42  0.000000000000000E+000
+ param          43  0.000000000000000E+000
+ param          44  0.000000000000000E+000
+ param          45  0.000000000000000E+000
+ param          46  0.000000000000000E+000
+ param          47  0.000000000000000E+000
+ param          48  0.000000000000000E+000
+ param          49  0.140000000000000     
+ param          50  0.000000000000000E+000
+ param          51  0.000000000000000E+000
+ param          52  0.000000000000000E+000
+ param          53  0.000000000000000E+000
+ param          54  0.000000000000000E+000
+ param          55  0.000000000000000E+000
+ param          56  0.000000000000000E+000
+ param          57  0.000000000000000E+000
+ param          58  0.000000000000000E+000
+ param          59  0.000000000000000E+000
+ param          60  0.000000000000000E+000
+ param          61  0.000000000000000E+000
+ param          62  0.000000000000000E+000
+ param          63  0.000000000000000E+000
+ param          64  0.000000000000000E+000
+ param          65  0.000000000000000E+000
+ param          66  0.000000000000000E+000
+ param          67  0.000000000000000E+000
+ param          68  0.000000000000000E+000
+ param          69  0.000000000000000E+000
+ param          70  0.000000000000000E+000
+ param          71  0.000000000000000E+000
+ param          72  0.000000000000000E+000
+ param          73  0.000000000000000E+000
+ param          74  0.000000000000000E+000
+ param          75  0.000000000000000E+000
+ param          76  0.000000000000000E+000
+ param          77   1.00000000000000     
+ param          78   2.00000000000000     
+ param          79  1.000000000000000E-005
+ param          80   4.00000000000000     
+ param          81  0.000000000000000E+000
+ param          82   1.00000000000000     
+ param          83  0.000000000000000E+000
+ param          84  0.000000000000000E+000
+ param          85  0.000000000000000E+000
+ param          86  0.000000000000000E+000
+ param          87  0.000000000000000E+000
+ param          88  0.000000000000000E+000
+ param          89  0.000000000000000E+000
+ param          90  0.000000000000000E+000
+ param          91  0.000000000000000E+000
+ param          92  0.000000000000000E+000
+ param          93   1.00000000000000     
+ param          94  0.000000000000000E+000
+ param          95  0.000000000000000E+000
+ param          96  0.000000000000000E+000
+ param          97  0.000000000000000E+000
+ param          98  0.000000000000000E+000
+ param          99  0.000000000000000E+000
+ param         100  0.000000000000000E+000
+ param         101  0.000000000000000E+000
+ param         102  0.000000000000000E+000
+ param         103  0.000000000000000E+000
+ nelgt/nelgv/lelt:       27       27     1005
+ lx1  /lx2  /lx3 :        8        8        8
+ gfdm/ifgtp/ifre2 F T F
+ start reading mesh
+ opening file:
+dummy.rea                                                                                                                           
+3                                                                                                                                   
+1                      number of fields                                                                                             
+#                                                                                                                                   
+#    comments                                                                                                                       
+#                                                                                                                                   
+#                                                                                                                                   
+#========================================================                                                                           
+#                                                                                                                                   
+Box                                                                                                                                 
+-10 -10 -10 (number of elements in x,y,z)                                                                                           
+Reading  1000 =    10    10    10 elements for box  1.
+-1   1   1              (x0,x1,gain)                                                                                                
+-1   1   1              (x0,x1,gain)                                                                                                
+-1   1   1              (x0,x1,gain)                                                                                                
+ this is ifld01:           2           2
+P  ,P  ,P  ,P  ,P  ,P          (bc's)                                                                                               
+   3   6getcv:P  
+   3   6getcv:P  
+   3   6getcv:P  
+   3   6getcv:P  
+   3   6getcv:P  
+   3   6getcv:P  
+ CBC2P  P  P  P  P  P             2
+ Beginning construction of new mesh.        1000          10          10
+          10
+ call   mapelpr, mapping elements to processors
+ call   set_proc_map()
+ ifgtp/gfdm/zper T F F
+ done:: set_proc_map()
+ RANK     0 IEG       1       2       3       4       5       6       7       8
+                      9      10      11      12      13      14      15      16
+                     17      18      19      20      21      22      23      24
+                     25      26      27      28      29      30      31      32
+                     33      34      35      36      37      38      39      40
+                     41      42      43      44      45      46      47      48
+                     49      50      51      52      53      54      55      56
+                     57      58      59      60      61      62      63      64
+                     65      66      67      68      69      70      71      72
+                     73      74      75      76      77      78      79      80
+                     81      82      83      84      85      86      87      88
+                     89      90      91      92      93      94      95      96
+                     97      98      99     100     101     102     103     104
+                    105     106     107     108     109     110     111     112
+                    113     114     115     116     117     118     119     120
+                    121     122     123     124     125     126     127     128
+                    129     130     131     132     133     134     135     136
+                    137     138     139     140     141     142     143     144
+                    145     146     147     148     149     150     151     152
+                    153     154     155     156     157     158     159     160
+                    161     162     163     164     165     166     167     168
+                    169     170     171     172     173     174     175     176
+                    177     178     179     180     181     182     183     184
+                    185     186     187     188     189     190     191     192
+                    193     194     195     196     197     198     199     200
+                    201     202     203     204     205     206     207     208
+                    209     210     211     212     213     214     215     216
+                    217     218     219     220     221     222     223     224
+                    225     226     227     228     229     230     231     232
+                    233     234     235     236     237     238     239     240
+                    241     242     243     244     245     246     247     248
+                    249     250     251     252     253     254     255     256
+                    257     258     259     260     261     262     263     264
+                    265     266     267     268     269     270     271     272
+                    273     274     275     276     277     278     279     280
+                    281     282     283     284     285     286     287     288
+                    289     290     291     292     293     294     295     296
+                    297     298     299     300     301     302     303     304
+                    305     306     307     308     309     310     311     312
+                    313     314     315     316     317     318     319     320
+                    321     322     323     324     325     326     327     328
+                    329     330     331     332     333     334     335     336
+                    337     338     339     340     341     342     343     344
+                    345     346     347     348     349     350     351     352
+                    353     354     355     356     357     358     359     360
+                    361     362     363     364     365     366     367     368
+                    369     370     371     372     373     374     375     376
+                    377     378     379     380     381     382     383     384
+                    385     386     387     388     389     390     391     392
+                    393     394     395     396     397     398     399     400
+                    401     402     403     404     405     406     407     408
+                    409     410     411     412     413     414     415     416
+                    417     418     419     420     421     422     423     424
+                    425     426     427     428     429     430     431     432
+                    433     434     435     436     437     438     439     440
+                    441     442     443     444     445     446     447     448
+                    449     450     451     452     453     454     455     456
+                    457     458     459     460     461     462     463     464
+                    465     466     467     468     469     470     471     472
+                    473     474     475     476     477     478     479     480
+                    481     482     483     484     485     486     487     488
+                    489     490     491     492     493     494     495     496
+                    497     498     499     500     501     502     503     504
+                    505     506     507     508     509     510     511     512
+                    513     514     515     516     517     518     519     520
+                    521     522     523     524     525     526     527     528
+                    529     530     531     532     533     534     535     536
+                    537     538     539     540     541     542     543     544
+                    545     546     547     548     549     550     551     552
+                    553     554     555     556     557     558     559     560
+                    561     562     563     564     565     566     567     568
+                    569     570     571     572     573     574     575     576
+                    577     578     579     580     581     582     583     584
+                    585     586     587     588     589     590     591     592
+                    593     594     595     596     597     598     599     600
+                    601     602     603     604     605     606     607     608
+                    609     610     611     612     613     614     615     616
+                    617     618     619     620     621     622     623     624
+                    625     626     627     628     629     630     631     632
+                    633     634     635     636     637     638     639     640
+                    641     642     643     644     645     646     647     648
+                    649     650     651     652     653     654     655     656
+                    657     658     659     660     661     662     663     664
+                    665     666     667     668     669     670     671     672
+                    673     674     675     676     677     678     679     680
+                    681     682     683     684     685     686     687     688
+                    689     690     691     692     693     694     695     696
+                    697     698     699     700     701     702     703     704
+                    705     706     707     708     709     710     711     712
+                    713     714     715     716     717     718     719     720
+                    721     722     723     724     725     726     727     728
+                    729     730     731     732     733     734     735     736
+                    737     738     739     740     741     742     743     744
+                    745     746     747     748     749     750     751     752
+                    753     754     755     756     757     758     759     760
+                    761     762     763     764     765     766     767     768
+                    769     770     771     772     773     774     775     776
+                    777     778     779     780     781     782     783     784
+                    785     786     787     788     789     790     791     792
+                    793     794     795     796     797     798     799     800
+                    801     802     803     804     805     806     807     808
+                    809     810     811     812     813     814     815     816
+                    817     818     819     820     821     822     823     824
+                    825     826     827     828     829     830     831     832
+                    833     834     835     836     837     838     839     840
+                    841     842     843     844     845     846     847     848
+                    849     850     851     852     853     854     855     856
+                    857     858     859     860     861     862     863     864
+                    865     866     867     868     869     870     871     872
+                    873     874     875     876     877     878     879     880
+                    881     882     883     884     885     886     887     888
+                    889     890     891     892     893     894     895     896
+                    897     898     899     900     901     902     903     904
+                    905     906     907     908     909     910     911     912
+                    913     914     915     916     917     918     919     920
+                    921     922     923     924     925     926     927     928
+                    929     930     931     932     933     934     935     936
+                    937     938     939     940     941     942     943     944
+                    945     946     947     948     949     950     951     952
+                    953     954     955     956     957     958     959     960
+                    961     962     963     964     965     966     967     968
+                    969     970     971     972     973     974     975     976
+                    977     978     979     980     981     982     983     984
+                    985     986     987     988     989     990     991     992
+                    993     994     995     996     997     998     999    1000
+ element load imbalance:            0        1000        1000
+ done :: mapelpr, mapping elements to processors\n
+ read mesh time:: 1.8852E-02 seconds 
+ done :: close .rea file   0.21333E-01 sec
+
+ done: readat2 ::  2.134776115417480E-002  sec
+ call para_init2
+ done: para_init2
+ setup mesh topology
+   Right-handed check complete for1000 elements. OK.
+   0   2nid:0,  GTP BC:  P    P    P    P    P    P  
+           0        1000       30150        6000  Fgbtuple           8
+   setvert3d:   8      127000      343000      127000      127000
+   call usrsetvert
+   done :: usrsetvert
+
+   gs_setup: 0 unique labels shared
+   setup_ds time 8.3141E-02 seconds   0  8      127000        1000
+ setup_dgds2:: init
+           0        1000       30150        6000  Fgbtuple          10
+   setvert3d:  10      217000      729000      217000      217000
+   call usrsetvert
+   done :: usrsetvert
+
+ set_vert time:: 3.4789E-02 seconds 
+   gs_setup: 0 unique labels shared
+ gs_setup time:: 7.6702E-02 seconds 
+ setup_dsdg2 time:: 1.1306E-01 seconds   1  8      217000        1000
+ done :: setup mesh topology
+ .
+ npts/nelt/nxyz/nxzfl      512000        1000         512      384000
+ call usrdat
+ done :: usrdat
+
+ call set_options
+ IFMAXWELL    T
+ IFSCHROD     F
+ IFDRIFT      F
+ IFDRUDE      F
+ IFLOREN      F
+ IFBEAM       F
+ IFWAKE       F
+ IFMOVW       F
+ IFFILTER     F
+ IFNAPY       F
+ IFWAKET      F
+ IFVARDT      F
+ IFPBG        F
+ IFDIELEC     F
+ IFPOISSON    T
+ IFGMRES      T
+ IFCG         F
+ IFIC         F
+ IFSOL        T
+ IFSRC        F
+ IFSCAT       F
+ IFSFTF       F
+ IFCENTRAL    F
+ IFUPWIND     T
+ IFDEALIAS    F
+ IFTM         F
+ IFTE         T
+ IFEIG        F
+ IFEXP        F
+ IFRK45       T
+ IFRK44       F
+ IFRK33       F
+ IFRK22       F
+ IFSIM5       F
+ IFSIM4       F
+ IFSIM3       F
+ IFSIM2       F
+ IFSIM1       F
+ IFDTCTL      F
+ IFPEC        F
+ IFPML        F
+ IFDTN        F
+ IFNM         F
+ IFRESTART    F
+ 
+ cspeed   =   1.00000000000000     
+ permit_0 =   1.00000000000000     
+ permea_0 =   1.00000000000000     
+ nmscale  =   1.00000000000000     
+ 
+ done :: set_options
+
+ call setlog
+ IFSTRS = F
+ IFCHAR = F
+ IFAXIS = F
+ IFMVBD = F
+ IFMELT = F
+ IFMODEL= F
+ IFKEPS = F
+   
+ IFVCOR = T
+ IFINTQ = F
+ IFCWUZ = F
+ IFSWALL= F
+ IFGEOM = F
+ IFSURT = F
+ IFWCNO = F
+ IFCEM  = T
+   
+ IFADVC for field           1    =  F
+ IFNONL for field           1    =  F
+   
+ IFADVC for field           2    =  F
+ IFNONL for field           2    =  T
+ done :: setlog
+
+ call gengeom
+ genwz
+ gencoor
+ geom1
+ Vol:   8.00000000000142        8.00000000000142     
+ volumn
+ setdef
+ done :: generate geomerty data
+  
+ done :: gengeom
+
+ call usrdat2
+ done :: usrdat2
+
+ call geom_reset
+ this is bm2:  4.916296687936172E-005
+ Vol:   248.050213442394        248.050213442394     
+ done :: usrdat2
+
+ call set_unr   
+ done :: set_unr
+
+ call load_semhat_weighted
+ done :: load_semhat_weighted
+
+ dofs:                     0      512000           0
+ \n Preprocessor options::  
+   hpm off: -DHPM not defined
+ \n
+ IFMAXWELL    T
+ IFSCHROD     F
+ IFDRIFT      F
+ IFDRUDE      F
+ IFLOREN      F
+ IFBEAM       F
+ IFWAKE       F
+ IFMOVW       F
+ IFFILTER     F
+ IFNAPY       F
+ IFWAKET      F
+ IFVARDT      F
+ IFPBG        F
+ IFDIELEC     F
+ IFPOISSON    T
+ IFGMRES      T
+ IFCG         F
+ IFIC         F
+ IFSOL        T
+ IFSRC        F
+ IFSCAT       F
+ IFSFTF       F
+ IFCENTRAL    F
+ IFUPWIND     T
+ IFDEALIAS    F
+ IFTM         F
+ IFTE         T
+ IFEIG        F
+ IFEXP        F
+ IFRK45       T
+ IFRK44       F
+ IFRK33       F
+ IFRK22       F
+ IFSIM5       F
+ IFSIM4       F
+ IFSIM3       F
+ IFSIM2       F
+ IFSIM1       F
+ IFDTCTL      F
+ IFPEC        F
+ IFPML        F
+ IFDTN        F
+ IFNM         F
+ IFRESTART    F
+ 
+ cspeed   =   1.00000000000000     
+ permit_0 =   1.00000000000000     
+ permea_0 =   1.00000000000000     
+ nmscale  =   1.00000000000000     
+ 
+ start: initialize geom and fields
+ done: initialization geom/fields
+ start: cem_set_fc_ptr, volume index j=cemface(i)
+ done: cem_set_fc_ptr, ncemface=       384000
+ npts      512000           8           8           8        1000
+ permit_max=   1.00000000000000     
+ permit_min=   1.00000000000000     
+ permea_max=   1.00000000000000     
+ permea_min=   1.00000000000000     
+ start: cem_maxwell_materials
+ done: cem_maxwell_materials
+ done: inverse mass matrix
+ \n dxmin=  6.413558552358367E-002
+ dt=  1.282711710471673E-002 , CFL=  0.200000000000000     
+ usersol: done, IFSOL= T
+ userini: done, IFSOL= T
+
+         0 1000   31    7  217   512000 0.000E+00 1.283E-02 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.00E+00 CPU: L2  
+         0 1000   31    7  217   512000 0.000E+00 1.283E-02 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.00E+00 CPU: Linf
+ userchk: done, ifrestart= F
+ IFDOUBLE= T
+ param(81)=           0
+ param(82)=           1
+ param(83)=           0
+ dumpno   =           0
+ IFRK,IFSIM T F
+ param(17): defined as   0.000000000000000E+000
+ initial time=  0.000000000000000E+000 , final time=  1.000000000000000E+020
+ total nsteps=          10
+ iocomm=          10 , iostep=          10
+ . 
+ ============================
+ ========  BEGIN RUN ========
+ ============================
+ istep=     1    to        10
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.711749076843262E-002
+      3*local_grad3*nelt::cpu_time1::  1.862692832946777E-002
+                          cpu_time2::  8.360385894775391E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.634930610656738E-002
+      3*local_grad3*nelt::cpu_time1::  1.867580413818359E-002
+                          cpu_time2::  7.548093795776367E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.470919609069824E-002
+ cem_maxwell_restrict_to_face (sec)::  7.650136947631836E-003
+ cem_maxwell_flux             (sec)::  1.533007621765137E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.110025405883789E-003
+ cem_maxwell_apps             (sec)::  1.192092895507812E-006
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.203392028808594E-003
+ cem_maxwell_op               (sec)::  8.600425720214844E-002
+ rk_maxwell_ab                (sec)::  1.177597045898438E-002
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.421951293945312E-002
+      3*local_grad3*nelt::cpu_time1::  1.861763000488281E-002
+                          cpu_time2::  5.476236343383789E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.433085441589355E-002
+      3*local_grad3*nelt::cpu_time1::  1.867890357971191E-002
+                          cpu_time2::  5.515575408935547E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.006170272827148E-002
+ cem_maxwell_restrict_to_face (sec)::  4.452466964721680E-003
+ cem_maxwell_flux             (sec)::  1.522707939147949E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.113601684570312E-003
+ cem_maxwell_apps             (sec)::  9.536743164062500E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.204822540283203E-003
+ cem_maxwell_op               (sec)::  7.806062698364258E-002
+ rk_maxwell_ab                (sec)::  7.462501525878906E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.427411079406738E-002
+      3*local_grad3*nelt::cpu_time1::  1.868414878845215E-002
+                          cpu_time2::  5.466699600219727E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.432560920715332E-002
+      3*local_grad3*nelt::cpu_time1::  1.867771148681641E-002
+                          cpu_time2::  5.512952804565430E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.984068870544434E-002
+ cem_maxwell_restrict_to_face (sec)::  4.450559616088867E-003
+ cem_maxwell_flux             (sec)::  1.522445678710938E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.118608474731445E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.199338912963867E-003
+ cem_maxwell_op               (sec)::  7.783436775207520E-002
+ rk_maxwell_ab                (sec)::  7.469654083251953E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.436304092407227E-002
+      3*local_grad3*nelt::cpu_time1::  1.870846748352051E-002
+                          cpu_time2::  5.521297454833984E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.433419227600098E-002
+      3*local_grad3*nelt::cpu_time1::  1.867842674255371E-002
+                          cpu_time2::  5.524158477783203E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.993247985839844E-002
+ cem_maxwell_restrict_to_face (sec)::  4.460811614990234E-003
+ cem_maxwell_flux             (sec)::  1.540064811706543E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.102634429931641E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.205060958862305E-003
+ cem_maxwell_op               (sec)::  7.810235023498535E-002
+ rk_maxwell_ab                (sec)::  7.754802703857422E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.428793907165527E-002
+      3*local_grad3*nelt::cpu_time1::  1.866984367370605E-002
+                          cpu_time2::  5.484342575073242E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.432775497436523E-002
+      3*local_grad3*nelt::cpu_time1::  1.866674423217773E-002
+                          cpu_time2::  5.531787872314453E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.022214889526367E-003
+ gs_op_fields per step        (sec)::  3.013610839843750E-002
+ gs_op_fields total           (sec)::  3.013610839843750E-002
+ cem_maxwell                  (sec)::  4.985666275024414E-002
+ cem_maxwell_restrict_to_face (sec)::  4.441976547241211E-003
+ cem_maxwell_flux             (sec)::  1.527810096740723E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.108118057250977E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.196477890014648E-003
+ cem_maxwell_op               (sec)::  7.788205146789551E-002
+ rk_maxwell_ab                (sec)::  7.468223571777344E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  8.541965484619141E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.440148591995239     
+ ----------------------------------::
+
+    istep   nelt  nels  N  npt1    npts   time  dt     HXerr     HYerr     HZerr     EXerr     EYerr     EZerr  cpu_t   cpu_t_pts
+
+         1 1000   31    7  217   512000 1.283E-02 1.283E-02 8.877E-12 5.083E-12 5.083E-12 3.256E-14 3.737E-13 3.737E-13 4.402E-01 8.60E-07 CPU: L2  
+         1 1000   31    7  217   512000 1.283E-02 1.283E-02 2.898E-11 1.671E-11 1.663E-11 1.423E-13 5.624E-12 5.591E-12 4.402E-01 8.60E-07 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.625942230224609E-002
+      3*local_grad3*nelt::cpu_time1::  1.977849006652832E-002
+                          cpu_time2::  6.355047225952148E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.446007728576660E-002
+      3*local_grad3*nelt::cpu_time1::  1.874375343322754E-002
+                          cpu_time2::  5.588769912719727E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.197000503540039E-002
+ cem_maxwell_restrict_to_face (sec)::  4.458904266357422E-003
+ cem_maxwell_flux             (sec)::  1.553797721862793E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.106687545776367E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.198862075805664E-003
+ cem_maxwell_op               (sec)::  8.027291297912598E-002
+ rk_maxwell_ab                (sec)::  7.473230361938477E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.434444427490234E-002
+      3*local_grad3*nelt::cpu_time1::  1.871395111083984E-002
+                          cpu_time2::  5.501031875610352E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.434992790222168E-002
+      3*local_grad3*nelt::cpu_time1::  1.868844032287598E-002
+                          cpu_time2::  5.524873733520508E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.993343353271484E-002
+ cem_maxwell_restrict_to_face (sec)::  4.434823989868164E-003
+ cem_maxwell_flux             (sec)::  1.525044441223145E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.117177963256836E-003
+ cem_maxwell_apps             (sec)::  9.536743164062500E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.216743469238281E-003
+ cem_maxwell_op               (sec)::  7.795381546020508E-002
+ rk_maxwell_ab                (sec)::  7.492542266845703E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.425837516784668E-002
+      3*local_grad3*nelt::cpu_time1::  1.864337921142578E-002
+                          cpu_time2::  5.494356155395508E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.430677413940430E-002
+      3*local_grad3*nelt::cpu_time1::  1.866793632507324E-002
+                          cpu_time2::  5.505561828613281E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.979777336120605E-002
+ cem_maxwell_restrict_to_face (sec)::  4.441022872924805E-003
+ cem_maxwell_flux             (sec)::  1.526045799255371E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.101680755615234E-003
+ cem_maxwell_apps             (sec)::  9.536743164062500E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.190517425537109E-003
+ cem_maxwell_op               (sec)::  7.779264450073242E-002
+ rk_maxwell_ab                (sec)::  7.469654083251953E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.457308769226074E-002
+      3*local_grad3*nelt::cpu_time1::  1.897048950195312E-002
+                          cpu_time2::  5.477190017700195E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.430653572082520E-002
+      3*local_grad3*nelt::cpu_time1::  1.866149902343750E-002
+                          cpu_time2::  5.514860153198242E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.012154579162598E-002
+ cem_maxwell_restrict_to_face (sec)::  4.447460174560547E-003
+ cem_maxwell_flux             (sec)::  1.523065567016602E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.087852478027344E-003
+ cem_maxwell_apps             (sec)::  1.192092895507812E-006
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.214836120605469E-003
+ cem_maxwell_op               (sec)::  7.810378074645996E-002
+ rk_maxwell_ab                (sec)::  7.454156875610352E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.425408363342285E-002
+      3*local_grad3*nelt::cpu_time1::  1.863503456115723E-002
+                          cpu_time2::  5.494832992553711E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.432012557983398E-002
+      3*local_grad3*nelt::cpu_time1::  1.867103576660156E-002
+                          cpu_time2::  5.519151687622070E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.052494049072266E-003
+ gs_op_fields per step        (sec)::  3.017342090606689E-002
+ gs_op_fields total           (sec)::  6.034684181213379E-002
+ cem_maxwell                  (sec)::  4.980778694152832E-002
+ cem_maxwell_restrict_to_face (sec)::  4.445791244506836E-003
+ cem_maxwell_flux             (sec)::  1.564168930053711E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.106687545776367E-003
+ cem_maxwell_apps             (sec)::  9.536743164062500E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.211259841918945E-003
+ cem_maxwell_op               (sec)::  7.821440696716309E-002
+ rk_maxwell_ab                (sec)::  7.476806640625000E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  8.575415611267090E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.430022478103638     
+ ----------------------------------::
+
+         2 1000   31    7  217   512000 2.565E-02 1.283E-02 1.747E-11 9.916E-12 9.916E-12 1.250E-13 1.658E-12 1.658E-12 8.702E-01 8.50E-07 CPU: L2  
+         2 1000   31    7  217   512000 2.565E-02 1.283E-02 5.653E-11 3.245E-11 3.219E-11 4.800E-13 2.592E-11 2.502E-11 8.702E-01 8.50E-07 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.458596229553223E-002
+      3*local_grad3*nelt::cpu_time1::  1.892304420471191E-002
+                          cpu_time2::  5.537509918212891E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.429318428039551E-002
+      3*local_grad3*nelt::cpu_time1::  1.866245269775391E-002
+                          cpu_time2::  5.498170852661133E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.012345314025879E-002
+ cem_maxwell_restrict_to_face (sec)::  4.473924636840820E-003
+ cem_maxwell_flux             (sec)::  1.524853706359863E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.104303359985352E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.193855285644531E-003
+ cem_maxwell_op               (sec)::  7.814455032348633E-002
+ rk_maxwell_ab                (sec)::  7.478237152099609E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.428913116455078E-002
+      3*local_grad3*nelt::cpu_time1::  1.869153976440430E-002
+                          cpu_time2::  5.470275878906250E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.447938919067383E-002
+      3*local_grad3*nelt::cpu_time1::  1.881766319274902E-002
+                          cpu_time2::  5.532503128051758E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.000638961791992E-002
+ cem_maxwell_restrict_to_face (sec)::  4.444360733032227E-003
+ cem_maxwell_flux             (sec)::  1.523494720458984E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.130767822265625E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.195762634277344E-003
+ cem_maxwell_op               (sec)::  7.801294326782227E-002
+ rk_maxwell_ab                (sec)::  7.468223571777344E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.425026893615723E-002
+      3*local_grad3*nelt::cpu_time1::  1.862907409667969E-002
+                          cpu_time2::  5.492210388183594E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.459239959716797E-002
+      3*local_grad3*nelt::cpu_time1::  1.868319511413574E-002
+                          cpu_time2::  5.781888961791992E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.008363723754883E-002
+ cem_maxwell_restrict_to_face (sec)::  4.478931427001953E-003
+ cem_maxwell_flux             (sec)::  1.524329185485840E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.111217498779297E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.194808959960938E-003
+ cem_maxwell_op               (sec)::  7.811260223388672E-002
+ rk_maxwell_ab                (sec)::  7.502794265747070E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.429413795471191E-002
+      3*local_grad3*nelt::cpu_time1::  1.868748664855957E-002
+                          cpu_time2::  5.482196807861328E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.435374259948730E-002
+      3*local_grad3*nelt::cpu_time1::  1.867485046386719E-002
+                          cpu_time2::  5.549192428588867E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.988265037536621E-002
+ cem_maxwell_restrict_to_face (sec)::  4.468441009521484E-003
+ cem_maxwell_flux             (sec)::  1.523780822753906E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.107402801513672E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.189325332641602E-003
+ cem_maxwell_op               (sec)::  7.788658142089844E-002
+ rk_maxwell_ab                (sec)::  7.483482360839844E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.429986000061035E-002
+      3*local_grad3*nelt::cpu_time1::  1.865386962890625E-002
+                          cpu_time2::  5.519866943359375E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.435827255249023E-002
+      3*local_grad3*nelt::cpu_time1::  1.872968673706055E-002
+                          cpu_time2::  5.505323410034180E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.346940994262695E-003
+ gs_op_fields per step        (sec)::  3.026970227559407E-002
+ gs_op_fields total           (sec)::  9.080910682678223E-002
+ cem_maxwell                  (sec)::  4.989194869995117E-002
+ cem_maxwell_restrict_to_face (sec)::  4.462480545043945E-003
+ cem_maxwell_flux             (sec)::  1.557826995849609E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.111455917358398E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.226280212402344E-003
+ cem_maxwell_op               (sec)::  7.827091217041016E-002
+ rk_maxwell_ab                (sec)::  7.530689239501953E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  8.585977554321289E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.428205251693726     
+ ----------------------------------::
+
+         3 1000   31    7  217   512000 3.848E-02 1.283E-02 2.574E-11 1.448E-11 1.448E-11 2.708E-13 3.845E-12 3.845E-12 1.298E+00 8.45E-07 CPU: L2  
+         3 1000   31    7  217   512000 3.848E-02 1.283E-02 8.228E-11 4.627E-11 4.563E-11 9.622E-13 6.180E-11 6.157E-11 1.298E+00 8.45E-07 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.431416511535645E-002
+      3*local_grad3*nelt::cpu_time1::  1.866912841796875E-002
+                          cpu_time2::  5.514383316040039E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.432394027709961E-002
+      3*local_grad3*nelt::cpu_time1::  1.866436004638672E-002
+                          cpu_time2::  5.541563034057617E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.987120628356934E-002
+ cem_maxwell_restrict_to_face (sec)::  4.449844360351562E-003
+ cem_maxwell_flux             (sec)::  1.523900032043457E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.174636840820312E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.255367279052734E-003
+ cem_maxwell_op               (sec)::  7.799053192138672E-002
+ rk_maxwell_ab                (sec)::  8.388996124267578E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.612113952636719E-002
+      3*local_grad3*nelt::cpu_time1::  1.959800720214844E-002
+                          cpu_time2::  6.397008895874023E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.457427978515625E-002
+      3*local_grad3*nelt::cpu_time1::  1.880168914794922E-002
+                          cpu_time2::  5.649089813232422E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.192494392395020E-002
+ cem_maxwell_restrict_to_face (sec)::  4.729270935058594E-003
+ cem_maxwell_flux             (sec)::  1.528811454772949E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.109548568725586E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.189325332641602E-003
+ cem_maxwell_op               (sec)::  8.024215698242188E-002
+ rk_maxwell_ab                (sec)::  7.470369338989258E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.425384521484375E-002
+      3*local_grad3*nelt::cpu_time1::  1.860356330871582E-002
+                          cpu_time2::  5.524396896362305E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.434897422790527E-002
+      3*local_grad3*nelt::cpu_time1::  1.868009567260742E-002
+                          cpu_time2::  5.553960800170898E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.984092712402344E-002
+ cem_maxwell_restrict_to_face (sec)::  4.451990127563477E-003
+ cem_maxwell_flux             (sec)::  1.525974273681641E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.109786987304688E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.206491470336914E-003
+ cem_maxwell_op               (sec)::  7.786941528320312E-002
+ rk_maxwell_ab                (sec)::  7.480859756469727E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.424407005310059E-002
+      3*local_grad3*nelt::cpu_time1::  1.863622665405273E-002
+                          cpu_time2::  5.479812622070312E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.436089515686035E-002
+      3*local_grad3*nelt::cpu_time1::  1.866769790649414E-002
+                          cpu_time2::  5.558967590332031E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.983878135681152E-002
+ cem_maxwell_restrict_to_face (sec)::  4.446983337402344E-003
+ cem_maxwell_flux             (sec)::  1.524353027343750E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.104064941406250E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.211975097656250E-003
+ cem_maxwell_op               (sec)::  7.784605026245117E-002
+ rk_maxwell_ab                (sec)::  7.730722427368164E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.427315711975098E-002
+      3*local_grad3*nelt::cpu_time1::  1.864910125732422E-002
+                          cpu_time2::  5.493640899658203E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.429604530334473E-002
+      3*local_grad3*nelt::cpu_time1::  1.866459846496582E-002
+                          cpu_time2::  5.506992340087891E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.045341491699219E-003
+ gs_op_fields per step        (sec)::  3.024971485137939E-002
+ gs_op_fields total           (sec)::  0.120998859405518     
+ cem_maxwell                  (sec)::  4.980897903442383E-002
+ cem_maxwell_restrict_to_face (sec)::  4.457235336303711E-003
+ cem_maxwell_flux             (sec)::  1.528573036193848E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.119562149047852E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.205060958862305E-003
+ cem_maxwell_op               (sec)::  7.787728309631348E-002
+ rk_maxwell_ab                (sec)::  7.472038269042969E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  8.541083335876465E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.430691480636597     
+ ----------------------------------::
+
+         4 1000   31    7  217   512000 5.131E-02 1.283E-02 3.362E-11 1.870E-11 1.870E-11 4.614E-13 6.555E-12 6.555E-12 1.729E+00 8.44E-07 CPU: L2  
+         4 1000   31    7  217   512000 5.131E-02 1.283E-02 1.063E-10 5.976E-11 5.774E-11 1.568E-12 1.040E-10 1.053E-10 1.729E+00 8.44E-07 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.467060089111328E-002
+      3*local_grad3*nelt::cpu_time1::  1.901602745056152E-002
+                          cpu_time2::  5.514383316040039E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.431535720825195E-002
+      3*local_grad3*nelt::cpu_time1::  1.866531372070312E-002
+                          cpu_time2::  5.524873733520508E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.023288726806641E-002
+ cem_maxwell_restrict_to_face (sec)::  4.449844360351562E-003
+ cem_maxwell_flux             (sec)::  1.524591445922852E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.390405654907227E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.196477890014648E-003
+ cem_maxwell_op               (sec)::  7.851648330688477E-002
+ rk_maxwell_ab                (sec)::  7.464408874511719E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.428174018859863E-002
+      3*local_grad3*nelt::cpu_time1::  1.864910125732422E-002
+                          cpu_time2::  5.503177642822266E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.432847023010254E-002
+      3*local_grad3*nelt::cpu_time1::  1.864671707153320E-002
+                          cpu_time2::  5.539178848266602E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.984235763549805E-002
+ cem_maxwell_restrict_to_face (sec)::  4.465818405151367E-003
+ cem_maxwell_flux             (sec)::  1.525068283081055E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.119562149047852E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.201484680175781E-003
+ cem_maxwell_op               (sec)::  7.788085937500000E-002
+ rk_maxwell_ab                (sec)::  7.498979568481445E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.424001693725586E-002
+      3*local_grad3*nelt::cpu_time1::  1.862883567810059E-002
+                          cpu_time2::  5.484819412231445E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.451372146606445E-002
+      3*local_grad3*nelt::cpu_time1::  1.881480216979980E-002
+                          cpu_time2::  5.576848983764648E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.998755455017090E-002
+ cem_maxwell_restrict_to_face (sec)::  4.439115524291992E-003
+ cem_maxwell_flux             (sec)::  1.527452468872070E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.097389221191406E-003
+ cem_maxwell_apps             (sec)::  9.536743164062500E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.210067749023438E-003
+ cem_maxwell_op               (sec)::  7.800984382629395E-002
+ rk_maxwell_ab                (sec)::  7.469654083251953E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.455306053161621E-002
+      3*local_grad3*nelt::cpu_time1::  1.868081092834473E-002
+                          cpu_time2::  5.745410919189453E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.428841590881348E-002
+      3*local_grad3*nelt::cpu_time1::  1.866221427917480E-002
+                          cpu_time2::  5.494356155395508E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.007982254028320E-002
+ cem_maxwell_restrict_to_face (sec)::  4.446029663085938E-003
+ cem_maxwell_flux             (sec)::  1.522564888000488E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.104303359985352E-003
+ cem_maxwell_apps             (sec)::  2.384185791015625E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.206014633178711E-003
+ cem_maxwell_op               (sec)::  7.806205749511719E-002
+ rk_maxwell_ab                (sec)::  7.467746734619141E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.424812316894531E-002
+      3*local_grad3*nelt::cpu_time1::  1.862716674804688E-002
+                          cpu_time2::  5.502462387084961E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.438354492187500E-002
+      3*local_grad3*nelt::cpu_time1::  1.870894432067871E-002
+                          cpu_time2::  5.547046661376953E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.032705307006836E-003
+ gs_op_fields per step        (sec)::  3.023228645324707E-002
+ gs_op_fields total           (sec)::  0.151161432266235     
+ cem_maxwell                  (sec)::  4.986524581909180E-002
+ cem_maxwell_restrict_to_face (sec)::  4.446744918823242E-003
+ cem_maxwell_flux             (sec)::  1.529765129089355E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.125284194946289E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.225088119506836E-003
+ cem_maxwell_op               (sec)::  7.796049118041992E-002
+ rk_maxwell_ab                (sec)::  7.494688034057617E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  8.551621437072754E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.428145647048950     
+ ----------------------------------::
+
+         5 1000   31    7  217   512000 6.414E-02 1.283E-02 4.112E-11 2.257E-11 2.257E-11 6.864E-13 9.348E-12 9.348E-12 2.157E+00 8.43E-07 CPU: L2  
+         5 1000   31    7  217   512000 6.414E-02 1.283E-02 1.289E-10 7.471E-11 7.228E-11 2.290E-12 1.432E-10 1.465E-10 2.157E+00 8.43E-07 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.459383010864258E-002
+      3*local_grad3*nelt::cpu_time1::  1.894044876098633E-002
+                          cpu_time2::  5.520820617675781E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.430772781372070E-002
+      3*local_grad3*nelt::cpu_time1::  1.867175102233887E-002
+                          cpu_time2::  5.505561828613281E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.014419555664062E-002
+ cem_maxwell_restrict_to_face (sec)::  4.453897476196289E-003
+ cem_maxwell_flux             (sec)::  1.523733139038086E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.103111267089844E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.211021423339844E-003
+ cem_maxwell_op               (sec)::  7.815027236938477E-002
+ rk_maxwell_ab                (sec)::  7.487535476684570E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.422237396240234E-002
+      3*local_grad3*nelt::cpu_time1::  1.862668991088867E-002
+                          cpu_time2::  5.461454391479492E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.429795265197754E-002
+      3*local_grad3*nelt::cpu_time1::  1.867103576660156E-002
+                          cpu_time2::  5.488157272338867E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.977250099182129E-002
+ cem_maxwell_restrict_to_face (sec)::  4.467487335205078E-003
+ cem_maxwell_flux             (sec)::  1.524066925048828E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.108594894409180E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.193378448486328E-003
+ cem_maxwell_op               (sec)::  7.778334617614746E-002
+ rk_maxwell_ab                (sec)::  7.464647293090820E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.734875679016113E-002
+      3*local_grad3*nelt::cpu_time1::  2.025270462036133E-002
+                          cpu_time2::  6.966590881347656E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.510046958923340E-002
+      3*local_grad3*nelt::cpu_time1::  1.893353462219238E-002
+                          cpu_time2::  6.027936935424805E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.370306968688965E-002
+ cem_maxwell_restrict_to_face (sec)::  4.490375518798828E-003
+ cem_maxwell_flux             (sec)::  1.523327827453613E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.108356475830078E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.210067749023438E-003
+ cem_maxwell_op               (sec)::  8.174562454223633E-002
+ rk_maxwell_ab                (sec)::  7.473230361938477E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.430319786071777E-002
+      3*local_grad3*nelt::cpu_time1::  1.868677139282227E-002
+                          cpu_time2::  5.492925643920898E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.436900138854980E-002
+      3*local_grad3*nelt::cpu_time1::  1.872873306274414E-002
+                          cpu_time2::  5.512714385986328E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.991769790649414E-002
+ cem_maxwell_restrict_to_face (sec)::  4.440546035766602E-003
+ cem_maxwell_flux             (sec)::  1.523017883300781E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.095005035400391E-003
+ cem_maxwell_apps             (sec)::  9.536743164062500E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.199338912963867E-003
+ cem_maxwell_op               (sec)::  7.788372039794922E-002
+ rk_maxwell_ab                (sec)::  7.485151290893555E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.425670623779297E-002
+      3*local_grad3*nelt::cpu_time1::  1.865029335021973E-002
+                          cpu_time2::  5.480051040649414E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.434134483337402E-002
+      3*local_grad3*nelt::cpu_time1::  1.868557929992676E-002
+                          cpu_time2::  5.527019500732422E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.335020065307617E-003
+ gs_op_fields per step        (sec)::  3.026362260182698E-002
+ gs_op_fields total           (sec)::  0.181581735610962     
+ cem_maxwell                  (sec)::  4.984641075134277E-002
+ cem_maxwell_restrict_to_face (sec)::  4.509210586547852E-003
+ cem_maxwell_flux             (sec)::  1.554560661315918E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.123138427734375E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.158330917358398E-003
+ cem_maxwell_op               (sec)::  7.818341255187988E-002
+ rk_maxwell_ab                (sec)::  7.429122924804688E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  8.567428588867188E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.431400537490845     
+ ----------------------------------::
+
+         6 1000   31    7  217   512000 7.696E-02 1.283E-02 4.829E-11 2.616E-11 2.616E-11 9.351E-13 1.192E-11 1.192E-11 2.589E+00 8.43E-07 CPU: L2  
+         6 1000   31    7  217   512000 7.696E-02 1.283E-02 1.506E-10 9.308E-11 8.925E-11 3.142E-12 1.728E-10 1.777E-10 2.589E+00 8.43E-07 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.431440353393555E-002
+      3*local_grad3*nelt::cpu_time1::  1.867532730102539E-002
+                          cpu_time2::  5.515575408935547E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.433490753173828E-002
+      3*local_grad3*nelt::cpu_time1::  1.864790916442871E-002
+                          cpu_time2::  5.557060241699219E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.988956451416016E-002
+ cem_maxwell_restrict_to_face (sec)::  4.439830780029297E-003
+ cem_maxwell_flux             (sec)::  1.525974273681641E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.105733871459961E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.205537796020508E-003
+ cem_maxwell_op               (sec)::  7.790088653564453E-002
+ rk_maxwell_ab                (sec)::  7.826328277587891E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.425193786621094E-002
+      3*local_grad3*nelt::cpu_time1::  1.864171028137207E-002
+                          cpu_time2::  5.481243133544922E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.432274818420410E-002
+      3*local_grad3*nelt::cpu_time1::  1.864981651306152E-002
+                          cpu_time2::  5.547285079956055E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.981327056884766E-002
+ cem_maxwell_restrict_to_face (sec)::  4.715681076049805E-003
+ cem_maxwell_flux             (sec)::  1.523494720458984E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.304098129272461E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.201484680175781E-003
+ cem_maxwell_op               (sec)::  7.827019691467285E-002
+ rk_maxwell_ab                (sec)::  7.476568222045898E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.427649497985840E-002
+      3*local_grad3*nelt::cpu_time1::  1.865363121032715E-002
+                          cpu_time2::  5.494356155395508E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.431130409240723E-002
+      3*local_grad3*nelt::cpu_time1::  1.867938041687012E-002
+                          cpu_time2::  5.507469177246094E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.983973503112793E-002
+ cem_maxwell_restrict_to_face (sec)::  4.455327987670898E-003
+ cem_maxwell_flux             (sec)::  1.524448394775391E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.326747894287109E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.198623657226562E-003
+ cem_maxwell_op               (sec)::  7.806563377380371E-002
+ rk_maxwell_ab                (sec)::  7.445335388183594E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.438139915466309E-002
+      3*local_grad3*nelt::cpu_time1::  1.871275901794434E-002
+                          cpu_time2::  5.549192428588867E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.428865432739258E-002
+      3*local_grad3*nelt::cpu_time1::  1.867866516113281E-002
+                          cpu_time2::  5.489110946655273E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.991149902343750E-002
+ cem_maxwell_restrict_to_face (sec)::  4.475593566894531E-003
+ cem_maxwell_flux             (sec)::  1.526856422424316E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.104780197143555E-003
+ cem_maxwell_apps             (sec)::  9.536743164062500E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.189802169799805E-003
+ cem_maxwell_op               (sec)::  7.795119285583496E-002
+ rk_maxwell_ab                (sec)::  7.755041122436523E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.423477172851562E-002
+      3*local_grad3*nelt::cpu_time1::  1.862239837646484E-002
+                          cpu_time2::  5.486726760864258E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.432465553283691E-002
+      3*local_grad3*nelt::cpu_time1::  1.868891716003418E-002
+                          cpu_time2::  5.498886108398438E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.035566329956055E-003
+ gs_op_fields per step        (sec)::  3.025024277823312E-002
+ gs_op_fields total           (sec)::  0.211751699447632     
+ cem_maxwell                  (sec)::  4.979586601257324E-002
+ cem_maxwell_restrict_to_face (sec)::  4.440546035766602E-003
+ cem_maxwell_flux             (sec)::  1.528334617614746E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.126237869262695E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.192424774169922E-003
+ cem_maxwell_op               (sec)::  7.783913612365723E-002
+ rk_maxwell_ab                (sec)::  7.463455200195312E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  8.536505699157715E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.428316831588745     
+ ----------------------------------::
+
+         7 1000   31    7  217   512000 8.979E-02 1.283E-02 5.521E-11 2.954E-11 2.954E-11 1.198E-12 1.416E-11 1.416E-11 3.017E+00 8.42E-07 CPU: L2  
+         7 1000   31    7  217   512000 8.979E-02 1.283E-02 1.733E-10 1.091E-10 1.036E-10 4.196E-12 1.892E-10 1.951E-10 3.017E+00 8.42E-07 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.428841590881348E-002
+      3*local_grad3*nelt::cpu_time1::  1.864552497863770E-002
+                          cpu_time2::  5.517959594726562E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.427864074707031E-002
+      3*local_grad3*nelt::cpu_time1::  1.865363121032715E-002
+                          cpu_time2::  5.494832992553711E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.981470108032227E-002
+ cem_maxwell_restrict_to_face (sec)::  4.558563232421875E-003
+ cem_maxwell_flux             (sec)::  1.523542404174805E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.120038986206055E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.471612930297852E-003
+ cem_maxwell_op               (sec)::  7.820081710815430E-002
+ rk_maxwell_ab                (sec)::  7.473468780517578E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.427148818969727E-002
+      3*local_grad3*nelt::cpu_time1::  1.866555213928223E-002
+                          cpu_time2::  5.470514297485352E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.435922622680664E-002
+      3*local_grad3*nelt::cpu_time1::  1.867961883544922E-002
+                          cpu_time2::  5.558013916015625E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.986381530761719E-002
+ cem_maxwell_restrict_to_face (sec)::  4.454851150512695E-003
+ cem_maxwell_flux             (sec)::  1.523613929748535E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.098819732666016E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.199338912963867E-003
+ cem_maxwell_op               (sec)::  7.785367965698242E-002
+ rk_maxwell_ab                (sec)::  7.475137710571289E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.423858642578125E-002
+      3*local_grad3*nelt::cpu_time1::  1.865720748901367E-002
+                          cpu_time2::  5.452871322631836E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.430319786071777E-002
+      3*local_grad3*nelt::cpu_time1::  1.867580413818359E-002
+                          cpu_time2::  5.499601364135742E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.978227615356445E-002
+ cem_maxwell_restrict_to_face (sec)::  4.443168640136719E-003
+ cem_maxwell_flux             (sec)::  1.525640487670898E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.098342895507812E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.151178359985352E-003
+ cem_maxwell_op               (sec)::  7.773184776306152E-002
+ rk_maxwell_ab                (sec)::  7.420539855957031E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.743411064147949E-002
+      3*local_grad3*nelt::cpu_time1::  2.074480056762695E-002
+                          cpu_time2::  6.562948226928711E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.563285827636719E-002
+      3*local_grad3*nelt::cpu_time1::  1.953196525573730E-002
+                          cpu_time2::  5.970239639282227E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.432653427124023E-002
+ cem_maxwell_restrict_to_face (sec)::  4.536151885986328E-003
+ cem_maxwell_flux             (sec)::  1.528620719909668E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.134105682373047E-003
+ cem_maxwell_apps             (sec)::  9.536743164062500E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.196239471435547E-003
+ cem_maxwell_op               (sec)::  8.248043060302734E-002
+ rk_maxwell_ab                (sec)::  7.461547851562500E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.427148818969727E-002
+      3*local_grad3*nelt::cpu_time1::  1.866173744201660E-002
+                          cpu_time2::  5.476474761962891E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.431583404541016E-002
+      3*local_grad3*nelt::cpu_time1::  1.866817474365234E-002
+                          cpu_time2::  5.508899688720703E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.025791168212891E-003
+ gs_op_fields per step        (sec)::  3.024327754974365E-002
+ gs_op_fields total           (sec)::  0.241946220397949     
+ cem_maxwell                  (sec)::  4.982328414916992E-002
+ cem_maxwell_restrict_to_face (sec)::  4.421234130859375E-003
+ cem_maxwell_flux             (sec)::  1.525473594665527E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.091428756713867E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.213405609130859E-003
+ cem_maxwell_op               (sec)::  7.780456542968750E-002
+ rk_maxwell_ab                (sec)::  7.481575012207031E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  8.534932136535645E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.431709527969360     
+ ----------------------------------::
+
+         8 1000   31    7  217   512000 1.026E-01 1.283E-02 6.196E-11 3.278E-11 3.278E-11 1.469E-12 1.615E-11 1.615E-11 3.449E+00 8.42E-07 CPU: L2  
+         8 1000   31    7  217   512000 1.026E-01 1.283E-02 1.964E-10 1.218E-10 1.147E-10 5.372E-12 1.924E-10 1.986E-10 3.449E+00 8.42E-07 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.457714080810547E-002
+      3*local_grad3*nelt::cpu_time1::  1.895499229431152E-002
+                          cpu_time2::  5.495548248291016E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.432656288146973E-002
+      3*local_grad3*nelt::cpu_time1::  1.867914199829102E-002
+                          cpu_time2::  5.520582199096680E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.013942718505859E-002
+ cem_maxwell_restrict_to_face (sec)::  4.473686218261719E-003
+ cem_maxwell_flux             (sec)::  1.526093482971191E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.117416381835938E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.196239471435547E-003
+ cem_maxwell_op               (sec)::  7.818818092346191E-002
+ rk_maxwell_ab                (sec)::  7.462501525878906E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.428913116455078E-002
+      3*local_grad3*nelt::cpu_time1::  1.867222785949707E-002
+                          cpu_time2::  5.487442016601562E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.432656288146973E-002
+      3*local_grad3*nelt::cpu_time1::  1.867818832397461E-002
+                          cpu_time2::  5.508899688720703E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.986000061035156E-002
+ cem_maxwell_restrict_to_face (sec)::  4.444599151611328E-003
+ cem_maxwell_flux             (sec)::  1.559543609619141E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.097627639770508E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.198385238647461E-003
+ cem_maxwell_op               (sec)::  7.819700241088867E-002
+ rk_maxwell_ab                (sec)::  7.469654083251953E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.428030967712402E-002
+      3*local_grad3*nelt::cpu_time1::  1.866698265075684E-002
+                          cpu_time2::  5.484342575073242E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.683568000793457E-002
+      3*local_grad3*nelt::cpu_time1::  2.035808563232422E-002
+                          cpu_time2::  6.339788436889648E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  5.236768722534180E-002
+ cem_maxwell_restrict_to_face (sec)::  4.589080810546875E-003
+ cem_maxwell_flux             (sec)::  1.522946357727051E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.092382431030273E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.210544586181641E-003
+ cem_maxwell_op               (sec)::  8.049011230468750E-002
+ rk_maxwell_ab                (sec)::  7.465839385986328E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.426242828369141E-002
+      3*local_grad3*nelt::cpu_time1::  1.864886283874512E-002
+                          cpu_time2::  5.480527877807617E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.434897422790527E-002
+      3*local_grad3*nelt::cpu_time1::  1.868820190429688E-002
+                          cpu_time2::  5.516290664672852E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.984688758850098E-002
+ cem_maxwell_restrict_to_face (sec)::  4.441738128662109E-003
+ cem_maxwell_flux             (sec)::  1.537799835205078E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.098342895507812E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.242492675781250E-003
+ cem_maxwell_op               (sec)::  7.800841331481934E-002
+ rk_maxwell_ab                (sec)::  7.577180862426758E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.425169944763184E-002
+      3*local_grad3*nelt::cpu_time1::  1.863026618957520E-002
+                          cpu_time2::  5.500793457031250E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.430605888366699E-002
+      3*local_grad3*nelt::cpu_time1::  1.866316795349121E-002
+                          cpu_time2::  5.519866943359375E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.318330764770508E-003
+ gs_op_fields per step        (sec)::  3.031860457526313E-002
+ gs_op_fields total           (sec)::  0.272867441177368     
+ cem_maxwell                  (sec)::  4.980850219726562E-002
+ cem_maxwell_restrict_to_face (sec)::  4.439115524291992E-003
+ cem_maxwell_flux             (sec)::  1.554250717163086E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.114078521728516E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.202438354492188E-003
+ cem_maxwell_op               (sec)::  7.810735702514648E-002
+ rk_maxwell_ab                (sec)::  7.467508316040039E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  8.564090728759766E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.430776357650757     
+ ----------------------------------::
+
+         9 1000   31    7  217   512000 1.154E-01 1.283E-02 6.859E-11 3.594E-11 3.594E-11 1.741E-12 1.805E-11 1.805E-11 3.879E+00 8.42E-07 CPU: L2  
+         9 1000   31    7  217   512000 1.154E-01 1.283E-02 2.165E-10 1.314E-10 1.225E-10 6.630E-12 1.843E-10 1.902E-10 3.879E+00 8.42E-07 CPU: Linf
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.430224418640137E-002
+      3*local_grad3*nelt::cpu_time1::  1.865148544311523E-002
+                          cpu_time2::  5.528926849365234E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.432966232299805E-002
+      3*local_grad3*nelt::cpu_time1::  1.869654655456543E-002
+                          cpu_time2::  5.500555038452148E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.988598823547363E-002
+ cem_maxwell_restrict_to_face (sec)::  4.448890686035156E-003
+ cem_maxwell_flux             (sec)::  1.526403427124023E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.113601684570312E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.238677978515625E-003
+ cem_maxwell_op               (sec)::  7.795166969299316E-002
+ rk_maxwell_ab                (sec)::  7.491111755371094E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.430725097656250E-002
+      3*local_grad3*nelt::cpu_time1::  1.866459846496582E-002
+                          cpu_time2::  5.516767501831055E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.445459365844727E-002
+      3*local_grad3*nelt::cpu_time1::  1.881432533264160E-002
+                          cpu_time2::  5.505561828613281E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.999876022338867E-002
+ cem_maxwell_restrict_to_face (sec)::  4.462718963623047E-003
+ cem_maxwell_flux             (sec)::  1.554441452026367E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.128383636474609E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  0.000000000000000E+000
+ cem_maxwell_invqmass         (sec)::  3.215551376342773E-003
+ cem_maxwell_op               (sec)::  7.835030555725098E-002
+ rk_maxwell_ab                (sec)::  7.466793060302734E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.424764633178711E-002
+      3*local_grad3*nelt::cpu_time1::  1.863121986389160E-002
+                          cpu_time2::  5.490779876708984E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.434182167053223E-002
+      3*local_grad3*nelt::cpu_time1::  1.866269111633301E-002
+                          cpu_time2::  5.554199218750000E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.982304573059082E-002
+ cem_maxwell_restrict_to_face (sec)::  4.452943801879883E-003
+ cem_maxwell_flux             (sec)::  1.524066925048828E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.095720291137695E-003
+ cem_maxwell_apps             (sec)::  9.536743164062500E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.192901611328125E-003
+ cem_maxwell_op               (sec)::  7.780647277832031E-002
+ rk_maxwell_ab                (sec)::  7.468223571777344E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.427482604980469E-002
+      3*local_grad3*nelt::cpu_time1::  1.868057250976562E-002
+                          cpu_time2::  5.478143692016602E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.431750297546387E-002
+      3*local_grad3*nelt::cpu_time1::  1.865696907043457E-002
+                          cpu_time2::  5.520105361938477E-003
+ ----------------------------------::
+ cem_maxwell                  (sec)::  4.982900619506836E-002
+ cem_maxwell_restrict_to_face (sec)::  4.507780075073242E-003
+ cem_maxwell_flux             (sec)::  1.523566246032715E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.062103271484375E-003
+ cem_maxwell_apps             (sec)::  4.768371582031250E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.192901611328125E-003
+ cem_maxwell_op               (sec)::  7.782816886901855E-002
+ rk_maxwell_ab                (sec)::  7.762193679809570E-003
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.662634849548340E-002
+      3*local_grad3*nelt::cpu_time1::  1.991963386535645E-002
+                          cpu_time2::  6.573915481567383E-003
+ ----------------------------------::
+ ----------------------------------::
+ maxwell_wght_curl            (sec)::  2.608418464660645E-002
+      3*local_grad3*nelt::cpu_time1::  1.966547966003418E-002
+                          cpu_time2::  6.296396255493164E-003
+ ----------------------------------::
+ gs_op_fields per call        (sec)::  6.037950515747070E-003
+ gs_op_fields per step        (sec)::  3.030457496643067E-002
+ gs_op_fields total           (sec)::  0.303045749664307     
+ cem_maxwell                  (sec)::  5.397605895996094E-002
+ cem_maxwell_restrict_to_face (sec)::  4.527807235717773E-003
+ cem_maxwell_flux             (sec)::  1.532149314880371E-002
+ cem_maxwell_add_flux_to_res  (sec)::  5.113124847412109E-003
+ cem_maxwell_apps             (sec)::  7.152557373046875E-007
+ cem_maxwell_source           (sec)::  2.384185791015625E-007
+ cem_maxwell_invqmass         (sec)::  3.193378448486328E-003
+ cem_maxwell_op               (sec)::  8.213281631469727E-002
+ rk_maxwell_ab                (sec)::  7.496356964111328E-003
+ ----------------------------------::
+ cem_maxwell_op_rk            (sec)::  8.969140052795410E-002
+ cem_maxwell_op_rk per istep  (sec)::  0.432072401046753     
+ ----------------------------------::
+
+        10 1000   31    7  217   512000 1.283E-01 1.283E-02 7.513E-11 3.904E-11 3.904E-11 2.012E-12 2.007E-11 2.007E-11 4.312E+00 8.42E-07 CPU: L2  
+        10 1000   31    7  217   512000 1.283E-01 1.283E-02 2.364E-10 1.386E-10 1.280E-10 7.935E-12 1.684E-10 1.735E-10 4.312E+00 8.42E-07 CPU: Linf
+
+ max timestep=       10; estimated remaining time (min)=      0.00
+ \n Preprocessor options::  
+ cputime:  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000
+ 
+ SRC=F, TM=F, TE=T, CENTRAL=F, UPWIND=T, PML=F, PEC=F EIG=F, EXP=F, RK45=T, RK4=F, RK3=F, RK2=FSIM5=F, SIM4=F, SIM3=F, SIM2=F, SIM1=F
+ DEALIAS=F, SCAT=F, SFTF=F, NM=F, DIELEC=F, FILTER=F, SOL=T, POISSON=T, DRUDE=F, LORENTZ=F, WAKE=F, NAPOLY=F, BEAM=F, Dealias_M=  8, Krylov_Dim=  1\n
+ \n
+ setup: time2/time1/time2-time1:: 1.3617E+09 1.3617E+09 5.3838E-01 sec 
+ solve: time2/time1/time2-time1:: 1.3617E+09 1.3617E+09 4.9509E+00 sec 
+ total: time2/time1/time2-time1:: 1.3617E+09 1.3617E+09 5.4893E+00 sec 
+ setup: wtime2/wtime1/wtime2-wtime1:: 0.0000E+00 0.0000E+00 0.0000E+00 sec 
+ solve: wtime2/wtime1/wtime2-wtime1:: 0.0000E+00 0.0000E+00 0.0000E+00 sec 
+ total: wtime2/wtime1/wtime2-wtime1:: 0.0000E+00 0.0000E+00 0.0000E+00 sec 
+ \n
+ call cpu_time: totalu @@   0.000000000000000E+000
+ =======================================
+    Job successfully completed !!!!   
+ =======================================
+ time averaged over np=           1
+ setup wtime (avg/nid0/max):: 0.0000E+00 0.0000E+00 0.0000E+00 sec 
+ solve wtime (avg/nid0/max):: 0.0000E+00 0.0000E+00 0.0000E+00 sec 
+ total wtime (avg/nid0/max):: 0.0000E+00 0.0000E+00 0.0000E+00 sec 
+ setup  time (avg/nid0/max):: 5.3838E-01 5.3838E-01 5.3838E-01 sec 
+ solve  time (avg/nid0/max):: 4.9509E+00 4.9509E+00 4.9509E+00 sec 
+ total  time (avg/nid0/max):: 5.4893E+00 5.4893E+00 5.4893E+00 sec 
+ total comp            :: 4.3116E+00 sec 
+ total communication   :: 3.0305E-01 sec 
+ total io time         :: 0.0000E+00 sec 
+ total chk time        :: 3.6285E-02 sec 
+ computation   /step   :: 4.3116E-01 sec 
+ communication /step   :: 3.0305E-02 sec 
+ io time       /step   :: 0.0000E+00 sec 
+ comp time /step/pts   :: 8.4210E-07 sec 
+ io   time /step/pts   :: 0.0000E+00 sec 
+ io swaptime           :: 0.0000E+00 sec 
+ io/comp  (/step/pts)  :: 0.0000E+00 %   
+ communication/comp    :: 7.0287E+00 %   
+ =======================================
+ \n
+           0  normal exit.
