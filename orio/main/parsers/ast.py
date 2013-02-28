@@ -41,7 +41,7 @@ Created on Oct 19, 2010
 import os
 import orio.main.parsers.fcodegen
 from orio.main.util.globals import *
-from orio.tool.graphlib.graph as graph
+import orio.tool.graphlib.graph as graph
 
 # ----------------------------------------------
 # AST - Abstract Syntax Tree class
