@@ -1,7 +1,7 @@
 
 int isValid() {
   
-  double actual = 5821.103474; // or some other user-defined computation
+  double actual = -301105.392481; // 5821.103474; // or some other user-defined computation
   double x_sum = 0.0;
   double b_sum = 0.0;
   double rand1=0.1, rand2=0.9;
@@ -24,7 +24,7 @@ int isValid() {
   //printf("diff=%f\n",diff);
   //printf("diff=%d\n",(diff < 0.00000001));
 
-  if (diff < 0.00000001)
+  if (diff < 1.0/1000.0)
     return 1;
   else
     return 0;
