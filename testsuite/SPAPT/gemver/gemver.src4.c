@@ -53,10 +53,18 @@
 
 
     # Constraints
+    constraint tileI2 = ((T2_Ia == 1) or (T2_Ia % T2_I == 0));
+    constraint tileJ2 = ((T2_Ja == 1) or (T2_Ja % T2_J == 0));
+    constraint tileI4 = ((T4_Ia == 1) or (T4_Ia % T4_I == 0));
+    constraint tileJ4 = ((T4_Ja == 1) or (T4_Ja % T4_J == 0));
 
     
+    constraint reg_capacity_2 = (RT2_I*RT2_J <= 150);
+    constraint reg_capacity_4 = (RT4_I*RT4_J <= 150);
     
     
+    constraint unroll_limit_2 = (U2_I == 1) or (U2_J == 1);
+    constraint unroll_limit_4 = (U4_I == 1) or (U4_J == 1);
 
   }
 			 
@@ -76,6 +84,17 @@
   arg decl_file = 'decl.h';
   arg init_file = 'init.c';
   }
+
+
+  def validation {
+
+    arg validation_file = 'validation.c';
+
+  }
+
+
+
+
 ) @*/
 
 #define max(x,y)    ((x) > (y)? (x) : (y))
@@ -92,7 +111,7 @@ int iii, jjj, kkk;
 /*@ begin Loop(
 
 transform Composite(
-  unrolljam = (['i'],[U1_I]),
+  unrolljam = (['i'],[U1_I])
 )
 for (i=0;i<=n-1;i++) {
   x[i]=0;
@@ -104,7 +123,7 @@ transform Composite(
     tile = [('j',T2_J,'jj'),('i',T2_I,'ii'),
             (('jj','j'),T2_Ja,'jjj'),(('ii','i'),T2_Ia,'iii')],
     unrolljam = (['j','i'],[U2_J,U2_I]),
-    regtile = (['j','i'],[RT2_J,RT2_I]),
+    regtile = (['j','i'],[RT2_J,RT2_I])
 )
 for (j=0;j<=n-1;j++) {
   for (i=0;i<=n-1;i++) {
@@ -114,7 +133,7 @@ for (j=0;j<=n-1;j++) {
  }
 
 transform Composite(
-  unrolljam = (['i'],[U3_I]),
+  unrolljam = (['i'],[U3_I])
 )
 for (i=0;i<=n-1;i++) {
   x[i]=b*x[i]+z[i];
@@ -125,7 +144,7 @@ transform Composite(
     tile = [('i',T4_I,'ii'),('j',T4_J,'jj'),
             (('ii','i'),T4_Ia,'iii'),(('jj','j'),T4_Ja,'jjj')],
     unrolljam = (['i','j'],[U4_J,U4_I]),
-    regtile = (['i','j'],[RT4_I,RT4_J]),
+    regtile = (['i','j'],[RT4_I,RT4_J])
 )
 for (i = 0; i <= n-1; i++) {
   for (j = 0; j <= n-1; j++) {
