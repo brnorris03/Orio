@@ -59,6 +59,23 @@
     # Parallelization
 
     # Constraints
+    # Constraints
+    constraint tileI2 = ((T2_Ia == 1) or (T2_Ia % T2_I == 0));
+    constraint tileJ2 = ((T2_Ja == 1) or (T2_Ja % T2_J == 0));
+    constraint tileI3 = ((T3_Ia == 1) or (T3_Ia % T3_I == 0));
+    constraint tileJ3 = ((T3_Ja == 1) or (T3_Ja % T3_J == 0));
+    constraint tileI4 = ((T4_Ia == 1) or (T4_Ia % T4_I == 0));
+    constraint tileJ4 = ((T4_Ja == 1) or (T4_Ja % T4_J == 0));
+
+    
+    constraint reg_capacity_2 = (RT2_I*RT2_J <= 150);
+    constraint reg_capacity_3 = (RT3_I*RT3_J <= 150);
+    constraint reg_capacity_4 = (RT4_I*RT4_J <= 150);
+    
+    
+    constraint unroll_limit_2 = (U2_I == 1) or (U2_J == 1);
+    constraint unroll_limit_3 = (U3_I == 1) or (U3_J == 1);
+    constraint unroll_limit_4 = (U4_I == 1) or (U4_J == 1);
 
     
     
@@ -88,6 +105,17 @@
   decl static double ey[nx+1][ny] = random;
   decl static double hz[nx][ny] = random;
   }
+
+
+  def validation {
+
+    arg validation_file = 'validation.c';
+
+  }
+
+
+
+
 ) @*/   
 
 
@@ -114,7 +142,7 @@ for(t=0; t<=tmax-1; t++) {
       tile = [('i',T2_I,'ii'),('j',T2_J,'jj'),
              (('ii','i'),T2_Ia,'iii'),(('jj','j'),T2_Ja,'jjj')],
       unrolljam = (['i','j'],[U2_I,U2_J]),
-      regtile = (['i','j'],[RT2_I,RT2_J]),
+      regtile = (['i','j'],[RT2_I,RT2_J])
    )
   for (i=1; i<=nx-1; i++)
     for (j=0; j<=ny-1; j++)
@@ -125,7 +153,7 @@ for(t=0; t<=tmax-1; t++) {
       tile = [('i',T3_I,'ii'),('j',T3_J,'jj'),
              (('ii','i'),T3_Ia,'iii'),(('jj','j'),T3_Ja,'jjj')],
       unrolljam = (['i','j'],[U3_I,U3_J]),
-      regtile = (['i','j'],[RT3_I,RT3_J]),
+      regtile = (['i','j'],[RT3_I,RT3_J])
    )
   for (i=0; i<=nx-1; i++)
     for (j=1; j<=ny-1; j++)
@@ -136,7 +164,7 @@ for(t=0; t<=tmax-1; t++) {
       tile = [('i',T4_I,'ii'),('j',T4_J,'jj'),
              (('ii','i'),T4_Ia,'iii'),(('jj','j'),T4_Ja,'jjj')],
       unrolljam = (['i','j'],[U4_I,U4_J]),
-      regtile = (['i','j'],[RT4_I,RT4_J]),
+      regtile = (['i','j'],[RT4_I,RT4_J])
    )
   for (i=0; i<=nx-1; i++)
     for (j=0; j<=ny-1; j++)
