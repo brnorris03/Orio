@@ -68,16 +68,6 @@
 
 
 
-
-
-
-
-
-    
-
-
-
-
 }
   
   def search
@@ -102,6 +92,15 @@
   decl double eps = 0.005;
   }
 
+  def validation {
+
+    arg validation_file = 'validation.c';
+
+  }
+
+
+
+
 ) @*/   
 
 
@@ -117,7 +116,6 @@ int iii, jjj, kkk;
 
 /*@ begin Loop(
 
-
   for (j = 1; j <= m; j++)
     {
       mean[j] = 0.0;
@@ -131,7 +129,7 @@ transform Composite(
     tile = [('i',T2_I,'ii'),('j',T2_J,'jj'),
             (('ii','i'),T2_Ia,'iii'),(('jj','j'),T2_Ja,'jjj')],
     unrolljam = (['i','j'],[U2_I,U2_J]),
-    regtile = (['i','j'],[RT2_I,RT2_J]),
+    regtile = (['i','j'],[RT2_I,RT2_J])
 )
   for (j = 1; j <= m; j++)
     {
@@ -149,7 +147,7 @@ transform Composite(
     tile = [('i',T3_I,'ii'),('j',T3_J,'jj'),
             (('ii','i'),T3_Ia,'iii'),(('jj','j'),T3_Ja,'jjj')],
     unrolljam = (['i','j'],[U3_I,U3_J]),
-    regtile = (['i','j'],[RT3_I,RT3_J]),
+    regtile = (['i','j'],[RT3_I,RT3_J])
 )
   for (i = 1; i <= n; i++)
     for (j = 1; j <= m; j++)
