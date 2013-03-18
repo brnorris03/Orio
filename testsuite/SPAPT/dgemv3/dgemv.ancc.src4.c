@@ -107,6 +107,16 @@
     decl dynamic double t6[M] = 0;
     decl dynamic double t10[M] = 0;
   }            
+
+  def validation {
+
+    arg validation_file = 'validation.c';
+
+  }
+
+
+
+
 ) @*/
 
 int i,j, k;
@@ -124,7 +134,7 @@ int iii, jjj, kkk;
       tile = [('i',T1_I,'ii'),('j',T1_J,'jj'),
              (('ii','i'),T1_Ia,'iii'),(('jj','j'),T1_Ja,'jjj')],
       unrolljam = (['i','j'],[U1_I,U1_J]),
-      regtile = (['i','j'],[RT1_I,RT1_J]),
+      regtile = (['i','j'],[RT1_I,RT1_J])
    )
     for (i = 0; i <= A_ncols-1; i++) 
         for (j = 0; j <= A_nrows-1; j++) 
@@ -132,7 +142,7 @@ int iii, jjj, kkk;
 
 
   transform Composite(
-      unrolljam = (['i'],[U2_I]),
+      unrolljam = (['i'],[U2_I])
    )
    for (i = 0; i <= A_nrows-1; i++) 
         y[i] = t2[i]+y[i]; 
@@ -141,14 +151,14 @@ int iii, jjj, kkk;
       tile = [('i',T3_I,'ii'),('j',T3_J,'jj'),
              (('ii','i'),T3_Ia,'iii'),(('jj','j'),T3_Ja,'jjj')],
       unrolljam = (['i','j'],[U3_I,U3_J]),
-      regtile = (['i','j'],[RT3_I,RT3_J]),
+      regtile = (['i','j'],[RT3_I,RT3_J])
    )
     for (i = 0; i <= A_ncols-1; i++) 
        for (j = 0; j <= A_nrows-1; j++) 
             t6[j] = t6[j] + A[i][j]*w[i]; 
 
   transform Composite(
-      unrolljam = (['i'],[U4_I]),
+      unrolljam = (['i'],[U4_I])
    )
    for (i = 0; i <= A_nrows-1; i++) 
         z[i] = t6[i]+z[i]; 
@@ -159,14 +169,14 @@ int iii, jjj, kkk;
       tile = [('i',T5_I,'ii'),('j',T5_J,'jj'),
              (('ii','i'),T5_Ia,'iii'),(('jj','j'),T5_Ja,'jjj')],
       unrolljam = (['i','j'],[U5_I,U5_J]),
-      regtile = (['i','j'],[RT5_I,RT5_J]),
+      regtile = (['i','j'],[RT5_I,RT5_J])
    )
     for (i = 0; i <= A_ncols-1; i++) 
         for (j = 0; j <= A_nrows; j++) 
             t10[j] = t10[j] + A[i][j]*e[i]; 
 
   transform Composite(
-      unrolljam = (['i'],[U6_I]),
+      unrolljam = (['i'],[U6_I])
    )
     for (i = 0; i <= A_nrows-1; i++) 
         p[i] = t10[i]+p[i]; 
@@ -176,7 +186,7 @@ int iii, jjj, kkk;
       tile = [('i',T7_I,'ii'),('j',T7_J,'jj'),
              (('ii','i'),T7_Ia,'iii'),(('jj','j'),T7_Ja,'jjj')],
       unrolljam = (['i','j'],[U7_I,U7_J]),
-      regtile = (['i','j'],[RT7_I,RT7_J]),
+      regtile = (['i','j'],[RT7_I,RT7_J])
    )
     for (i = 0; i <= A_ncols-1; i++) 
        for (j = 0; j <= A_nrows-1; j++) {
@@ -187,20 +197,20 @@ int iii, jjj, kkk;
 
 
   transform Composite(
-      unrolljam = (['i'],[U8_I]),
+      unrolljam = (['i'],[U8_I])
    )
      for (i = 0; i <= A_nrows-1; i++) 
        y[i] = t2[i]+y[i]; 
 
   transform Composite(
-      unrolljam = (['i'],[U9_I]),
+      unrolljam = (['i'],[U9_I])
    )
      for (i = 0; i <= A_nrows-1; i++) 
        z[i] = t6[i]+z[i]; 
 
 
   transform Composite(
-      unrolljam = (['i'],[U10_I]),
+      unrolljam = (['i'],[U10_I])
    )
      for (i = 0; i <= A_nrows-1; i++) 
        p[i] = t10[i]+p[i]; 
