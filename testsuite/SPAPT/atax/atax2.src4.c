@@ -40,6 +40,12 @@
     # Parallelization
 
     # Constraints
+    constraint tileI = ((T2_I == 1) or (T2_I % T1_I == 0));
+    constraint tileJ = ((T2_J == 1) or (T2_J % T1_J == 0));
+    constraint tileK = ((T2_K == 1) or (T2_K % T1_K == 0));
+
+    constraint reg_capacity = (RT_I*RT_J + RT_I*RT_K + RT_J*RT_K <= 150);
+    constraint unroll_limit = ((U_I == 1) or (U_J == 1) or (U_K == 1));
 
 
   }
@@ -48,8 +54,11 @@
   { 
     arg algorithm = 'Randomsearch'; 
     arg total_runs = 1000;
-
   } 
+
+  def validation {
+    arg validation_file = 'validation.c';
+  }
   
   def input_params 
   {
@@ -84,7 +93,6 @@ double* tmp=(double*) malloc(nx*sizeof(double));
   transform Composite(
     tile = [('i',T1_I,'ii'),('j',T1_J,'jj'),('k',T1_K,'kk'),
             (('ii','i'),T2_I,'iii'),(('jj','j'),T2_J,'jjj'),(('kk','k'),T2_K,'kkk')],
-               (ACOPY_x, 'x[j]', [(T1_J if T1_J>1 else T2_J)],'_copy')],
     unrolljam = (['k','j','i'],[U_K,U_J,U_I]),
     regtile = (['i','j','k'],[RT_I,RT_J,RT_K])
 )
