@@ -47,18 +47,19 @@
 
 
 
+    constraint tileI1 = ((T1_Ia == 1) or (T1_Ia % T1_I == 0));
+    constraint tileJ1 = ((T1_Ja == 1) or (T1_Ja % T1_J == 0));
 
-    
-    
-
-
+    constraint tileI2 = ((T2_Ia == 1) or (T2_Ia % T2_I == 0));
+    constraint tileJ2 = ((T2_Ja == 1) or (T2_Ja % T2_J == 0));
+    constraint tileK2 = ((T2_Ka == 1) or (T2_Ka % T2_K == 0));
 
 }
   
   def search
   {
   arg algorithm = 'Randomsearch';
-  arg total_runs = 10000;
+  arg total_runs = 100000;
   }
 
   def input_params
@@ -72,6 +73,12 @@
   decl static double A[N][N+20] = random;
   decl static double B[N][N+20] = random;
   }
+
+
+  def validation {
+    arg validation_file = 'validation.c';
+  }
+
 
 ) @*/   
 
@@ -90,7 +97,7 @@ transform Composite(
     tile = [('i',T1_I,'ii'),('j',T1_J,'jj'),
             (('ii','i'),T1_Ia,'iii'),(('jj','j'),T1_Ja,'jjj')],
     unrolljam = (['i','j'],[U1_I,U1_J]),
-    regtile = (['i','j'],[RT1_I,RT1_J]),
+    regtile = (['i','j'],[RT1_I,RT1_J])
 )
 for (i=0; i<=N-1; i++)
   for (j=0; j<=N-1; j++)
@@ -105,7 +112,7 @@ transform Composite(
     tile = [('i',T2_I,'ii'),('j',T2_J,'jj'),('k',T2_K,'kk'),
             (('ii','i'),T2_Ia,'iii'),(('jj','j'),T2_Ja,'jjj'),(('kk','k'),T2_Ka,'kkk')],
     unrolljam = (['i','j','k'],[U2_I,U2_J,U2_K]),
-    regtile = (['i','j','k'],[RT2_I,RT2_J,RT2_K]),
+    regtile = (['i','j','k'],[RT2_I,RT2_J,RT2_K])
 )
 for (i=0; i<=N-1; i++)
   for (j=0; j<=N-1; j++)
