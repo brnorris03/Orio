@@ -45,6 +45,17 @@
     # Parallelization
 
     # Constraints
+    constraint tileT1I1 = ((T1_I1a == 1) or (T1_I1a % T1_I1 == 0));
+    constraint tileT1I2 = ((T1_I2a == 1) or (T1_I2a % T1_I2 == 0));
+    constraint tileT2I1 = ((T2_I1a == 1) or (T2_I1a % T2_I1 == 0));
+    constraint tileT2I2 = ((T2_I2a == 1) or (T2_I2a % T2_I2 == 0));
+    constraint reg_capacity_1 = (RT1_I1*RT1_I2 <= 150);
+    constraint reg_capacity_2 = (RT2_I1*RT2_I2 <= 150);
+    constraint unroll_limit_1 =  (U1_I1 == 1) or (U1_I2 == 1); 
+    constraint unroll_limit_2 =  (U2_I1 == 1) or (U2_I2 == 1) ;
+
+
+
 
   }
   
@@ -54,10 +65,14 @@
   arg total_runs = 10000;
   }
 
+  def validation {
+    arg validation_file = 'validation.c';
+  }
+
   def input_params
   {
   param T[] = [64];
-  param N[] = [512]; 
+  param N[] = [1024]; 
   }
   
   def input_vars {
