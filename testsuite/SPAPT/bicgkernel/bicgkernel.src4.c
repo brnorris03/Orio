@@ -43,9 +43,12 @@
 
     # Constraints
     
+    constraint tileI = ((T2_I == 1) or (T2_I % T1_I == 0));
+    constraint tileJ = ((T2_J == 1) or (T2_J % T1_J == 0));
+    
 
-
-
+    constraint reg_capacity = (RT_I*RT_J <= 150);
+    constraint unroll_limit = ((U_I == 1) or (U_J == 1));
 
   }
 
@@ -57,7 +60,7 @@
   
   def input_params 
   {
-  param N[] = [10000];
+    param N[] = [10000];
   }
   
   def input_vars
@@ -65,6 +68,14 @@
   arg decl_file = 'decl.h';
   arg init_file = 'init.c';
   }
+
+  def validation {
+
+    arg validation_file = 'validation.c';
+
+  }
+
+
 ) @*/
 
 #define max(x,y)    ((x) > (y)? (x) : (y))
