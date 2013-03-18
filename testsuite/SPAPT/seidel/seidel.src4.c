@@ -15,39 +15,38 @@
 
 
     # Cache tiling
-    param T1_T[] = [1,16,32,64,128,256,512];
     param T1_I[] = [1,16,32,64,128,256,512];
     param T1_J[] = [1,16,32,64,128,256,512];
+    param T1_K[] = [1,16,32,64,128,256,512];
 
-    param T1_Ta[] = [1,64,128,256,512,1024,2048];
     param T1_Ia[] = [1,64,128,256,512,1024,2048];
     param T1_Ja[] = [1,64,128,256,512,1024,2048];
+    param T1_Ka[] = [1,64,128,256,512,1024,2048];
 
     # Unroll-jam 
-    param U1_T[]  = range(1,31);
-    param U1_I[]  = range(1,31);
-    param U1_J[]  = range(1,31);
+    param U_I[]  = range(1,31);
+    param U_J[]  = range(1,31);
+    param U_K[]  = range(1,31);
 
     # Register tiling
-    param RT1_I[] = [1,8,32];
-    param RT1_J[] = [1,8,32];
-    param RT1_T[] = [1,8,32];
+    param RT_I[] = [1,8,32];
+    param RT_J[] = [1,8,32];
+    param RT_K[] = [1,8,32];
 
-    # Scalar replacement
 
-    # Vectorization
+    constraint tileI1 = ((T1_Ia == 1) or (T1_Ia % T1_I == 0));
+    constraint tileJ1 = ((T1_Ja == 1) or (T1_Ja % T1_J == 0));
+    constraint tileK1 = ((T1_Ka == 1) or (T1_Ka % T1_K == 0));
 
-    # Parallelization
-
-    # Constraints
-
+    constraint reg_capacity = (RT_I*RT_J + RT_I*RT_K + RT_J*RT_K <= 150);
+    constraint unroll_limit = ((U_I == 1) or (U_J == 1) or (U_K == 1));
 
   } 
  
   def search  
   {
     arg algorithm = 'Randomsearch';  
-    arg total_runs = 10000; 
+    arg total_runs = 100000; 
   }
 
   def input_params  
@@ -60,27 +59,32 @@
   {
     decl static double A[N][N+17] = random;
   }
+
+  def validation {
+    arg validation_file = 'validation.c';
+  }
+
+
 ) @*/  
 
 
 #define max(x,y)    ((x) > (y)? (x) : (y))
 #define min(x,y)    ((x) < (y)? (x) : (y))
 
-int i,j, t;
-int it, jt;
-int iii, jjj, ttt;
-int ii, jj,tt;
+int i, j, k;
+int ii, jj, kk;
+int iii, jjj, kkk;
+int it, jt, kt;
+
 
 /*@ begin Loop(
-
 transform Composite(
-    tile = [('t',T1_T,'tt'),('i',T1_I,'ii'),('j',T1_J,'jj'),
-            (('tt','t'),T1_Ta,'ttt'),(('ii','i'),T1_Ia,'iii'),(('jj','j'),T1_Ja,'jjj')],
-    unrolljam = (['t','i','j'],[U1_T,U1_I,U1_J]),
-    regtile = (['t','i','j'],[RT1_T,RT1_I,RT1_J]),
+    tile = [('i',T1_I,'ii'),('j',T1_J,'jj'),('k',T1_K,'kk'),
+            (('ii','i'),T1_Ia,'iii'),(('jj','j'),T1_Ja,'jjj'),(('kk','k'),T1_Ka,'kkk')],
+    unrolljam = (['i','j','k'],[U_I,U_J,U_K]),
+    regtile = (['i','j','k'],[RT_I,RT_J,RT_K])
 )
-
-for (t=0; t<=T-1; t++)
+for (k=0; k<=T-1; k++)
   for (i=1; i<=N-2; i++)
     for (j=1; j<=N-2; j++)
       A[i][j] = (A[i-1][j-1] + A[i-1][j] + A[i-1][j+1]
