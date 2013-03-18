@@ -39,7 +39,16 @@
 
     # Parallelization
 
+
     # Constraints
+    constraint tileI = ((T1_Ia == 1) or (T1_Ia % T1_I == 0));
+    constraint tileJ = ((T1_Ja == 1) or (T1_Ja % T1_J == 0));
+
+    constraint reg_capacity = (RT1_I*RT1_J  <= 150);
+    constraint unroll_limit = ((U1_I == 1) or (U1_J == 1) );
+
+
+
 
 
   }
@@ -60,6 +69,17 @@
   arg decl_file = 'decl.h';
   arg init_file = 'init.c';
   }
+
+
+  def validation {
+
+    arg validation_file = 'validation.c';
+
+  }
+
+
+
+
 ) @*/
 
 
