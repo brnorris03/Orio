@@ -12,23 +12,21 @@ void matmulnaive(double **m1, double **m2,double **mult,int row, int col, char *
                  
    def performance_counter {                                                          
       arg method = 'basic timer';
-      arg repetitions = 3;                                                               
+      arg repetitions = 3;                                                           
    }                      
 
    def performance_params {
        param PRCL[] = ['rendezvous','eager'];
-       param MSG[] = [1000,2000,4000,8000];
+       param MSG[] = [2000];
+       param COMM[] = [1,2,3];
    }
 
    def input_params {
-      param row[] = [100];
-      param col[] = [100];
-      param maxnumcomm = 2;
+      param row[] = [80];
+      param col[] = [80];
+      param maxnumcomm = 8;
       param datatype = 'MPI_BYTE';
-      param maxmsgsize = 4000;
-      param neighborR = 1;
-      param neighborL = -1;
-
+      param maxmsgsize = 2000; 
    } 
 
    def input_vars {
@@ -45,7 +43,7 @@ void matmulnaive(double **m1, double **m2,double **mult,int row, int col, char *
 
   /*@ begin Loop
   (
-  transform MPIOverlap(protocol=PRCL,msgsize=MSG)
+  transform MPIOverlap(protocol=PRCL,msgsize=MSG,communication=COMM)
   for(i=0;i<row;i++)
     {
       for(j=0;j<col;j++)
