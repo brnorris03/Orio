@@ -27,10 +27,12 @@ class MPIOverlap(orio.module.loop.submodule.submodule.SubModule):
         # all expected argument names
         PROTOCOL = 'protocol'
         MSG = 'msgsize'
+        COMM = 'communication'
 
         # all expected transformation arguments
         protocol = None
         msgsize = None
+        communication = None
 
         #iterate over all transformation arguments
         
@@ -49,7 +51,13 @@ class MPIOverlap(orio.module.loop.submodule.submodule.SubModule):
             # message size
             elif aname == MSG:
                 msgsize = (rhs,line_no)
+
+            # communication pattern    
+            elif aname == COMM:
+                communication = (rhs,line_no)
+
             # unknown argument name
+                
             else:
                 err('orio.module.loop.submodule.mpioverlap: %s: unrecognized transformation argument: "%s"' % (line_no, aname))
                 
@@ -61,15 +69,18 @@ class MPIOverlap(orio.module.loop.submodule.submodule.SubModule):
 
         if msgsize == None:
             err('orio.module.loop.submodule.mpioverlap.mpioverlap: %s: missing message size argument' % self.__class__.__name__)
+
+        if communication == None:
+            err('orio.module.loop.submodule.mpioverlap.mpioverlap: %s: missing communication argument' % self.__class__.__name__)
        
         # check semantics of the transformation arguments
-        protocol,msgsize = self.checkTransfArgs(protocol,msgsize)
+        protocol,msgsize,communication = self.checkTransfArgs(protocol,msgsize, communication)
 
         # return information about the transformation arguments
-        return (protocol,msgsize)
+        return (protocol,msgsize, communication)
 
 
-    def checkTransfArgs(self,protocol,msgsize):
+    def checkTransfArgs(self,protocol,msgsize,communication):
         '''Check the semantics of the given transformation arguments'''
 
        # evaluate the protocol - add
@@ -84,20 +95,26 @@ class MPIOverlap(orio.module.loop.submodule.submodule.SubModule):
             err('orio.module.loop.submodule.mpioverlap: %s: message size must be a positive integer: %s' % (line_no, rhs))
         msgsize = rhs
 
+        # evaluate communication pattern
+        rhs,line_no = communication
+        if not isinstance(rhs,int) or rhs <=0 or rhs > 3:
+            err('orio.module.loop.submodule.mpioverlap: %s: communication no. must be a positive and less than 3: %s' % (line_no, rhs))
+        communication = rhs    
+
         # return information about the transformation arguments
         
-        return (protocol, msgsize)
+        return (protocol, msgsize,communication)
      
 
     #---------------------------------------------------------------------    
 
-    def mpiOverlap(self, protocol, msgsize, stmt):
+    def mpiOverlap(self, protocol, msgsize, communication, stmt):
         '''To apply MPI overlap transformation'''
 
         debug('orio.module.loop.submodule.mpioverlap.MPIOverlap: starting mpiOverlap')
 
         # perform the MPI overlap transformation                                    
-        t = transformation.Transformation(protocol, msgsize, stmt)
+        t = transformation.Transformation(protocol, msgsize, communication, stmt)
         transformed_stmt = t.transform()
 
         # return the transformed statement                                             
@@ -110,10 +127,10 @@ class MPIOverlap(orio.module.loop.submodule.submodule.SubModule):
         '''To perform code transformations'''
 
         # read all transformation arguments                                            
-        protocol, msgsize = self.readTransfArgs(self.perf_params, self.transf_args)
+        protocol, msgsize,communication = self.readTransfArgs(self.perf_params, self.transf_args)
 
         # perform the mpi overlap transformation
-        transformed_stmt = self.mpiOverlap(protocol, msgsize, self.stmt)
+        transformed_stmt = self.mpiOverlap(protocol, msgsize, communication, self.stmt)
 
         # return the transformed statement
         return transformed_stmt
