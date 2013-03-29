@@ -1,24 +1,27 @@
 
-void matmulnaive(double **m1, double **m2,double **mult,int row, int col, char *recvbuff, char *sendbuff)
+void matmulnaive(double **m1, double **m2,double **mult,int row, int col, char *recvbuff, char *sendbuff, int loopiters)
 {
 
   /*@ begin PerfTuning
   (
 
    def build {                                                                        
-      arg build_command = 'mpicc -O3';      
+      arg build_command = 'mpicc -O3 -qarch=auto -qsmp=omp:noauto';      
       arg libs = '';
+      arg batch_command = 'qsub -n 1 --proccount 8 -t 5 --mode c8';
+      arg status_command = 'qstat';                                                  
+      arg num_procs = 8; 
    }
                  
    def performance_counter {                                                          
-      arg method = 'basic timer';
-      arg repetitions = 3;                                                           
+      arg method = 'bgp counter';
+      arg repetitions = 1;                                                           
    }                      
 
    def performance_params {
        param PRCL[] = ['rendezvous','eager'];
-       param MSG[] = [2000];
-       param COMM[] = [1,2,3];
+       param MSG[] = [200];
+       param COMM[] = [1];
    }
 
    def input_params {
@@ -26,7 +29,7 @@ void matmulnaive(double **m1, double **m2,double **mult,int row, int col, char *
       param col[] = [80];
       param maxnumcomm = 8;
       param datatype = 'MPI_BYTE';
-      param maxmsgsize = 2000; 
+      param maxmsgsize = 200; 
    } 
 
    def input_vars {
@@ -35,6 +38,11 @@ void matmulnaive(double **m1, double **m2,double **mult,int row, int col, char *
       decl dynamic double mult[row*col] = random;
       decl dynamic char recvbuff[maxnumcomm][maxmsgsize] = random;
       decl dynamic char sendbuff[maxnumcomm][maxmsgsize] = random;
+      decl int loopiters = 0;
+   }
+
+   def search {
+     arg algorithm = 'Exhaustive';
    }
 
   ) @*/
