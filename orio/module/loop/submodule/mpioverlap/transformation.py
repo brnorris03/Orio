@@ -34,6 +34,7 @@ class Transformation:
             'commneighbor' : ArrayRefExp(IdentExp('neighbor'), IdentExp('i')),
             'commneighborj' : ArrayRefExp(IdentExp('neighbor'), IdentExp('j')),
             'maxmsg'   : IdentExp(self.msgsize), 
+            'loopiters'   : IdentExp('loopiters'), 
             'dtype'    : IdentExp('datatype'),
             'id'       : IdentExp('myid'),
             'commworld': IdentExp('MPI_COMM_WORLD'),
@@ -166,12 +167,17 @@ class Transformation:
             stmts = [self.stmt]
 
         transformed_stmt = orio.module.loop.ast.CompStmt(
-                           self.newstmts['decls'] + 
-                           self.newstmts['setnumneighbors'] + 
+                           self.newstmts['decls'] +
+                           self.newstmts['setnumneighbors'] +
                            self.newstmts['setneighbors'] +
-                           self.newstmts['comm'] + 
-                           stmts + 
-                           self.newstmts['wait'])
+[ForStmt(BinOpExp(self.cs['i'], self.cs['int0'], BinOpExp.EQ_ASGN), 
+                            BinOpExp(self.cs['i'], self.cs['loopiters'],BinOpExp.LE),
+                            UnaryExp(self.cs['i'], UnaryExp.POST_INC),
+                            CompStmt(
+                           self.newstmts['comm'] +
+                           stmts +
+                           self.newstmts['wait']))])
+        
          
         # return the transformed statement                                             
         return transformed_stmt
