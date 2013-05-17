@@ -11,7 +11,7 @@ from orio.main.util.globals import *
 class Tile(orio.module.loop.submodule.submodule.SubModule):
     '''The loop tiling transformation submodule.'''
     
-    def __init__(self, perf_params = None, transf_args = None, stmt = None):
+    def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
         '''To instantiate a loop tiling transformation submodule.'''
         
         orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt)
