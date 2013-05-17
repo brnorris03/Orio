@@ -178,7 +178,7 @@ def fileCompare(newFile,ignoreString=None):
     else:
         cmd="diff "
         if (ignoreString) : cmd+="-I '"+ignoreString+"' "
-        cmd += newFile+' '+refFile        
+        cmd += newFile+' '+refFile
         hasDiff = runCmd(cmd+" > /dev/null")
         if (hasDiff == 512):
             raise CommandError, "command "+cmd+" not successful"
@@ -345,9 +345,9 @@ def runTest(exName,exNum,totalNum,compiler,optimizeFlag):
     originalOutput = testPath+basename+'.out'
 
     prefix = '_'
-    processedSource = testPath+prefix+basename+ext
-    processedExec   = testPath+prefix+basename+'.run'
-    processedOutput = testPath+prefix+basename+'.out'
+    processedSource = prefix+basename+ext
+    processedExec   = prefix+basename+'.run'
+    processedOutput = prefix+basename+'.out'
 
     if not shouldRunTest(processedSource) :
         return
