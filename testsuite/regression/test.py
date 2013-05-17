@@ -171,7 +171,7 @@ def refFileCopy(newFile,refFile):
 
 def fileCompare(newFile,ignoreString=None):
     verifyFile(newFile)
-    refFile = os.path.join("reference",newFile)
+    refFile = os.path.join("ref",newFile)
     # no reference file: ask whether we want to copy the new file and hg add it as the reference
     if not (os.path.exists(refFile)):
         refFileCopy(newFile,refFile)
@@ -218,7 +218,7 @@ def populateExamplesList(args):
     cleanUpFiles = glob.glob("*pre*")
     for i in cleanUpFiles:
         os.remove(i)
-    allExamples = glob.glob(os.path.join("sources","*.c"))
+    allExamples = glob.glob(os.path.join("src","*.c"))
     allExamples = [os.path.split(e)[1] for e in allExamples]
     allExamples.sort(key=str.lower) # default sort is case sensitive, this one isn't
     rangeStart = 1
@@ -295,8 +295,8 @@ def populateExamplesList(args):
 
 def shouldRunTest(testFile) :
     global globalNewFailCount
-    refFile = os.path.join("reference",testFile)
-    failFile = os.path.join("reference",testFile+'.FAIL')
+    refFile = os.path.join("ref",testFile)
+    failFile = os.path.join("ref",testFile+'.FAIL')
     if os.path.exists(refFile) and not os.path.exists(failFile) :
         return True
     if os.path.exists(refFile) :
@@ -329,7 +329,7 @@ def shouldRunTest(testFile) :
 def runTest(exName,exNum,totalNum,compiler,optimizeFlag):
     import filecmp
     printSep("*","** testing %i of %i (%s)" % (exNum,totalNum,exName),sepLength)
-    cmd="ln -sf "+os.path.join("sources",exName) + " " + exName
+    cmd="ln -sf "+os.path.join("src",exName) + " " + exName
     if runCmd(cmd): raise CommandError, cmd
 
     # assume this script is in the main regression directory
