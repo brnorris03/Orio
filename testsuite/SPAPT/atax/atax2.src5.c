@@ -1,16 +1,16 @@
-/*@ begin PerfTuning (  
+/*@ begin PerfTuning (
   def build
   {
-  arg build_command = 'gcc -O3 -fopenmp -DDYNAMIC'; 
+  arg build_command = 'gcc -O3 -fopenmp -DDYNAMIC';
   arg libs = '-lm -lrt';
   }
-  
-  def performance_counter  
-  { 
+
+  def performance_counter
+  {
   arg repetitions = 35;
   }
-  
-  def performance_params 
+
+  def performance_params
   {
     # Cache tiling
     param T1_I[] = [1,16,32,64,128,256,512];
@@ -22,8 +22,8 @@
 
     # Array copy
 
-    # Unroll-jam 
-    param U1_I[] = range(1,31); 
+    # Unroll-jam
+    param U1_I[] = range(1,31);
     param U_I[]  = range(1,31);
     param U_J[]  = range(1,31);
     param U_K[]  = range(1,31);
@@ -43,19 +43,19 @@
 
 
   }
-			 
-  def search 
-  { 
-    arg algorithm = 'Randomsearch'; 
+
+  def search
+  {
+    arg algorithm = 'Randomsearch';
     arg total_runs = 10000;
 
-  } 
-  
-  def input_params 
+  }
+
+  def input_params
   {
   param N[] = [20000];
   }
-  
+
   def input_vars
   {
   arg decl_file = 'decl.h';
@@ -72,7 +72,7 @@ int ii, jj, kk;
 int iii, jjj, kkk;
 
 double* tmp=(double*) malloc(nx*sizeof(double));
-  
+
 /*@ begin Loop(
 
   transform Composite(
@@ -84,21 +84,21 @@ double* tmp=(double*) malloc(nx*sizeof(double));
   transform Composite(
     tile = [('i',T1_I,'ii'),('j',T1_J,'jj'),('k',T1_K,'kk'),
             (('ii','i'),T2_I,'iii'),(('jj','j'),T2_J,'jjj'),(('kk','k'),T2_K,'kkk')],
-               (ACOPY_x, 'x[j]', [(T1_J if T1_J>1 else T2_J)],'_copy')],
+    arrcopy = [(ACOPY_x, 'x[j]', [(T1_J if T1_J>1 else T2_J)],'_copy')],
     unrolljam = (['k','j','i'],[U_K,U_J,U_I]),
     regtile = (['i','j','k'],[RT_I,RT_J,RT_K])
 )
   for (i = 0; i<=nx-1; i++) {
     tmp[i] = 0;
-    for (j = 0; j<=ny-1; j++) 
+    for (j = 0; j<=ny-1; j++)
       tmp[i] = tmp[i] + A[i*ny+j]*x[j];
-    for (k = 0; k<=ny-1; k++) 
+    for (k = 0; k<=ny-1; k++)
       y[k] = y[k] + A[i*ny+k]*tmp[i];
   }
 ) @*/
 /*@ end @*/
 
 /*@ end @*/
-  
+
 
 
