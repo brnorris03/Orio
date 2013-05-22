@@ -70,6 +70,11 @@ class Transformation:
             err('orio.module.loop.submodule.tile.transformation:%s: tile size (%s) must be divisible by the stride value (%s)'
                    % (stride_exp.line_no, self.tsize, stride_val))
 
+        # sanity check whether tile_size > stride
+        if self.tsize <= stride_val:
+            err('orio.module.loop.submodule.tile.transformation:%s: tile size (%s) must be greater than the stride value (%s)'
+                   % (stride_exp.line_no, self.tsize, stride_val))
+
         # create the tile index name
         tindex_id = orio.module.loop.ast.IdentExp(self.tindex)
 
