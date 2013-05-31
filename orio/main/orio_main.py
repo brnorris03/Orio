@@ -49,7 +49,8 @@ def start(argv, lang):
         cmd = ' '.join(g.external_command)
         info(cmd)
         retcode = os.system(cmd)
-        sys.exit(retcode)
+        if retcode != 0:
+            sys.exit(1)
 
     if not g.disable_orio: info('\n====== START ORIO ======')
 
