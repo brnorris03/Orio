@@ -64,6 +64,10 @@ class CmdParser:
         orioarg = False
         wrapper = False
         for arg in argv[1:]:
+            if arg=='-w':
+                wrapper=True
+                otherargv=argv[2:]
+                break
             if not wrapper  and arg.startswith('-'): 
                 orioargv.append(arg)
                 if arg in ['c','-o','-p','s']:
@@ -168,6 +172,7 @@ class CmdParser:
         if len(srcfiles) < 1:
             if otherargv: 
                 cmdline['disable_orio'] = True
+                cmdline['external_command'] = otherargv
             else:
                 sys.stderr.write('Orio command-line error: missing file arguments')
                 sys.stderr.write(USAGE_MSG + '\n')
