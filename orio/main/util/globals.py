@@ -114,7 +114,10 @@ class Globals:
             if 'logfile' in cmdline.keys():
                 self.logfile = cmdline['logfile']
             else:
-                self.logfile = 'tuning' + str(os.getpid()) + '.log'        
+                if self.disable_orio:
+                    self.logfile = 'wrapper.orio.log'
+                else:
+                    self.logfile = 'tuning' + str(os.getpid()) + '.log'           
             thelogger.addHandler(logging.FileHandler(filename=self.logfile))
             # Because commands are output with extra formatting, for now do not use the logger for stderr output
             #streamhandler = logging.StreamHandler()
@@ -122,7 +125,7 @@ class Globals:
             #self.logger.addHandler(streamhandler)
             self.loggers['TuningLog'] = thelogger
           
-            self.loggers['Matplotlib'] = MatplotlibLogger().getLogger()
+            #self.loggers['Matplotlib'] = MatplotlibLogger().getLogger()
       
     
             # Enable debugging
