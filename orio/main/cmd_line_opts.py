@@ -55,6 +55,7 @@ class CmdParser:
     def parse(self, argv):
         '''To extract the command line options'''
 
+        cmdline = {}
         # Preprocess the command line to accomodate cases when Orio is used 
         # as a preprocessor to the compiler, e.g., orcc <orio_opts> compiler <compiler_tops> source.c
         orioargv = []
@@ -64,14 +65,9 @@ class CmdParser:
         orioarg = False
         wrapper = False
         for arg in argv[1:]:
-            if arg=='-w':
-                wrapper=True
-                otherargv=argv[2:]
-                break
-            if not wrapper  and arg.startswith('-'): 
+            if not wrapper and arg.startswith('-'):
                 orioargv.append(arg)
-                if arg in ['c','-o','-p','s']:
-                    # Options with arguments
+                if arg in ['-c','-o','-p','-s']: # switch with an argument
                     orioarg = True
                 continue
             argisinput = False
@@ -82,13 +78,15 @@ class CmdParser:
                 # Look for the source(s)
                 if arg.count('.') > 0:
                     suffix = arg[arg.rfind('.')+1:]
-                    if suffix.lower() in ['c','cpp','cxx','h','hpp','hxx','f','f90','f95','f03']:
+                    if suffix.lower() in ['c','cc','cpp','cxx','h','hpp','hxx','f','f90','f95','f03']:
                         srcfiles[arg] = '_' + arg
                         argisinput = True
             if not argisinput:
                 if not wrapper: wrapper = True
                 if wrapper: otherargv.append(arg)
             index += 1
+        if wrapper:
+            cmdline['external_command'] = otherargv
 
         # fix non-Orio command line options as much as possible (esp. -D) since the shell eats quotes and such
         externalargs=[]
@@ -131,7 +129,6 @@ class CmdParser:
             sys.stderr.write(USAGE_MSG + '\n')
             sys.exit(1)
 
-        cmdline = {}
         #evaluate all options
         #print opts
         
@@ -172,7 +169,6 @@ class CmdParser:
         if len(srcfiles) < 1:
             if otherargv: 
                 cmdline['disable_orio'] = True
-                cmdline['external_command'] = otherargv
             else:
                 sys.stderr.write('Orio command-line error: missing file arguments')
                 sys.stderr.write(USAGE_MSG + '\n')

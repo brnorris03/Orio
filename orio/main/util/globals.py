@@ -114,9 +114,7 @@ class Globals:
             if 'logfile' in cmdline.keys():
                 self.logfile = cmdline['logfile']
             else:
-                if self.disable_orio:
-                    self.logfile = 'wrapper.orio.log'
-                else:
+                if not self.disable_orio:
                     self.logfile = 'tuning' + str(os.getpid()) + '.log'           
             thelogger.addHandler(logging.FileHandler(filename=self.logfile))
             # Because commands are output with extra formatting, for now do not use the logger for stderr output
