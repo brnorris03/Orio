@@ -49,13 +49,12 @@ def start(argv, lang):
         cmd = ' '.join(g.external_command)
         info(cmd)
         retcode = os.system(cmd)
-        if retcode != 0:
-            sys.exit(1)
+        if retcode != 0: sys.exit(1)
 
     if not g.disable_orio: info('\n====== START ORIO ======')
 
+    annotations_found = False
     for srcfile, out_filename in g.src_filenames.items():
-        annotations_found = False
 
         if not g.disable_orio:
             # read source code
@@ -139,7 +138,8 @@ def start(argv, lang):
             cmd = ' '.join(g.external_command + [fname])
             info('[orio] %s'% cmd)
             retcode = os.system(cmd)
-            if retcode != 0: err('orio.main.main: external command returned with error %s: %s' %(retcode, cmd),doexit=False)
+            #if retcode != 0: err('orio.main.main: external command returned with error %s: %s' %(retcode, cmd),doexit=False)
+            if retcode != 0: retcode = 1
 
     if not g.disable_orio and g.rename_objects:
         for srcfile, genfile in g.src_filenames.items():
@@ -153,6 +153,8 @@ def start(argv, lang):
 
 
     if not g.disable_orio: info('\n====== END ORIO ======')
+    # remove tuning logs for source files without any annotations
+    if not annotations_found and not g.disable_orio: os.remove(g.logfile)
     sys.exit(retcode)
 
 
