@@ -124,7 +124,7 @@ def getParser(start_line_no):
 
     # create the lexer and parser
     lexer = tool.ply.lex.lex()
-    parser = tool.ply.yacc.yacc(method='LALR', debug=0)
+    parser = tool.ply.yacc.yacc(method='LALR', debug=0, optimize=1, write_tables=0)
 
     # return the parser
     return parser
