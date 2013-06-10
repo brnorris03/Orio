@@ -687,8 +687,8 @@ def getParser(start_line_no):
     __start_line_no = start_line_no
 
     # create the lexer and parser
-    lexer = orio.tool.ply.lex.lex(debug=0, optimize=1)
-    parser = orio.tool.ply.yacc.yacc(method='LALR', debug=0, optimize=1)
+    lexer = orio.tool.ply.lex.lex()
+    parser = orio.tool.ply.yacc.yacc(method='LALR', debug=0, optimize=1, write_tables=0)
 
     # return the parser
     return parser
