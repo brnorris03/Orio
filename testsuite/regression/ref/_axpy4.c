@@ -19,6 +19,7 @@ if ((((int)(x1)|(int)(x2)|(int)(x3)|(int)(x4)|(int)(y)) & 0xF) == 0) {
         y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i];
         ) @*/
   {
+    int i;
   #pragma omp parallel for private(i)
     for (i=0; i<=n-20; i=i+20) {
       y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i];
@@ -55,6 +56,7 @@ if ((((int)(x1)|(int)(x2)|(int)(x3)|(int)(x4)|(int)(y)) & 0xF) == 0) {
         y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i];
         ) @*/
   {
+    int i;
   #pragma omp parallel for private(i)
     for (i=0; i<=n-20; i=i+20) {
       y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i];

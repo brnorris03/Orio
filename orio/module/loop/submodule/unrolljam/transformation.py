@@ -6,6 +6,7 @@ import sys
 from orio.main.util.globals import *
 import orio.module.loop.ast, orio.module.loop.ast_lib.constant_folder, orio.module.loop.ast_lib.forloop_lib
 import orio.main.util.globals as g
+import orio.module.loop.ast as ast
 
 #-----------------------------------------
 
@@ -353,6 +354,8 @@ class Transformation:
         # extract for-loop structure
         for_loop_info = self.flib.extractForLoopInfo(self.stmt)
         index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
+
+        index_decl = ast.VarDecl('int', [index_id.name])
         
         # when ufactor = 1, no transformation will be applied
         if self.ufactor == 1:
@@ -365,9 +368,9 @@ class Transformation:
                     omp_pragma = orio.module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
                 else:
                     omp_pragma = orio.module.loop.ast.Pragma('omp parallel for')
-                return orio.module.loop.ast.CompStmt([omp_pragma, orig_loop])
+                return ast.CompStmt([index_decl, omp_pragma, orig_loop])
             else:
-                return orig_loop
+                return ast.CompStmt([index_decl, orig_loop])
         
         # start generating the orio.main.unrolled loop
         # compute lower bound --> new_LB = LB
@@ -478,9 +481,9 @@ class Transformation:
                 omp_pragma = orio.module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
             else:
                 omp_pragma = orio.module.loop.ast.Pragma('omp parallel for')     
-            stmts = [omp_pragma, loop, cleanup_loop]
+            stmts = [index_decl, omp_pragma, loop, cleanup_loop]
         else:
-            stmts = [loop, cleanup_loop]
+            stmts = [index_decl, loop, cleanup_loop]
         transformed_stmt = orio.module.loop.ast.CompStmt(stmts)
 
         # return the transformed statement
