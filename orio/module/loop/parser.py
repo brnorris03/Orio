@@ -217,6 +217,10 @@ def p_transformation_statement(p):
     'transformation_statement : TRANSFORM ID LPAREN transformation_argument_list_opt RPAREN statement'
     p[0] = ast.TransformStmt(p[2], p[4], p[6], p.lineno(1) + __start_line_no - 1)
 
+def p_transformation_statement2(p):
+    'transformation_statement : TRANSFORM ID LPAREN transformation_argument_list_opt RPAREN'
+    p[0] = ast.TransformStmt(p[2], p[4], None, p.lineno(1) + __start_line_no - 1)
+
 # transformation-argument-list
 def p_transformation_argument_list_opt_1(p):
     'transformation_argument_list_opt :'

@@ -7,7 +7,7 @@ from orio.main.util.globals import *
 
 from orio.module.module import Module
 
-import codegen, parser, transformation
+import codegen, parser, transformation, ast
 
 #-----------------------------------------
 
@@ -29,6 +29,14 @@ class Loop(Module):
 
         # parse the code to get the AST
         stmts = parser.getParser(self.line_no).parse(self.module_body_code)
+        if isinstance(stmts[0], ast.TransformStmt) and stmts[0].stmt is None:
+            # transform the enclosed annot_body_code
+            annotated_stmts = parser.getParser(self.line_no).parse(self.annot_body_code)
+            if len(annotated_stmts) == 1:
+                annotated_stmt = annotated_stmts[0]
+            else:
+                annotated_stmt = ast.CompStmt(annotated_stmts[0])
+            stmts[0].stmt = annotated_stmt
 
         # apply transformations
         t = transformation.Transformation(self.perf_params, self.verbose, self.language, self.tinfo)

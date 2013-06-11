@@ -8,6 +8,7 @@ void axpy(int n, double *y, double a, double *x) {
 
   ) @*/
   {
+    int i;
 #pragma omp parallel for private(i)
     for (i=0; i<=n-5; i=i+5) {
       y[i]=y[i]+a*x[i];

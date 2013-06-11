@@ -12,6 +12,7 @@ void axpy(int n, double *y, double a, double *x) {
 
   ) @*/
   {
+    int i;
     register int cbv_1;
     cbv_1=n-2;
 #pragma ivdep
