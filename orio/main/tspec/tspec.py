@@ -38,16 +38,18 @@ class TSpec:
         stmt_seq = eval.TSpecEvaluator().evaluate(stmt_seq)
 
         # create a generator for performance tuning information
-        tinfo_gen = tune_info.TuningInfoGen()
+        #tinfo_gen = tune_info.TuningInfoGen()
+        tinfo = tune_info.TuningInfoGen().generate(stmt_seq)
+        return tinfo
 
-        # generate tuning information for each specification statement and insert it into
-        # a specifications mapping
-        specs_map = {}
-        for s in stmt_seq:
-            if s[0] == 'spec':
-                _, _, (sname, _), sseq = s
-                specs_map[sname] = tinfo_gen.generate(sseq)
-
-        # return the specifications mapping
-        return specs_map
+#        # generate tuning information for each specification statement and insert it into
+#        # a specifications mapping
+#        specs_map = {}
+#        for s in stmt_seq:
+#            if s[0] == 'spec':
+#                _, _, (sname, _), sseq = s
+#                specs_map[sname] = tinfo_gen.generate(sseq)
+#
+#        # return the specifications mapping
+#        return specs_map
         
