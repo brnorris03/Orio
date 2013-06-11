@@ -200,7 +200,7 @@ class CmdParser:
         else:
             for src_filename in srcfiles.keys():
                 dirs, fname = os.path.split(src_filename)
-                if ['out_prefix'] in cmdline.keys(): out_prefix=cmdline['out_prefix']
+                if 'out_prefix' in cmdline.keys(): out_prefix=cmdline['out_prefix']
                 else: out_prefix = '_'
                 srcfiles[src_filename] = os.path.join(dirs, out_prefix + fname)
 

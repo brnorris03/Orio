@@ -115,8 +115,8 @@ class Globals:
                 self.logfile = cmdline['logfile']
             else:
                 if not self.disable_orio:
-                    self.logfile = 'tuning' + str(os.getpid()) + '.log'           
-            thelogger.addHandler(logging.FileHandler(filename=self.logfile))
+                    self.logfile = 'tuning' + str(os.getpid()) + '.log'
+                    thelogger.addHandler(logging.FileHandler(filename=self.logfile))
             # Because commands are output with extra formatting, for now do not use the logger for stderr output
             #streamhandler = logging.StreamHandler()
             #streamhandler.setLevel(logging.INFO)
