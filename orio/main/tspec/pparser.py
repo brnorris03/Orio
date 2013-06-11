@@ -91,7 +91,7 @@ def p_fspecs(p):
     if len(p) == 3:
         p[0] = [p[1]] + p[2]
     else:
-        p[0] = [p[1]]
+        p[0] = p[1]
 
 #----------------------------------------------------------------------------------------------------------------------
 # file spec statement
@@ -101,7 +101,7 @@ def p_fspec1(p):
 
 def p_fspec2(p):
     ''' fspec : SPEC ID '{' specs '}' '''
-    p[0] = (p[1], p.lineno(1), (p[2], p.lineno(2)), p[4])
+    p[0] = p[4]
 
 #----------------------------------------------------------------------------------------------------------------------
 # spec body statements: start symbol when tspecs are embedded into annotations
@@ -363,6 +363,5 @@ class TSpecParser:
     def parseSpec(self, code, line_no = 1):
         '''To parse the given specification body and return a sequence of statements'''
         return self.__parse(code, line_no, 'specs')
-
 
 

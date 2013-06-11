@@ -23,10 +23,6 @@ class PerfTuner:
     tests and collect the results.
     '''
 
-    # regular expressions
-    __vname_re = r'[A-Za-z_]\w*'
-    __import_re = r'\s*import\s+spec\s+(' + __vname_re + r');\s*'
-
     #-------------------------------------------------
     
     def __init__(self, specs_map, odriver):
@@ -210,21 +206,24 @@ class PerfTuner:
         '''Extract tuning information from the given annotation code'''
 
         # parse the code
-        match_obj = re.match(r'^' + self.__import_re + r'$', code)
+        match_obj = re.match(r'^\s*import\s+spec\s+([/A-Za-z_]+);\s*$', code)
 
         # if the code contains a single import statement
         if match_obj:
 
-            # get the specification name and line number
+            # get the specification name
             spec_name = match_obj.group(1)
-            spec_name_line_no = line_no + code[:match_obj.start(1)].count('\n')
-            
-            # if the tuning info is not defined
-            if spec_name not in self.specs_map:
-                err('orio.main.tuner.tuner: %s: undefined specification: "%s"' % (spec_name_line_no, spec_name))
+            spec_file = spec_name+'.spec'
+            try:
+                src_dir = '/'.join(Globals().src_filenames.keys()[0].split('/')[:-1])
+                spec_file_path = os.getcwd() + '/' + src_dir + '/' + spec_file
+                f = open(spec_file_path, 'r')
+                tspec_code = f.read()
+                f.close()
+            except:
+                err('%s: cannot open file for reading: %s' % (self.__class__, spec_file_path))
 
-            # get the tuning information from the specifications map
-            tinfo = self.specs_map[spec_name]
+            tinfo = orio.main.tspec.tspec.TSpec().parseProgram(tspec_code)
 
             # return the tuning information
             return tinfo
