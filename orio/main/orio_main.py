@@ -16,7 +16,6 @@ CUDA = 3
 
 def start(argv, lang):
     '''The orio.main.starting procedure'''
-#    import orio.main.util.globals as gl
 
     retcode = 0 
     # check for Fortran source, which is not supported yet now
@@ -41,9 +40,6 @@ def start(argv, lang):
     g = Globals(cmdline)
     Globals().language = language
 
-    #print 'Globals'
-    #print g.out_prefix
-    
     # Simply pass through command  (Orio won't do anything)
     if g.disable_orio and g.external_command:
         cmd = ' '.join(g.external_command)
