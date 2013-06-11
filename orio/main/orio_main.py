@@ -47,14 +47,15 @@ def start(argv, lang):
     # Simply pass through command  (Orio won't do anything)
     if g.disable_orio and g.external_command:
         cmd = ' '.join(g.external_command)
-        info(cmd)
+        #info(cmd)
         retcode = os.system(cmd)
         if retcode != 0: sys.exit(1)
 
     if not g.disable_orio: info('\n====== START ORIO ======')
 
-    annotations_found = False
+    annotated_files = 0 # for multi-file tuning
     for srcfile, out_filename in g.src_filenames.items():
+        annotations_found = False
 
         if not g.disable_orio:
             # read source code
@@ -90,6 +91,7 @@ def start(argv, lang):
             if ann_parser.AnnParser.leaderAnnRE().search(src_code): 
                 cfrags = ann_parser.AnnParser().parse(src_code)
                 annotations_found = True
+                annotated_files += 1
             else:
                 info('----- did not find any Orio annotations -----')
             info('----- finished parsing annotations -----')
@@ -141,20 +143,20 @@ def start(argv, lang):
             #if retcode != 0: err('orio.main.main: external command returned with error %s: %s' %(retcode, cmd),doexit=False)
             if retcode != 0: retcode = 1
 
-    if not g.disable_orio and g.rename_objects:
-        for srcfile, genfile in g.src_filenames.items():
-            genparts = genfile.split('.')
-            genobjfile = '.'.join(genparts[:-1])  + '.o'    # the Orio-generated object
+        # if need to rename the object file to match the name of the original source file
+        if not g.disable_orio and g.rename_objects:
+            genparts = out_filename.split('.')
+            genobjfile = '.'.join(genparts[:-1])  + '.o' # the Orio-generated object
             srcparts = srcfile.split('.')
             objfile = '.'.join(srcparts[:-1]) + '.o'     # the object corresponding to the input filename
             if os.path.exists(genobjfile): 
                 info('----- Renaming %s to %s -----' % (genobjfile, objfile))
                 os.system('mv %s %s' % (genobjfile,objfile))
-
+    # ----- end of "for srcfile, out_filename in g.src_filenames.items():" -----
 
     if not g.disable_orio: info('\n====== END ORIO ======')
     # remove tuning logs for source files without any annotations
-    if not annotations_found and not g.disable_orio: os.remove(g.logfile)
+    if not g.disable_orio and annotated_files == 0: os.remove(g.logfile)
     sys.exit(retcode)
 
 
