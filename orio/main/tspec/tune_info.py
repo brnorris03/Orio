@@ -762,7 +762,7 @@ class TuningInfoGen:
         VALIDATION = 'validation'
 
         # all expected definition information
-        build_info = {'build_cmd': 'gcc -O3'}
+        build_info = {'build_cmd': 'gcc -O3', 'libs': ''}
         pcount_info = ('basic timer', 5, None, None)
         search_info = ('Exhaustive', -1, -1, False, [])
         pparam_info = ([], [])

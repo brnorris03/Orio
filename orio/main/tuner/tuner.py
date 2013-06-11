@@ -360,46 +360,37 @@ class PerfTuner:
         info('Numeric_Parameters   = %02d' % self.num_int)
         info('Binary_Parameters    = %02d' % self.num_bin)
         
-        srcfilename=Globals().src_filenames.keys()[0]
-        nomadfile=srcfilename+'.nomad'
-        nomadfileobj=srcfilename+'.nomad.obj.exe'
-
-        
-        spec_string=''
-        spec_string=spec_string+"DIMENSION      %02d\n" % (self.num_params)
-        spec_string=spec_string+"BB_EXE         %s\n"% nomadfileobj 
-        spec_string=spec_string+"BB_INPUT_TYPE  ( %s )\n" % ' '.join(ptype)
-        spec_string=spec_string+"BB_OUTPUT_TYPE OBJ CNT_EVAL \n"
-        spec_string=spec_string+"X0             ( %s )\n" % min_val_str
-        spec_string=spec_string+"LOWER_BOUND    ( %s )\n" % min_val_str
-        spec_string=spec_string+"UPPER_BOUND    ( %s )\n" % max_val_str
-        spec_string=spec_string+"MAX_BB_EVAL    %s\n" % 1000
-        spec_string=spec_string+"DISPLAY_STATS  BBE OBJ EVAL\n"
-        spec_string=spec_string+"SEED    1\n" 
-
-        nomadfile=srcfilename+'.nomad'
-        nomadfileobj=srcfilename+'.nomad.obj.exe'
         sys.stderr.write('%s\n'% Globals().configfile)   
         
-        if Globals().configfile=='':
-            f = open(nomadfile, 'w')
-            f.write(spec_string)
-            f.close()
-
-            scriptstr="#!/bin/bash\n"
-            scriptstr=scriptstr+"orcc -x %s --configfile=$1\n" % srcfilename
-        
-            f = open(nomadfileobj, 'w')
-            f.write(scriptstr)
-            f.close()
-            #system()
-
-        os.system("chmod +x %s" % nomadfileobj)
-
-        #print '-------------------'
-        #print axis_val_ranges
-        #print '-------------------'
-
+#       Azamat on June 10, 2013: commenting this block out until further notice of its use, need a tighter if-condition
+#        if Globals().configfile=='':
+#            srcfilename=Globals().src_filenames.keys()[0]
+#            nomadfile=srcfilename+'.nomad'
+#            nomadfileobj=srcfilename+'.nomad.obj.exe'
+#            
+#            spec_string ="DIMENSION      %02d\n" % (self.num_params)
+#            spec_string+="BB_EXE         %s\n"% nomadfileobj 
+#            spec_string+="BB_INPUT_TYPE  ( %s )\n" % ' '.join(ptype)
+#            spec_string+="BB_OUTPUT_TYPE OBJ CNT_EVAL \n"
+#            spec_string+="X0             ( %s )\n" % min_val_str
+#            spec_string+="LOWER_BOUND    ( %s )\n" % min_val_str
+#            spec_string+="UPPER_BOUND    ( %s )\n" % max_val_str
+#            spec_string+="MAX_BB_EVAL    %s\n" % 1000
+#            spec_string+="DISPLAY_STATS  BBE OBJ EVAL\n"
+#            spec_string+="SEED    1\n" 
+#    
+#            f = open(nomadfile, 'w')
+#            f.write(spec_string)
+#            f.close()
+#
+#            scriptstr="#!/bin/bash\n"
+#            scriptstr=scriptstr+"orcc -x %s --configfile=$1\n" % srcfilename
+#        
+#            f = open(nomadfileobj, 'w')
+#            f.write(scriptstr)
+#            f.close()
+#            #system()
+#            os.system("chmod +x %s" % nomadfileobj)
 
         return (axis_names, axis_val_ranges)
         
