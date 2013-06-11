@@ -206,8 +206,6 @@ class PerfTestDriver:
             if status:
                 err('orio.main.tuner.ptest_driver:  failed to compile the original version of the code: "%s"' % cmd)
 
-            self.first = False
-            
         # compile the test code
         if self.language == 'cuda':
             cmd = ('%s %s -o %s -c %s' % (build_cmd, self.extra_compiler_opts, self.obj_name, self.src_name))
@@ -350,12 +348,22 @@ class PerfTestDriver:
         '''Delete all the generated files'''
 
         if Globals().keep_temps: return
-        for fname in [self.exe_name, self.src_name, self.timer_file]:
+        
+        if self.first:
+            for fname in [self.original_src_name, self.original_exe_name, self.timer_file]:
+                try:
+                    if fname and os.path.exists(fname):
+                        os.unlink(fname)
+                except:
+                    err('orio.main.tuner.ptest_driver: cannot delete file: %s' % fname)
+            self.first = False
+            
+        for fname in [self.exe_name, self.src_name]:
             try:
                 if fname and os.path.exists(fname):
                     os.unlink(fname)
             except:
-                err('orio.main.tuner.ptest_driver:  cannot delete file: %s' % fname)
+                err('orio.main.tuner.ptest_driver: cannot delete file: %s' % fname)
 
     #-----------------------------------------------------
             
