@@ -16,9 +16,8 @@ class AnnParser:
     __vname_re = r'[A-Za-z_]\w*'
     __any_re = r'(.|\n)'
     __ann_re = re.compile(r'/\*@' + __any_re + r'*?@\*/')
-    __leader_ann_re = re.compile(r'/\*@\s*begin\s+(' + __vname_re + r')\s*\(\s*(' + __any_re +
-                       r'*?)\s*\)\s*@\*/')
-    __trailer_ann_re = re.compile(r'/\*@\s*end\s*@\*/')
+    __leader_ann_re  = re.compile(r'/\*@\s*(begin\s+)?(' + __vname_re + r')\s*\(\s*(' + __any_re + r'*?)\s*\)\s*@\*/')
+    __trailer_ann_re = re.compile(r'/\*@\s*(end)?\s*@?\*/')
     __non_indent_char_re = re.compile(r'[^ \t]')
     
     #----------------------------------------
@@ -184,7 +183,6 @@ class AnnParser:
             if not self.__leader_ann_re.match(ann) and not self.__trailer_ann_re.match(ann):
                 warn('orio.main.ann_parser warning:%s: unrecognized form of annotation, skipping...' % ann_line_no)
                 skip = True
-                #sys.exit(1)
                     
             # update the code and line number
             line_no += code[:match_obj.end()].count('\n')
@@ -212,10 +210,10 @@ class AnnParser:
             err('orio.main.ann_parser: %s: not a leader annotation code' % line_no)
 
         # create the module info
-        mname = match_obj.group(1)
-        mname_line_no = line_no + code[:match_obj.start(1)].count('\n')
-        mcode = match_obj.group(2)
-        mcode_line_no = line_no + code[:match_obj.start(2)].count('\n')
+        mname = match_obj.group(2)
+        mname_line_no = line_no + code[:match_obj.start(2)].count('\n')
+        mcode = match_obj.group(3)
+        mcode_line_no = line_no + code[:match_obj.start(3)].count('\n')
         mod_info = (mname, mname_line_no, mcode, mcode_line_no)
 
         # return the module info
