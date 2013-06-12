@@ -110,23 +110,18 @@ def start(argv, lang):
                 info('\n----- begin writing the output file(s) -----')
                 path_name, ext = os.path.splitext(out_filename)
                 if language == 'cuda': ext = '.cu'
-                for optimized_code, input_params, externals in optimized_code_seq:
-                    if len(optimized_code_seq) > 1:
-                        suffix = ''
-                        for pname, pval in input_params:
-                            suffix += '_%s_%s' % (pname, pval)
-                        if g.out_filename: out_filename = g.out_filename
-                        else: out_filename = ('%s%s' % (path_name, suffix)) + ext
-                    info('--> writing output to: %s' % out_filename)
-                    try:
-                        f = open(out_filename, 'w')
-                        f.write(externals)
-                        f.write(optimized_code)
-                        f.close()
-                    except:
-                        err('orio.main.main:  cannot open file for writing: %s' % g.out_filename)
-                info('----- finished writing the output file(s) -----')
 
+                optimized_code, _, externals = optimized_code_seq[0]
+                if g.out_filename: out_filename = g.out_filename
+                info('--> writing output to: %s' % out_filename)
+                try:
+                    f = open(out_filename, 'w')
+                    f.write(externals)
+                    f.write(optimized_code)
+                    f.close()
+                except:
+                    err('orio.main.main:  cannot open file for writing: %s' % out_filename)
+                info('----- finished writing the output file(s) -----')
         # ----- end of "if not g.disable_orio:" -----
 
         # if orio was invoked as a compiler wrapper, perform the original command
@@ -154,6 +149,5 @@ def start(argv, lang):
     # remove tuning logs for source files without any annotations
     if not g.disable_orio and annotated_files == 0: os.remove(g.logfile)
     sys.exit(retcode)
-
 
 
