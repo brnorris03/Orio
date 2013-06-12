@@ -87,10 +87,27 @@ class OptDriver:
                 optimized_code_seq = self.ptuner.tune(cfrag.leader_ann.mod_code,
                                                       cfrag.leader_ann.mod_code_line_no,
                                                       cfrag.cfrags)
+                indent = ' ' * cfrag.leader_ann.indent_size
+                # after multi-input tuning build an input range selector
+                if len(optimized_code_seq) > 1:
+                    iselect = '\n' + indent + 'if ('
+                    iselect_flag = True
+                    externals_acc = ''
+                    for optimized_code, input_params, externals in optimized_code_seq:
+                        if iselect_flag: iselect_flag=False
+                        else: iselect += ' else if ('
+                        and_flag = True
+                        for pname, pval in input_params:
+                            if and_flag: and_flag = False
+                            else: iselect += ' && '
+                            iselect += '(%s<=%s)' % (pname, pval)
+                        iselect += ') {\n%s' % optimized_code + '}'
+                        externals_acc += externals
+                    iselect += '\n'
+                    optimized_code_seq = [(iselect, [], externals_acc)]
 
             # initiate code transformation and generation
             else:
-
                 # recursively apply optimizations to the annotation body
                 optimized_body_code_seq = self.optimizeCodeFrags(cfrag.cfrags, perf_params)
 
@@ -151,7 +168,7 @@ class OptDriver:
             # prepend the leader annotation and append the trailer annotation to each of
             # the optimized code
             leader_code = cfrag.leader_ann.code
-            trailer_code = cfrag.trailer_ann.code
+            trailer_code = ' ' * cfrag.trailer_ann.indent_size + cfrag.trailer_ann.code
             optimized_code_seq = [((leader_code + c + trailer_code), i, e) for c, i, e in optimized_code_seq]
 
             # return the optimized code sequence

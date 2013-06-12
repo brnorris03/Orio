@@ -75,6 +75,7 @@ class CmdParser:
                 if orioarg: 
                     orioargv.append(arg)
                     orioarg = False
+                    continue
                 # Look for the source(s)
                 if arg.count('.') > 0:
                     suffix = arg[arg.rfind('.')+1:]
@@ -110,7 +111,6 @@ class CmdParser:
             else:
                 externalargs.append(arg)
                 index += 1
-        #debug('orio.main.cmd_line_opts: new args: %s' % str(externalargs))
 
         # check the ORIO_FLAGS env. variable for more options
         if 'ORIO_FLAGS' in os.environ.keys():
@@ -118,20 +118,16 @@ class CmdParser:
 
         # get all options
         try:
-            #print orioargv
             opts, args = getopt.getopt(orioargv,
                                        'c:ehko:p:rs:vx',
                                        ['pre-command=', 'config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=', 
                                        'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern', 'validate'])
-
         except Exception, e:
             sys.stderr.write('Orio command-line error: %s' % e)
             sys.stderr.write(USAGE_MSG + '\n')
             sys.exit(1)
 
         #evaluate all options
-        #print opts
-        
         for opt, arg in opts:
             if opt in ('-c', '--pre-command'):
                 cmdline['pre_cmd'] = arg
@@ -154,7 +150,6 @@ class CmdParser:
                 cmdline['verbose'] = True
             elif opt in ('-x','--extern'):
                 cmdline['extern'] = True
-                #print cmdline.get('extern')
             elif opt in ('--config'):
                 cmdline['config'] = arg
             elif opt in ('--configfile'):
@@ -162,9 +157,6 @@ class CmdParser:
             elif opt in ('--validate'):
                 cmdline['validate'] = True
                 
-        #print cmdline.get('config')        
-        #sys.exit()
-            
         # check on the arguments
         if len(srcfiles) < 1:
             if otherargv: 
@@ -174,8 +166,7 @@ class CmdParser:
                 sys.stderr.write(USAGE_MSG + '\n')
                 sys.exit(1)
 
-        for src_filename in srcfiles:
-            # check if the source file is readable
+        for src_filename in srcfiles: # check if the source files are readable
             try:
                 f = open(src_filename, 'r')
                 f.close()
