@@ -29,5 +29,5 @@ void axpy(int n, double *y, double a, double *x) {
     for (i=cbv_2; i<=cbv_3; i=i+1) 
       y[i]=y[i]+a*x[i];
   }
-/*@ end @*/
+  /*@ end @*/
 }

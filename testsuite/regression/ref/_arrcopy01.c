@@ -41,5 +41,5 @@ void mxm(int M, int N, int K, double **A, double **B, double **C) {
             C[i][j]=C_copy[(i-ii)][(j-jj)];
       }
   }
-/*@ end @*/
+  /*@ end @*/
 }

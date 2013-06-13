@@ -15,9 +15,14 @@ class AnnParser:
     # regular expressions
     __vname_re = r'[A-Za-z_]\w*'
     __any_re = r'(.|\n)'
-    __ann_re = re.compile(r'/\*@' + __any_re + r'*?@\*/')
-    __leader_ann_re  = re.compile(r'/\*@\s*(begin\s+)?(' + __vname_re + r')\s*\(\s*(' + __any_re + r'*?)\s*\)\s*@\*/')
-    __trailer_ann_re = re.compile(r'/\*@\s*(end)?\s*@?\*/')
+
+    __pragma_beg = r'\#pragma\s+Orio\s+(' + __vname_re + r')\s*\(\s*(.*)\s*\)'
+    __pragma_end = r'(\#pragma\s+Oiro\s+)'
+    __ann_re = re.compile(r'(/\*@' + __any_re + r'*?@\*/)' + r'|' + __pragma_end + r'|' + __pragma_beg)
+
+    __comment_beg = r'/\*@\s*(begin\s+)?(' + __vname_re + r')\s*\(\s*(' + __any_re + r'*?)\s*\)\s*@\*/'
+    __leader_ann_re  = re.compile(__comment_beg + r'|' + __pragma_beg)
+    __trailer_ann_re = re.compile(r'(/\*@\s*(end)?\s*@?\*/)' + r'|' + __pragma_end)
     __non_indent_char_re = re.compile(r'[^ \t]')
     
     #----------------------------------------
@@ -210,10 +215,12 @@ class AnnParser:
             err('orio.main.ann_parser: %s: not a leader annotation code' % line_no)
 
         # create the module info
-        mname = match_obj.group(2)
-        mname_line_no = line_no + code[:match_obj.start(2)].count('\n')
-        mcode = match_obj.group(3)
-        mcode_line_no = line_no + code[:match_obj.start(3)].count('\n')
+        mindex = 2
+        if match_obj.group(mindex) is None: mindex += 3
+        mname = match_obj.group(mindex)
+        mname_line_no = line_no + code[:match_obj.start(mindex)].count('\n')
+        mcode = match_obj.group(mindex+1)
+        mcode_line_no = line_no + code[:match_obj.start(mindex+1)].count('\n')
         mod_info = (mname, mname_line_no, mcode, mcode_line_no)
 
         # return the module info
