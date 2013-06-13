@@ -38,4 +38,4 @@
       for (tjc=0; tjc<=NCB-1; tjc=tjc+32) 
         for (jc=tjc; jc<=min(NCB-1,tjc+31); jc=jc+1) 
           c[ic][jc]=0;
-/*@ end @*/
+  /*@ end @*/

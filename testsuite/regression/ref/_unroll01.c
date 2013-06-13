@@ -19,5 +19,5 @@ void axpy(int n, double *y, double a, double *x) {
     for (i=n-((n-(0))%5); i<=n-1; i=i+1) 
       y[i]=y[i]+a*x[i];
   }
-/*@ end @*/
+  /*@ end @*/
 }
