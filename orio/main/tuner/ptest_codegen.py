@@ -72,7 +72,9 @@ class PerfTestCodeGen(object):
         for is_static, vtype, vname, vdims, rhs in input_decls:
 
             #TODO: handle structs (look for period in vname)
-            if len(vdims) == 0:
+            if vtype == 'macro':
+                decls.append('#define %s'%rhs[1:-1])
+            elif len(vdims) == 0:
                 decls.append('%s %s;' % (vtype, vname))
             else:
                 if is_static:
@@ -181,7 +183,8 @@ class PerfTestCodeGen(object):
             # skip if it does not have an initial value (i.e. RHS == None)
             if rhs == None or rhs.startswith('{'):
                 continue
-        
+            
+            if vtype == 'macro': continue
 
             # if it is a scalar
             if len(vdims) == 0:
