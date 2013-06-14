@@ -21,6 +21,7 @@ keywords = [
     'simplex_reflection_coef', 'simplex_expansion_coef',
     'simplex_contraction_coef', 'simplex_shrinkage_coef', 'simplex_local_distance', 'simplex_x0',
     'validation', 'validation_file', 'expected_output'
+    , 'macro'
 ]
 
 # map of reserved keywords
@@ -268,6 +269,7 @@ def p_type(p):
              | LONG
              | FLOAT
              | DOUBLE
+             | MACRO
     '''
     p[0] = [(p[1], p.lineno(1))]
 
