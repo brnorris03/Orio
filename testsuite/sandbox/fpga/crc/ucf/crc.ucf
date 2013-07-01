@@ -1,0 +1,12 @@
+# NET "clk" LOC = K21;
+# NET "reset" LOC = H8;
+
+NET "clk" TNM_NET = "clk";
+  
+TIMESPEC TS_CLK = PERIOD "clk" 5 ns;
+
+
+# area groups
+
+# INST "*crc*" AREA_GROUP = "ag_crc";
+# AREA_GROUP "ag_crc" RANGE=SLICE_X30Y88:SLICE_X32Y112; 

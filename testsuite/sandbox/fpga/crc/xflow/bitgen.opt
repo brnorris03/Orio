@@ -1,0 +1,10 @@
+#
+# Flow Info for Bitgen
+#
+Program bitgen
+<design>.ncd;
+<design>.bit;
+<design>.pcf;
+-f crc.ut;
+End Program bitgen
+
