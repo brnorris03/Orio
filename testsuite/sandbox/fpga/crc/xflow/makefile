@@ -1,5 +1,8 @@
 # Pre-req: source <ISE_DS_install_dir>/settings64.sh
 
+synth:
+	xflow -p xc6slx9-csg225-3 -synth synth.opt ../src/crc.v
+
 impl:
 	xflow -p xc6slx9-csg225-3 -implement impl.opt crc.ngc
 
@@ -12,3 +15,6 @@ clean:
 	rm -rf xlnx_* _xmsgs
 	rm *.drc *.bit *.xwbt *.bgn
 
+cleansyn:
+	rm *.scr *.log *.his *.xrpt
+	rm -rf xst _xmsgs
