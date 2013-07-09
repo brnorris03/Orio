@@ -1,13 +1,13 @@
 # Pre-req: source <ISE_DS_install_dir>/settings64.sh
 
 synth:
-	xflow -p xc6slx9-csg225-3 -synth synth.opt ../src/crc.v
+	xflow -p xc6vlx240t-ff1156-1 -synth synth.opt ../src/crc.v
 
 impl:
-	xflow -p xc6slx9-csg225-3 -implement impl.opt crc.ngc
+	xflow -p xc6vlx240t-ff1156-1 -implement impl.opt crc.ngc
 
 bitgen:
-	xflow -p xc6slx9-csg225-3 -implement impl.opt -config bitgen.opt crc.ngc
+	xflow -p xc6vlx240t-ff1156-1 -implement impl.opt -config bitgen.opt crc.ngc
 
 clean:
 	rm *.flw *.lst *.bld *.xrpt *.ngm *.xml *.mrp *.map *.html *.ptwx *.csv *.pad *.txt *.unroutes *.xpi *.tw* *.scr *.log
