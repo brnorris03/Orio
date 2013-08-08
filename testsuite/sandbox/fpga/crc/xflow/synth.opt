@@ -32,7 +32,7 @@ ParamFile: <design>_xst.scr
 "-p <partname>";                  # Target Device
 #"-verilog2001 YES";               # Enables the use of Verilog 2001 Constructs
                                   # YES, NO
-#"-opt_mode SPEED";               # Optimization Criteria
+"-opt_mode SPEED";               # Optimization Criteria
                                   # AREA or SPEED
 #"-uc <design>.xcf";              # Constraint File name
 #"-case maintain";                # Specifies how to handle source name case
