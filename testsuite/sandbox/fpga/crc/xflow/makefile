@@ -5,8 +5,11 @@ DEVICE=xc6vlx240t-ff1156-1
 synth:
 	xflow -p $(DEVICE) -synth synth.opt ../src/crc.v
 
-synth2:
+synth2: crc_xst.scr
 	xst -ifn crc_xst.scr -ofn crc_xst.log
+
+ngd: crc.ngc
+	ngdbuild -p xc6vlx240t-ff1156-1 -nt timestamp -uc ../ucf/crc.ucf crc.ngc crc.ngd
 
 impl:
 	xflow -p $(DEVICE) -implement impl.opt crc.ngc
