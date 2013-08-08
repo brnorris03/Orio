@@ -1,0 +1,8 @@
+run
+-ifn ../src/crc.v
+-ifmt Verilog
+-ofn crc
+-ofmt ngc
+-p xc6vlx240t-ff1156-1
+-opt_mode SPEED
+-opt_level 2
