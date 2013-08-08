@@ -2,16 +2,26 @@
 
 DEVICE=xc6vlx240t-ff1156-1
 
+
+### Composite workflow ###
 synth:
 	xflow -p $(DEVICE) -synth synth.opt ../src/crc.v
 
-synth2: crc_xst.scr
+impl:
+	xflow -p $(DEVICE) -implement impl.opt crc.ngc
+
+bitgen:
+	xflow -p $(DEVICE) -implement impl.opt -config bitgen.opt crc.ngc
+
+
+### Atomic workflow ###
+syn: crc_xst.scr
 	xst -ifn crc_xst.scr -ofn crc_xst.log
 
 ngd: crc.ngc
 	ngdbuild -p xc6vlx240t-ff1156-1 -nt timestamp -uc ../ucf/crc.ucf crc.ngc crc.ngd
 
-map: crc.ngd crc.pcf
+map: crc.ngd 
 	map -o crc_map.ncd -w -pr b -timing -detail -global_opt power -logic_opt on -power xe -xe c crc.ngd crc.pcf
 	#-ol std|high(default) #overall effort level
 	#-cm area(default)|speed|balanced #cover mode
@@ -24,28 +34,43 @@ map: crc.ngd crc.pcf
 	#-w #overwrite existing files
 	#-timing #timing-driven par
 
-impl:
-	xflow -p $(DEVICE) -implement impl.opt crc.ngc
+par: crc_map.ncd
+	par -w -ol high -xe c -power on crc_map.ncd crc.ncd crc.pcf
+	#-mt off(default)|2|3|4
+	#-ol high(default)|std
+	#-power on|off(default)
+	#-xe n|c
 
-bitgen:
-	xflow -p $(DEVICE) -implement impl.opt -config bitgen.opt crc.ngc
+trace: crc.ncd
+	trce -v 200 -u 100 -fastpaths -o crc.twr -xml crc.twx crc.ncd crc.pcf
 
-crc.bin: crc.bit
+genbit: crc.ncd crc.pcf
+	bitgen -f crc.ut crc.ncd crc.bit crc.pcf
+
+
+### Device programming ###
+genprom: crc.bit
 	promgen -w -p bin -o crc.bin -u 0 crc.bit
 
 install: crc.bin
 	stty --file=/dev/ttyUSB0 -opost #no post-processing, raw output
-	cat counter.bin > /dev/ttyUSB0
+	cat crc.bin > /dev/ttyUSB0
 
-power:
+
+### Analysis ###
+power: crc.ncd
 	xpwr crc.ncd crc.pcf
 
+
+### Misc ###
 clean:
 	rm -rf *.lst *.bld *.xrpt *.ngm *.xml *.mrp *.map *.html *.ptwx *.csv *.pad *.txt *.unroutes *.xpi *.tw* *.log
 	rm -rf *.ngd *.ngc *.pcf *.ncd *.par *.his
 	rm -rf xlnx_* _xmsgs xst
 	rm -rf *.drc *.bit *.xwbt *.bgn
+	rm -rf *.prm *.psr *.cfi *.en *.bin *.pwr
 
 cleansyn:
 	rm -rf *.log *.xrpt *.ngc
 	rm -rf xst _xmsgs
+
