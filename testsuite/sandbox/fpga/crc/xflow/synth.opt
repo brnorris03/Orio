@@ -28,12 +28,12 @@ ParamFile: <design>_xst.scr
 "-ifn <synthdesign>";             # Input/Project File Name
 "-ifmt Verilog";                  # Input Format
 "-ofn <design>";                  # Output File Name 
-"-ofmt ngc";	         	      # Output File Format
+"-ofmt ngc";	         	  # Output File Format
 "-p <partname>";                  # Target Device
-#"-verilog2001 YES";               # Enables the use of Verilog 2001 Constructs
+#"-verilog2001 YES";              # Enables the use of Verilog 2001 Constructs
                                   # YES, NO
-"-opt_mode SPEED";               # Optimization Criteria
-                                  # AREA or SPEED
+"-opt_mode SPEED";                # Optimization Goal: AREA or SPEED(default)
+"-opt_level 2";                   # Optimization Effort: 1(default) or 2
 #"-uc <design>.xcf";              # Constraint File name
 #"-case maintain";                # Specifies how to handle source name case
                                   # upper, lower, maintain
