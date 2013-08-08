@@ -11,6 +11,19 @@ synth2: crc_xst.scr
 ngd: crc.ngc
 	ngdbuild -p xc6vlx240t-ff1156-1 -nt timestamp -uc ../ucf/crc.ucf crc.ngc crc.ngd
 
+map: crc.ngd crc.pcf
+	map -o crc_map.ncd -w -pr b -timing -detail -global_opt power -logic_opt on -power xe -xe c crc.ngd crc.pcf
+	#-ol std|high(default) #overall effort level
+	#-cm area(default)|speed|balanced #cover mode
+	#-global_opt off(default)|speed|area|power
+	#-logic_opt on|off
+	#-mt off(default)|2 #multi-threading
+	#-power on|off(default)|high|xe #power optimization
+	#-pr off(default)|i|o|b #pack registers in i/o
+	#-xe n|c #extra effort level
+	#-w #overwrite existing files
+	#-timing #timing-driven par
+
 impl:
 	xflow -p $(DEVICE) -implement impl.opt crc.ngc
 
