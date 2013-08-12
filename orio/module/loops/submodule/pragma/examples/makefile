@@ -1,8 +1,14 @@
-test:
-	orcc -vk ex1.c
-	diff _ex1.c reference/_ex1.c
-	rm -rf tuning*.log _*.c
+EXAMPLES = ex1 ex2
+TESTS    = $(EXAMPLES:%=_%.c)
+
+all: $(TESTS)
+
+$(TESTS):
+	@orcc -v $(@:_%=%);\
+	if (diff reference/$@ $@) then true; \
+	else echo "Possible problem with example $@, diffs above \n========================================="; fi;\
+	rm -f tuning*.log $@
 
 clean:
-	rm -rf tuning*.log _*.c
+	rm -f tuning*.log _*.c
 
