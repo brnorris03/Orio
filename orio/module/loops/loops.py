@@ -2,6 +2,7 @@ from orio.module.module import Module
 import orio.module.loops.printer as printer
 import orio.module.loops.parser as parser
 import orio.module.loops.transformation as rewriter
+import orio.module.loops.ast as ast
 
 #----------------------------------------------------------------------------------------------------------------------
 class Loops(Module):
@@ -20,6 +21,14 @@ class Loops(Module):
 
         # parse the code to get the AST
         stmts = parser.parse(self.line_no, self.module_body_code)
+        if isinstance(stmts[0], ast.TransformStmt) and stmts[0].stmt is None:
+            # transform the enclosed annot_body_code
+            annotated_stmts = parser.parse(self.line_no, self.annot_body_code)
+            if len(annotated_stmts) == 1:
+                annotated_stmt = annotated_stmts[0]
+            else:
+                annotated_stmt = ast.CompStmt(annotated_stmts[0])
+            stmts[0].stmt = annotated_stmt
 
         # apply transformations
         t = rewriter.Transformation(self.perf_params, self.verbose, self.language, self.tinfo)
