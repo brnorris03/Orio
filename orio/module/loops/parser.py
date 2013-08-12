@@ -184,6 +184,10 @@ def p_transform_statement(p):
     '''transform_statement : TRANSFORM ID '(' transform_args ')' statement'''
     p[0] = ast.TransformStmt(p[2], p[4], p[6], p.lineno(1))
 
+def p_transform_statement2(p):
+    '''transform_statement : TRANSFORM ID '(' transform_args ')' '''
+    p[0] = ast.TransformStmt(p[2], p[4], None, p.lineno(1))
+
 def p_transform_args1(p):
     '''transform_args : empty'''
     p[0] = []
@@ -524,16 +528,10 @@ def parse(start_line_no, text):
     __start_line_no = start_line_no
 
     l = LoopsLexer()
-    l.build(debug=0, optimize=1)
+    l.build(debug=0)
     l.lexdata = text
     
-    # Remove the old parse table
-    parsetabfile = os.path.join(os.path.abspath('.'), 'parsetab_loops.py')
-    try: os.remove(parsetabfile)
-    except: pass
-    
-    parser = orio.tool.ply.yacc.yacc(debug=0, optimize=1, tabmodule='parsetab_loops', write_tables=1,
-                                     outputdir=os.path.abspath('.'))
+    parser = orio.tool.ply.yacc.yacc(method='LALR', debug=0, optimize=1, write_tables=0)
     theresult = parser.parse(text, lexer=l, debug=0)
     return theresult
 
