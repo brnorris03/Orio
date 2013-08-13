@@ -77,7 +77,7 @@ class PerfTuner:
             ptcodegens.append(c)
 
         # create the performance-testing driver
-        ptdriver = orio.main.tuner.ptest_driver.PerfTestDriver(tinfo, use_parallel_search, 
+        ptdriver = orio.main.tuner.ptest_driver.PerfTestDriver(self.tinfo, use_parallel_search, 
                                                                self.odriver.lang, 
                                                                c.getTimerCode(use_parallel_search))
 
