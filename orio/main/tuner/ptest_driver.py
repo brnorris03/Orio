@@ -347,7 +347,9 @@ class PerfTestDriver:
     def __cleanup(self):
         '''Delete all the generated files'''
 
-        if Globals().keep_temps: return
+        if Globals().keep_temps:
+            if self.first: self.first = False
+            return
         
         if self.first:
             for fname in [self.original_src_name, self.original_exe_name, self.timer_file]:
