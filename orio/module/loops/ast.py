@@ -121,6 +121,7 @@ class LitExp(Exp):
     INT = 2
     FLOAT = 3
     STRING = 4
+    ARRAY = 5
     
     def __init__(self, lit_type, val, coord=None):
         super(LitExp, self).__init__(coord)
