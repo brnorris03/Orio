@@ -7,8 +7,8 @@ $(TESTS):
 	@orcc -v $(@:_%=%);\
 	if (diff reference/$@ $@) then true; \
 	else echo "Possible problem with example $@, diffs above \n========================================="; fi;\
-	rm -f tuning*.log $@
+	rm -f tuning*.log $@ timer* *.exe
 
 clean:
-	rm -f tuning*.log _*.c
+	rm -f tuning*.log _*.* timer* *.exe
 
