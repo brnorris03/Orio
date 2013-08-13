@@ -496,6 +496,10 @@ def p_expr_primary5(p):
     '''primary : '(' expr ')' '''
     p[0] = ast.ParenExp(p[2], p.lineno(1))
 
+def p_expr_primary6(p):
+    '''primary : '[' arg_exprs ']' '''
+    p[0] = ast.LitExp(ast.LitExp.ARRAY, p[2], p.lineno(1))
+
 
 #----------------------------------------------------------------------------------------------------------------------
 # utility funs
