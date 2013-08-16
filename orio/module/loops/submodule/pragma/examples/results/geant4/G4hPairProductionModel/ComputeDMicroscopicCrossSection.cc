@@ -56,7 +56,6 @@ G4double G4hPairProductionModel::ComputeDMicroscopicCrossSection(
   G4double tmn = log(tmnexp);
   G4double sum = 0.;
 
-  G4double a4,a5,a6,a7,a8,a9,xi,xii,xi1,screen,yeu,yed,ye1,ale,cre,be,fe,ymu,ymd,ym1,alm_crm,a10,bm;
   // Gaussian integration in ln(1-ro) ( with 8 points)
   for (G4int i=0; i<8; i++)
   {
