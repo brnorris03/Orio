@@ -1,0 +1,25 @@
+#!/usr/bin/env python 
+#
+# orf - Compile shell for Orio (generate OpenCL source code)
+#
+
+import os, sys, distutils.sysconfig
+
+# include the annotation tool in the Python's search path
+abs_path = os.path.realpath(sys.argv[0])
+cur_dir = os.path.dirname(abs_path)
+dirs=[]
+if os.path.basename(cur_dir) == 'bin':
+    # installed location
+    base_dir = os.path.join(os.path.dirname(cur_dir),'lib','python' + distutils.sysconfig.get_python_version(),'site-packages')
+    dirs = [base_dir, os.path.join(base_dir,'orio')]
+else:
+    # source tree (development) location
+    dirs = [os.path.join(cur_dir,'orio')]
+sys.path.extend(dirs)
+
+
+# dispatch to Orio's main
+import orio.main.orio_main
+orio.main.orio_main.start(sys.argv, orio.main.orio_main.OPENCL)
+

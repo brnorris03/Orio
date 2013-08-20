@@ -11,6 +11,7 @@ from orio.main.util.globals import *
 C_CPP = 1
 FORTRAN = 2
 CUDA = 3
+OPENCL = 4
 
 #----------------------------------------------
 
@@ -26,6 +27,8 @@ def start(argv, lang):
         language = 'c'
     elif lang == CUDA:
         language = 'cuda'
+    elif lang == OPENCL:
+        language = 'opencl'
     else:
         sys.stderr.write('orio.main.main:  Language not supported at this time.')
         sys.exit(1)

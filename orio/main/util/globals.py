@@ -23,6 +23,7 @@ class Globals:
             self.language = 'c'         # default language is C
             self.error_pre = "\x1B[00;31m"
             self.error_post = "\x1B[00m"
+            self.metadata = {'loop_transformations':[]}
             if 'dry_run' in cmdline.keys():
                 self.dry_run = cmdline['dry_run']
             else:
@@ -100,6 +101,10 @@ class Globals:
                 self.pre_cmd = cmdline['pre_cmd']
             else:
                 self.pre_cmd = ''             # Command string with which to prefix the execution of the Orio-built code
+            if 'post_cmd' in cmdline.keys():
+                self.post_cmd = cmdline['post_cmd']
+            else:
+                self.post_cmd = None
     
             
             # Configure logging

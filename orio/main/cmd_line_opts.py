@@ -16,7 +16,9 @@ Usage: %s [options] <ifile>
 
 Options:
   -c, --pre-command=<string>     Command string with which to prefix the execution of the 
-                                 Orio-built code, e.g., tauex
+                                 Orio-built code, e.g., tau_exec
+  --post-command=<string>        Command string to run after each execution of Orio-built code,
+                                 e.g., taudb_loadtrial
   -e, --erase-annot              remove annotations from the output
   -h, --help                     display this message
   -o <file>, --output=<file>     place the output in <file> (only valid when processing 
@@ -121,7 +123,7 @@ class CmdParser:
             opts, args = getopt.getopt(orioargv,
                                        'c:ehko:p:rs:vx',
                                        ['pre-command=', 'config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=', 
-                                       'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern', 'validate'])
+                                       'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern', 'validate', 'post-command='])
         except Exception, e:
             sys.stderr.write('Orio command-line error: %s' % e)
             sys.stderr.write(USAGE_MSG + '\n')
@@ -131,6 +133,8 @@ class CmdParser:
         for opt, arg in opts:
             if opt in ('-c', '--pre-command'):
                 cmdline['pre_cmd'] = arg
+            elif opt in ('--post-command'):
+                cmdline['post_cmd'] = arg
             elif opt in ('-e', '--erase-annot'):
                 cmdline['erase_annot'] = True
             elif opt in ('-h', '--help'):
