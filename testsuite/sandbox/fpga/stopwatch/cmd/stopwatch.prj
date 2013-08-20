@@ -1,0 +1,8 @@
+vhdl work "../src/ipcore_dir/timer_preset.vhd"
+vhdl work "../src/time_cnt.vhd"
+vhdl work "../src/statmach.vhd"
+vhdl work "../src/lcd_control.vhd"
+vhdl work "../src/dcm1.vhd"
+vhdl work "../src/debounce.vhd"
+vhdl work "../src/clk_div_262k.vhd"
+vhdl work "../src/stopwatch.vhd"

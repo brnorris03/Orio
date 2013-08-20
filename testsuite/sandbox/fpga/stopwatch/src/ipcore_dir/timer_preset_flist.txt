@@ -1,0 +1,17 @@
+# Output products list for <timer_preset>
+_xmsgs\pn_parser.xmsgs
+dist_mem_gen_ds322.pdf
+dist_mem_gen_readme.txt
+timer_preset.asy
+timer_preset.gise
+timer_preset.mif
+timer_preset.ngc
+timer_preset.sym
+timer_preset.v
+timer_preset.veo
+timer_preset.vhd
+timer_preset.vho
+timer_preset.xco
+timer_preset.xise
+timer_preset_flist.txt
+timer_preset_xmdf.tcl
