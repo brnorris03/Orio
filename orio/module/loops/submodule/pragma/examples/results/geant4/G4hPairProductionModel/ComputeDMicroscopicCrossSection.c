@@ -1,7 +1,9 @@
-double G4hPairProductionModel::ComputeDMicroscopicCrossSection(
-                                           double tkin,
-                                           double Z,
-                                           double pairEnergy)
+double ComputeDMicroscopicCrossSection(double tkin,
+                                       double Z,
+                                       double pairEnergy,
+                                       double particleMass,
+                                       double electron_mass_c2,
+                                       double *xgi, double *wgi)
 //  differential cross section
 {
   double bbbtf= 183. ;
@@ -10,6 +12,10 @@ double G4hPairProductionModel::ComputeDMicroscopicCrossSection(
   double g2tf = 5.3e-5 ;
   double g1h  = 4.4e-5 ;
   double g2h  = 4.8e-5 ;
+  double z13  = 1.3e-5;
+  double z23  = 2.3e-5;
+  double sqrte = sqrt(2.718281);
+  double factorForCross = 3.14;
 
   double totalEnergy  = tkin + particleMass;
   double residEnergy  = totalEnergy - pairEnergy;
@@ -17,7 +23,7 @@ double G4hPairProductionModel::ComputeDMicroscopicCrossSection(
   double massratio2   = massratio*massratio ;
   double cross = 0.;
 
-  SetElement(G4lrint(Z));
+  //SetElement(G4lrint(Z));
 
   double c3 = 0.75*sqrte*particleMass;
   if (residEnergy <= c3*z13) return cross;
@@ -57,7 +63,8 @@ double G4hPairProductionModel::ComputeDMicroscopicCrossSection(
   double sum = 0.;
 
   // Gaussian integration in ln(1-ro) ( with 8 points)
-  for (G4int i=0; i<8; i++)
+  int i;
+  for (i=0; i<8; i++)
   {
     double a4 = exp(tmn*xgi[i]);     // a4 = (1.-asymmetry)
     double a5 = a4*(2.-a4) ;
