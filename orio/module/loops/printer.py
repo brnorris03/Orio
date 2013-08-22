@@ -228,7 +228,7 @@ class CodeGen_C(CodeGen):
         elif isinstance(tnode, ast.VarDec):
             if not tnode.isnested:
                 s += indent
-            s += str(tnode.type_name) + ' '
+            s += ' '.join(tnode.type_name) + ' '
             s += ', '.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.var_inits))
             if not tnode.isnested:
                 s += ';\n'
