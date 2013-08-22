@@ -239,7 +239,7 @@ def p_expr_dec(p):
 
 def p_tyexpr(p):
     '''tyexpr : ty stars'''
-    p[0] = [p[1], p[2]]
+    p[0] = [p[1]] + p[2]
 
 def p_stars1(p):
     '''stars : empty'''
