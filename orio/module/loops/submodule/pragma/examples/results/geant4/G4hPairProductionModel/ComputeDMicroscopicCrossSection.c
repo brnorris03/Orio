@@ -6,6 +6,35 @@ double ComputeDMicroscopicCrossSection(double tkin,
                                        double *xgi, double *wgi)
 //  differential cross section
 {
+/*@ begin PerfTuning(
+      def performance_params {
+        param PR[] = [ "vector always",
+                       "vector aligned",
+                       "vector unaligned",
+                       "vector temporal",
+                       "vector nontemporal",
+                       "vector nontemporal (xgi,wgi)",
+                       "novector",
+                       ""];
+        param CFLAGS[] = map(join, product(['', '-no-vec'], ['', '-xhost'], ['', '-restrict']));
+      }
+      def build {
+        arg build_command = 'icc -O3 @CFLAGS';
+      }
+      def input_params {
+        param N[] = [10**8];
+      }
+      def input_vars {
+        decl double tkin             = random;
+        decl double Z                = random;
+        decl double pairEnergy       = random;
+        decl double particleMass     = random;
+        decl double electron_mass_c2 = random;
+        decl dynamic double xgi[8]   = random;
+        decl dynamic double wgi[8]   = random;
+      }
+) @*/
+
   double bbbtf= 183. ;
   double bbbh = 202.4 ;
   double g1tf = 1.95e-5 ;
@@ -26,13 +55,13 @@ double ComputeDMicroscopicCrossSection(double tkin,
   //SetElement(G4lrint(Z));
 
   double c3 = 0.75*sqrte*particleMass;
-  if (residEnergy <= c3*z13) return cross;
+  //if (residEnergy <= c3*z13) return cross;
 
   double c7 = 4.*electron_mass_c2;
   double c8 = 6.*particleMass*particleMass;
   double alf = c7/pairEnergy;
   double a3 = 1. - alf;
-  if (a3 <= 0.) return cross;
+  //if (a3 <= 0.) return cross;
 
   // zeta calculation
   double bbb,g1,g2;
@@ -57,16 +86,17 @@ double ComputeDMicroscopicCrossSection(double tkin,
 
   double rta3 = sqrt(a3);
   double tmnexp = alf/(1. + rta3) + del*rta3;
-  if(tmnexp >= 1.0) return cross;
+  //if(tmnexp >= 1.0) return cross;
 
   double tmn = log(tmnexp);
   double sum = 0.;
 
   // Gaussian integration in ln(1-ro) ( with 8 points)
   int i;
+/*@ Loops(transform Pragma(pragma_str=PR)) @*/
   for (i=0; i<8; i++)
   {
-    double a4 = exp(tmn*xgi[i]);     // a4 = (1.-asymmetry)
+    double a4 = exp(tmn*xgi[i]);
     double a5 = a4*(2.-a4) ;
     double a6 = 1.-a5 ;
     double a7 = 1.+a6 ;
@@ -106,9 +136,11 @@ double ComputeDMicroscopicCrossSection(double tkin,
 
     sum += wgi[i]*a4*(fe+fm/massratio2);
   }
+/*@ @*/
 
   cross = -tmn*sum*factorForCross*z2*residEnergy/(totalEnergy*pairEnergy);
 
+/*@ @*/
   return cross;
 }
 
