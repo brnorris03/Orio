@@ -1,0 +1,364 @@
+
+====== START ORIO ======
+
+----- begin reading the source file: ComputeDMicroscopicCrossSection.c -----
+----- finished reading the source file -----
+
+----- begin parsing annotations -----
+----- finished parsing annotations -----
+
+----- begin optimizations -----
+Search_Space         = 6.400e+01
+Number_of_Parameters = 02
+Numeric_Parameters   = 02
+Binary_Parameters    = 00
+['PR', 'CFLAGS']
+[['', 'novector', 'vector aligned', 'vector always', 'vector nontemporal', 'vector nontemporal (xgi,wgi)', 'vector temporal', 'vector unaligned'], ['  ', '  -restrict', ' -xhost ', ' -xhost -restrict', '-no-vec  ', '-no-vec  -restrict', '-no-vec -xhost ', '-no-vec -xhost -restrict']]
+
+----- begin empirical tuning for problem size -----
+ N = 100000000
+
+----- begin exhaustive search -----
+ compiling timer:
+	icc -lrt -O3    -O0 -c -o timer_cpu.o timer_cpu.c
+ building the original code:
+	icc -lrt -O3     -DORIO_REPS=5 -DORIGINAL -o __orio_perftest_original.exe __orio_perftest1.c timer_cpu.o 
+ building test:
+	icc -lrt -O3     -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest1.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [0, 0], average cost: 2.6025e-07, all costs: [5.8899999999999999e-07, 2.8700000000000002e-07, 2.5199999999999998e-07, 2.5199999999999998e-07, 2.4999999999999999e-07], average transfer time: inf
+>>>> best coordinate found: [0, 0], average cost: 2.602500e-07, average transfer time: inf
+ building test:
+	icc -lrt -O3     -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest2.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [1, 0], average cost: 2.7525e-07, all costs: [5.4899999999999995e-07, 3.5999999999999999e-07, 2.4699999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3     -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest3.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [2, 0], average cost: 2.745e-07, all costs: [5.8400000000000004e-07, 3.5699999999999998e-07, 2.5199999999999998e-07, 2.4499999999999998e-07, 2.4400000000000001e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3     -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest4.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [3, 0], average cost: 2.8075e-07, all costs: [6.3399999999999999e-07, 2.9400000000000001e-07, 3.3500000000000002e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3     -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest5.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [4, 0], average cost: 2.7775e-07, all costs: [4.9399999999999995e-07, 3.7e-07, 2.4699999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3     -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest6.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [5, 0], average cost: 2.595e-07, all costs: [5.9599999999999999e-07, 2.9700000000000003e-07, 2.4699999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+>>>> best coordinate found: [5, 0], average cost: 2.595000e-07, average transfer time: inf
+ building test:
+	icc -lrt -O3     -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest7.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [6, 0], average cost: 2.7775e-07, all costs: [5.8899999999999999e-07, 3.6699999999999999e-07, 2.4999999999999999e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3     -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest8.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [7, 0], average cost: 2.6825e-07, all costs: [4.4900000000000001e-07, 2.9400000000000001e-07, 2.48e-07, 2.8200000000000001e-07, 2.4900000000000002e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3   -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest9.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [0, 1], average cost: 2.6025e-07, all costs: [5.8899999999999999e-07, 2.9200000000000002e-07, 2.5499999999999999e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3   -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest10.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [1, 1], average cost: 2.66e-07, all costs: [5.0900000000000002e-07, 2.8999999999999998e-07, 2.8000000000000002e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3   -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest11.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [2, 1], average cost: 2.9875e-07, all costs: [6.5600000000000005e-07, 3.6699999999999999e-07, 3.34e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3   -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest12.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [3, 1], average cost: 2.57e-07, all costs: [6.1600000000000001e-07, 2.8700000000000002e-07, 2.4699999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+>>>> best coordinate found: [3, 1], average cost: 2.570000e-07, average transfer time: inf
+ building test:
+	icc -lrt -O3   -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest13.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [4, 1], average cost: 2.57e-07, all costs: [5.0699999999999997e-07, 2.8700000000000002e-07, 2.4699999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3   -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest14.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [5, 1], average cost: 2.62e-07, all costs: [5.1399999999999997e-07, 2.9700000000000003e-07, 2.4999999999999999e-07, 2.4900000000000002e-07, 2.5199999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3   -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest15.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [6, 1], average cost: 2.7325e-07, all costs: [4.89e-07, 3.5900000000000003e-07, 2.4400000000000001e-07, 2.4499999999999998e-07, 2.4499999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3   -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest16.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [7, 1], average cost: 2.7475e-07, all costs: [6.0200000000000002e-07, 3.65e-07, 2.4400000000000001e-07, 2.4499999999999998e-07, 2.4499999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest17.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [0, 2], average cost: 2.6e-07, all costs: [6.13e-07, 3.0499999999999999e-07, 2.4699999999999998e-07, 2.4400000000000001e-07, 2.4400000000000001e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest18.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [1, 2], average cost: 2.795e-07, all costs: [5.4899999999999995e-07, 3.6399999999999998e-07, 2.5199999999999998e-07, 2.4999999999999999e-07, 2.5199999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest19.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [2, 2], average cost: 2.6e-07, all costs: [5.7700000000000004e-07, 3.0199999999999998e-07, 2.4699999999999998e-07, 2.4400000000000001e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest20.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [3, 2], average cost: 3.38e-07, all costs: [5.2600000000000002e-07, 6.0200000000000002e-07, 2.5199999999999998e-07, 2.4900000000000002e-07, 2.4900000000000002e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest21.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [4, 2], average cost: 2.7725e-07, all costs: [5.7599999999999997e-07, 3.65e-07, 2.4999999999999999e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest22.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [5, 2], average cost: 2.7775e-07, all costs: [6.1099999999999995e-07, 3.6699999999999999e-07, 2.4999999999999999e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest23.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [6, 2], average cost: 2.615e-07, all costs: [5.4199999999999996e-07, 3.0199999999999998e-07, 2.4699999999999998e-07, 2.4999999999999999e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest24.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [7, 2], average cost: 2.6075e-07, all costs: [6.4600000000000004e-07, 2.9200000000000002e-07, 2.4999999999999999e-07, 2.4900000000000002e-07, 2.5199999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest25.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [0, 3], average cost: 2.5775e-07, all costs: [6.9100000000000003e-07, 2.84e-07, 2.4999999999999999e-07, 2.4999999999999999e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest26.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [1, 3], average cost: 2.765e-07, all costs: [5.1099999999999996e-07, 3.6399999999999998e-07, 2.4499999999999998e-07, 2.4999999999999999e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest27.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [2, 3], average cost: 2.57e-07, all costs: [5.8599999999999998e-07, 2.9900000000000002e-07, 2.4200000000000002e-07, 2.4200000000000002e-07, 2.4499999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest28.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [3, 3], average cost: 2.7625e-07, all costs: [7.1800000000000005e-07, 3.6199999999999999e-07, 2.4900000000000002e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest29.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [4, 3], average cost: 2.5525e-07, all costs: [5.99e-07, 2.8900000000000001e-07, 2.4400000000000001e-07, 2.4400000000000001e-07, 2.4400000000000001e-07], average transfer time: inf
+>>>> best coordinate found: [4, 3], average cost: 2.552500e-07, average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest30.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [5, 3], average cost: 2.595e-07, all costs: [5.99e-07, 2.9400000000000001e-07, 2.4699999999999998e-07, 2.4999999999999999e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest31.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [6, 3], average cost: 2.7675e-07, all costs: [5.2699999999999999e-07, 3.6399999999999998e-07, 2.4900000000000002e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3  -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest32.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [7, 3], average cost: 2.6325e-07, all costs: [5.4899999999999995e-07, 3.0699999999999998e-07, 2.4699999999999998e-07, 2.4900000000000002e-07, 2.4999999999999999e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec    -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest33.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [0, 4], average cost: 2.5975e-07, all costs: [5.9100000000000004e-07, 2.9200000000000002e-07, 2.4999999999999999e-07, 2.4999999999999999e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec    -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest34.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [1, 4], average cost: 2.7625e-07, all costs: [6.8800000000000002e-07, 3.6600000000000002e-07, 2.4499999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec    -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest35.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [2, 4], average cost: 2.74e-07, all costs: [4.7399999999999998e-07, 3.6399999999999998e-07, 2.4400000000000001e-07, 2.4400000000000001e-07, 2.4400000000000001e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec    -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest36.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [3, 4], average cost: 2.765e-07, all costs: [5.9699999999999996e-07, 3.6699999999999999e-07, 2.4499999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec    -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest37.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [4, 4], average cost: 2.585e-07, all costs: [5.2600000000000002e-07, 2.8999999999999998e-07, 2.4999999999999999e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec    -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest38.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [5, 4], average cost: 2.74e-07, all costs: [4.6600000000000002e-07, 3.5699999999999998e-07, 2.4499999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec    -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest39.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [6, 4], average cost: 2.7625e-07, all costs: [5.2099999999999997e-07, 3.5699999999999998e-07, 2.4999999999999999e-07, 2.4900000000000002e-07, 2.4900000000000002e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec    -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest40.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [7, 4], average cost: 2.7525e-07, all costs: [5.37e-07, 3.6399999999999998e-07, 2.4499999999999998e-07, 2.4499999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec  -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest41.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [0, 5], average cost: 2.59e-07, all costs: [6.5099999999999999e-07, 2.8999999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07, 2.5199999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec  -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest42.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [1, 5], average cost: 2.6325e-07, all costs: [6.0800000000000004e-07, 2.9200000000000002e-07, 2.5400000000000002e-07, 2.5199999999999998e-07, 2.5499999999999999e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec  -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest43.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [2, 5], average cost: 2.77e-07, all costs: [5.5400000000000001e-07, 3.6699999999999999e-07, 2.4699999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec  -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest44.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [3, 5], average cost: 2.8875e-07, all costs: [5.1399999999999997e-07, 3.6899999999999998e-07, 2.6199999999999999e-07, 2.6199999999999999e-07, 2.6199999999999999e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec  -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest45.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [4, 5], average cost: 2.5775e-07, all costs: [5.6100000000000001e-07, 2.9200000000000002e-07, 2.4499999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec  -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest46.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [5, 5], average cost: 2.7375e-07, all costs: [6.1900000000000002e-07, 3.5999999999999999e-07, 2.4400000000000001e-07, 2.4699999999999998e-07, 2.4400000000000001e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec  -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest47.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [6, 5], average cost: 2.7825e-07, all costs: [5.2900000000000004e-07, 3.6899999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07, 2.4999999999999999e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec  -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest48.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [7, 5], average cost: 2.5675e-07, all costs: [5.5700000000000002e-07, 2.9499999999999998e-07, 2.4400000000000001e-07, 2.4400000000000001e-07, 2.4400000000000001e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest49.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [0, 6], average cost: 2.615e-07, all costs: [6.61e-07, 2.9400000000000001e-07, 2.4999999999999999e-07, 2.5199999999999998e-07, 2.4999999999999999e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest50.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [1, 6], average cost: 2.545e-07, all costs: [6.0100000000000005e-07, 2.84e-07, 2.4499999999999998e-07, 2.4400000000000001e-07, 2.4499999999999998e-07], average transfer time: inf
+>>>> best coordinate found: [1, 6], average cost: 2.545000e-07, average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest51.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [2, 6], average cost: 2.6e-07, all costs: [6.3600000000000003e-07, 2.9400000000000001e-07, 2.4900000000000002e-07, 2.4699999999999998e-07, 2.4999999999999999e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest52.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [3, 6], average cost: 2.5625e-07, all costs: [6.8599999999999998e-07, 2.8599999999999999e-07, 2.4699999999999998e-07, 2.4499999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest53.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [4, 6], average cost: 2.81e-07, all costs: [6.9299999999999997e-07, 3.72e-07, 2.4999999999999999e-07, 2.4999999999999999e-07, 2.5199999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest54.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [5, 6], average cost: 2.85e-07, all costs: [5.8699999999999995e-07, 3.6199999999999999e-07, 2.5899999999999998e-07, 2.6e-07, 2.5899999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest55.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [6, 6], average cost: 2.8075e-07, all costs: [5.6899999999999997e-07, 2.84e-07, 3.4700000000000002e-07, 2.4699999999999998e-07, 2.4499999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost   -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest56.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [7, 6], average cost: 2.6075e-07, all costs: [5.4199999999999996e-07, 3.0499999999999999e-07, 2.4699999999999998e-07, 2.4400000000000001e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest57.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [0, 7], average cost: 2.5575e-07, all costs: [5.2600000000000002e-07, 2.91e-07, 2.4400000000000001e-07, 2.4400000000000001e-07, 2.4400000000000001e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest58.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [1, 7], average cost: 2.575e-07, all costs: [5.4899999999999995e-07, 2.9200000000000002e-07, 2.4900000000000002e-07, 2.4400000000000001e-07, 2.4499999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest59.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [2, 7], average cost: 2.795e-07, all costs: [5.9400000000000005e-07, 3.6699999999999999e-07, 2.5199999999999998e-07, 2.4900000000000002e-07, 2.4999999999999999e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest60.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [3, 7], average cost: 2.725e-07, all costs: [5.2099999999999997e-07, 3.5900000000000003e-07, 2.4200000000000002e-07, 2.4499999999999998e-07, 2.4400000000000001e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest61.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [4, 7], average cost: 2.57e-07, all costs: [5.6199999999999998e-07, 2.8700000000000002e-07, 2.4699999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest62.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [5, 7], average cost: 2.5775e-07, all costs: [5.99e-07, 2.9700000000000003e-07, 2.4400000000000001e-07, 2.4499999999999998e-07, 2.4499999999999998e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest63.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [6, 7], average cost: 2.6125e-07, all costs: [6.7599999999999997e-07, 2.9200000000000002e-07, 2.4999999999999999e-07, 2.4900000000000002e-07, 2.5400000000000002e-07], average transfer time: inf
+ building test:
+	icc -lrt -O3 -no-vec -xhost -restrict  -DORIO_REPS=5 -o __orio_perftest.exe __orio_perftest64.c timer_cpu.o 
+ running test:
+	 ./__orio_perftest.exe
+coordinate: [7, 7], average cost: 2.56e-07, all costs: [5.3099999999999998e-07, 2.8500000000000002e-07, 2.4499999999999998e-07, 2.4699999999999998e-07, 2.4699999999999998e-07], average transfer time: inf
+----- end exhaustive search -----
+----- begin summary -----
+ best coordinate: [1, 6]={'PR': 'novector', 'CFLAGS': '-no-vec -xhost '}, cost=2.545000e-07, transfer_time=inf, inputs=[('N', 100000000)], search_time=240.05, runs=0
+----- end summary -----
+----- the obtained best performance parameters -----
+ CFLAGS = -no-vec -xhost 
+ PR = novector
+----- finish optimizations -----
+
+----- begin writing the output file(s) -----
+--> writing output to: _ComputeDMicroscopicCrossSection.c
+----- finished writing the output file(s) -----
+
+====== END ORIO ======
