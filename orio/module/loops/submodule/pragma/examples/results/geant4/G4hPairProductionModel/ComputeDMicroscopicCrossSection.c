@@ -19,7 +19,7 @@ double ComputeDMicroscopicCrossSection(double tkin,
         param CFLAGS[] = map(join, product(['', '-no-vec'], ['', '-xhost'], ['', '-restrict']));
       }
       def build {
-        arg build_command = 'icc -O3 @CFLAGS';
+        arg build_command = 'icc -lrt -O3 @CFLAGS';
       }
       def input_params {
         param N[] = [10**8];
