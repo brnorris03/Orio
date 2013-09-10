@@ -3,6 +3,9 @@
 DEVICE=xc6vlx240t-ff1156-1
 
 
+syn:
+	xst -intstyle ise -ifn demo.xst -ofn demo.syr
+
 ### Misc ###
 clean:
 	rm -rf *.lst *.bld *.xrpt *.ngm *.xml *.mrp *.map *.html *.ptwx *.csv *.pad *.txt *.unroutes *.xpi *.tw* *.log
