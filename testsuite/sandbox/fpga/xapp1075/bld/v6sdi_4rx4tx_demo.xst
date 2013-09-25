@@ -1,7 +1,7 @@
 run
--ifn demo.prj
+-ifn v6sdi_4rx4tx_demo.prj
 -ifmt mixed
--ofn demo
+-ofn v6sdi_4rx4tx_demo
 -ofmt NGC
 -p xc6vlx240t-1-ff1156
 -top v6sdi_4rx4tx_demo
