@@ -3,6 +3,7 @@
 DEVICE=xc6vlx240t-ff1156-1
 NAME=v6sdi_4rx4tx_demo
 
+### Atomic workflow ###
 syn:
 	xst -intstyle ise -ifn $(NAME).xst -ofn $(NAME).syr
 
@@ -17,6 +18,10 @@ par:
 
 trace:
 	trce -intstyle ise -v 3 -s 1 -n 3 -fastpaths -xml $(NAME).twx $(NAME).ncd -o $(NAME).twr $(NAME).pcf
+
+### Exploration ###
+xplor_bi:
+	smartxplorer -p xc6vlx240t-ff1156-1 -ra -pwo on -area_report "slice_reg;lut;bram;slice;dsp48" -sd "../src/vhdl/;../src/ipcore_dir/" -wd tmp v6sdi_4rx4tx_demo.xst
 
 ### Misc ###
 clean:
