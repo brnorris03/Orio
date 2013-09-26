@@ -48,12 +48,12 @@ map2=(" -ol ",["high","std"])
 map3=(" -xe ",["n","c"])
 map4=(" ",["","-timing"])
 map5=(" -logic_opt ",["on","off"])
-map6=(" -cm ",["area","speed","balanced"])
+#map6=(" -cm ",["area","speed","balanced"])
 map7=(" -power ",["off","on","high","xe"])
 map8=(" -pr ",["off","i","o","b"])
-mapA=[(map1[0]+o1+map2[0]+o2+map3[0]+o3+map4[0]+o4+map5[0]+o5+map6[0]+o6+map7[0]+o7+map8[0]+o8)
+mapA=[(map1[0]+o1+map2[0]+o2+map3[0]+o3+map4[0]+o4+map5[0]+o5+map7[0]+o7+map8[0]+o8)
 for o1 in map1[1] for o2 in map2[1] for o3 in map3[1] for o4 in map4[1] for o5 in map5[1]
-  for o6 in map6[1] for o7 in map7[1] for o8 in map8[1]]
+  for o7 in map7[1] for o8 in map8[1]]
 
 par1=(" -ol ",["high","std"])
 par2=(" -xe ",["n","c"])
