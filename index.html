@@ -92,9 +92,11 @@ export PATH=/home/username/bin:$PATH
 
 <p>Orio annotation is denoted as a stylized C comment that starts with '<code>/*@</code>' and ends with <code>@*/</code>. For instance, the annotation <code>/*@ end @*/</code> is used to indicate the end of an annotated code region. The following simple grammar illustrates the fundamental structure of Orio annotations.</p>
 
-<p> ::=  [[BR]]
-   ::= <code>/*@ begin</code> <code>(</code> <code>) @*/</code> [[BR]]
-   ::= <code>/*@ end @*/</code> [[BR]]</p>
+<pre>
+&lt;annotation-region&gt; ::= &lt;leader-annotation&gt; &lt;annotation-body&gt; &lt;trailer-annotation&gt;
+&lt;leader-annotation&gt; ::= /*@ begin &lt;module-name&gt; ( &lt;module-body&gt; ) @*/ 
+&lt;trailer-annotation&gt; ::= /*@ end @*/ 
+</pre>
 
 <p>An ''annotation region'' consists of three main parts: ''leader annotation'', ''annotation body'', and ''trailer annotation''. The annotation body can either be empty or contain C code that may include other nested annotation regions. A leader annotation contains the ''module name'' of the code transformation component that is loaded dynamically by Orio. A high level abstraction of the computation and the performance hints are coded in the ''module body'' inside the leader annotation and are used as input by the transformation module during the transformation and code generation phases. A trailer annotation, which has a fixed form (i.e. <code>/*@ end @*/</code>), closes an annotation region.</p>
 
@@ -222,13 +224,57 @@ for (i=0; i&lt;=N-1; i++)
 
 <p>To further improve the quality of the search result, each search heuristic is enhanced by applying a local search after the search completes. The local search compares the best performance with neighboring coordinates. If a better coordinate is discovered, the local search continues recursively until no further improvement is possible.  In the previous example, users can adjust the distance of the local search by modifying the value of the argument ''simplex_local_distance''. A local distance of two implies that the local search examines the performances of all neighbors within a distance of two. It is important to note that the local search is turned off by default for all search heuristics. Thus to activate the local search, Orio users must explicitly assign a positive integer value to the ''local_distance'' algorithm-specific argument.</p>
 
-<p>The following table lists information about the search techniques implemented in the Orio's search engine.</p>
+<p>The following search techniques are available in Orio (note that this list may be somewhat out of date). Each description includes the names of the search technique's configuration parameters and their default values in []. </p>
 
-<p>|| '''Search technique''' || '''Keyword''' || '''Algorithm-specific argument''' || '''Default value''' || '''Argument description''' ||
-|| ''Exhaustive'' || '<code>Exhaustive</code>' || - || - || - ||
-|| ''Random'' || '<code>Randomsearch</code>' || <code>local_distance</code> || 0 || * the maximum distance of neighboring coordinates considered by the local search ||
-|| ''Nelder-Mead simplex'' || '<code>Simplex</code>' || <code>local_distance</code> [[BR]] <code>reflection_coef</code> [[BR]] <code>expansion_coef</code> [[BR]] <code>contraction_coef</code> [[BR]] <code>shrinkage_coef</code> || 0 [[BR]] 1.0 [[BR]] 2.0 [[BR]] 0.5 [[BR]] 0.5 || * the maximum distance of neighboring coordinates considered by the local search [[BR]] * the amplitude/intensity of the reflection move [[BR]] * the amplitude/intensity of the expansion move [[BR]] * the amplitude/intensity of the contraction move [[BR]] * the amplitude/intensity of the shrinkage move
-|| ''Simulated annealing'' || '<code>Annealing</code>' || <code>local_distance</code> [[BR]] <code>cooling_factor</code> [[BR]] <code>final_temperature_ratio</code> [[BR]] <code>trials_limit</code> [[BR]] <code>moves_limit</code> || 0 [[BR]] 0.95 [[BR]] 0.05 [[BR]] 100 [[BR]] 20 || * the maximum distance of neighboring coordinates considered by the local search [[BR]] * the temperature reduction factor [[BR]] * the percentage of the termination temperature [[BR]] * the maximum limit of numbers of search trials at each temperature [[BR]] * the maximum limit of numbers of successful search moves at each temperature</p>
+<ul>
+<li><i>Exhaustive</i>; keyword: <code>"Exhaustive"</code><br></li>
+<li><i>Random</i>; keyword: <code>"Randomsearch"</code>. Algorithm parameters [default value]:
+  <ul><li> <code>"local_distance"</code> [0]: the maximum distance of neighboring coordinates considered by the local search </li></ul>
+</li>
+<li><i>Nelder-Mead simplex</i>; keyword: <code>"Simplex"</code>. Algorithm parameters [default value]:
+ <ul>
+ <li><code>"local_distance"</code> [0.0]: the maximum distance of neighboring coordinates considered by the local search </li> 
+ <li><code>"reflection_coef"</code> [1.0]: the amplitude/intensity of the reflection move </li>
+ <li><code>"expansion_coef"</code> [2.0]: the amplitude/intensity of the expansion move </li>
+ <li><code>"contraction_coef"</code> [0.5]: the amplitude/intensity of the contraction move</li>
+ <li><code>"shrinkage_coef"</code> [0.5]: the amplitude/intensity of the shrinkage move</li>
+ </ul>
+</li>
+
+<li>
+<i>Modified Nelder-Mead simplex</i>; keyword: <code>"MSimplex"</code>.
+ <ul>
+ <li><code>"x0"</code> [all 0's (ie, [0,0,0])]: </li>
+ <li><code>"search_distance"</code> [1] </li>
+ <li><code>"reflection_coef"</code> [1.0] </li>
+ <li><code>"expansion_coef"</code> [2.0] </li>
+ <li><code>"contraction_coef"</code> [0.5] </li>
+ <li><code>"shrinkage_coef"</code> [0.5] </li>
+ <li><code>"size"</code> [maximum dimension of the search space] </li>
+ </ul>
+</li>
+
+<li><i>Simulated annealing</i>; keyword: <code>"Annealing"</code>. Algorithm parameters [default value]:
+ <ul>
+ <li><code>"local_distance"</code> [0.0]: the maximum distance of neighboring coordinates considered by the local search </li>
+ <li><code>"cooling_factor"</code> [0.95]: the temperature reduction factor </li>
+ <li><code>"final_temperature_ratio"</code> [0.05]: the percentage of the termination temperature </li>
+ <li><code>"trials_limit"</code> [100]: the maximum limit of numbers of search trials at each temperature  </li>
+ <li><code>"moves_limit"</code> [20]: the maximum limit of numbers of successful search moves at each temperature</li>
+ </ul>
+</li>
+
+<li>
+<i>Genetic</i>; keyword: <code>"ChaosGA"</code>.
+<!--
+            2.8,    #growthrate
+            50,    #population max
+            0.6,    #initial population proportion
+            min,    #minimizing, not maximizing
+-->
+</li>
+
+</ul>
 
 <h3>
 <a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
