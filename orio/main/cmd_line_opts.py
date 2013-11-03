@@ -16,13 +16,9 @@ Usage: %s [options] <ifile>
 
 Options:
   -c, --pre-command=<string>     Command string with which to prefix the execution of the 
-<<<<<<< HEAD
                                  Orio-built code, e.g., tau_exec
   --post-command=<string>        Command string to run after each execution of Orio-built code,
                                  e.g., taudb_loadtrial
-=======
-                                 Orio-built code, e.g., tauex
->>>>>>> 6216c0a019c5afe9ed29f3c14c81efcc224f37ef
   -e, --erase-annot              remove annotations from the output
   -h, --help                     display this message
   -o <file>, --output=<file>     place the output in <file> (only valid when processing 
