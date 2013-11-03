@@ -1,0 +1,34 @@
+\section{Motivation}
+\label{sec:motivation}
+
+%The use of empirical performance tuning and annotations approaches for
+%the following purposes:
+%- improve productivity of scientific computation applications
+%- improve high performance by (semi-)automating the tuning process
+%- improve code readability
+%- alleviate performance portability issues
+
+The size and complexity of scientific computations are increasing at
+least as fast as the improvements in processor technology.
+Programming such scientific applications is hard, and optimizing them
+for high performance is even harder.  This results in a potentially
+large gap between the achieved performance of applications and the
+peak available performance, with many applications achieving 10\% or
+less of the peak (e.g.,~\cite{Oliker,conf/vecpar/CarterOS06}).  A
+greater concern is the inability of existing languages, compilers, and
+systems to deliver the available performance for the application
+through fully automated code optimizations.
+
+Delivering performance without degrading productivity is crucial for
+the success of scientific computing. Scientific code developers
+generally attempt to improve performance by applying one or more of
+the following three approaches: manually optimizing code fragments,
+using tuned libraries for key numerical algorithms, and, less
+frequently, using compiler-based source transformation tools for
+loop-level optimizations. Manual tuning is time-consuming and impedes
+readability and performance portability. Tuned libraries often deliver
+excellent performance without requiring significant programming effort,
+but can only provide limited functionality. General-purpose source
+transformation tools for performance optimizations are few and have
+not yet gained popularity among computational scientists, at least in
+part because of poor portability and steep learning curves.

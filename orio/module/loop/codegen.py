@@ -21,6 +21,9 @@ class CodeGen:
         elif language.lower() in ['cuda']:
             from orio.module.loop.codegen_cuda import CodeGen_CUDA
             self.generator = CodeGen_CUDA()
+        elif language.lower() in ['opencl']:
+            from orio.module.loop.codegen_opencl import CodeGen_OpenCL
+            self.generator = CodeGen_OpenCL()
         else:
             g.err('orio.module.loop.codegen: Unknown language specified for code generation: %s' % language)
         pass

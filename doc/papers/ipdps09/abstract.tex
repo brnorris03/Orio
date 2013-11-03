@@ -1,0 +1,23 @@
+For many scientific applications, significant time is spent in tuning
+codes for a particular high-performance architecture. Tuning
+approaches range from the relatively nonintrusive (e.g., by using
+compiler options) to extensive code modifications that attempt to
+exploit specific architecture features. Intrusive techniques often
+result in code changes that are not easily reversible, and can
+negatively impact readability, maintainability, and performance on
+different architectures. We introduce an extensible annotation-based
+empirical tuning system called Orio that is aimed at improving both
+performance and productivity. It allows software developers to insert
+annotations in the form of structured comments into their source code
+to trigger a number of low-level performance optimizations on a
+specified code fragment.  To maximize the performance tuning
+opportunities, the annotation processing infrastructure is designed to
+support both architecture-independent and architecture-specific code
+optimizations. Given the annotated code as input, Orio generates many
+tuned versions of the same operation and empirically evaluates the
+alternatives to select the best performing version for production
+use. We have also enabled the use of the Pluto automatic
+parallelization tool in conjunction with Orio to generate efficient
+OpenMP-based parallel code. We describe our experimental results
+involving a number of computational kernels, including dense array and
+sparse matrix operations.
