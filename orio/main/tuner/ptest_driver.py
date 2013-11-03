@@ -6,7 +6,6 @@ import os, time, re, datetime, uuid
 
 from orio.main.util.globals import *
 
-
 #-----------------------------------------------------
 
 perftest_counter = 0

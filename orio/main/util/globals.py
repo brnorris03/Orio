@@ -24,6 +24,7 @@ class Globals:
             self.error_pre = "\x1B[00;31m"
             self.error_post = "\x1B[00m"
             self.metadata = {'loop_transformations':[]}
+
             if 'dry_run' in cmdline.keys():
                 self.dry_run = cmdline['dry_run']
             else:

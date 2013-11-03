@@ -20,8 +20,8 @@ keywords = [
     'msimplex_contraction_coef', 'msimplex_shrinkage_coef', 'msimplex_size', 'msimplex_x0',
     'simplex_reflection_coef', 'simplex_expansion_coef',
     'simplex_contraction_coef', 'simplex_shrinkage_coef', 'simplex_local_distance', 'simplex_x0',
-    'validation', 'validation_file', 'expected_output'
-    , 'macro', 'performance_test_code', 'skeleton_test_code', 'skeleton_code_file'
+    'validation', 'validation_file', 'expected_output',
+    'macro', 'performance_test_code', 'skeleton_test_code', 'skeleton_code_file'
 ]
 
 # map of reserved keywords

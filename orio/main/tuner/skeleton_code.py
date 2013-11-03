@@ -449,10 +449,10 @@ class PerfTestSkeletonCode:
             if use_parallel_search:
                 code = PAR_DEFAULT
             else:
-                if language == 'cuda':
-                    code = SEQ_DEFAULT_CUDA
-                else:
+                if language == 'c':
                     code = SEQ_DEFAULT
+                else:
+                    code = SEQ_DEFAULT_CUDA
 
         self.code = code
         self.use_parallel_search = use_parallel_search

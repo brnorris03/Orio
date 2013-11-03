@@ -345,11 +345,10 @@ class PerfTestCodeGen(object):
         if not self.decl_file:
             prologue_code += ('%s();' % self.malloc_func_name) + '\n  '
         prologue_code += ('%s();' % self.init_func_name) + '\n'
-        
         if Globals().language == 'opencl':
             for (k, v) in Globals().metadata.iteritems():
                 prologue_code += 'TAU_METADATA("%s", "%s");\n' % (k, v)
-        
+
         # create code for the epilogue section
         epilogue_code = ''
         #if not self.decl_file:
