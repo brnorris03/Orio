@@ -27,7 +27,9 @@ class Transformation:
 
     def transform(self, stmts):
         '''Apply code transformations on each statement in the given statement list'''
-
+        Globals().metadata['loop_transformations'] = []
+        for s in stmts:
+            Globals().metadata["loop_transformations"].append(s.name)
         return [self.__transformStmt(s) for s in stmts]
 
     #--------------------------------------
@@ -81,7 +83,7 @@ class Transformation:
             
             # apply code transformations
             #try:
-            if self.language == 'cuda':
+            if self.language == 'cuda' or self.language == 'opencl':
               t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language, self.tinfo)
             else:
               t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language)

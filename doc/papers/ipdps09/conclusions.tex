@@ -1,0 +1,26 @@
+\section{Conclusions and Future Work}
+\label{sec:conclusions}
+
+%Future directions:
+%- Support for Fortran
+%- Supports for various architecture-specific optimizations (e.g., SSE)
+%- Automatic tuning for various problem sizes
+%- Automatic parallelization for multi-core machines
+%- Tuning MPI code (communication minimization)
+%- Tuning for GPGPU
+
+%- Build a decision tree that automatically directs to the best tuned code for a given problem size
+
+We have described the design and implementation of Orio, an extensible Python
+software system for defining annotation-based performance-improving
+transformations. Our experiments with a number of different types of
+computations on two different architectures show that Orio can deliver
+performance improvements when used alone or in conjunction with other source
+transformation tools.
+
+Orio is a new tool under active development; future work includes (but is not
+limited to) providing support for annotating and generating Fortran code,
+defining new annotation languages and corresponding transformation modules,
+e.g., using matrix notation for linear algebra operations, and integration
+with other source transformation tools through new optimization modules.
+

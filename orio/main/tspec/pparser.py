@@ -20,8 +20,8 @@ keywords = [
     'msimplex_contraction_coef', 'msimplex_shrinkage_coef', 'msimplex_size', 'msimplex_x0',
     'simplex_reflection_coef', 'simplex_expansion_coef',
     'simplex_contraction_coef', 'simplex_shrinkage_coef', 'simplex_local_distance', 'simplex_x0',
-    'validation', 'validation_file', 'expected_output'
-    , 'macro'
+    'validation', 'validation_file', 'expected_output',
+    'macro', 'performance_test_code', 'skeleton_test_code', 'skeleton_code_file'
 ]
 
 # map of reserved keywords
@@ -139,6 +139,7 @@ def p_def_type(p):
                 | INPUT_VARS
                 | SEARCH
                 | VALIDATION
+                | PERFORMANCE_TEST_CODE
     '''
     p[0] = (p[1], p.lineno(1))
 
@@ -207,6 +208,8 @@ def p_arg_type(p):
                 | SIMPLEX_X0
                 | VALIDATION_FILE
                 | EXPECTED_OUTPUT
+                | SKELETON_TEST_CODE
+                | SKELETON_CODE_FILE
     '''
     p[0] = (p[1], p.lineno(1))
 

@@ -1,0 +1,89 @@
+\section{Related Work}
+\label{sec:related}
+
+%Optimization abstraction:
+%- POET (Qing Yi)
+%- Apan Qasem's thesis work (Ken Kennedy's student)
+%- ...
+%
+%Automated performance tuning:
+%- ATLAS
+%- SPIRAL
+%- FFTW
+%-...
+
+Ideally, a developer should only have to specify a few simple
+command-line options and then rely on the compiler to optimize the
+performance of an application on any architecture. Compilers alone,
+however, cannot fully satisfy the performance needs of scientific
+applications.  First, compilers must operate in a black-box fashion
+and at a very low level, limiting both the type and number of
+optimizations that can be done.  Second, static analysis of
+general-purpose languages, such as C, C++, and Fortran, is necessarily
+conservative, thereby precluding many possible optimizations.  Third,
+in the process of transforming a mathematical model into a computer
+program, much potentially useful (for optimization purposes)
+information is lost since it cannot be represented by the programming
+language.  Finally, extensive manual tuning of a code may prevent
+certain compiler optimizations and result in worse performance on new
+architectures, resulting in loss of performance portability.
+
+%As briefly discussed in Section~\ref{sec:motivation}, performance tuning is
+%generally approached in three ways: by performing manual optimizations of key
+%portions of the code; by using compiler-based source transformation tools for
+%loop optimizations; and by using tuned libraries for key numerical
+%algorithms.
+%% Libraries
+
+An alternative to manual or automated tuning of application codes is
+the use of tuned libraries. The two basic approaches to supplying
+high-performance libraries include providing a library of hand-coded
+options (e.g., \cite{BLAS,ESSL,Goto:2006fk}) and generating optimized
+code automatically for the given problem and machine
+parameters. ATLAS~\cite{atlas_sc98,WN147} for BLAS~\cite{BLAS} and
+some LAPACK~\cite{laug} routines, OSKI~\cite{OSKI} for sparse linear
+algebra, PHiPAC~\cite{bilmes97optimizing} for matrix-matrix products,
+and domain-specific libraries such as FFTW~\cite{frigo98} and
+SPIRAL~\cite{SPIRAL} are all examples of the latter approach. Most
+automatic tuning approaches perform empirical parameter searches on
+the target platform.  FFTW uses a combination of static models and
+empirical techniques to optimize FFTs. SPIRAL generates optimized
+digital signal processing libraries by an extensive empirical search
+over implementation variants.  GotoBLAS~\cite{Goto:2006fk,Goto:fk}, on
+the other hand, achieves near-peak performance on several
+architectures by using hand-tuned data structures and kernel
+operations.  These auto- or hand-tuned approaches can deliver
+performance that can be five times as fast as that produced by many
+optimizing compilers
+\cite{WN147}.  The library approach, however, is limited by the fact
+that optimizations are highly problem- and
+machine-dependent. Furthermore, at this time, the functionality of the
+currently available automated tuning systems is quite limited.
+
+%% Other annotation-based source transformation approaches
+
+General-purpose tools for optimizing loop performance are also
+available.  LoopTool~\cite{LoopTool} supports annotation-based loop
+fusion, unroll/jamming, skewing and tiling.  The Matrix Template
+Library \cite{Siek:1998ys} uses template metaprograms to tile at both
+the register and cache levels.  A new tool, POET~\cite{POET} also
+supports a number of loop transformations. POET offers a complex
+template-based syntax for defining transformations in a
+language-independent manner. Other research efforts whose goal, at
+least in part, is to enable optimizations of source code to be
+augmented with performance-related information include the X
+language~\cite{XLanguage} (a macro C-like language for annotating C
+code), the Broadway~\cite{broadway} compiler, and telescoping
+languages~\cite{telescopingurl,teleoverview,Ken99}, and various
+meta-programming
+techniques~\cite{veldhuizen95,weise93,kiczales91,chiba95}.
+
+Emerging annotation-based tools are normally designed by compiler researchers
+and thus the interfaces are not necessarily based on concepts accessible to
+computational scientists. The complexity of existing annotation languages and lack
+of common syntax for transformations (e.g., loop unrolling) result
+in steep learning curves and the inability to take advantage of more than one
+approach at a time. Furthermore, at present, there is no good way for
+users to learn about the tools available and compare their
+capabilities and performance.
+

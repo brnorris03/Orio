@@ -1,0 +1,12 @@
+gemver:
+
+Xeon
+N	Matlab  -fast		P/O		P/O
+                -parallel 	-fast,-openmp	-fast,-parallel
+500	 0.01
+1000	 0.10
+10000	 3.66 	 0.68	 	 0.52		0.35
+20000	14.77	 2.55		11.66		1.36
+30000   --  	 5.62	 	40.80		4.18
+
+

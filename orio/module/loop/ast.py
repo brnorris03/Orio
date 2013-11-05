@@ -203,6 +203,7 @@ class BinOpExp(Exp):
     ASGN_SHL = 18
     BAND = 19
     SHR = 20
+    BOR = 21
 
     def __init__(self, lhs, rhs, op_type, line_no = ''):
         '''Create a binary operation expression'''
