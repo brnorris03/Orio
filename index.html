@@ -1,304 +1,432 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <title>Orio by brnorris03</title>
-  </head>
+	<!DOCTYPE html> <html> <head> <meta charset='utf-8'> <meta
+http-equiv="X-UA-Compatible" content="chrome=1"> <link
+href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet'
+type='text/css'> <link rel="stylesheet" type="text/css"
+href="stylesheets/stylesheet.css" media="screen" /> <link rel="stylesheet"
+type="text/css" href="stylesheets/pygment_trac.css" media="screen" /> <link
+rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print"
+/> <!--[if lt IE 9]> <script
+src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script> <![endif]-->
+<title>Orio</title> </head>
 
-  <body>
-    <div id="container">
-      <div class="inner">
+	  <body>
 
-        <header>
-          <h1>Orio</h1>
-          <h2>Orio is an open-source extensible framework for the definition of domain-specific languages and generation of optimized code for multiple architecture targets, including support for empirical autotuning of the generated code.</h2>
-        </header>
+	    <div id="container"> <div class="inner">
 
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/brnorris03/Orio/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/brnorris03/Orio/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/brnorris03/Orio" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
-
-        <hr>
-
-        <section id="main_content">
-          <h3>
-<a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h3>
-
-<p>Orio is a Python framework for transformation and automatically tuning the performance of codes written in different source and target languages, including transformations from a number of simple languages (e.g., a restricted subset of C) to C, Fortran, CUDA, and OpenCL targets. The tool generates many tuned versions of the same operation using different optimization parameters, and performs an empirical search for selecting the best among multiple optimized code variants.</p>
-
-<h3>
-<a name="software-requirements" class="anchor" href="#software-requirements"><span class="octicon octicon-link"></span></a>Software Requirements</h3>
-
-<p>The requirement of installing and using Orio is <a href="http://www.python.org/download/">Python</a>, which is widely available in any Linux/Unix distribution. Orio has been tested successfully with Python 2.5 and 2.6 on various Linux distributions, Blue Gene/P and Mac OS X 10.4 - 10.7.</p>
-
-<a name="quick-install" class="anchor" href="#quick-install"><span class="octicon octicon-link"></span></a>Quick Install</h3>
-
-<p>The Orio installation follows the standard Python Module Distribution Utilities, or <a href="http://www.python.org/community/sigs/current/distutils-sig/doc/">Distutils</a>for short.</p>
-
-<p>For users who want to quickly install Orio to the standard locations of third-party Python modules (requiring superuser privileges in a Unix system), the installation is straightforward as shown below.</p>
-
-<pre><code>% tar -xvzf orio-X.X.X.tar.gz
-% cd orio-X.X.X
-% python setup.py install
-</code></pre>
-
-<p>On a Unix platform, the above <code>install</code> command will normally put an <code>orcc</code> script in the <code>/usr/bin</code> location, and also create an <code>orio</code> module directory in the <code>/usr/lib/pythonX.X/site-packages</code> location.</p>
-
-<p>To test whether Orio has been properly installed in your system, try to execute <code>orcc</code> command as given below as an example.</p>
-
-<pre><code>% orcc --help
-
-description: compile shell for Orio
-
-usage: orcc [options] &lt;ifile&gt; 
-  &lt;ifile&gt;   input file containing the annotated code
-
-options:
-  -h, --help                     display this message
-  -o &lt;file&gt;, --output=&lt;file&gt;     place the output to &lt;file&gt;
-  -v, --verbose                  verbosely show details of the results of the running program
-</code></pre>
-
-<p>In order to install Orio to an alternate location, users need to supply a base directory for the installation. For instance, the following command will install an <code>orcc</code> script under <code>/home/username/bin</code>, and also put an <code>orio</code> module under <code>/home/username/lib/pythonX.X/site-packages</code>. The <code>orf</code> script can be used to generate Fortran code (note that Fortran support is currently under development and is thus limited).</p>
-
-<pre><code>% tar -xvzf orio-X.X.X.tar.gz
-% cd orio-X.X.X
-% python setup.py install --prefix=/home/username
-</code></pre>
-
-<p>It is also important to ensure that the installed Orio module location is included in the PYTHONPATH environment variable. Similarly, users can optionally include the installed <code>orcc</code> script location in the PATH shell variable. To do this for the above example, the following two lines can be added in the <code>.bashrc</code> configuration file (assuming the user uses Bash shell, of course).</p>
-
-<pre><code>export PYTHONPATH=/home/username/lib/pythonX.X/site-packages:$PYTHONPATH
-export PATH=/home/username/bin:$PATH
-</code></pre>
-
-<h3>
-<a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting Started</h3>
-
-<p>As previously discussed, Orio has two main functions: a ''source-to-source transformation tool'' and an ''automatic performance tuning tool''. In the following subsections, simple examples are provided to offer users the quickest way to begin using Orio. But first, a brief introduction to the annotation language syntax is presented next.</p>
-
-<h3>
-<a name="annotation-language-syntax" class="anchor" href="#annotation-language-syntax"><span class="octicon octicon-link"></span></a>Annotation Language Syntax</h3>
-
-<p>Orio annotation is denoted as a stylized C comment that starts with <code>/*@</code> and ends with <code>@*/</code>. For instance, the annotation <code>/*@ end @*/</code> is used to indicate the end of an annotated code region. The following simple grammar illustrates the fundamental structure of Orio annotations.</p>
-
-<pre>
-&lt;annotation-region&gt; ::= &lt;leader-annotation&gt; &lt;annotation-body&gt; &lt;trailer-annotation&gt;
-&lt;leader-annotation&gt; ::= /*@ begin &lt;module-name&gt; ( &lt;module-body&gt; ) @*/ 
-&lt;trailer-annotation&gt; ::= /*@ end @*/ 
-</pre>
-
-<p>An ''annotation region'' consists of three main parts: ''leader annotation'', ''annotation body'', and ''trailer annotation''. The annotation body can either be empty or contain C code that may include other nested annotation regions. A leader annotation contains the ''module name'' of the code transformation component that is loaded dynamically by Orio. A high level abstraction of the computation and the performance hints are coded in the ''module body'' inside the leader annotation and are used as input by the transformation module during the transformation and code generation phases. A trailer annotation, which has a fixed form (i.e. <code>/*@ end @*/</code>), closes an annotation region.</p>
-
-<p>A concrete example of an annotated application code can be seen in the next subsection.</p>
-
-<h3>
-<a name="using-orio-as-a-source-to-source-code-transformation-tool" class="anchor" href="#using-orio-as-a-source-to-source-code-transformation-tool"><span class="octicon octicon-link"></span></a>Using Orio as a Source-to-Source Code Transformation Tool</h3>
-
-<p>Orio has several code transformation module that have already been implemented and are ready to use. One of the transformation modules is ''loop unrolling'', which is a loop optimization that aims to increase register reuse and to reduce branching instructions by combining instructions that are executed in multiple loop iterations into a single iteration. The below sample code demonstrates how to annotate an application code with a simple portable loop unrolling optimization, where the unroll factor used in this example is four. The original code to be optimized in this example is commonly known as AXPY-4, which is an extended version of the AXPY Basic Liner Algebra Subprogram.</p>
-
-<pre><code>/*@ begin Loop ( 
-    transform Unroll(ufactor=4) 
-    for (i=0; i&lt;=N-1; i++)
-      y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i];
-) @*/
-for (i=0; i&lt;=N-1; i++)
-   y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i];
-/*@ end @*/
-</code></pre>
-
-<p>In order to apply loop unrolling to the above code, run the following Orio command (assuming that the annotated code is stored in the file <code>axpy4.c</code>).</p>
-
-<pre><code>% orcc axpy4.c
-</code></pre>
-
-<p>By default, the transformed output code is written to the file <code>_axpy4.c</code>. Optionally, users can specify the name of the output file using the command option <code>-o &lt;file&gt;</code>. Below is how the output code looks like.</p>
-
-<pre><code>/*@ begin Loop ( 
-    transform Unroll(ufactor=4) 
-    for (i=0; i&lt;=N-1; i++)
-      y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i];
-) @*/
-#if ORIGCODE
-  for (i=0; i&lt;=N-1; i++)
-    y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i];
-#else
-  for (i=0; i&lt;=N-4; i=i+4) {
-    y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i];
-    y[i+1] = y[i+1] + a1*x1[i+1] + a2*x2[i+1] + a3*x3[i+1] + a4*x4[i+1];
-    y[i+2] = y[i+2] + a1*x1[i+2] + a2*x2[i+2] + a3*x3[i+2] + a4*x4[i+2];
-    y[i+3] = y[i+3] + a1*x1[i+3] + a2*x2[i+3] + a3*x3[i+3] + a4*x4[i+3];
-  }
-  for (; i&lt;=N-1; i=i+1) 
-    y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i];
-#endif
-/*@ end @*/
-</code></pre>
-
-<p>In this AXPY-4 example, the name of the code transformation module used to perform loop unrolling is <code>Loop</code>. The AXPY-4 computation is rewritten in the module body along with the loop unrolling performance hints (i.e. an unroll factor of four). The resulting unrolled code comprises two loops: one loop with the fully unrolled body, and another loop for any remaining iterations that are not executed in the unrolled loop. Additionally, the generated code include the original code (initially written in the annotation body area) that can be executed through setting the ORIGCODE preprocessor variable accordingly.</p>
-
-<p>More examples on using Orio's source-to-source transformation modules are available in the <code>orio/testsuite</code> directory, which can also be browsed online [browser:orio/testsuite here].</p>
-
-<h3>
-<a name="using-orio-as-an-automatic-performance-tool" class="anchor" href="#using-orio-as-an-automatic-performance-tool"><span class="octicon octicon-link"></span></a>Using Orio as an Automatic Performance Tool</h3>
-
-<p>To enhance the performance of a program on target architecture, most compilers select the optimal values of program transformation parameters using analytical models. In contrast, Orio adaptively generates a large number of code candidates with different parameter values for a given computation, followed by empirical executions of these code variants on the target machine. Then the code that yields the best performance is chosen. Orio automates such empirical performance tuning process using annotations, as exemplified in the following simple program.</p>
-
-<pre><code>/*@ begin PerfTuning (                                                                                 
- def build {                                                                                           
-   arg build_command = 'gcc -O3';
- }                                                                                                     
- def performance_params {                                                                              
-   param UF[] = range(1,33);
- }                                                                                                     
- def input_params {                                                                                    
-   param N[] = [1000,10000000];                                                                         
- }                                                                                                     
- def input_vars {                                                                                      
-   decl static double y[N] = 0;                                                                         
-   decl double a1 = random;                                                                             
-   decl double a2 = random;                                                                             
-   decl double a3 = random;                                                                             
-   decl double a4 = random;                                                                             
-   decl static double x1[N] = random;                                                                   
-   decl static double x2[N] = random;                                                                   
-   decl static double x3[N] = random;                                                                   
-   decl static double x4[N] = random;                                                                   
- }                                                                                                     
-) @*/
-int i;
-/*@ begin Loop (                                                                                       
-    transform Unroll(ufactor=UF)                                                                       
-    for (i=0; i&lt;=N-1; i++)                                                                             
-      y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i];                                         
-) @*/
-for (i=0; i&lt;=N-1; i++)
-  y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i];
-/*@ end @*/
-/*@ end @*/
-</code></pre>
-
-<p>The tuned application in the given example is the same AXPY-4 used in the earlier subsection. The goal of the tuning process is to determine the most optimal value of the unroll factor parameter for different problem sizes. The code located in the <code>PerfTuning</code> module body section defines the ''tuning specifications'' that include the following four basic definitions:</p>
-
-<ul>
-<li>''build'': to specify all information needed for compiling and executing the optimized code</li>
-<li>''performance_params'': to specify values of parameters used in the program transformations</li>
-<li>''input_params'': to specify sizes of the input problem</li>
-<li>''input_vars'': to specify both the declarations and the initializations of the input variables</li>
-</ul><p>So in this example, the transformed AXPY-4 code is compiled using GCC compiler with the -O3 option to activate all its optimizations. The unroll factor values under consideration extends over integers from 1 to 32, inclusively. The AXPY-4 computation is tuned for two distinct problem sizes: N=1K and N=10M. Also, all scalars and arrays involved in the computation are declared and initialized in the tuning specifications to enable the performance testing driver to empirically execute the optimized code. </p>
-
-<p>As discussed before, Orio performance tuning is performed for each different problem size. The number of generated programs is therefore equivalent to the number of distinct combinations of input problem sizes. So, there are two generated program outputs in the AXPY-4 example. Using the default file naming convention, <code>_axpy_N_1000.c</code> and <code>_axpy_N_10000000.c</code> output files represent the outcomes of Orio optimization process for input sizes N=1K and N=10M, respectively.</p>
-
-<p>See the [wiki:Orio/TuneSpecs tuning spec documentation] for more details about the Orio's performance tuning specifications.</p>
-
-<h3>
-<a name="selecting-parameter-space-exploration-strategy" class="anchor" href="#selecting-parameter-space-exploration-strategy"><span class="octicon octicon-link"></span></a>Selecting Parameter Space Exploration Strategy</h3>
-
-<p>A conceptually straightforward approach to exploring the space of the parameter values is via an exhaustive search procedure. However, this exhaustive approach often becomes infeasible because the size of the search space can be exponentially large. Hence, a proper search heuristic becomes a critical component of an empirical tuning system. In addition to an ''exhaustive search'' and a ''random search'', two effective and practical search heuristic strategies have been developed and integrated into the Orio’s search engine. These heuristics include the ''Nelder-Mead Simplex'' method and ''Simulated Annealing'' method. The exhaustive approach is selected as the default space exploration method of Orio; however, Orio user can indicate his preferred search strategy in the tuning specifications, for instance, using the following ''search'' definition.</p>
-
-<pre><code>def search {
- arg algorithm = 'Simplex';  
- arg time_limit = 10;
- arg total_runs = 10;
- arg simplex_local_distance = 2;
- arg simplex_reflection_coef = 1.5;
- arg simplex_expansion_coef = 2.5;
- arg simplex_contraction_coef = 0.6;
- arg simplex_shrinkage_coef = 0.7;
-}
-</code></pre>
-
-<p>Orio users can also specify the terminating criteria of the search strategies by providing values to the arguments ''time_limit'' and ''total_runs''. If the search time exceeds the specified time limit, the search is suspended and then Orio returns the best optimized code so far. The total number of runs enforces the search to finish in a specific quantity of ''full'' search moves. So, the example above indicates that the Simplex search method must terminate within ten-minute time constraint and within ten search convergences. </p>
-
-<p>A search technique sometimes has several parameters that need to be specified. For instance, the Nelder-Mead Simplex algorithm necessitates four kinds of coefficients: ''reflection'', ''expansion'', ''contraction'', and ''shrinkage''; and all of these coefficients have default values already defined in the Orio implementation. To alter the values of these algorithm-specific parameters, users can optionally specify them in the tuning specifications. In the example presented above, all arguments with names that start with <code>simplex_</code> are called search parameters specifically designed to steer the Simplex algorithm. </p>
-
-<p>To further improve the quality of the search result, each search heuristic is enhanced by applying a local search after the search completes. The local search compares the best performance with neighboring coordinates. If a better coordinate is discovered, the local search continues recursively until no further improvement is possible.  In the previous example, users can adjust the distance of the local search by modifying the value of the argument ''simplex_local_distance''. A local distance of two implies that the local search examines the performances of all neighbors within a distance of two. It is important to note that the local search is turned off by default for all search heuristics. Thus to activate the local search, Orio users must explicitly assign a positive integer value to the ''local_distance'' algorithm-specific argument.</p>
-
-<p>The following search techniques are available in Orio (note that this list may be somewhat out of date). Each description includes the names of the search technique's configuration parameters and their default values in []. </p>
-
-<ul>
-<li><i>Exhaustive</i>; keyword: <code>"Exhaustive"</code><br></li>
-<li><i>Random</i>; keyword: <code>"Randomsearch"</code>. Algorithm parameters [default value]:
-  <ul><li> <code>"local_distance"</code> [0]: the maximum distance of neighboring coordinates considered by the local search </li></ul>
-</li>
-<li><i>Nelder-Mead simplex</i>; keyword: <code>"Simplex"</code>. Algorithm parameters [default value]:
- <ul>
- <li><code>"local_distance"</code> [0.0]: the maximum distance of neighboring coordinates considered by the local search </li> 
- <li><code>"reflection_coef"</code> [1.0]: the amplitude/intensity of the reflection move </li>
- <li><code>"expansion_coef"</code> [2.0]: the amplitude/intensity of the expansion move </li>
- <li><code>"contraction_coef"</code> [0.5]: the amplitude/intensity of the contraction move</li>
- <li><code>"shrinkage_coef"</code> [0.5]: the amplitude/intensity of the shrinkage move</li>
- </ul>
-</li>
-
-<li>
-<i>Modified Nelder-Mead simplex</i>; keyword: <code>"MSimplex"</code>.
- <ul>
- <li><code>"x0"</code> [all 0's (ie, [0,0,0])]: </li>
- <li><code>"search_distance"</code> [1] </li>
- <li><code>"reflection_coef"</code> [1.0] </li>
- <li><code>"expansion_coef"</code> [2.0] </li>
- <li><code>"contraction_coef"</code> [0.5] </li>
- <li><code>"shrinkage_coef"</code> [0.5] </li>
- <li><code>"size"</code> [maximum dimension of the search space] </li>
- </ul>
-</li>
-
-<li><i>Simulated annealing</i>; keyword: <code>"Annealing"</code>. Algorithm parameters [default value]:
- <ul>
- <li><code>"local_distance"</code> [0.0]: the maximum distance of neighboring coordinates considered by the local search </li>
- <li><code>"cooling_factor"</code> [0.95]: the temperature reduction factor </li>
- <li><code>"final_temperature_ratio"</code> [0.05]: the percentage of the termination temperature </li>
- <li><code>"trials_limit"</code> [100]: the maximum limit of numbers of search trials at each temperature  </li>
- <li><code>"moves_limit"</code> [20]: the maximum limit of numbers of successful search moves at each temperature</li>
- </ul>
-</li>
-
-<li>
-<i>Genetic</i>; keyword: <code>"ChaosGA"</code>.
+<!-- @BEGIN_MENU@ --> 
 <!--
-            2.8,    #growthrate
-            50,    #population max
-            0.6,    #initial population proportion
-            min,    #minimizing, not maximizing
--->
-</li>
+	    <ul id="menu-main" class="menu"> 
+	    <li><a href="index.html">Home</a></li> 
+	    <li><a href="html/download.html">Download</a></li> 
+	    <li><a href="html/documentation.html">Documentation</a></li> 
+	    <li><a href="html/publications.html">Publications</a></li> 
+	    <li><a href="html/team.html">Team</a></li> </ul> 
+	    -->
+<!-- @END_MENU@ -->
 
-</ul>
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+	        <header> <img src="images/orio_logo_new.png"
+        alternate="<h1>Orio</h1>"
+        style="float:left;margin-left:1ex;margin-right:1ex"/> <!--
+        <h1>Orio</h1> --> <h2>An open-source extensible framework for the
+        definition of domain-specific languages and generation of optimized
+        (C, Fortran, CUDA, OpenCL) code for multiple architecture targets
+        (e.g., CPUs, NVIDIA and AMD GPUs, Intel Phi), including support for
+        empirical autotuning of the generated code.</h2> </header>
 
-<p>Boyana Norris <a href="https://github.com/brnorris03" class="user-mention">@brnorris03</a> (University of Oregon), Azamat Mametjanov (Argonne National Laboratory), Prasanna Balapraskash (Argonne National Laboratory), Albert Hartono (Intel), Nicholas Chaimov <a href="https://github.com/nchaimov" class="user-mention">@nchaimov</a> (University of Oregon)</p>
+	        <section id="downloads" class="clearfix"> 
+	    <a href="https://github.com/brnorris03/Orio/zipball/master"
+        id="download-zip" class="button"><span>Download .zip</span></a> 
+        <a href="https://github.com/brnorris03/Orio/tarball/master"
+        id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+        <a href="https://github.com/brnorris03/Orio" id="view-on-github"
+        class="button"><span>View on GitHub</span></a> 
         </section>
+	        <hr>
 
-        <footer>
-          Orio is maintained by <a href="https://github.com/brnorris03">brnorris03</a><br>
-          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
-        </footer>
+	        <section id="main_content"> <h3> <a name="overview"
+        class="anchor" href="#overview"><span class="octicon
+        octicon-link"></span></a>Overview</h3>
 
-                  <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("OrioReadme");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
+	<p>Orio is a Python framework for transformation and automatically tuning
+the performance of codes written in different source and target languages,
+including transformations from a number of simple languages (e.g., a
+restricted subset of C) to C, Fortran, CUDA, and OpenCL targets. The tool
+generates many tuned versions of the same operation using different
+optimization parameters, and performs an empirical search for selecting the
+best among multiple optimized code variants.</p>
 
-      </div>
-    </div>
-  </body>
-</html>
+	<h3> <a name="software-requirements" class="anchor"
+href="#software-requirements"><span class="octicon
+octicon-link"></span></a>Software Requirements</h3>
+
+	<p>The requirement of installing and using Orio is <a
+href="http://www.python.org/download/">Python</a>, which is widely available
+in any Linux/Unix distribution. Orio has been tested successfully with Python
+2.5 and 2.6 on various Linux distributions, Blue Gene/P and Mac OS X 10.4 -
+10.7.</p>
+
+	<a name="quick-start" class="anchor" href="#quick-start"><span
+class="octicon octicon-link"></span></a>Quick Start</h3>
+
+	<p>The Orio installation follows the standard Python Module Distribution
+Utilities, or <a
+href="http://www.python.org/community/sigs/current/distutils-sig/doc/">
+Distutils</a>for short.</p>
+
+	<p>For users who want to quickly install Orio to the standard locations
+of third-party Python modules (requiring superuser privileges in a Unix
+system), the installation is straightforward as shown below.</p>
+
+	<pre><code>% tar -xvzf orio-X.X.X.tar.gz
+%     cd orio-X.X.X python setup.py install
+	</code></pre>
+
+	<p>On a Unix platform, the above <code>install</code> command will
+normally put an <code>orcc</code> script in the <code>/usr/bin</code>
+location, and also create an <code>orio</code> module directory in the
+<code>/usr/lib/pythonX.X/site-packages</code> location.</p>
+
+	<p>To test whether Orio has been properly installed in your system, try
+to execute <code>orcc</code> command as given below as an example.</p>
+
+	<pre><code>% orcc --help
+
+	description: compile shell for Orio
+
+	usage: orcc [options] &lt;ifile&gt; &lt;ifile&gt;   input file containing
+the annotated code
+
+	options: -h, --help                     display this message -o
+&lt;file&gt;, --output=&lt;file&gt;     place the output to &lt;file&gt; -v,
+--verbose                  verbosely show details of the results of the
+running program </code></pre>
+
+	<p>In order to install Orio to an alternate location, users need to
+supply a base directory for the installation. For instance, the following
+command will install an <code>orcc</code> script under
+<code>/home/username/bin</code>, and also put an <code>orio</code> module
+under <code>/home/username/lib/pythonX.X/site-packages</code>. The
+<code>orf</code> script can be used to generate Fortran code (note that
+Fortran support is currently under development and is thus limited).</p>
+
+	<pre><code>% tar -xvzf orio-X.X.X.tar.gz
+%     cd orio-X.X.X python setup.py install --prefix=/home/username
+	</code></pre>
+
+	<p>It is also important to ensure that the installed Orio module location
+is included in the PYTHONPATH environment variable. Similarly, users can
+optionally include the installed <code>orcc</code> script location in the
+PATH shell variable. To do this for the above example, the following two
+lines can be added in the <code>.bashrc</code> configuration file (assuming
+the user uses Bash shell, of course).</p>
+
+	<pre><code>export
+PYTHONPATH=/home/username/lib/pythonX.X/site-packages:$PYTHONPATH export
+PATH=/home/username/bin:$PATH </code></pre>
+
+	<h3> <a name="getting-started" class="anchor"
+href="#getting-started"><span class="octicon octicon-link"></span></a>Getting
+Started</h3>
+
+	<p>As previously discussed , Orio has two main functions: a
+''source-to-source transformation tool'' and an ''automatic performance
+tuning tool''. In the following subsections, simple examples are provided to
+offer users the quickest way to begin using Orio. But first, a brief
+introduction to the annotation language syntax is presented next.</p>
+
+	<h3> <a name="annotation-language-syntax" class="anchor"
+href="#annotation-language-syntax"><span class="octicon
+octicon-link"></span></a>Annotation Language Syntax</h3>
+
+	<p>Orio annotation is denoted as a stylized C comment that starts with
+<code>/*@</code> and ends with <code>@*/</code>. For instance, the annotation
+<code>/*@ end @*/</code> is used to indicate the end of an annotated code
+region. The following simple grammar illustrates the fundamental structure of
+Orio annotations.</p>
+
+	<pre> &lt;annotation-region&gt; ::= &lt;leader-annotation&gt;
+&lt;annotation-body&gt; &lt;trailer-annotation&gt; &lt;leader-annotation&gt;
+::= /*@ begin &lt;module-name&gt; ( &lt;module-body&gt; ) @*/
+&lt;trailer-annotation&gt; ::= /*@ end @*/ </pre>
+
+	<p>An ''annotation region'' consists of three main parts: ''leader
+annotation'', ''annotation body'', and ''trailer annotation''. The annotation
+body can either be empty or contain C code that may include other nested
+annotation regions. A leader annotation contains the ''module name'' of the
+code transformation component that is loaded dynamically by Orio. A high
+level abstraction of the computation and the performance hints are coded in
+the ''module body'' inside the leader annotation and are used as input by the
+transformation module during the transformation and code generation phases. A
+trailer annotation, which has a fixed form (i.e. <code>/*@ end @*/</code>),
+closes an annotation region.</p>
+
+	<p>A concrete example of an annotated application code can be seen in the
+next subsection.</p>
+
+	<h3> <a name="using-orio-as-a-source-to-source-code-transformation-tool"
+class="anchor"
+href="#using-orio-as-a-source-to-source-code-transformation-tool"><span
+class="octicon octicon-link"></span></a>Using Orio as a Source-to-Source Code
+Transformation Tool</h3>
+
+	<p>Orio has several code transformation module that have already been
+implemented and are ready to use. One of the transformation modules is ''loop
+unrolling'', which is a loop optimization that aims to increase register
+reuse and to reduce branching instructions by combining instructions that are
+executed in multiple loop iterations into a single iteration. The below
+sample code demonstrates how to annotate an application code with a simple
+portable loop unrolling optimization, where the unroll factor used in this
+example is four. The original code to be optimized in this example is
+commonly known as AXPY-4, which is an extended version of the AXPY Basic
+Liner Algebra Subprogram.</p>
+
+	<pre><code>/*@ begin Loop ( transform Unroll(ufactor=4) for (i=0;
+i&lt;=N-1; i++) y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i]; )
+@*/ for (i=0; i&lt;=N-1; i++) y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] +
+a4*x4[i];
+/    *@ end @*/
+	</code></pre>
+
+	<p>In order to apply loop unrolling to the above code, run the following
+Orio command (assuming that the annotated code is stored in the file
+<code>axpy4.c</code>).</p>
+
+	<pre><code>% orcc axpy4.c </code></pre>
+
+	<p>By default, the transformed output code is written to the file
+<code>_axpy4.c</code>. Optionally, users can specify the name of the output
+file using the command option <code>-o &lt;file&gt;</code>. Below is how the
+output code looks like.</p>
+
+	<pre><code>/*@ begin Loop ( transform Unroll(ufactor=4) for (i=0;
+i&lt;=N-1; i++) y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i]; ) @*/
+#    if ORIGCODE
+	  for (i=0; i&lt;=N-1; i++) y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i]
+  + a4*x4[i];
+#    else
+	  for (i=0; i&lt;=N-4; i=i+4) { y[i] = y[i] + a1*x1[i] + a2*x2[i] +
+  a3*x3[i] + a4*x4[i]; y[i+1] = y[i+1] + a1*x1[i+1] + a2*x2[i+1] + a3*x3[i+1]
+  + a4*x4[i+1]; y[i+2] = y[i+2] + a1*x1[i+2] + a2*x2[i+2] + a3*x3[i+2] +
+  a4*x4[i+2]; y[i+3] = y[i+3] + a1*x1[i+3] + a2*x2[i+3] + a3*x3[i+3] +
+  a4*x4[i+3];
+  }
+	  for (; i&lt;=N-1; i=i+1) y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] +
+  a4*x4[i];
+#    endif
+/    *@ end @*/
+	</code></pre>
+
+	<p>In this AXPY-4 example, the name of the code transformation module
+used to perform loop unrolling is <code>Loop</code>. The AXPY-4 computation
+is rewritten in the module body along with the loop unrolling performance
+hints (i.e. an unroll factor of four). The resulting unrolled code comprises
+two loops: one loop with the fully unrolled body, and another loop for any
+remaining iterations that are not executed in the unrolled loop.
+Additionally, the generated code include the original code (initially written
+in the annotation body area) that can be executed through setting the
+ORIGCODE preprocessor variable accordingly.</p>
+
+	<p>More examples on using Orio's source-to-source transformation modules
+are available in the <code>orio/testsuite</code> directory, which can also be
+browsed online [browser:orio/testsuite here].</p>
+
+	<h3> <a name="using-orio-as-an-automatic-performance-tool" class="anchor"
+href="#using-orio-as-an-automatic-performance-tool"><span class="octicon
+octicon-link"></span></a>Using Orio as an Automatic Performance Tool</h3>
+
+	<p>To enhance the performance of a program on target architecture, most
+compilers select the optimal values of program transformation parameters
+using analytical models. In contrast, Orio adaptively generates a large
+number of code candidates with different parameter values for a given
+computation, followed by empirical executions of these code variants on the
+target machine. Then the code that yields the best performance is chosen.
+Orio automates such empirical performance tuning process using annotations,
+as exemplified in the following simple program.</p>
+
+	<pre><code>/*@ begin PerfTuning ( def build { arg build_command = 'gcc
+-O3';
+ } 
+	 def performance_params { param UF[] = range(1,33);
+ } 
+	 def input_params { param N[] = [1000,10000000];                         
+                                                
+ } 
+	 def input_vars { decl static double y[N] = 0; decl double a1 = random;
+ decl double a2 = random; decl double a3 = random; decl double a4 = random;
+ decl static double x1[N] = random; decl static double x2[N] = random; decl
+ static double x3[N] = random; decl static double x4[N] = random;            
+                                                       
+ } 
+	) @*/ int i;
+/    *@ begin Loop (                                                         
+/                             
+	    transform Unroll(ufactor=UF) for (i=0; i&lt;=N-1; i++) y[i] = y[i] +
+    a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i]; ) @*/ for (i=0; i&lt;=N-1;
+    i++) y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i];
+/    *@ end @*/ *@ end @*/
+	</code></pre>
+
+	<p>The tuned application in the given example is the same AXPY-4 used in
+the earlier subsection. The goal of the tuning process is to determine the
+most optimal value of the unroll factor parameter for different problem
+sizes. The code located in the <code>PerfTuning</code> module body section
+defines the ''tuning specifications'' that include the following four basic
+definitions:</p>
+
+	<ul> <li>''build'': to specify all information needed for compiling and
+executing the optimized code</li> <li>''performance_params'': to specify
+values of parameters used in the program transformations</li>
+<li>''input_params'': to specify sizes of the input problem</li>
+<li>''input_vars'': to specify both the declarations and the initializations
+of the input variables</li> </ul><p>So in this example, the transformed
+AXPY-4 code is compiled using GCC compiler with the -O3 option to activate
+all its optimizations. The unroll factor values under consideration extends
+over integers from 1 to 32, inclusively. The AXPY-4 computation is tuned for
+two distinct problem sizes: N=1K and N=10M. Also, all scalars and arrays
+involved in the computation are declared and initialized in the tuning
+specifications to enable the performance testing driver to empirically
+execute the optimized code. </p>
+
+	<p>As discussed before, Orio performance tuning is performed for each
+different problem size. The number of generated programs is therefore
+equivalent to the number of distinct combinations of input problem sizes. So,
+there are two generated program outputs in the AXPY-4 example. Using the
+default file naming convention, <code>_axpy_N_1000.c</code> and
+<code>_axpy_N_10000000.c</code> output files represent the outcomes of Orio
+optimization process for input sizes N=1K and N=10M, respectively.</p>
+
+	<p>See the [wiki:Orio/TuneSpecs tuning spec documentation] for more
+details about the Orio's performance tuning specifications.</p>
+
+	<h3> <a name="selecting-parameter-space-exploration-strategy"
+class="anchor" href="#selecting-parameter-space-exploration-strategy"><span
+class="octicon octicon-link"></span></a>Selecting Parameter Space Exploration
+Strategy</h3>
+
+	<p>A conceptually straightforward approach to exploring the space of the
+parameter values is via an exhaustive search procedure. However, this
+exhaustive approach often becomes infeasible because the size of the search
+space can be exponentially large. Hence, a proper search heuristic becomes a
+critical component of an empirical tuning system. In addition to an
+''exhaustive search'' and a ''random search'', two effective and practical
+search heuristic strategies have been developed and integrated into the
+Orio’s search engine. These heuristics include the ''Nelder-Mead Simplex''
+method and ''Simulated Annealing'' method. The exhaustive approach is
+selected as the default space exploration method of Orio; however, Orio user
+can indicate his preferred search strategy in the tuning specifications, for
+instance, using the following ''search'' definition.</p>
+
+	<pre><code>def search { arg algorithm = 'Simplex'; arg time_limit = 10;
+arg total_runs = 10; arg simplex_local_distance = 2; arg
+simplex_reflection_coef = 1.5; arg simplex_expansion_coef = 2.5; arg
+simplex_contraction_coef = 0.6; arg simplex_shrinkage_coef = 0.7;
+}
+	</code></pre>
+
+	<p>Orio users can also specify the terminating criteria of the search
+strategies by providing values to the arguments ''time_limit'' and
+''total_runs''. If the search time exceeds the specified time limit, the
+search is suspended and then Orio returns the best optimized code so far. The
+total number of runs enforces the search to finish in a specific quantity of
+''full'' search moves. So, the example above indicates that the Simplex
+search method must terminate within ten-minute time constraint and within ten
+search convergences. </p>
+
+	<p>A search technique sometimes has several parameters that need to be
+specified. For instance, the Nelder-Mead Simplex algorithm necessitates four
+kinds of coefficients: ''reflection'', ''expansion'', ''contraction'', and
+''shrinkage''; and all of these coefficients have default values already
+defined in the Orio implementation. To alter the values of these
+algorithm-specific parameters, users can optionally specify them in the
+tuning specifications. In the example presented above, all arguments with
+names that start with <code>simplex_</code> are called search parameters
+specifically designed to steer the Simplex algorithm. </p>
+
+	<p>To further improve the quality of the search result, each search
+heuristic is enhanced by applying a local search after the search completes.
+The local search compares the best performance with neighboring coordinates.
+If a better coordinate is discovered, the local search continues recursively
+until no further improvement is possible.  In the previous example, users can
+adjust the distance of the local search by modifying the value of the
+argument ''simplex_local_distance''. A local distance of two implies that the
+local search examines the performances of all neighbors within a distance of
+two. It is important to note that the local search is turned off by default
+for all search heuristics. Thus to activate the local search, Orio users must
+explicitly assign a positive integer value to the ''local_distance''
+algorithm-specific argument.</p>
+
+	<p>The following search techniques are available in Orio (note that this
+list may be somewhat out of date). Each description includes the names of the
+search technique's configuration parameters and their default values in [].
+</p>
+
+	<ul> <li><i>Exhaustive</i>; keyword: <code>"Exhaustive"</code><br></li>
+<li><i>Random</i>; keyword: <code>"Randomsearch"</code>. Algorithm parameters
+[default value]: <ul><li> <code>"local_distance"</code> [0]: the maximum
+distance of neighboring coordinates considered by the local search </li></ul>
+</li> <li><i>Nelder-Mead simplex</i>; keyword: <code>"Simplex"</code>.
+Algorithm parameters [default value]: <ul> <li><code>"local_distance"</code>
+[0.0]: the maximum distance of neighboring coordinates considered by the
+local search </li> <li><code>"reflection_coef"</code> [1.0]: the
+amplitude/intensity of the reflection move </li>
+<li><code>"expansion_coef"</code> [2.0]: the amplitude/intensity of the
+expansion move </li> <li><code>"contraction_coef"</code> [0.5]: the
+amplitude/intensity of the contraction move</li>
+<li><code>"shrinkage_coef"</code> [0.5]: the amplitude/intensity of the
+shrinkage move</li> </ul> </li>
+
+	<li> <i>Modified Nelder-Mead simplex</i>; keyword:
+<code>"MSimplex"</code>. <ul> <li><code>"x0"</code> [all 0's (ie, [0,0,0])]:
+</li> <li><code>"search_distance"</code> [1] </li>
+<li><code>"reflection_coef"</code> [1.0] </li>
+<li><code>"expansion_coef"</code> [2.0] </li>
+<li><code>"contraction_coef"</code> [0.5] </li>
+<li><code>"shrinkage_coef"</code> [0.5] </li> <li><code>"size"</code>
+[maximum dimension of the search space] </li> </ul> </li>
+
+	<li><i>Simulated annealing</i>; keyword: <code>"Annealing"</code>.
+Algorithm parameters [default value]: <ul> <li><code>"local_distance"</code>
+[0.0]: the maximum distance of neighboring coordinates considered by the
+local search </li> <li><code>"cooling_factor"</code> [0.95]: the temperature
+reduction factor </li> <li><code>"final_temperature_ratio"</code> [0.05]: the
+percentage of the termination temperature </li>
+<li><code>"trials_limit"</code> [100]: the maximum limit of numbers of search
+trials at each temperature  </li> <li><code>"moves_limit"</code> [20]: the
+maximum limit of numbers of successful search moves at each temperature</li>
+</ul> </li>
+
+	<li> <i>Genetic</i>; keyword: <code>"ChaosGA"</code>. <!-- 2.8,   
+#growthrate 50,    #population max 0.6,    #initial population proportion
+min,    #minimizing, not maximizing --> </li>
+
+	</ul>
+
+	<h3> <a name="authors-and-contributors" class="anchor"
+href="#authors-and-contributors"><span class="octicon
+octicon-link"></span></a>Authors and Contributors</h3>
+
+	<p>Boyana Norris <a href="https://github.com/brnorris03"
+class="user-mention">@brnorris03</a> (University of Oregon), Azamat
+Mametjanov (Argonne National Laboratory), Prasanna Balapraskash (Argonne
+National Laboratory), Albert Hartono (Intel), Nicholas Chaimov (University of
+Oregon)</p> </section>
+
+	        <footer> Orio is maintained by <a
+        href="https://github.com/brnorris03">brnorris03</a><br> This page was
+        generated by <a href="http://pages.github.com">GitHub Pages</a>.
+        Tactile theme by <a href="https://twitter.com/jasonlong">Jason
+        Long</a>. </footer>
+
+	                  <script type="text/javascript"> var gaJsHost =
+                  (("https:" == document.location.protocol) ? "https://ssl."
+                  : "http://www."); document.write(unescape("%3Cscript src='"
+                  + gaJsHost + "google-analytics.com/ga.js'
+                  type='text/javascript'%3E%3C/script%3E")); </script>
+                  <script type="text/javascript"> try { var pageTracker =
+                  _gat._getTracker("OrioReadme");
+                  pageTracker._trackPageview();
+            }     catch(err) {}
+	          </script>
+
+	      </div> </div> </body> </html>
