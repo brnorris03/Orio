@@ -324,6 +324,128 @@ footer a:hover {
   color: #444;
 }
 
+
+
+/* ####################   Navigation bar CSS styling   ################## */ 
+
+.mynavbar {
+	position: relative;
+  width: 620px;
+  margin-left:auto;
+  margin-right:auto;
+  height: 23px; /* corresponds to 'line-height' of a.navbartitle below */
+  /* margin: 0; border: 0; padding: 0; */
+  /* background-color: #6666333; */
+  
+}
+
+
+a.navbartitle {
+  display: block; 
+  float: left;
+  color: white;
+  background-color:  #666633;
+  font-family: Verdana, Arial, Geneva,  Helvetica, sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  margin: 0; border: 0; padding: 0;
+  line-height: 23px; /* corresponds to 'top' value of .submenu below */
+  text-align: center;
+  text-decoration:none;
+}
+a.navbartitle:hover {
+  background-color: #447755;
+}
+/* menu title widths */
+#t1 { width: 104px; }
+#t2 { width: 100px; }
+#t3 { width: 102px; }
+#t4 { width: 102px; }
+#t5 { width: 180px; }
+/* We just specify a fixed width for each menu title. Then, down below we specify
+    a fixed left position for the corresponding submenus (e.g. #products_submenu, etc.)
+    Using these fixed values isn't as elegant as just letting the text of each 
+    menu title determine the width of the menu titles and position of the submenus,
+    but we found this hardwired approach resulted in fewer cross-browser/cross-OS 
+    formatting glitches -- and it's pretty easy to adjust these title widths and the
+    corresponding submenu 'left' positions below, just by eyeballing them whenever
+    we need to change the navbar menu titles (which isn't often). */
+
+.submenu {
+	position:absolute;
+  z-index: 2;
+  top: 23px; /* corresponds to line-height of a.navbartitle above */
+  padding: 0; margin: 0; 
+	width:166px; /* If adjust this, then adjust width of .submenu below a too */
+	color: white;
+	background-color:  #666633;
+	border: 1px solid #447755; /* box around entire sub-menu */
+  font-family: Verdana, Arial, Geneva,  Helvetica, sans-serif;
+	font-size: 11px;
+}
+/* Fix IE formatting quirks. */
+* html .submenu { width: 148px; } /* IE needs narrower than width of .submenu above */
+/* End */
+
+/* position of each sub menu */
+/* We just eyeball the position of each submenu here -- can move left or right as needed. 
+   If you adjust menu title text, you might want to adjust these too. */
+#products_submenu {  left: 0px; visibility: hidden;  }
+#services_submenu {  left: 104px; visibility: hidden;  }
+#funstuff_submenu {  left: 204px; visibility: hidden; }
+#aboutus_submenu {  left: 306px; visibility: hidden; }
+#contact_submenu { left: 408px; visibility: hidden; }
+/* Note, each submenu is hidden when the page loads - then made visible when
+    the mouse goes over the menu title. Using the 'visibility' property instead
+    of using the 'display' property avoided a bug in some versions of Safari. 
+    (The bug is pretty where esoteric: The browser ignored the 'hover' property 
+    on 'li' objects inside an object whose display property was set to 'none' 
+    when the page loaded...) Using the 'visibility' property instead of 'display'
+    would normaly take up extra room on the page, but that's avoided here by putting
+    the submenu on a second layer: see 'position: absolute' and 'z-index: 2'
+    in .submenu definition, higher up this page. */
+
+.submenu a
+{
+  display: block;
+  color: #eee; 
+  background-color: #666633;
+  width: 146px; /* This should be width of .submenu above minus right-side padding on next line */
+  padding: 5px 0px 4px 20px;
+  text-decoration: none;
+  background-color: #666633; 
+  border-bottom: #447755 dotted 1px; 
+  border-top: 0; border-left: 0; border-right: 0;
+}
+
+
+ul { position: relative; display: block; }
+li { position: relative; display: block; }
+
+.submenubox { 
+  margin: 0; padding: 0; border: 0;
+}
+.submenubox ul
+{
+  margin: 0; padding: 0; border: 0;
+  list-style-type: none;
+}
+
+.submenubox ul li { 
+  margin: 0; padding: 0; border: 0;
+}
+
+.submenubox ul li a:link { }
+.submenubox ul li a:visited { }
+.submenubox ul li a:hover
+{
+  color: #c6e8e2; /* text color for submenu items */
+  background-color: #447755;
+  border-bottom: #447755 dotted 1px; 
+}
+
+/* End navigation bar */
+
 /* MISC */
 .clearfix:after {
   clear: both;
@@ -332,6 +454,7 @@ footer a:hover {
   visibility: hidden;
   height: 0;
 }
+
 
 .clearfix {display: inline-block;}
 * html .clearfix {height: 1%;}

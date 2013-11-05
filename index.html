@@ -10,16 +10,134 @@
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <title>Orio by brnorris03</title>
+    <title>Orio</title>
   </head>
 
   <body>
+
+        <center>
+          <img src="images/orio_logo_new.jpg" alternate="<h1>Orio</h1>"/>
+  		
+  <!-- ############### #### Navigation Bar #### ############### -->
+
+<!-- Link to a file with couple simple JavaScript functions used for our Navigation Bar -->
+<script src="javascripts/main.js" language="JavaScript" type="text/javascript"></script>
+
+
+<!-- main nav bar titles -->
+<!-- Note how the the closing angle bracket of each </a> tag runs up against the next <a> tag,
+      to avoid leaving a gap between each menu title and the next one. -->
+      
+<!-- REPLACE each "placeholder.html" URL below with the specific page you want the user
+      to go to when the given menu title is clicked. For example, the first link below
+      is for the "Home" menu title, so you'd probably replace the first URL with index.html. -->
+
+<div class="mynavbar">
+
+<a class="navbartitle" id="t1" href="placeholder.html"
+      onMouseOut="HideItem('products_submenu');" 
+      onMouseOver="ShowItem('products_submenu');"
+    >Products</a
+><a class="navbartitle" id="t2" href="placeholder.html"
+      onMouseOut="HideItem('services_submenu');" 
+      onMouseOver="ShowItem('services_submenu');"
+    >Services</a
+><a class="navbartitle" id="t3" href="placeholder.html"
+      onMouseOut="HideItem('funstuff_submenu');" 
+      onMouseOver="ShowItem('funstuff_submenu');"
+    >Fun Stuff</a
+><a class="navbartitle" id="t4" href="placeholder.html"
+      onMouseOut="HideItem('aboutus_submenu');" 
+      onMouseOver="ShowItem('aboutus_submenu');"
+    >About Us</a
+><a class="navbartitle" id="t5" href="placeholder.html"
+      onMouseOut="HideItem('contact_submenu');" 
+      onMouseOver="ShowItem('contact_submenu', 't5');"
+    >Contacts & Directions</a>
+
+
+<!-- REPLACE each "placeholder.html" URL below with the specific page you want 
+      the user to go to when the given submenu item is clicked.  -->
+
+<!-- Products sub-menu, shown as needed  -->
+<div class="submenu" id="products_submenu" 
+    onMouseOver="ShowItem('products_submenu');" 
+    onMouseOut="HideItem('products_submenu');">
+  <div class="submenubox">
+    <ul>
+      <li><a href="placeholder.html" class="submenlink">Flying Cars</a></li>
+      <li><a href="placeholder.html" class="submenlink">Super Squirters</a></li>
+      <li><a href="placeholder.html" class="submenlink">Sling Shots</a></li>
+      <li><a href="placeholder.html" class="submenlink">Bamboozlers</a></li>
+      <li><a href="placeholder.html" class="submenlink">Kazoos</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Services sub-menu, shown as needed  -->
+<div class="submenu" id="services_submenu" 
+    onMouseOver="ShowItem('services_submenu');" 
+    onMouseOut="HideItem('services_submenu');">
+  <div class="submenubox">
+    <ul>
+      <li><a href="placeholder.html" class="submenlink">Toy Design</a></li>
+      <li><a href="placeholder.html" class="submenlink">Market Research</a></li>
+      <li><a href="placeholder.html" class="submenlink">IP Consulting</a></li>
+      <li><a href="placeholder.html" class="submenlink">Licensing</a></li>
+  </div>
+</div>
+
+<!-- Fun Stuff sub-menu, shown as needed  -->
+<div class="submenu" id="funstuff_submenu" 
+    onMouseOver="ShowItem('funstuff_submenu');" 
+    onMouseOut="HideItem('funstuff_submenu');">
+  <div class="submenubox">
+    <ul>
+      <li><a href="placeholder.html" class="submenlink">Toys We Designed</a></li>
+      <li><a href="placeholder.html" class="submenlink">Press Ravings</a></li>
+      <li><a href="placeholder.html" class="submenlink">Our Blog</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- About Us sub-menu, shown as needed  -->
+<div class="submenu" id="aboutus_submenu" 
+    onMouseOver="ShowItem('aboutus_submenu');" 
+    onMouseOut="HideItem('aboutus_submenu');">
+  <div class="submenubox">
+    <ul>
+      <li><a href="placeholder.html" class="submenlink">Team</a></li>
+      <li><a href="placeholder.html" class="submenlink">Investors</a></li>
+      <li><a href="placeholder.html" class="submenlink">Partners</a></li>
+      <li><a href="placeholder.html" class="submenlink">Careers</a></li>
+      <li><a href="placeholder.html" class="submenlink">Our Blog</a></li>
+     </ul>
+  </div>
+</div>
+
+<!-- CONTACTS & DIRECTIONS sub-menu, shown as needed  -->
+<div class="submenu" id="contact_submenu" 
+    onMouseOver="ShowItem('contact_submenu');" 
+    onMouseOut="HideItem('contact_submenu');">
+  <div class="submenubox">
+    <ul>
+      <li><a href="placeholder.html" class="submenlink">Contact</a></li>
+       <li><a href="placeholder.html" class="submenlink">Getting Here</a></li>
+   </ul>
+  </div>
+</div><!-- end of sub-meus -->
+
+</div>
+</center>
+<!-- ################## end of Navigation Bar ################### -->
+
+
     <div id="container">
       <div class="inner">
 
         <header>
-          <h1>Orio</h1>
-          <h2>Orio is an open-source extensible framework for the definition of domain-specific languages and generation of optimized code for multiple architecture targets, including support for empirical autotuning of the generated code.</h2>
+          <!--<h1>Orio</h1>-->
+          <h2>An open-source extensible framework for the definition of domain-specific languages and generation of optimized code for multiple architecture targets, including support for empirical autotuning of the generated code.</h2>
         </header>
 
         <section id="downloads" class="clearfix">
