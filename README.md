@@ -87,8 +87,8 @@ Authors and Contact Information
     
  Principal Authors:
  
- Boyana Norris, University of Oregon
- Albert Hartono, Intel 
- Azamat Mametjanov, Argonne National Laboratory
- Prasanna Balaprakash, Argonne National Laboratory
- Nick Chaimov, University of Oregon
+ * Boyana Norris, University of Oregon
+ * Albert Hartono, Intel 
+ * Azamat Mametjanov, Argonne National Laboratory
+ * Prasanna Balaprakash, Argonne National Laboratory
+ * Nick Chaimov, University of Oregon
