@@ -66,14 +66,10 @@ class PerfTuner:
                 c = orio.main.tuner.ptest_codegen.PerfTestCodeGenCUDA(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
                                                                   tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                   tinfo.random_seed, use_parallel_search)
-<<<<<<< HEAD
-
-=======
             elif self.odriver.lang == 'opencl':
                 c = orio.main.tuner.ptest_codegen.PerfTestCodeGenCUDA(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
                                                                   tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                   tinfo.random_seed, use_parallel_search)
->>>>>>> github/master
             elif self.odriver.lang == 'fortran':
                 c = orio.main.tuner.ptest_codegen.PerfTestCodeGenFortran(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
                                                                          tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
@@ -124,23 +120,16 @@ class PerfTuner:
         # perform the performance tuning for each distinct problem size
         optimized_code_seq = []
         for ptcodegen in ptcodegens:
-<<<<<<< HEAD
-
-=======
->>>>>>> github/master
             if Globals().verbose:
                 info('\n----- begin empirical tuning for problem size -----')
                 iparams = ptcodegen.input_params[:]
                 iparams.sort(lambda x,y: cmp(x[0],y[0]))
                 for pname, pvalue in iparams:
                     info(' %s = %s' % (pname, pvalue))
-<<<<<<< HEAD
-=======
             iparams = ptcodegen.input_params[:]
             iparams.sort(lambda x,y: cmp(x[0],y[0]))
             for pname, pvalue in iparams:
                 Globals().metadata['size_' + pname] = pvalue
->>>>>>> github/master
 
             # create the search engine
             search_eng = search_class({'cfrags':cfrags, 

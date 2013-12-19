@@ -134,11 +134,7 @@ class OptDriver:
 
                 # apply code transformations
                 try:
-<<<<<<< HEAD
-                  if self.lang == 'cuda':
-=======
                   if self.lang == 'cuda' or self.lang == 'opencl':
->>>>>>> github/master
                     transformation = mod_class(perf_params,
                                               cfrag.leader_ann.mod_code,
                                               optimized_body_code,

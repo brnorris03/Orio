@@ -3,11 +3,7 @@
 #
 
 import random, re
-<<<<<<< HEAD
-import skeleton_code
-=======
 import skeleton_code 
->>>>>>> github/master
 from orio.main.util.globals import *
 from orio.main.tuner.skeleton_code import SEQ_TIMER
 
@@ -349,12 +345,9 @@ class PerfTestCodeGen(object):
         if not self.decl_file:
             prologue_code += ('%s();' % self.malloc_func_name) + '\n  '
         prologue_code += ('%s();' % self.init_func_name) + '\n'
-<<<<<<< HEAD
-=======
         if Globals().language == 'opencl':
             for (k, v) in Globals().metadata.iteritems():
                 prologue_code += 'TAU_METADATA("%s", "%s");\n' % (k, v)
->>>>>>> github/master
 
         # create code for the epilogue section
         epilogue_code = ''
@@ -382,8 +375,6 @@ class PerfTestCodeGenCUDA(PerfTestCodeGen):
         super(PerfTestCodeGenCUDA, self).__init__(input_params, input_decls, decl_file, init_file, skeleton_code_file, language,
                  random_seed, use_parallel_search)
      
-<<<<<<< HEAD
-=======
 # --------------------------------------------------------------------------------------
 class PerfTestCodeGenOpenCL(PerfTestCodeGen):
 
@@ -393,7 +384,6 @@ class PerfTestCodeGenOpenCL(PerfTestCodeGen):
                  random_seed, use_parallel_search)
      
 
->>>>>>> github/master
 
 # --------------------------------------------------------------------------------------
 
