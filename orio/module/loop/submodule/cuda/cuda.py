@@ -267,7 +267,15 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         g.warn("%s: running on compute capability less than 1.3 is not recommended, detected %s.%s." % (self.__class__, props['major'], props['minor']))
 
       # set the arch to the latest supported by the device
+<<<<<<< HEAD
       bcmd = self.tinfo.build_cmd
+=======
+      if self.tinfo is None:
+          bcmd = "gcc"
+      else:
+          bcmd = self.tinfo.build_cmd
+          
+>>>>>>> github/master
       if bcmd.startswith('gcc'):
         bcmd = 'nvcc'
       if bcmd.find('-arch') == -1:

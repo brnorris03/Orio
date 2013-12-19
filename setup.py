@@ -53,6 +53,10 @@ setup(name = 'orio',
       packages = py_packages,
       package_dir = {'orio' : 'orio'},
       #package_data = {'orio' : ['tool/zestyparser/*']},
+<<<<<<< HEAD
       scripts = ['orcc', 'orf', 'orcuda'])
+=======
+      scripts = ['orcc', 'orf', 'orcuda', 'orcl'])
+>>>>>>> github/master
 
 

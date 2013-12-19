@@ -2,7 +2,11 @@
 # To compile and execute the performance-testing code to get the performance cost
 #
 
+<<<<<<< HEAD
 import os, time, re
+=======
+import os, time, re, datetime, uuid
+>>>>>>> github/master
 
 from orio.main.util.globals import *
 
@@ -37,13 +41,21 @@ class PerfTestDriver:
         global perftest_counter 
         perftest_counter += 1 
         
+<<<<<<< HEAD
         if not (language == 'c' or language == 'fortran' or language == 'cuda'):
+=======
+        if not (language == 'c' or language == 'fortran' or language == 'cuda' or language == 'opencl'):
+>>>>>>> github/master
             err('orio.main.tuner.ptest_driver: unknown output language specified: %s' % language)
         self.language = language
 
         self.__PTEST_FNAME=Globals().out_prefix+self.__PTEST_FNAME
 
+<<<<<<< HEAD
         if language == 'c': 
+=======
+        if language == 'c' or language == 'opencl': 
+>>>>>>> github/master
             self.ext = '.c'
         elif language == 'cuda':
             self.ext = '.cu'
@@ -55,7 +67,11 @@ class PerfTestDriver:
         self.original_src_name = self.__PTEST_FNAME + '_original' + self.ext
         self.exe_name = self.__PTEST_FNAME + '.exe'
         self.original_exe_name = self.__PTEST_FNAME + '_original.exe'
+<<<<<<< HEAD
         if self.language == 'cuda':
+=======
+        if self.language == 'cuda' or self.language == 'opencl':
+>>>>>>> github/master
             self.obj_name = self.__PTEST_FNAME + '.o'
             self.original_obj_name = self.__PTEST_FNAME + '_original.o'
 
@@ -106,7 +122,11 @@ class PerfTestDriver:
             err('orio.main.tuner.ptest_driver: cannot open file for writing: %s' % self.src_name)
             
         if self.first:
+<<<<<<< HEAD
             if self.language != 'cuda' and not self.tinfo.timer_file and not (os.path.exists(self.timer_file)):
+=======
+            if self.language != 'cuda' and self.language != 'opencl' and not self.tinfo.timer_file and not (os.path.exists(self.timer_file)):
+>>>>>>> github/master
                 # Generate the timing routine file
                 try: 
                     f = open(self.timer_file, 'w')
@@ -214,6 +234,13 @@ class PerfTestDriver:
             if status:
                 err('orio.main.tuner.ptest_driver: failed to compile the test cuda code: "%s"' % cmd)
             cmd = ('%s %s -o %s %s' % (build_cmd, self.extra_compiler_opts, self.exe_name, self.obj_name))
+<<<<<<< HEAD
+=======
+        elif self.language == 'opencl':
+            cmd = ('%s %s -o %s %s %s' % (build_cmd, self.extra_compiler_opts,
+                                             self.exe_name, self.src_name2, 
+                                             self.tinfo.libs))
+>>>>>>> github/master
         else:
             cmd = ('%s %s -o %s %s %s %s' % (build_cmd, self.extra_compiler_opts,
                                              self.exe_name, self.src_name2, 
@@ -245,6 +272,11 @@ class PerfTestDriver:
     def __execute(self):
         '''Execute the test to get the performance costs'''
 
+<<<<<<< HEAD
+=======
+        Globals().metadata['src_filenames'] = ",".join(Globals().src_filenames)
+
+>>>>>>> github/master
         # check if the executable exists
         if not os.path.exists(self.exe_name):
             err('orio.main.tuner.ptest_driver:  the executable of the test code does not exist')
@@ -295,6 +327,22 @@ class PerfTestDriver:
             except Exception, e:
                 err('orio.main.tuner.ptest_driver: failed to execute the test code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
                 
+<<<<<<< HEAD
+=======
+            if Globals().post_cmd is not None:
+                try:
+                    cmd = Globals().post_cmd
+                    uniq = "profile-" + datetime.datetime.now().strftime("%y-%m-%d:%H:%S") + '-' + uuid.uuid4().hex
+                    if "%s" in cmd:
+                        cmd = cmd % (uniq, uniq)
+                    status = os.system(cmd) 
+                    if status:
+                        err('orio.main.tuner.ptest_driver: failed to execute the post-command: "%s"' % Globals().post_cmd)
+                except Exception, e:
+                    err('orio.main.tuner.ptest_driver: failed to execute the post-command: "%s"\n --> %s: %s' % (Globals().post_cmd,e.__class__.__name__, e))
+        
+                
+>>>>>>> github/master
             try:
                 if out:
                     #info('out: %s' % out)
@@ -374,7 +422,10 @@ class PerfTestDriver:
         @param test_code: the code for testing multiple coordinates in the search space
         @return: a dictionary of the times corresponding to each coordinate in the search space
         '''
+<<<<<<< HEAD
 
+=======
+>>>>>>> github/master
         # write the testing code
         self.__write(test_code, perf_param=perf_param)
 
