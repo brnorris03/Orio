@@ -27,13 +27,9 @@ class Transformation:
 
     def transform(self, stmts):
         '''Apply code transformations on each statement in the given statement list'''
-<<<<<<< HEAD
-
-=======
         Globals().metadata['loop_transformations'] = []
         for s in stmts:
             Globals().metadata["loop_transformations"].append(s.name)
->>>>>>> github/master
         return [self.__transformStmt(s) for s in stmts]
 
     #--------------------------------------
@@ -87,14 +83,10 @@ class Transformation:
             
             # apply code transformations
             #try:
-<<<<<<< HEAD
-            if self.language == 'cuda':
-=======
             if self.language == 'cuda' or self.language == 'opencl':
->>>>>>> github/master
-              t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language, self.tinfo)
+                t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language, self.tinfo)
             else:
-              t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language)
+                t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language)
             transformed_stmt = t.transform()
             #except Exception, e:
             #    err(('orio.module.loop.transformation:%s: encountered an error as optimizing the transformation ' +
