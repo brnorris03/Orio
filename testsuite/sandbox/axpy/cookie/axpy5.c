@@ -7,7 +7,7 @@ void axpy_4(int N, double *y,
 /*@ begin PerfTuning (
  def build {
    #arg build_command = 'icc -O0';
-   arg build_command = 'icc -O3';
+   arg build_command = 'gcc';
  } 
  def performance_counter {
    #arg method = 'bgp counter';
@@ -15,6 +15,7 @@ void axpy_4(int N, double *y,
  }
  def performance_params {  
    param UF[] = range(1,11);
+   param CFLAGS[] = ['-O0', '-O1', '-O2', '-O3'];
    #constraint divisible_by_two = (UF % 2 == 0);
  }
  def input_params {
