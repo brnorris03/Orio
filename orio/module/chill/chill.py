@@ -39,8 +39,12 @@ class CHiLL(orio.module.module.Module):
         # ... 
         # /*@ end Chill @*/
 
+
         # Do nothing except output the code annotated with a comment for the parameters that were specified
+        # TODO: this is where we use the provided CHiLL recipe or generate a new one
+        # Then invoke CHiLL to produce the output_code
         output_code = comment + self.annot_body_code
+
 
         # return the output code
         return output_code
