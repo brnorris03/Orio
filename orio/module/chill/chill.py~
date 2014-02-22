@@ -45,17 +45,16 @@ class CHiLL(orio.module.module.Module):
 	func = getFunction()
 	funcName = getFuncName()
 	
-	if not os.path.isfile(fname):
-		try:
-		    f = open(fname,'w')
-		    f.write("#define N 10240\n\n")   ##added for debug Axel Y. Rivera (UofU)
-		    f.write(func)
-		    f.write(code)
-		    f.write("\n}\n\n")
-		    f.close()
+	try:
+	    f = open(fname,'w')
+	    f.write("#define N 10240\n\n")   ##added for debug Axel Y. Rivera (UofU)
+	    f.write(func)
+	    f.write(code)
+	    f.write("\n}\n\n")
+	    f.close()
 
-		except:
-		    err('orio.module.chill.chill: cannot open file for writing: %s' % fname)
+	except:
+	    err('orio.module.chill.chill: cannot open file for writing: %s' % fname)
 
 	#print "Informatio variables: \nperf_params: ",self.perf_params,"\nmodule_body_code: ",self.module_body_code,"\nline_no: ",self.line_no,"\nindent_size: ",self.indent_size
 

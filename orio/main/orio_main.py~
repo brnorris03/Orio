@@ -70,7 +70,7 @@ def start(argv, lang):
             # parse the source file and build a symbol table
             #stbuilder = st_builder.STBuilder(srcfile)
             #symtab = stbuilder.build_st()
-            Globals().setFuncDec(src_code)
+            Globals.setFuncDec(src_code)
             # obtain the mapping for performance tuning specifications
             specs_map = {}
             if g.spec_filename:

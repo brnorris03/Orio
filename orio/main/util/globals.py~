@@ -216,7 +216,7 @@ class Globals:
 	
             if words[0] == 'void' or words[0] == 'int' or words[0] == 'double':
                 varName = words[1].split('(')
-		self.funcName = varName[0]
+		self.funcName = varName[1]
                 inLine = True
 	
             if inLine == True:
