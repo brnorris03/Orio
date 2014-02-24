@@ -14,6 +14,7 @@ void axpy4(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
     param CFLAGS[] = ['-O0', '-O1', '-O2', '-O3'];
     param TF[] = [2,4,8];
  }
+
  def input_params {
    param N[] = [1000000];
  }
@@ -36,7 +37,8 @@ void axpy4(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
 
 /*@ begin CHiLL (
    
- 	transform Tile(0,'i',TF,'ii')
+	tile_by_index(0,{"i"},{TF},{l1_control="ii"},{"ii","i"})CU=1
+
   ) @*/
 
 int i;

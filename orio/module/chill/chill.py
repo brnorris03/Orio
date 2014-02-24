@@ -60,47 +60,57 @@ class CHiLL(orio.module.module.Module):
 	#print "Informatio variables: \nperf_params: ",self.perf_params,"\nmodule_body_code: ",self.module_body_code,"\nline_no: ",self.line_no,"\nindent_size: ",self.indent_size
 
 
-	tInfo = re.split(r'[ (),\n\t]+',self.module_body_code)
+	transCMD = re.split(r'[\n\t]+',self.module_body_code)
+	print transCMD,len(transCMD)
+	tInfo = re.split(r'[ ()\t]+',transCMD[0])
+	print tInfo
 	del tInfo[-1]
-	#print tInfo
 
 	cmd = ''
 	scriptCMD = ""
 	CU = 1
 	recipeFound = False
-	for trans in range(len(tInfo)):
-
-		if tInfo[trans] == 'Recipe':
-			if len(tInfo) == 3:
-				cmd = tInfo[trans+1] 
-				cname, ctype = os.path.splitext(cmd)
-				recipeFound = True
-				if ctype != '.lua':
-					err('orio.module.chill.chill: Wrong file type')
+	cname = ''
+	if tInfo[1] == 'Recipe':
+		if len(transCMD) > 1:
+			err('orio.module.chill.chill: Recipe file can\'t be added when other transformations are included')
+		elif len(tInfo) == 3:
+			cname = tInfo[2] 
+			cname1, ctype = os.path.splitext(cname)
+			recipeFound = True
+			if ctype != '.lua':
+				err('orio.module.chill.chill: Wrong file type')
+		
+		elif len(tInfo) < 3:
+			err('orio.module.chill.chill: No recipe filename give')
+	
+	if recipeFound == False:
+		scriptCMD=''
+		for trans in range(len(transCMD)):
+	
+			recipeTest = re.split(r'[ ()\t]+',transCMD[trans])
 			
-			elif len(tInfo) > 3:
-				err('orio.module.chill.chill: Recipe file given, no more transformation can be specified')
-			else:
-				err('orio.module.chill.chill: No recipe filename give')
-			break
+			if recipeTest[1] == 'Recipe':
+				err('orio.module.chill.chill: Recipe file can\'t be added when other transformations are included')
 
-		if tInfo[trans] == 'Tile':
+			tInfo = re.split('({|}|\(|\))',transCMD[trans])
+	
+			for pos in range(len(tInfo)):
+				for key,value in self.perf_params.iteritems():
+					if tInfo[pos] == key:
+						tInfo[pos] = value
 
-			loopNest = tInfo[trans+1]
-			loopIn = tInfo[trans+2]
-			loopCon = tInfo[trans+4]
-			tileSize = self.perf_params[tInfo[trans+3]]
+			for d in tInfo:
+				scriptCMD = scriptCMD + str(d)
 
-			##crappy tile, just for one loop, we need to expand it to n loop
-			scriptCMD = scriptCMD + "tile_by_index(" + str(loopNest) +",{\"" + loopIn.replace("'","") + "\"},{" + str(tileSize) + "},{l1_control=\""+loopCon.replace("'","") + "\"},{\"" + loopCon.replace("'","") + "\",\"" + loopIn.replace("'","") + "\"})CU=" + str(CU) + "\n"
-			CU = int(CU) + 1
+			scriptCMD = scriptCMD + '\n'
 
-	tag = ''
-	for key,value in self.perf_params.iteritems():
-		tag = tag + "_"+str(value)
+
+		tag = ''
+		for key,value in self.perf_params.iteritems():
+			tag = tag + "_"+str(value)
 	
 
-	if recipeFound == False:
 		cname = 'recipe'+tag+'.lua'
 	
 		try:
@@ -125,29 +135,52 @@ class CHiLL(orio.module.module.Module):
 
 
 	#RUN CUDA-CHILL MUTE FOR DEBUG PURPOUSE
-	#try:
+	try:
 
-	#    os.path.isfile(cname)
+	    os.path.isfile(cname)
 
-	#except:
-	#    err('orio.module.chill.chill: cannot open file recipe for CUDA-CHiLL: %s' % cname)
+	except:
+	    err('orio.module.chill.chill: cannot open file recipe for CUDA-CHiLL: %s' % cname)
 
 
-	#cmd = 'cuda-chill %s' % (cname)
-	#info('orio.module.chill.chill: running CUDA-CHiLL with command: %s' % cmd)
+	cmd = 'cuda-chill %s' % (cname)
+	info('orio.module.chill.chill: running CUDA-CHiLL with command: %s' % cmd)
 
-#	try:
-#	    os.system(cmd)
-#	except:
-#            err('orio.module.chill.chill:  failed to run command: %s' % cmd)
+	try:
+	    os.system(cmd)
+	except:
+            err('orio.module.chill.chill:  failed to run command: %s' % cmd)
 
-#        info('orio.module.chill.chill: Output located in: rose_%s' % fname)
+	fname2 = ''
+	if recipeFound == False:
+		fname1, ctype = os.path.splitext(fname)
+		fname2 = 'rose_' + fname1 + tag + ctype + 'u'
+	else:
+		fname2 = fname+'u'
+
+	info('orio.module.chill.chill: Output located in: rose_%s' % fname2)
+
+	if recipeFound == False: 
+		if not os.path.exists('outputs'):
+			os.makedirs('outputs')
+	
+		cmd = 'cp rose_'+fname+'u outputs/' + fname2
+		try:
+		    os.system(cmd)
+		except:
+			err('orio.module.chill.chill:  failed to run command: %s' % cmd)
 
 
 	#CLEAN THE WORKING DIRECTORY
 	if recipeFound == False:
 		cname = 'recipe'+tag+'.lua'
 		cmd = 'rm '+cname
+		try:
+		    os.system(cmd)
+		except:
+	            err('orio.module.chill.chill:  failed to run command: %s' % cmd)
+
+		cmd = 'rm rose_'+fname+'u'
 		try:
 		    os.system(cmd)
 		except:
