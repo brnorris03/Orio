@@ -49,30 +49,7 @@ class CHiLL(orio.module.module.Module):
 	func2 = func2.split(' ',1)[1]
 	funcName = getFuncName()
 	
-	if not os.path.isfile(fname):
-		try:
-		    f = open(fname,'w')
-		    f.write("#define N 1024\n\n")   ##added for debug Axel Y. Rivera (UofU)
-		    				    ##This need to be removed
-		    f.write(func)
-		    f.write(code)
-		    f.write("\n}\n\n")
-		    f.close()
-
-		except:
-		    err('orio.module.chill.chill: cannot open file for writing: %s' % fname)
-
-	if not os.path.isfile(hname):
-		try:
-		    h = open(hname,'w')    
-		    h.write(func1)
-		    h.write("\n\n")
-		    h.close()
-
-		except:
-		    err('orio.module.chill.chill: cannot open file for writing: %s' % hname)
-
-		    
+	    
 
 	#print "Informatio variables: \nperf_params: ",self.perf_params,"\nmodule_body_code: ",self.module_body_code,"\nline_no: ",self.line_no,"\nindent_size: ",self.indent_size
 
@@ -100,7 +77,7 @@ class CHiLL(orio.module.module.Module):
 		
 		elif len(tInfo) < 3:
 			err('orio.module.chill.chill: No recipe filename give')
-	
+	defines = ''
 	if recipeFound == False:
 		scriptCMD=''
 		for trans in range(len(transCMD)):
@@ -110,17 +87,21 @@ class CHiLL(orio.module.module.Module):
 			if recipeTest[1] == 'Recipe':
 				err('orio.module.chill.chill: Recipe file can\'t be added when other transformations are included')
 
-			tInfo = re.split('({|}|\(|\))',transCMD[trans])
+			elif recipeTest[0] == '#define':
+				defines = defines + transCMD[trans] + '\n'
+
+			else:
+				tInfo = re.split('({|}|\(|\))',transCMD[trans])
 	
-			for pos in range(len(tInfo)):
-				for key,value in self.perf_params.iteritems():
-					if tInfo[pos] == key:
-						tInfo[pos] = value
+				for pos in range(len(tInfo)):
+					for key,value in self.perf_params.iteritems():
+						if tInfo[pos] == key:
+							tInfo[pos] = value
 
-			for d in tInfo:
-				scriptCMD = scriptCMD + str(d)
+				for d in tInfo:
+					scriptCMD = scriptCMD + str(d)
 
-			scriptCMD = scriptCMD + '\n'
+				scriptCMD = scriptCMD + '\n'
 
 
 		tag = ''
@@ -150,6 +131,30 @@ class CHiLL(orio.module.module.Module):
 		except:
 	            err('orio.module.chill.chill:  failed to run command: %s' % cmd)
 
+	if not os.path.isfile(fname):
+		try:
+		    f = open(fname,'w')
+		    f.write(defines)   ##added for debug Axel Y. Rivera (UofU)
+		    				    ##This need to be removed
+		    f.write(func)
+		    f.write(code)
+		    f.write("\n}\n\n")
+		    f.close()
+
+		except:
+		    err('orio.module.chill.chill: cannot open file for writing: %s' % fname)
+
+	if not os.path.isfile(hname):
+		try:
+		    h = open(hname,'w')    
+		    h.write(func1)
+		    h.write("\n\n")
+		    h.close()
+
+		except:
+		    err('orio.module.chill.chill: cannot open file for writing: %s' % hname)
+
+	
 
 	#RUN CUDA-CHILL MUTE FOR DEBUG PURPOUSE
 	try:

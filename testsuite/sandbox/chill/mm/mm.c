@@ -35,6 +35,7 @@ void mm(double *a,double *b, double *c) {
 
 /*@ begin CHiLL (
    
+	#define N 1024
 	tile_by_index(0,{"i"},{TF},{l1_control="ii"},{"ii","i","j","k"})CU=1
 	tile_by_index(0,{"j"},{TF2},{l1_control="jj"},{"ii","jj","i","j","k"})CU=2
 	cudaize(0,"mm_GPU",{a=1024,b=1024,c=1024},{block={"ii","jj"}, thread={"i","j"}},{})CU=3
