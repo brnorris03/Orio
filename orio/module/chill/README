@@ -11,7 +11,7 @@ University of Oregon
 norris@cs.uoregon.edu 
 
 CHiLL expansion for ORIO
-date: 02/25/2014
+date: 02/27/2014
 
 Files:
 
@@ -34,6 +34,13 @@ Files:
 		clean.sh		| Bash file for cleaning
 
 
+	Orio/testsuit/sandbox/chill/tensor-product
+
+		tensor.c		| A tensor product example (Based on nekbone)
+		recipe.lua		| Test for only one recipe
+		clean.sh		| Bash file for cleaning
+		clean-script.py		| A python script for clean output
+
 How to run:
 
 	This is a module that allows ORIO call CHiLL. Examples are located at 
@@ -51,7 +58,7 @@ How to write annotation:
 	to test multiple parameters, then type the performance array you want to use.
 	See example mm.c for an example which tile and the produce CUDA code. Also make
 	sure that linkers for the compilers are in the right path. In the mm.c example
-	everything is presented.
+	everything is presented. Also check tensor-product example for an extended example.
 
 Other important stuffs
 

@@ -78,17 +78,27 @@ class CHiLL(orio.module.module.Module):
 		elif len(tInfo) < 3:
 			err('orio.module.chill.chill: No recipe filename give')
 	defines = ''
+	cleanScript = False
+
+	cleanArgv = []
 	if recipeFound == False:
 		scriptCMD=''
 		for trans in range(len(transCMD)):
 	
 			recipeTest = re.split(r'[ ()\t]+',transCMD[trans])
-			
+			cleaning = transCMD[trans].replace("\t","")
+			cleaning = cleaning.replace("\n","")
+			clean2 = cleaning.split(' ')
 			if recipeTest[1] == 'Recipe':
 				err('orio.module.chill.chill: Recipe file can\'t be added when other transformations are included')
 
 			elif recipeTest[0] == '#define':
 				defines = defines + transCMD[trans] + '\n'
+
+			elif clean2[0] == 'run' and clean2[1] == 'clean':
+				cleanScript = True
+				for c in range(2,len(clean2)):
+					cleanArgv.append(clean2[c])
 
 			else:
 				tInfo = re.split('({|}|\(|\))',transCMD[trans])
@@ -97,7 +107,7 @@ class CHiLL(orio.module.module.Module):
 					for key,value in self.perf_params.iteritems():
 						if tInfo[pos] == key:
 							tInfo[pos] = value
-
+					
 				for d in tInfo:
 					scriptCMD = scriptCMD + str(d)
 
@@ -172,6 +182,19 @@ class CHiLL(orio.module.module.Module):
 	    os.system(cmd)
 	except:
             err('orio.module.chill.chill:  failed to run command: %s' % cmd)
+
+
+##Lazy cleaning
+	if cleanScript == True:
+		cmd = 'python clean-script.py'
+		for c in cleanArgv:
+			cmd = cmd + ' ' + c
+		info('orio.module.chill.chill: running CUDA-CHiLL with command: %s' % cmd)
+
+		try:
+		    os.system(cmd)
+		except:
+        	    err('orio.module.chill.chill:  failed to run command: %s' % cmd)
 
 ## Lazy hammering to take the code and call it from outside
 ## We compile with nvcc the library and the with g++ we link
@@ -249,6 +272,7 @@ class CHiLL(orio.module.module.Module):
 	
 	## We annotate which recipe file was used to generate this version
 	output_code = '\n\n //Testing with file: ' + cname
+	output_code = output_code + '\n //Output file is: ' +fname2
 
 
         output_code = output_code + '\n\n#include \"_orio_chill_.h\" \n\n'
