@@ -331,6 +331,7 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
     def transform(self):
         '''To apply various loop transformations'''
 
+        debug("perf_params=" + str(self.perf_params), self)
         # read all transformation arguments
         args_info = self.__readTransfArgs(self.perf_params, self.transf_args)
         (tiles, permuts, regtiles, ujams, scalarrep,

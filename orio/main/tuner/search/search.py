@@ -19,6 +19,7 @@ class Search:
         #print 'done'
 
         self.params=params
+        debug('[Search] performance parameters:\n', params)
 
         # the class variables that are essential to know when developing a new search engine subclass
         if 'search_time_limit' in params.keys(): self.time_limit = params['search_time_limit']
@@ -227,15 +228,16 @@ class Search:
         if len(uneval_coords) == 0:
             return perf_costs
 
+        #debug('search perf_params=' + str(perf_params))
         # execute the original code and obtain results for validation
         if Globals().validationMode and not Globals().executedOriginal:
-          validation_map = {}
-          transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
-          transformed_code, _, externals = transformed_code_seq[0]
-          validation_map['original'] = (transformed_code, externals)
-          instrumented_code = self.ptcodegen.generate(validation_map)
-          _ = self.ptdriver.run(instrumented_code)
-          Globals().executedOriginal = True
+            validation_map = {}
+            transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
+            transformed_code, _, externals = transformed_code_seq[0]
+            validation_map['original'] = (transformed_code, externals)
+            instrumented_code = self.ptcodegen.generate(validation_map)
+            _ = self.ptdriver.run(instrumented_code)
+            Globals().executedOriginal = True
         
         # get the transformed code for each corresponding coordinate
         code_map = {}
@@ -248,11 +250,11 @@ class Search:
             #print self.getPerfCostConfig(coord_key,perf_params)
 
             try:
-              transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
+                transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
             except Exception, e:
-              err('failed during evaluation of coordinate: %s=%s\n%s %s' % (coord, self.coordToPerfParams(coord), e.__class__.__name__, e), 0, False)
-              perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
-              continue
+                err('failed during evaluation of coordinate: %s=%s\n%s %s' % (coord, self.coordToPerfParams(coord), e.__class__.__name__, e), 0, False)
+                perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
+                continue
 
             elapsed = (time.time() - start)
             self.transform_time=elapsed
@@ -263,7 +265,7 @@ class Search:
             transformed_code, _, externals = transformed_code_seq[0]
             code_map[coord_key] = (transformed_code, externals)
         if code_map == {}: # nothing to test
-          return perf_costs
+            return perf_costs
         #debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)
@@ -307,7 +309,7 @@ class Search:
             return perf_costs
 
 
-        config=Globals().config
+        #config=Globals().config
         params=self.params['axis_names']
         vals=self.params['axis_val_ranges']
 

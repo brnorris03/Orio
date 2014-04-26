@@ -53,6 +53,7 @@ class AnnParser:
         # code_seq is a list of 3-element lists: the leader annotation, contained code, and trailer annotation
         code_seq = self.__getCodeSeq(code, line_no)   
 
+        debug("PARSING ANNOTATION " + str(code_seq))
         # convert the code sequence to a sequence of code fragments
         # cfrags is a list of orio.main.code_frag.AnnCodeRegion objects (code_frag.py)
         cfrags = map(self.__convertToCodeFragment, code_seq)

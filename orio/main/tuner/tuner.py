@@ -25,10 +25,9 @@ class PerfTuner:
 
     #-------------------------------------------------
     
-    def __init__(self, specs_map, odriver):
+    def __init__(self, odriver):
         '''To instantiate an empirical performance tuner object'''
 
-        self.specs_map = specs_map
         self.odriver = odriver
         self.dloader = orio.main.dyn_loader.DynLoader()
 
@@ -38,6 +37,7 @@ class PerfTuner:
         self.num_int=0
         
         self.tinfo = None
+
     
     #-------------------------------------------------
 
@@ -56,7 +56,7 @@ class PerfTuner:
 
         # create a performance-testing code generator for each distinct problem size
         ptcodegens = []
-        timing_code = ''
+        #timing_code = ''
         for prob_size in self.__getProblemSizes(tinfo.iparam_params, tinfo.iparam_constraints):
             if self.odriver.lang == 'c':
                 c = orio.main.tuner.ptest_codegen.PerfTestCodeGen(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
@@ -85,6 +85,7 @@ class PerfTuner:
                                                                c.getTimerCode(use_parallel_search))
 
         # get the axis names and axis value ranges to represent the search space
+        
         axis_names, axis_val_ranges = self.__buildCoordSystem(tinfo.pparam_params)
 
         info('%s' % axis_names)
@@ -131,10 +132,11 @@ class PerfTuner:
             for pname, pvalue in iparams:
                 Globals().metadata['size_' + pname] = pvalue
 
+            debug(ptcodegen.input_params[:])
             # create the search engine
             search_eng = search_class({'cfrags':cfrags, 
-                                       'axis_names':axis_names, 
-                                       'axis_val_ranges':axis_val_ranges, 
+                                       'axis_names':axis_names,          # performance parameter names
+                                       'axis_val_ranges':axis_val_ranges,  # performance parameter values
                                        'pparam_constraint':pparam_constraint,
                                        'search_time_limit':search_time_limit, 
                                        'search_total_runs':search_total_runs, 
@@ -229,19 +231,17 @@ class PerfTuner:
             except:
                 err('%s: cannot open file for reading: %s' % (self.__class__, spec_file_path))
 
-            tinfo = orio.main.tspec.tspec.TSpec().parseProgram(tspec_code)
-
-            # return the tuning information
-            return tinfo
+            tuning_spec_dict = orio.main.tspec.tspec.TSpec().parseProgram(tspec_code)
 
         # if the tuning specification is hardcoded into the given code
+        elif code.lstrip().startswith('spec'):
+            tuning_spec_dict = orio.main.tspec.tspec.TSpec().parseProgram(code)
         else:
-
             # parse the specification code to get the tuning information
-            tinfo = orio.main.tspec.tspec.TSpec().parseSpec(code, line_no)
+            tuning_spec_dict = orio.main.tspec.tspec.TSpec().parseSpec(code, line_no)
 
-            # return the tuning information
-            return tinfo
+        # return the tuning information
+        return tuning_spec_dict
         
     #-------------------------------------------------
 
@@ -307,6 +307,7 @@ class PerfTuner:
     def __buildCoordSystem(self, perf_params):
         '''Return information about the coordinate systems that represent the search space'''
 
+        debug("BUILDING COORD SYSTEM")
         # get the axis names and axis value ranges
         axis_names = []
         axis_val_ranges = []

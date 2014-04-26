@@ -855,6 +855,7 @@ class TuningInfoGen:
                     err('orio.main.tspec.tune_info: %s: constraints require parameters definitions' % dname_line_no)
                     
                 pparam_info = (pparam_params, pparam_constraints)
+                debug("tune_info TuningInfo pparam_params" + str(pparam_params))
                 
             # input parameters definition
             elif dname == INPUT_PARAMS:

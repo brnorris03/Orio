@@ -34,8 +34,8 @@ def start(argv, lang):
         sys.exit(1)
 
     # import other required Python packages
-    import ann_parser, cmd_line_opts, opt_driver, tspec.tspec#, st_builder
-
+    import ann_parser, cmd_line_opts, opt_driver
+    
     # process the command line
     cmdline = cmd_line_opts.CmdParser().parse(argv)
     
@@ -56,6 +56,7 @@ def start(argv, lang):
     for srcfile, out_filename in g.src_filenames.items():
         annotations_found = False
 
+        debug('Processing %s,%s' % (srcfile,out_filename))
         if not g.disable_orio:
             # read source code
             info('\n----- begin reading the source file: %s -----' % srcfile)
@@ -72,7 +73,7 @@ def start(argv, lang):
             #symtab = stbuilder.build_st()
             
             # obtain the mapping for performance tuning specifications
-            specs_map = {}
+            tspec_prog = ''
             if g.spec_filename:
                 info('\n----- begin reading the tuning specification file: %s -----' % g.spec_filename)
                 try:
@@ -81,25 +82,29 @@ def start(argv, lang):
                     f.close()
                 except:
                     err('orio.main.main: cannot open file for reading: %s' % g.spec_filename)
-                specs_map = tspec.tspec.TSpec().parseProgram(tspec_prog)
+                #tuning_spec_dict = tspec.tspec.TSpec().parseProgram(tspec_prog)
                 info('----- finish reading the tuning specification -----')
-    
+                
+            # Just add the tuning spec to the file being parsed
+            if tspec_prog:
+                src_code = '/*@ begin PerfTuning (' + tspec_prog + ')\n@*/\n' + src_code + '\n/*@ end @*/\n'
+                
             # parse the source code and return a sequence of code fragments
             info('\n----- begin parsing annotations -----')
             # for efficiency (e.g., do as little as possible when there are no annotations):
             if ann_parser.AnnParser.leaderAnnRE().search(src_code): 
-                cfrags = ann_parser.AnnParser().parse(src_code)
+                cfrags = ann_parser.AnnParser().parse(src_code)     # list of CodeFragment objects
                 annotations_found = True
                 annotated_files += 1
             else:
                 info('----- did not find any Orio annotations -----')
             info('----- finished parsing annotations -----')
-    
+            
             # perform optimizations based on information specified in the annotations
             if annotations_found:
                 info('\n----- begin optimizations -----')
-                odriver = opt_driver.OptDriver(specs_map, language=language)
-                optimized_code_seq = odriver.optimizeCodeFrags(cfrags, {}, True)
+                odriver = opt_driver.OptDriver(language=language)
+                optimized_code_seq = odriver.optimizeCodeFrags(cfrags, True)
                 info('----- finish optimizations -----')
         
                 # remove all annotations from output
@@ -111,8 +116,6 @@ def start(argv, lang):
     
                 # write output
                 info('\n----- begin writing the output file(s) -----')
-                path_name, ext = os.path.splitext(out_filename)
-                if language == 'cuda': ext = '.cu'
 
                 optimized_code, _, externals = optimized_code_seq[0]
                 if g.out_filename: out_filename = g.out_filename

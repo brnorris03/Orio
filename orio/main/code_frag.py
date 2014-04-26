@@ -17,6 +17,7 @@ class CodeFragment:
 
     def __init__(self):
         '''Instantiate a code fragment'''
+        self.id="None"
         pass
 
 #-----------------------------------------
@@ -43,6 +44,7 @@ class LeaderAnn(Ann):
         self.mod_name_line_no = mod_name_line_no
         self.mod_code = mod_code
         self.mod_code_line_no = mod_code_line_no
+        self.id = mod_name
 
 #-----------------------------------------
 
@@ -76,6 +78,7 @@ class AnnCodeRegion(CodeFragment):
         self.leader_ann = leader_ann
         self.cfrags = cfrags
         self.trailer_ann = trailer_ann
+        self.id = leader_ann
 
     
         

@@ -214,9 +214,11 @@ def info(msg='', end='\n', pre='', post='', logging=True):
     if Globals().logging:
         Globals().loggers['TuningLog'].info(msg)
 
-def debug(msg='', end='\n', pre='', post='', logging=True, level=5):
+def debug(msg='', obj=None, end='\n', pre='', post='', logging=True, level=5):
+    if not obj: name = ''
+    else: name = obj.__class__.__name__
     if Globals().debug and level <= Globals().debug_level:
-        sys.stdout.write(pre + 'DEBUG:' + str(msg) + post + end)
+        sys.stdout.write(pre + 'DEBUG[' + name + ']:' + str(msg) + post + end)
         if logging:
             Globals().loggers['TuningLog'].debug(msg)
         
