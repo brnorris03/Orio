@@ -49,7 +49,30 @@ class CHiLL(orio.module.module.Module):
 	func2 = func2.split(' ',1)[1]
 	funcName = getFuncName()
 	
-	    
+	if not os.path.isfile(fname):
+		try:
+		    f = open(fname,'w')
+		    f.write("#define N 1024\n\n")   ##added for debug Axel Y. Rivera (UofU)
+		    				    ##This need to be removed
+		    f.write(func)
+		    f.write(code)
+		    f.write("\n}\n\n")
+		    f.close()
+
+		except:
+		    err('orio.module.chill.chill: cannot open file for writing: %s' % fname)
+
+	if not os.path.isfile(hname):
+		try:
+		    h = open(hname,'w')    
+		    h.write(func1)
+		    h.write("\n\n")
+		    h.close()
+
+		except:
+		    err('orio.module.chill.chill: cannot open file for writing: %s' % hname)
+
+		    
 
 	#print "Informatio variables: \nperf_params: ",self.perf_params,"\nmodule_body_code: ",self.module_body_code,"\nline_no: ",self.line_no,"\nindent_size: ",self.indent_size
 
@@ -77,41 +100,27 @@ class CHiLL(orio.module.module.Module):
 		
 		elif len(tInfo) < 3:
 			err('orio.module.chill.chill: No recipe filename give')
-	defines = ''
-	cleanScript = False
-
-	cleanArgv = []
+	
 	if recipeFound == False:
 		scriptCMD=''
 		for trans in range(len(transCMD)):
 	
 			recipeTest = re.split(r'[ ()\t]+',transCMD[trans])
-			cleaning = transCMD[trans].replace("\t","")
-			cleaning = cleaning.replace("\n","")
-			clean2 = cleaning.split(' ')
+			
 			if recipeTest[1] == 'Recipe':
 				err('orio.module.chill.chill: Recipe file can\'t be added when other transformations are included')
 
-			elif recipeTest[0] == '#define':
-				defines = defines + transCMD[trans] + '\n'
-
-			elif clean2[0] == 'run' and clean2[1] == 'clean':
-				cleanScript = True
-				for c in range(2,len(clean2)):
-					cleanArgv.append(clean2[c])
-
-			else:
-				tInfo = re.split('({|}|\(|\))',transCMD[trans])
+			tInfo = re.split('({|}|\(|\))',transCMD[trans])
 	
-				for pos in range(len(tInfo)):
-					for key,value in self.perf_params.iteritems():
-						if tInfo[pos] == key:
-							tInfo[pos] = value
-					
-				for d in tInfo:
-					scriptCMD = scriptCMD + str(d)
+			for pos in range(len(tInfo)):
+				for key,value in self.perf_params.iteritems():
+					if tInfo[pos] == key:
+						tInfo[pos] = value
 
-				scriptCMD = scriptCMD + '\n'
+			for d in tInfo:
+				scriptCMD = scriptCMD + str(d)
+
+			scriptCMD = scriptCMD + '\n'
 
 
 		tag = ''
@@ -141,30 +150,6 @@ class CHiLL(orio.module.module.Module):
 		except:
 	            err('orio.module.chill.chill:  failed to run command: %s' % cmd)
 
-	if not os.path.isfile(fname):
-		try:
-		    f = open(fname,'w')
-		    f.write(defines)   ##added for debug Axel Y. Rivera (UofU)
-		    				    ##This need to be removed
-		    f.write(func)
-		    f.write(code)
-		    f.write("\n}\n\n")
-		    f.close()
-
-		except:
-		    err('orio.module.chill.chill: cannot open file for writing: %s' % fname)
-
-	if not os.path.isfile(hname):
-		try:
-		    h = open(hname,'w')    
-		    h.write(func1)
-		    h.write("\n\n")
-		    h.close()
-
-		except:
-		    err('orio.module.chill.chill: cannot open file for writing: %s' % hname)
-
-	
 
 	#RUN CUDA-CHILL MUTE FOR DEBUG PURPOUSE
 	try:
@@ -182,19 +167,6 @@ class CHiLL(orio.module.module.Module):
 	    os.system(cmd)
 	except:
             err('orio.module.chill.chill:  failed to run command: %s' % cmd)
-
-
-##Lazy cleaning
-	if cleanScript == True:
-		cmd = 'python clean-script.py'
-		for c in cleanArgv:
-			cmd = cmd + ' ' + c
-		info('orio.module.chill.chill: running CUDA-CHiLL with command: %s' % cmd)
-
-		try:
-		    os.system(cmd)
-		except:
-        	    err('orio.module.chill.chill:  failed to run command: %s' % cmd)
 
 ## Lazy hammering to take the code and call it from outside
 ## We compile with nvcc the library and the with g++ we link
@@ -272,7 +244,6 @@ class CHiLL(orio.module.module.Module):
 	
 	## We annotate which recipe file was used to generate this version
 	output_code = '\n\n //Testing with file: ' + cname
-	output_code = output_code + '\n //Output file is: ' +fname2
 
 
         output_code = output_code + '\n\n#include \"_orio_chill_.h\" \n\n'

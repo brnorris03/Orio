@@ -25,6 +25,9 @@ class Globals:
             self.error_post = "\x1B[00m"
             self.metadata = {'loop_transformations':[]}
 
+            self.funcDec = ''           #Added by Axel Y. Rivera (UofU)
+	    self.funcName = ''	        #Added by Axel Y. Rivera (UofU)
+
             if 'dry_run' in cmdline.keys():
                 self.dry_run = cmdline['dry_run']
             else:
@@ -190,6 +193,58 @@ class Globals:
         """ Increments the global counter and returns the new value """
         self.counter += 1
         return self.counter
+
+
+# ---------------------- Added by Axel Y. Rivera (UofU) --------------------------
+# This part is to extract the function declaration, it is for CHiLL purpouse
+
+
+
+    def setFuncDec(self,src_code):
+        src = src_code.split("\n")
+
+        words = src_code.split("\n")
+
+
+        inLine = None
+        stop = None
+        func = ''
+
+        for line in words:	
+	
+            words = line.split(" ")
+	
+            if words[0] == 'void' or words[0] == 'int' or words[0] == 'double':
+                varName = words[1].split('(')
+		self.funcName = varName[0]
+                inLine = True
+	
+            if inLine == True:
+
+                for chars in line:
+                    func = func + chars
+                    if chars == '{':
+                        inLine = False
+                        stop = True
+                        break
+            if stop == True:
+                break
+        
+	self.funcDec = func
+
+    def getFuncDec(self):
+        return self.funcDec
+
+    def getFuncN(self):
+        return self.funcName
+
+
+def getFunction():
+	return Globals().getFuncDec()
+
+def getFuncName():
+	return Globals().getFuncN()
+
 
 # ---------------------------------------------------------------------------------
 """ 

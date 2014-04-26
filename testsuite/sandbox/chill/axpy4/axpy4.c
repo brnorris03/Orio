@@ -11,12 +11,14 @@ void axpy4(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
  }
  def performance_params 
  {
-    param CFLAGS[] = ['-O0', '-O1', '-O2', '-O3'];
-    param TF[] = [2,4,8];
+    param TF[] = [2,4,8,16,32,64,128,256,512,1024];
  }
 
+# def performance_test_code { 
+#  arg skeleton_code_file = 'skeleton.c';  
+#}
  def input_params {
-   param N[] = [1000000];
+   param N[] = [10240];
  }
  def input_vars {
    decl dynamic double x1[N] = random;
@@ -38,6 +40,7 @@ void axpy4(int n, double *y, double a1, double *x1, double a2, double *x2, doubl
 /*@ begin CHiLL (
    
 	tile_by_index(0,{"i"},{TF},{l1_control="ii"},{"ii","i"})CU=1
+	cudaize(0,"mm_GPU",{y=10240,x1=10240,x2=10240,x3-10240,x4=10240},{block={"ii","jj"}, thread={"i","j"}},{})CU=2
 
   ) @*/
 

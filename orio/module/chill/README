@@ -1,0 +1,72 @@
+Axel Y. Rivera
+University of Utah
+axel.rivera@utah.edu
+
+Mary Hall
+University of Utah
+mhall@cs.utah.edu
+
+Boyana Norris
+University of Oregon
+norris@cs.uoregon.edu 
+
+CHiLL expansion for ORIO
+date: 02/27/2014
+
+Files:
+
+	Orio/orio/module/chill:
+
+		chill.py		| Module which take CHiLL annotaions from c file and
+					  call CUDA-CHiLL
+		README			| This file
+
+	Orio/testsuit/sandbox/chill/axpy4
+	
+		axpy4.c			| Classic axpy4 example (WARNING: can cause trouble for now)
+		axpy4_simple.c		| Axpy4 example that call an external recipe
+		recipe.lua		| Test recipe for axpy4_simple.c
+		clean.sh		| Bash file for cleaning
+
+	Orio/testsuit/sandbox/chill/mm
+	
+		mm.c			| Classic matrix multiply example
+		clean.sh		| Bash file for cleaning
+
+
+	Orio/testsuit/sandbox/chill/tensor-product
+
+		tensor.c		| A tensor product example (Based on nekbone)
+		recipe.lua		| Test for only one recipe
+		clean.sh		| Bash file for cleaning
+		clean-script.py		| A python script for clean output
+
+How to run:
+
+	This is a module that allows ORIO call CHiLL. Examples are located at 
+	Orio/testsuit/sandbox/chill. To test example run:  orcc -v file.c. This 
+	module will create two extra folders and two extra files:
+
+		- recipes:	  all recipes output will be located here
+		- outputs:	  outputs from recipies will be located here
+		-_orio_chill_.c:  function created for CHiLL
+		-_orio_chill_.h:  Header file for link the CUDA generated files
+
+How to write annotation:
+
+	In this early version we take CHiLL commands as annotation. Where you want
+	to test multiple parameters, then type the performance array you want to use.
+	See example mm.c for an example which tile and the produce CUDA code. Also make
+	sure that linkers for the compilers are in the right path. In the mm.c example
+	everything is presented. Also check tensor-product example for an extended example.
+
+Other important stuffs
+
+	Be sure to have installed a version of nvcc (CUDA-Toolkit 5.5 prefered) is installed 
+	as well CUDA-CHiLL:
+
+		-CUDA-Toolkit		| https://developer.nvidia.com/cuda-downloads
+		-CUDA-CHiLL		| http://ctop.cs.utah.edu/downloads/chill.tar.gz
+		
+
+
