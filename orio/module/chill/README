@@ -11,22 +11,34 @@ University of Oregon
 norris@cs.uoregon.edu 
 
 CHiLL expansion for ORIO
-date: 02/27/2014
+date: 05/24/2014
+
+
+Updates:
+
+	05-24-14:	New interface for adding cuda CHiLL commands (see How to write annotations).
+			Cleaner implementation
+			Use the input_vars and input_params definitions as defines and variables information.
+			Currently allows cuda, tile, permute and copy to registers, other functions comming in the future.
+			If more than 1 function is created, the interface automatically reorganize the code in the following way:
+
+				cuda-mallocs
+				cuda-mem-copy (host to device)
+				kernels
+				cuda-mem-copy (device to host)
+				cuda-free
+			  This permites better performance.
+
+			The timing information provided by Orio is an overall information of the fastest run. The tool was extended to 
+			    create an extra folder (times) with the output of each implemenation and the time spent on each kernel. 
+			    From here it is easy to implement a bash or an expansion for Orio to have a more accurate measurment (future work).
 
 Files:
 
 	Orio/orio/module/chill:
 
-		chill.py		| Module which take CHiLL annotaions from c file and
-					  call CUDA-CHiLL
+		chill.py		| Module which take CHiLL annotaions from c file and call CUDA-CHiLL
 		README			| This file
-
-	Orio/testsuit/sandbox/chill/axpy4
-	
-		axpy4.c			| Classic axpy4 example (WARNING: can cause trouble for now)
-		axpy4_simple.c		| Axpy4 example that call an external recipe
-		recipe.lua		| Test recipe for axpy4_simple.c
-		clean.sh		| Bash file for cleaning
 
 	Orio/testsuit/sandbox/chill/mm
 	
@@ -34,39 +46,73 @@ Files:
 		clean.sh		| Bash file for cleaning
 
 
-	Orio/testsuit/sandbox/chill/tensor-product
+	Orio/testsuit/sandbox/chill/nekbone
 
-		tensor.c		| A tensor product example (Based on nekbone)
-		recipe.lua		| Test for only one recipe
+		tensor.c		| A tensor-contraction example (Based on nekbone)
 		clean.sh		| Bash file for cleaning
-		clean-script.py		| A python script for clean output
+
+
+	Orio/testsuit/sandbox/chill/nwchem
+
+		nwd1.c			| Another tensor-contraction example (Based on nekbone)
+		clean.sh		| Bash file for cleaning
 
 How to run:
 
 	This is a module that allows ORIO call CHiLL. Examples are located at 
 	Orio/testsuit/sandbox/chill. To test example run:  orcc -v file.c. This 
-	module will create two extra folders and two extra files:
+	module will create three extra folders and three extra files:
 
 		- recipes:	  all recipes output will be located here
 		- outputs:	  outputs from recipies will be located here
+		- times:	  timing for each implementation and each kernel
 		-_orio_chill_.c:  function created for CHiLL
 		-_orio_chill_.h:  Header file for link the CUDA generated files
+		-_file.c:	  Orio decision for best output
 
 How to write annotation:
 
-	In this early version we take CHiLL commands as annotation. Where you want
-	to test multiple parameters, then type the performance array you want to use.
-	See example mm.c for an example which tile and the produce CUDA code. Also make
-	sure that linkers for the compilers are in the right path. In the mm.c example
-	everything is presented. Also check tensor-product example for an extended example.
+	Setup everything else like Orio (check Orio reference Manual). To start CHiLL add "/*@ begin CHiLL(", then add the 
+	annotations as needed. The supported annotations are:
+
+		-stm(#,(loops),outVar)				Add a statement, with the loops and the output variable
+								# = integer value starting in 0
+								(loops) = array of strings with the loop indexes
+								outVar = string with the output variable
+
+		-tile(#,index,performance_param,control)	Tile loop "index" using the values of "peformance_params"
+								# = integer value representing the statement related to the loop
+								index = string with the loop index to be tiled
+								performance_param = Variable used from performance_param
+								control = name for the generated tiled loop
+
+		-permute(#,(newOrder))				Permute the loop nest at specific statement
+								# = integer value representing statement related to the loop
+								(newOrder) = array of string with the new order of the loop nest
+
+		-cuda(#,block={bx,by},thread={tx,ty})		Generate CUDA kernel with thread/block decomposition specified
+								# = integer representing the loop nest to be turned into CUDA
+								bx = string for CUDA blocks in X dimension
+								by = string for CUDA blocks in Y dimension
+								tx = string for CUDA threads in X dimension
+								ty = string for CUDA threads in Y dimension
+	
+
+	Close the CHiLL annotations with  ") @*/" the add your code. After the code add "/*@ end CHiLL @*/".
+	These are preliminary implementation for creating annotaiton related to CHiLL in a simpler manner. Make sure
+	to always declare the statements (stm) before using them. Check the examples to understand these annotations.
+	It is recommended to check tensor.c since it have multiple loop nests.
 
 Other important stuffs
 
-	Be sure to have installed a version of nvcc (CUDA-Toolkit 5.5 prefered) is installed 
-	as well CUDA-CHiLL:
+	Be sure to have installed a version of nvcc (CUDA-Toolkit 5.5 prefered) is installed  as well CUDA-CHiLL:
 
 		-CUDA-Toolkit		| https://developer.nvidia.com/cuda-downloads
 		-CUDA-CHiLL		| http://ctop.cs.utah.edu/downloads/chill.tar.gz
 		
-
-
+	This tool was tested and verified with binary operations (one output and two inputs), it isn't secure for more than 2 inputs for now.
+	Make sure there is a copy of the cudaize.lua file provided by CUDA-CHiLL ({CHILL-SRC}/examples/cuda-chill/cudaize.lua) in your working directory (to be fixed later).
+	Please, undertsand the exmaples before starting making your own files.
+	Currently it doesn't support an external recipe, but it will be added in the future.
+	input_params currently accept only one value.
+	input_vars curently accept only one value.

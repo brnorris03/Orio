@@ -1,0 +1,54 @@
+
+====== START ORIO ======
+
+----- begin reading the source file: axpy5a.c -----
+----- finished reading the source file -----
+
+----- begin parsing annotations -----
+----- finished parsing annotations -----
+
+----- begin optimizations -----
+Search_Space         = 2.000e+01
+Number_of_Parameters = 02
+Numeric_Parameters   = 01
+Binary_Parameters    = 01
+['UF', 'VEC']
+[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [False, True]]
+
+----- begin exhaustive search -----
+ building the original code:
+	gcc -O3  -DORIO_REPS=3 -DORIGINAL -o __orio_perftest_original.exe __orio_perftest1.c timer_cpu.o 
+orio.main.tuner.ptest_driver:  failed to compile the original version of the code: "gcc -O3  -DORIO_REPS=3 -DORIGINAL -o __orio_perftest_original.exe __orio_perftest1.c timer_cpu.o "
+  File "/usr/local/bin/orcc", line 24, in <module>
+    orio.main.orio_main.start(sys.argv, orio.main.orio_main.C_CPP)
+
+  File "/usr/local/lib/python2.7/dist-packages/orio/main/orio_main.py", line 107, in start
+    optimized_code_seq = odriver.optimizeCodeFrags(cfrags, True)
+
+  File "/usr/local/lib/python2.7/dist-packages/orio/main/opt_driver.py", line 42, in optimizeCodeFrags
+    cur_seq = self.__optimizeCodeFrag(cf, perf_params)
+
+  File "/usr/local/lib/python2.7/dist-packages/orio/main/opt_driver.py", line 116, in __optimizeCodeFrag
+    cfrag.cfrags)
+
+  File "/usr/local/lib/python2.7/dist-packages/orio/main/tuner/tuner.py", line 151, in tune
+    best_perf_params, best_perf_cost = search_eng.search()
+
+  File "/usr/local/lib/python2.7/dist-packages/orio/main/tuner/search/search.py", line 112, in search
+    best_coord,best_perf,search_time,runs = self.searchBestCoord(startCoord)
+
+  File "/usr/local/lib/python2.7/dist-packages/orio/main/tuner/search/exhaustive/exhaustive.py", line 92, in searchBestCoord
+    perf_costs = self.getPerfCosts(coords)
+
+  File "/usr/local/lib/python2.7/dist-packages/orio/main/tuner/search/search.py", line 273, in getPerfCosts
+    new_perf_costs = self.ptdriver.run(test_code, perf_param=perf_param)
+
+  File "/usr/local/lib/python2.7/dist-packages/orio/main/tuner/ptest_driver.py", line 403, in run
+    self.__build(perf_param=perf_param)
+
+  File "/usr/local/lib/python2.7/dist-packages/orio/main/tuner/ptest_driver.py", line 207, in __build
+    err('orio.main.tuner.ptest_driver:  failed to compile the original version of the code: "%s"' % cmd)
+
+  File "/usr/local/lib/python2.7/dist-packages/orio/main/util/globals.py", line 256, in err
+    Globals().loggers['TuningLog'].error(errmsg + '\n' + '\n'.join(traceback.format_stack()))
+
