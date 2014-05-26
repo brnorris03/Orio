@@ -11,8 +11,7 @@ void c_std_d1_1(double *T3, double *T2i, double *v2){
  }
  def performance_params 
  {
-    param TF[] = [2,5];
-    param TF2[] = [2,5];
+    param UF[] = [2,4];
 
  }
  def input_params {
@@ -39,6 +38,7 @@ void c_std_d1_1(double *T3, double *T2i, double *v2){
 	permute(0,("p5","p4","p6","h1","h2","h3","h7"))
 	cuda(0,block={"p6","h1"},thread={"h3","h2"})
 	registers(0,"h7")
+	unroll(0,"h7",UF)
 	
 
   ) @*/

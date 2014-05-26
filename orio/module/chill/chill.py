@@ -87,6 +87,7 @@ class CHiLL(orio.module.module.Module):
 	stms = []
 	funcs = []
 	cudaCount = 0
+	unrollFix = 0
 	if recipeFound == False:
 		scriptCMD=''
 		transforms=''
@@ -121,7 +122,13 @@ class CHiLL(orio.module.module.Module):
 
 			if recipeTest[0] == 'tile':
 				controlL = recipeTest[len(recipeTest)-1]
-				tiles = 'tile_by_index(' + recipeTest[1] + ',{' + recipeTest[2] + '},{' + str(self.perf_params[recipeTest[3]]) + '},{l1_control=' +controlL + '},{'
+				amount = ''
+				if recipeTest[3].isdigit():
+					amount = recipeTest[3]
+				else:
+					amount = str(self.perf_params[recipeTest[3]])
+
+				tiles = 'tile_by_index(' + recipeTest[1] + ',{' + recipeTest[2] + '},{' + amount + '},{l1_control=' +controlL + '},{'
 				newLoop = []
 				for i in stms[int(recipeTest[1])]['loops']:
 					if i == recipeTest[2]:
@@ -133,9 +140,7 @@ class CHiLL(orio.module.module.Module):
 				tiles = tiles[:-1] + '})\n'
 
 				transforms = transforms + tiles
-
 			if recipeTest[0] == 'permute':
-				print recipeTest
 				perm = 'tile_by_index(' + recipeTest[1] + ',{},{},{},{'
 				newLoop = []
 				for i in range(2,len(recipeTest)):
@@ -164,6 +169,24 @@ class CHiLL(orio.module.module.Module):
 				
 			if recipeTest[0] == 'registers':
 				regs = 'copy_to_registers(' + recipeTest[1] + ',' + recipeTest[2] + ',' + stms[int(recipeTest[1])]['var'] + ')\n'
+				afterCuda = afterCuda + regs
+
+			if recipeTest[0] == 'unroll':
+				regs = 'unroll(' + recipeTest[1] + ','
+				index = 1
+				amount = ''
+				if recipeTest[3].isdigit():
+					amount = recipeTest[3]
+				else:
+					amount = str(self.perf_params[recipeTest[3]])
+
+				for i in stms[int(recipeTest[1])]['loops']:
+					if i == recipeTest[2]:
+						break
+					else:
+						index = index+1
+				regs = regs + str(index) + ',' + amount + ')\n'
+				unrollFix = 1
 				afterCuda = afterCuda + regs
 
 		scriptCMD = transforms + cudaize + afterCuda
@@ -251,22 +274,6 @@ class CHiLL(orio.module.module.Module):
             err('orio.module.chill.chill:  failed to run command: %s' % cmd)
 
 		
-
-
-
-##Lazy cleaning
-	cleanScript = False
-	if cleanScript == True:
-		cmd = 'python clean-script.py'
-		for c in cleanArgv:
-			cmd = cmd + ' ' + c
-		info('orio.module.chill.chill: running CUDA-CHiLL with command: %s' % cmd)
-
-		try:
-		    os.system(cmd)
-		except:
-        	    err('orio.module.chill.chill:  failed to run command: %s' % cmd)
-
 
 
 #################################re-arrange for better performance######################
@@ -432,14 +439,27 @@ class CHiLL(orio.module.module.Module):
 	fnameNew.write('#include \"_orio_chill_.h\"\n\n')
 
 	lock1 = 0
+	inspector = 0
+	inspFunc = 0
+	varLock=0
+	acumFor = 0
+	newSTM = ''
+	varPos = ''
+	acumVar = 0
 	usedVal = []
 	for line in fnew2:
 		check1 = filter(None,re.split('\n| ',line))
+		insp = filter(None,re.split('\n| |\(|\)|,|_|;',line))
 
-
-		if lock1 == 0:
+		for i in insp:
+			if i == 'inspector':
+				inspFunc = 1
+	
+		if lock1 == 0 and inspFunc == 0:
+			
 			fnameNew.write(line)
 
+		inspFunc = 0
 		if len(check1)==1:
 			if check1[0] == '{' and lock1 ==0:
 				lock1 =1
@@ -491,15 +511,58 @@ class CHiLL(orio.module.module.Module):
 				fnameNew.write(i[len(i)-1])
 
 			fnameNew.write(frees)
+			if unrollFix == 1:
+				fnameNew.write('}\n')
 			lock1=2
 
-		elif lock1==3:
+		for i in insp:
+			if i == 'inspector':
+				if insp[len(insp)-1] != ';':
+					inspector = 1
+
+
+		newVar = filter(None,re.split('(newVariable|\n)| |;',line))
+		
+		if len(newVar) > 1:
+			if newVar[0] == 'newVariable' and newVar[3] == 'newVariable' and inspector == 0:
+				varPos = newVar[1]
+				if acumVar > 0:
+					newSTM = newSTM + '\t\t\t'
+					for i in range(acumFor):
+						newSTM = newSTM + '\t'
+				
+				for i in range(5,len(newVar)):
+					newSTM = newSTM + ' ' + newVar[i]
+
+				acumVar = acumVar+1
+				varLock = 1
+		
+			if newVar[0] != 'newVariable' and varLock == 1:
+				
+				newVar2 = ''
+				for i in range(acumFor):
+					newVar2 = newVar2 + '\t'
+				newVar2 = '  ' + newVar2 +  'newVariable' + varPos + ' = newVariable' + varPos + newSTM[:-2] +';\n'
+				fnameNew.write(newVar2)
+				acumVar = 0
+				newSTM = ''
+				varPos = ''
+				varLock = 0
+				acumFor = 0
+
+
+		if len(newVar) > 1:
+			if newVar[0] == 'for' and inspector == 0:
+				acumFor = acumFor+1
+
+		if line == '}\n' and inspector == 1:
+			inspector = 0
+		elif lock1==3 and inspector == 0 and varLock == 0:
 			fnameNew.write(line)
 
 
 
 	fnameNew.close()
-
 
 
 ##########################################################################

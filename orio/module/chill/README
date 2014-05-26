@@ -11,10 +11,13 @@ University of Oregon
 norris@cs.uoregon.edu 
 
 CHiLL expansion for ORIO
-date: 05/24/2014
+date: 05/26/2014
 
 
 Updates:
+
+	05-26-14:	Unroll added (see How to write annotations).
+			Tile and Unroll acceps values from performance_param or the user can input the exact amount.
 
 	05-24-14:	New interface for adding cuda CHiLL commands (see How to write annotations).
 			Cleaner implementation
@@ -83,7 +86,7 @@ How to write annotation:
 		-tile(#,index,performance_param,control)	Tile loop "index" using the values of "peformance_params"
 								# = integer value representing the statement related to the loop
 								index = string with the loop index to be tiled
-								performance_param = Variable used from performance_param
+								performance_param = Variable used from performance_param or exact amount (integer)
 								control = name for the generated tiled loop
 
 		-permute(#,(newOrder))				Permute the loop nest at specific statement
@@ -97,7 +100,11 @@ How to write annotation:
 								tx = string for CUDA threads in X dimension
 								ty = string for CUDA threads in Y dimension
 	
-
+		-unroll(#,index,performace_param)		Unroll loop "index" at statement #
+								# = integer representing the loop nest or statement
+								index = loop index to be unrolled
+								performance_param = Variable from performance_params or exact amount (integer)
+		
 	Close the CHiLL annotations with  ") @*/" the add your code. After the code add "/*@ end CHiLL @*/".
 	These are preliminary implementation for creating annotaiton related to CHiLL in a simpler manner. Make sure
 	to always declare the statements (stm) before using them. Check the examples to understand these annotations.
@@ -112,7 +119,7 @@ Other important stuffs
 		
 	This tool was tested and verified with binary operations (one output and two inputs), it isn't secure for more than 2 inputs for now.
 	Make sure there is a copy of the cudaize.lua file provided by CUDA-CHiLL ({CHILL-SRC}/examples/cuda-chill/cudaize.lua) in your working directory (to be fixed later).
-	Please, undertsand the exmaples before starting making your own files.
+	Please, understand the examples before start making your own files.
 	Currently it doesn't support an external recipe, but it will be added in the future.
 	input_params currently accept only one value.
 	input_vars curently accept only one value.

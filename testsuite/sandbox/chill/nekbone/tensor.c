@@ -11,9 +11,8 @@ void tensor(double *u, double *D, double *Dt, double *ur, double *us, double *ut
  }
  def performance_params 
  {
-    param TF[] = [2,5];
-    param TF2[] = [2,5];
-
+   param TF[] = [2,5];
+   param UF[] = [2,5];
  }
  def input_params {
    param lx[] = [10];
@@ -44,15 +43,19 @@ void tensor(double *u, double *D, double *Dt, double *ur, double *us, double *ut
 	distribute(1)
 
 	tile(0,"i",TF,"ii")
-	tile(2,"i",TF2,"ii")
+	tile(2,"i",2,"ii")
 
 	cuda(0,block={"e","j"},thread={"ii","i"})
 	registers(0,"k")
-	
+	unroll(0,"k",UF)
+
 	cuda(1,block={"e","j"}, thread={"i","k"})
 	registers(1,"m")
+	unroll(1,"m",2)
+		
 	cuda(2,block={"e","j"}, thread={"ii","i"})
 	registers(2,"k")
+	unroll(2,"k",2)
 
 
   ) @*/
