@@ -17,7 +17,7 @@ date: 05/26/2014
 Updates:
 
 	05-26-14:	Unroll added (see How to write annotations).
-			Tile and Unroll accept values from performance_param or the user can input the exact amount.
+			Tile and Unroll acceps values from performance_param or the user can input the exact amount.
 
 	05-24-14:	New interface for adding cuda CHiLL commands (see How to write annotations).
 			Cleaner implementation
