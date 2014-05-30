@@ -1,17 +1,15 @@
 
-void axpy_4(int N, double *y, 
+void axpy_5(int N, double *y, 
 	    double a1, double *x1, double a2, double *x2, 
 	    double a3, double *x3, double a4, double *x4,
 	    double a5, double *x5) {
 
 /*@ begin PerfTuning (
  def build {
-   #arg build_command = 'icc -O0';
    arg build_command = 'gcc';
  } 
  def performance_counter {
-   #arg method = 'bgp counter';
-   arg repetitions = 3;
+   arg repetitions = 5;
  }
  def performance_params {  
    param UF[] = range(1,11);

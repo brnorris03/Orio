@@ -211,7 +211,7 @@ class Globals:
 	acum = 1
 	line = src[1]
 
-	while line != '{':
+	while line != '{' and acum < len(src)-1:
 		self.funcDec = self.funcDec + line + ','
 		acum = acum +1
 		line = src[acum]
@@ -246,7 +246,7 @@ class Globals:
 		if inVars == 1:
 			if secSplit[0] != '#' and len(secSplit)>3:
 				info = filter(None,re.split('\[|\]',secSplit[3]))
-				self.input_vars[info[0]] = info[1]
+				if len(info)>1: self.input_vars[info[0]] = info[1]
 
 
     def getFuncDec(self):
