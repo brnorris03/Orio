@@ -56,10 +56,9 @@ following command will install an orcc script under
   $ python setup.py install --prefix=/home/username
 ```
 
-It is also important to ensure that the installed Orio module location
-is included in the PYTHONPATH environment variable. Similarly, users
-can optionally include the installed orcc script location in the PATH
-shell variable. To do this for the above example, the following two
+You can optionally include the installed orcc script location in the PATH
+shell variable. 
+To do this for the above example, the following two
 lines can be added in the .bashrc configuration file (assuming the
 user uses Bash shell, of course).
 
