@@ -72,9 +72,14 @@ After making sure that the orcc executable is in your path, you can
 try some of the examples included in the testsuite subdirectory, e.g.:
 
 ```
- $ cd testsuite/sandbox/axpy/simple
+ $ cd examples
  $ orcc -v axpy5.c
 ```
+
+The same directory contains two more examples of Orio input -- one with a 
+separate tuning specification file (orcc -v -s axpy5.spec axpy5-nospec.c) and
+another with two transformations specified using a Composite annotation
+(orcc -v axpy5a.c).
 
 If Orio reports problems building the code, adjust the compiler settings in 
 the tuning spec included in the axpy5.c.
