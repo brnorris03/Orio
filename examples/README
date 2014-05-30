@@ -1,0 +1,15 @@
+Simple AXPY examples
+
+There are three different versions of this computation.
+
+1. Example with embeded tuning specification and a single Unroll annotation
+
+orcc -v axpy5.c
+
+2. Example with a separate tuning spec file
+
+orcc -v -s axpy5.spec axpy4-nospec.c
+
+3. Example with embedded tuning specification containing a Composite annotation
+
+orcc -v axpy5a.c
