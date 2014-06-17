@@ -361,12 +361,16 @@ selected as the default space exploration method of Orio; however, Orio user
 can indicate his preferred search strategy in the tuning specifications, for
 instance, using the following ''search'' definition.</p>
 
-	<pre><code>def search { arg algorithm = 'Simplex'; arg time_limit = 10;
-arg total_runs = 10; arg simplex_local_distance = 2; arg
-simplex_reflection_coef = 1.5; arg simplex_expansion_coef = 2.5; arg
-simplex_contraction_coef = 0.6; arg simplex_shrinkage_coef = 0.7;
-}
-	</code></pre>
+	<pre><code>def search { 
+    arg algorithm = 'Simplex'; 
+    arg time_limit = 10;
+    arg total_runs = 10; 
+    arg simplex_local_distance = 2; 
+    arg simplex_reflection_coef = 1.5; 
+    arg simplex_expansion_coef = 2.5; 
+    arg simplex_contraction_coef = 0.6; 
+    arg simplex_shrinkage_coef = 0.7;
+}</code></pre>
 
 	<p>Orio users can also specify the terminating criteria of the search
 strategies by providing values to the arguments ''time_limit'' and
