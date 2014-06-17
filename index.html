@@ -78,8 +78,10 @@ Distutils</a> for short.</p>
 of third-party Python modules (requiring superuser privileges in a Unix
 system), the installation is straightforward as shown below.</p>
 
-	<pre><code>% tar -xvzf orio-X.X.X.tar.gz
-%     cd orio-X.X.X python setup.py install
+	<pre><code>
+$ tar -xvzf orio-X.X.X.tar.gz
+$ cd orio-X.X.X 
+$ python setup.py install
 	</code></pre>
 
 	<p>On a Unix platform, the above <code>install</code> command will
@@ -90,7 +92,7 @@ location, and also create an <code>orio</code> module directory in the
 	<p>To test whether Orio has been properly installed in your system, try
 to execute <code>orcc</code> command as given below as an example.</p>
 
-	<pre><code>% orcc --help
+	<pre><code>$ orcc --help
 
 	description: compile shell for Orio
 
@@ -100,7 +102,9 @@ the annotated code
 	options: -h, --help                     display this message -o
 &lt;file&gt;, --output=&lt;file&gt;     place the output to &lt;file&gt; -v,
 --verbose                  verbosely show details of the results of the
-running program </code></pre>
+running program 
+        ...
+</code></pre>
 
 	<p>In order to install Orio to an alternate location, users need to
 supply a base directory for the installation. For instance, the following
@@ -110,8 +114,10 @@ under <code>/home/username/lib/pythonX.X/site-packages</code>. The
 <code>orf</code> script can be used to generate Fortran code (note that
 Fortran support is currently under development and is thus limited).</p>
 
-	<pre><code>% tar -xvzf orio-X.X.X.tar.gz
-%     cd orio-X.X.X python setup.py install --prefix=/home/username
+	<pre><code>
+$ tar -xvzf orio-X.X.X.tar.gz
+$ cd orio-X.X.X 
+$ python setup.py install --prefix=/home/username
 	</code></pre>
 
 	<p>It is also important to ensure that the installed Orio module location
@@ -121,9 +127,10 @@ PATH shell variable. To do this for the above example, the following two
 lines can be added in the <code>.bashrc</code> configuration file (assuming
 the user uses Bash shell, of course).</p>
 
-	<pre><code>export
-PYTHONPATH=/home/username/lib/pythonX.X/site-packages:$PYTHONPATH export
-PATH=/home/username/bin:$PATH </code></pre>
+	<pre><code>
+$export PYTHONPATH=/home/username/lib/pythonX.X/site-packages:$PYTHONPATH 
+$ export PATH=/home/username/bin:$PATH 
+</code></pre>
 
 	<h3> <a name="getting-started" class="anchor"
 href="#getting-started"><span class="octicon octicon-link"></span></a>Getting
@@ -145,10 +152,11 @@ octicon-link"></span></a>Annotation Language Syntax</h3>
 region. The following simple grammar illustrates the fundamental structure of
 Orio annotations.</p>
 
-	<pre> &lt;annotation-region&gt; ::= &lt;leader-annotation&gt;
-&lt;annotation-body&gt; &lt;trailer-annotation&gt; &lt;leader-annotation&gt;
-::= /*@ begin &lt;module-name&gt; ( &lt;module-body&gt; ) @*/
-&lt;trailer-annotation&gt; ::= /*@ end @*/ </pre>
+	<pre> 
+&lt;annotation-region&gt; ::= &lt;leader-annotation&gt; &lt;annotation-body&gt; &lt;trailer-annotation&gt; 
+&lt;leader-annotation&gt; ::= /*@ begin &lt;module-name&gt; ( &lt;module-body&gt; ) @*/
+&lt;trailer-annotation&gt; ::= /*@ end @*/ 
+</pre>
 
 	<p>An ''annotation region'' consists of three main parts: ''leader
 annotation'', ''annotation body'', and ''trailer annotation''. The annotation
@@ -178,47 +186,55 @@ executed in multiple loop iterations into a single iteration. The below
 sample code demonstrates how to annotate an application code with a simple
 portable loop unrolling optimization, where the unroll factor used in this
 example is four. The original code to be optimized in this example is
-commonly known as AXPY-4, which is an extended version of the AXPY Basic
+commonly known as AXPY-5, which is an extended version of the AXPY Basic
 Liner Algebra Subprogram.</p>
 
-	<pre><code>/*@ begin Loop ( transform Unroll(ufactor=4) for (i=0;
-i&lt;=N-1; i++) y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i]; )
-@*/ for (i=0; i&lt;=N-1; i++) y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] +
-a4*x4[i];
-/    *@ end @*/
+	<pre><code>
+/*@ begin Loop ( transform Unroll(ufactor=4) 
+    for (i=0; i&lt;=N-1; i++) 
+        y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i] + a5*x5[i]; 
+    )
+   @*/ 
+
+   for (i=0; i&lt;=N-1; i++) 
+      y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i] + a5*x5[i]; 
+
+/*@ end @*/
 	</code></pre>
 
 	<p>In order to apply loop unrolling to the above code, run the following
 Orio command (assuming that the annotated code is stored in the file
-<code>axpy4.c</code>).</p>
+<code>examples/axpy5.c</code>).</p>
 
-	<pre><code>% orcc axpy4.c </code></pre>
+	<pre><code>$ orcc -v axpy5.c </code></pre>
 
 	<p>By default, the transformed output code is written to the file
-<code>_axpy4.c</code>. Optionally, users can specify the name of the output
-file using the command option <code>-o &lt;file&gt;</code>. Below is how the
-output code looks like.</p>
+<code>_axpy5.c</code>. Optionally, users can specify the name of the output
+file using the command option <code>-o &lt;file&gt;</code>. Below is an example output 
+output code.</p>
 
-	<pre><code>/*@ begin Loop ( transform Unroll(ufactor=4) for (i=0;
-i&lt;=N-1; i++) y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i]; ) @*/
-#    if ORIGCODE
-	  for (i=0; i&lt;=N-1; i++) y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i]
-  + a4*x4[i];
-#    else
-	  for (i=0; i&lt;=N-4; i=i+4) { y[i] = y[i] + a1*x1[i] + a2*x2[i] +
-  a3*x3[i] + a4*x4[i]; y[i+1] = y[i+1] + a1*x1[i+1] + a2*x2[i+1] + a3*x3[i+1]
-  + a4*x4[i+1]; y[i+2] = y[i+2] + a1*x1[i+2] + a2*x2[i+2] + a3*x3[i+2] +
-  a4*x4[i+2]; y[i+3] = y[i+3] + a1*x1[i+3] + a2*x2[i+3] + a3*x3[i+3] +
-  a4*x4[i+3];
+	<pre><code>
+/*@ begin Loop ( 
+  transform Unroll(ufactor=UF) 
+  for (i=0; i &lt;=n-1; i++)
+    y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i]+a5*x5[i];
+) @*/
+{
+  int i;
+  for (i=0; i &lt;=n-3; i=i+3) {
+    y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i]+a5*x5[i];
+    y[(i+1)]=y[(i+1)]+a1*x1[(i+1)]+a2*x2[(i+1)]+a3*x3[(i+1)]+a4*x4[(i+1)]+a5*x5[(i+1)];
+    y[(i+2)]=y[(i+2)]+a1*x1[(i+2)]+a2*x2[(i+2)]+a3*x3[(i+2)]+a4*x4[(i+2)]+a5*x5[(i+2)];
   }
-	  for (; i&lt;=N-1; i=i+1) y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] +
-  a4*x4[i];
-#    endif
-/    *@ end @*/
+  for (i=n-((n-(0))%3); i &lt;=n-1; i=i+1) 
+    y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i]+a5*x5[i];
+}
+/*@ end @*/
+/*@ end @*/
 	</code></pre>
 
-	<p>In this AXPY-4 example, the name of the code transformation module
-used to perform loop unrolling is <code>Loop</code>. The AXPY-4 computation
+	<p>In this AXPY-5 example, the name of the code transformation module
+used to perform loop unrolling is <code>Loop</code>. The AXPY-5 computation
 is rewritten in the module body along with the loop unrolling performance
 hints (i.e. an unroll factor of four). The resulting unrolled code comprises
 two loops: one loop with the fully unrolled body, and another loop for any
@@ -244,30 +260,62 @@ target machine. Then the code that yields the best performance is chosen.
 Orio automates such empirical performance tuning process using annotations,
 as exemplified in the following simple program.</p>
 
-	<pre><code>/*@ begin PerfTuning ( def build { arg build_command = 'gcc
--O3';
+	<pre><code>
+/*@ begin PerfTuning (
+ def build {
+   arg build_command = 'gcc';
  } 
-	 def performance_params { param UF[] = range(1,33);
+ def performance_counter {
+   arg repetitions = 5;
+ }
+ def performance_params {  
+   param UF[] = range(1,11);
+   param CFLAGS[] = ['-O0', '-O1', '-O2', '-O3'];
+ }
+
+ def input_params { 
+   param N[] = [1000,10000000];                         
  } 
-	 def input_params { param N[] = [1000,10000000];                         
-                                                
- } 
-	 def input_vars { decl static double y[N] = 0; decl double a1 = random;
- decl double a2 = random; decl double a3 = random; decl double a4 = random;
- decl static double x1[N] = random; decl static double x2[N] = random; decl
- static double x3[N] = random; decl static double x4[N] = random;            
-                                                       
- } 
-	) @*/ int i;
-/    *@ begin Loop (                                                         
-/                             
-	    transform Unroll(ufactor=UF) for (i=0; i&lt;=N-1; i++) y[i] = y[i] +
-    a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i]; ) @*/ for (i=0; i&lt;=N-1;
-    i++) y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i];
-/    *@ end @*/ *@ end @*/
+
+def input_vars {
+   decl dynamic double x1[N] = random;
+   decl dynamic double x2[N] = random;
+   decl dynamic double x3[N] = random;
+   decl dynamic double x4[N] = random;
+   decl dynamic double x5[N] = random;
+   decl dynamic double y[N] = 0;
+   decl double a1 = random;
+   decl double a2 = random;
+   decl double a3 = random;
+   decl double a4 = random;
+   decl double a5 = random;
+ }
+ def search {
+   arg algorithm = 'Exhaustive';
+ }
+
+) @*/
+
+  int n=N;
+  register int i;
+
+/*@ begin Loop ( 
+  transform Unroll(ufactor=UF) 
+  for (i=0; i&lt;=n-1; i++)
+    y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i]+a5*x5[i];
+  ) @*/
+
+ for (i=0; i&lt;=n-1; i++)
+   y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i]+a5*x5[i];
+
+/*@ end @*/
+/*@ end @*/
+
+}
+
 	</code></pre>
 
-	<p>The tuned application in the given example is the same AXPY-4 used in
+	<p>The tuned application in the given example is the same AXPY-5 used in
 the earlier subsection. The goal of the tuning process is to determine the
 most optimal value of the unroll factor parameter for different problem
 sizes. The code located in the <code>PerfTuning</code> module body section
@@ -280,10 +328,11 @@ values of parameters used in the program transformations</li>
 <li>''input_params'': to specify sizes of the input problem</li>
 <li>''input_vars'': to specify both the declarations and the initializations
 of the input variables</li> </ul><p>So in this example, the transformed
-AXPY-4 code is compiled using GCC compiler with the -O3 option to activate
-all its optimizations. The unroll factor values under consideration extends
-over integers from 1 to 32, inclusively. The AXPY-4 computation is tuned for
-two distinct problem sizes: N=1K and N=10M. Also, all scalars and arrays
+AXPY-5 code is compiled using GCC compiler with one of the compiler options (e.g., -O3)
+specified in the CFLAGS parameter.
+The unroll factor values under consideration extends
+over integers from 1 to 11, inclusively. In this example, the AXPY-5 computation is tuned for
+two distinct problem sizes: N=1000 and N=10000000. Also, all scalars and arrays
 involved in the computation are declared and initialized in the tuning
 specifications to enable the performance testing driver to empirically
 execute the optimized code. </p>
@@ -291,10 +340,10 @@ execute the optimized code. </p>
 	<p>As discussed before, Orio performance tuning is performed for each
 different problem size. The number of generated programs is therefore
 equivalent to the number of distinct combinations of input problem sizes. So,
-there are two generated program outputs in the AXPY-4 example. Using the
+there are two generated program outputs in the AXPY-5 example. Using the
 default file naming convention, <code>_axpy_N_1000.c</code> and
 <code>_axpy_N_10000000.c</code> output files represent the outcomes of Orio
-optimization process for input sizes N=1K and N=10M, respectively.</p>
+optimization process for input sizes N=1000 and N=10000000, respectively.</p>
 
 	<p>See the [wiki:Orio/TuneSpecs tuning spec documentation] for more
 details about the Orio's performance tuning specifications.</p>
