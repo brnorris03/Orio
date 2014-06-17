@@ -63,8 +63,8 @@ octicon-link"></span></a>Software Requirements</h3>
 	<p>The requirement of installing and using Orio is <a
 href="http://www.python.org/download/">Python</a>, which is widely available
 in any Linux/Unix distribution. Orio has been tested successfully with Python
-2.5 and 2.6 on various Linux distributions, Blue Gene/P and Mac OS X 10.4 -
-10.7.</p>
+2.6 or 2.7 on various Linux distributions, Blue Gene/P and Mac OS X 10.6 -
+10.9.</p>
 
 	<h3><a name="quick-start" class="anchor" href="#quick-start"><span
 class="octicon octicon-link"></span></a>Quick Start</h3>
@@ -127,8 +127,7 @@ PATH shell variable. To do this for the above example, the following two
 lines can be added in the <code>.bashrc</code> configuration file (assuming
 the user uses Bash shell, of course).</p>
 
-	<pre><code>
-$export PYTHONPATH=/home/username/lib/pythonX.X/site-packages:$PYTHONPATH 
+	<pre><code>$ export PYTHONPATH=/home/username/lib/pythonX.X/site-packages:$PYTHONPATH 
 $ export PATH=/home/username/bin:$PATH 
 </code></pre>
 
@@ -152,9 +151,8 @@ octicon-link"></span></a>Annotation Language Syntax</h3>
 region. The following simple grammar illustrates the fundamental structure of
 Orio annotations.</p>
 
-	<pre> 
-&lt;annotation-region&gt; ::= &lt;leader-annotation&gt; &lt;annotation-body&gt; &lt;trailer-annotation&gt; 
-&lt;leader-annotation&gt; ::= /*@ begin &lt;module-name&gt; ( &lt;module-body&gt; ) @*/
+	<pre>&lt;annotation-region&gt;  ::= &lt;leader-annotation&gt; &lt;annotation-body&gt; &lt;trailer-annotation&gt; 
+&lt;leader-annotation&gt;  ::= /*@ begin &lt;module-name&gt; ( &lt;module-body&gt; ) @*/
 &lt;trailer-annotation&gt; ::= /*@ end @*/ 
 </pre>
 
@@ -189,8 +187,7 @@ example is four. The original code to be optimized in this example is
 commonly known as AXPY-5, which is an extended version of the AXPY Basic
 Liner Algebra Subprogram.</p>
 
-	<pre><code>
-/*@ begin Loop ( transform Unroll(ufactor=4) 
+	<pre><code>/*@ begin Loop ( transform Unroll(ufactor=4) 
     for (i=0; i&lt;=N-1; i++) 
         y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i] + a5*x5[i]; 
     )
@@ -213,8 +210,7 @@ Orio command (assuming that the annotated code is stored in the file
 file using the command option <code>-o &lt;file&gt;</code>. Below is an example output 
 output code.</p>
 
-	<pre><code>
-/*@ begin Loop ( 
+	<pre><code>/*@ begin Loop ( 
   transform Unroll(ufactor=UF) 
   for (i=0; i &lt;=n-1; i++)
     y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i]+a5*x5[i];
@@ -260,8 +256,7 @@ target machine. Then the code that yields the best performance is chosen.
 Orio automates such empirical performance tuning process using annotations,
 as exemplified in the following simple program.</p>
 
-	<pre><code>
-/*@ begin PerfTuning (
+	<pre><code>/*@ begin PerfTuning (
  def build {
    arg build_command = 'gcc';
  } 
