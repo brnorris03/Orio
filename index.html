@@ -81,11 +81,9 @@ of third-party Python modules (requiring superuser privileges in a Unix
 system), the installation is straightforward as shown below. For non-superuser installation, 
 refer to the instructions <a href="#install">below</a>.</p>
 
-	<pre><code>
-$ tar -xvzf orio-X.X.X.tar.gz
+	<pre><code>$ tar -xvzf orio-X.X.X.tar.gz
 $ cd orio-X.X.X 
-$ python setup.py install
-	</code></pre>
+$ python setup.py install</code></pre>
 
 	<p>On a Unix platform, the above <code>install</code> command will
 normally put an <code>orcc</code> script in the <code>/usr/bin</code>
@@ -117,11 +115,9 @@ under <code>/home/username/lib/pythonX.X/site-packages</code>. The
 <code>orf</code> script can be used to generate Fortran code (note that
 Fortran support is currently under development and is thus limited).</p>
 
-	<pre><code>
-$ tar -xvzf orio-X.X.X.tar.gz
+	<pre><code>$ tar -xvzf orio-X.X.X.tar.gz
 $ cd orio-X.X.X 
-$ python setup.py install --prefix=/home/username
-	</code></pre>
+$ python setup.py install --prefix=/home/username</code></pre>
 
 	<p>It is also important to ensure that the installed Orio module location
 is included in the PYTHONPATH environment variable. Similarly, users can
@@ -131,8 +127,7 @@ lines can be added in the <code>.bashrc</code> configuration file (assuming
 the user uses Bash shell, of course).</p>
 
 	<pre><code>$ export PYTHONPATH=/home/username/lib/pythonX.X/site-packages:$PYTHONPATH 
-$ export PATH=/home/username/bin:$PATH 
-</code></pre>
+$ export PATH=/home/username/bin:$PATH</code></pre>
 
 	<h3> <a name="getting-started" class="anchor"
 href="#getting-started"><span class="octicon octicon-link"></span></a>Getting
@@ -199,8 +194,7 @@ Liner Algebra Subprogram.</p>
    for (i=0; i&lt;=N-1; i++) 
       y[i] = y[i] + a1*x1[i] + a2*x2[i] + a3*x3[i] + a4*x4[i] + a5*x5[i]; 
 
-/*@ end @*/
-	</code></pre>
+/*@ end @*/</code></pre>
 
 	<p>In order to apply loop unrolling to the above code, run the following
 Orio command (assuming that the annotated code is stored in the file
@@ -229,8 +223,7 @@ output code.</p>
     y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i]+a5*x5[i];
 }
 /*@ end @*/
-/*@ end @*/
-	</code></pre>
+/*@ end @*/</code></pre>
 
 	<p>In this AXPY-5 example, the name of the code transformation module
 used to perform loop unrolling is <code>Loop</code>. The AXPY-5 computation
@@ -309,9 +302,7 @@ def input_vars {
 /*@ end @*/
 /*@ end @*/
 
-}
-
-	</code></pre>
+}</code></pre>
 
 	<p>The tuned application in the given example is the same AXPY-5 used in
 the earlier subsection. The goal of the tuning process is to determine the

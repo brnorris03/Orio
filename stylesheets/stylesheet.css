@@ -168,18 +168,18 @@ a.button span {
 code, pre {
   font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal;
   color: #222;
-  margin-bottom: 30px;
-  font-size: 14px;
+  margin-bottom: 10px;
+  font-size: 90%;
 }
 
 code {
   background-color: #f2f2f2;
   border: solid 1px #ddd;
-  padding: 0 3px;
+  padding: 0 1px;
 }
 
 pre {
-  padding: 20px;
+  padding: 10px;
   background: #303030;
   color: #f2f2f2;
   text-shadow: none;
