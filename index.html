@@ -55,7 +55,7 @@ restricted subset of C) to C, Fortran, CUDA, and OpenCL targets. The tool
 generates many tuned versions of the same operation using different
 optimization parameters, and performs an empirical search for selecting the
 best among multiple optimized code variants. For a more detailed introduction, 
-refer to the papers listed at the <a href="index.html#citing-orio">bottom</a> of this page.</p>
+refer to the papers listed at the <a href="#citing-orio">bottom</a> of this page.</p>
 
 	<h3> <a name="software-requirements" class="anchor"
 href="#software-requirements"><span class="octicon
@@ -75,9 +75,10 @@ Utilities, or <a
 href="http://www.python.org/community/sigs/current/distutils-sig/doc/">
 Distutils</a> for short.</p>
 
-	<p>For users who want to quickly install Orio to the standard locations
+	<p>For users who want to install Orio quickly to the standard locations
 of third-party Python modules (requiring superuser privileges in a Unix
-system), the installation is straightforward as shown below.</p>
+system), the installation is straightforward as shown below. For non-superuser installation, 
+refer to the instructions <a href="#install">below</a>.</p>
 
 	<pre><code>
 $ tar -xvzf orio-X.X.X.tar.gz
@@ -106,7 +107,7 @@ the annotated code
 running program 
         ...
 </code></pre>
-
+<a name="install"></a>
 	<p>In order to install Orio to an alternate location, users need to
 supply a base directory for the installation. For instance, the following
 command will install an <code>orcc</code> script under
