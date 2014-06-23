@@ -7,6 +7,7 @@ void axpy_5(int N, double *y,
 /*@ begin PerfTuning (
  def build {
    arg build_command = 'gcc';
+   arg libs = '-lrt';
  } 
  def performance_counter {
    arg repetitions = 5;
