@@ -219,6 +219,9 @@ class Transformation:
               
         elif isinstance(tnode, orio.module.loop.ast.VarDecl):
             return binOpExprs
+        
+        elif isinstance(tnode, orio.module.loop.ast.Comment):
+            return binOpExprs
 
         else:
             err('orio.module.loop.submodule.unrolljam.transformation.__analyzeForNewVars internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)

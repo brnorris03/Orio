@@ -72,6 +72,7 @@ SEQ_DEFAULT = r'''
 extern double getClock(); 
 
 int main(int argc, char *argv[]) {
+  /*@ declarations @*/  
   /*@ prologue @*/
 
   double orio_t_start, orio_t_end, orio_t = (double)LONG_MAX;
@@ -185,6 +186,7 @@ int main(int argc, char *argv[])
 
   if (myid == 0) timevec = (TimingInfo*) malloc(numprocs * sizeof(TimingInfo));
 
+  /*@ declarations @*/
   /*@ prologue @*/
   
   switch (myid)
@@ -252,7 +254,6 @@ program main
     integer      :: orio_i
     
 !@ declarations @!
-    
 !@ prologue @!
     
     orio_min_time = X'7FF00000'   ! large number
@@ -404,6 +405,7 @@ SEQ_DEFAULT_CUDA = r'''
 /*@ external @*/
 
 int main(int argc, char *argv[]) {
+  /*@ declarations @*/
   /*@ prologue @*/
   cudaSetDeviceFlags(cudaDeviceBlockingSync);
   float orcu_elapsed=0.0, orcu_transfer=0.0;
@@ -431,6 +433,7 @@ class PerfTestSkeletonCode:
     # tags
     __GLOBAL_TAG = r'/\*@\s*global\s*@\*/'
     __EXTERNAL_TAG = r'/\*@\s*external\s*@\*/'
+    __DECLARATIONS_TAG = r'/\*@\s*declarations\s*@\*/'
     __PROLOGUE_TAG = r'/\*@\s*prologue\s*@\*/'
     __EPILOGUE_TAG = r'/\*@\s*epilogue\s*@\*/'
     __TCODE_TAG = r'/\*@\s*tested\s+code\s*@\*/'
@@ -472,6 +475,10 @@ class PerfTestSkeletonCode:
         match_obj = re.search(self.__EXTERNAL_TAG, code)
         if not match_obj:
             err('main.tuner.skeleton_code:  missing "external" tag in the skeleton code')
+
+        match_obj = re.search(self.__DECLARATIONS_TAG, code)
+        if not match_obj:
+            err('main.tuner.skeleton_code:  missing "declarations" tag in the skeleton code')
 
         match_obj = re.search(self.__PROLOGUE_TAG, code)
         if not match_obj:
@@ -549,9 +556,14 @@ class PerfTestSkeletonCode:
         if self.language == 'cuda' and len(g.cunit_declarations) > 0:
             global_code += reduce(lambda x,y: x + y, g.cunit_declarations)
             g.cunit_declarations = []
+            
+        # TODO: make this less ugly
+        # Declarations that must be in main() scope (not global)
+        declarations_code = '\n#ifdef MAIN_DECLARATIONS\n  MAIN_DECLARATIONS()\n#endif'
         
         # insert global definitions, prologue, and epilogue codes
         code = re.sub(self.__GLOBAL_TAG, global_code, code)
+        code = re.sub(self.__DECLARATIONS_TAG, declarations_code, code)
         code = re.sub(self.__PROLOGUE_TAG, prologue_code, code)
         code = re.sub(self.__EPILOGUE_TAG, epilogue_code, code)
 
