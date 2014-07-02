@@ -26,9 +26,9 @@ class Globals:
             self.metadata = {'loop_transformations':[]}
 
             self.funcDec = ''           #Added by Axel Y. Rivera (UofU)
-	    self.funcName = ''	        #Added by Axel Y. Rivera (UofU)
-	    self.input_params = {}      #Added by Axel Y. Rivera (UofU)
-	    self.input_vars = {}	#added by Axel Y. Rivera (UofU)
+            self.funcName = ''            #Added by Axel Y. Rivera (UofU)
+            self.input_params = {}      #Added by Axel Y. Rivera (UofU)
+            self.input_vars = {}    #added by Axel Y. Rivera (UofU)
 
             if 'dry_run' in cmdline.keys():
                 self.dry_run = cmdline['dry_run']
@@ -198,86 +198,83 @@ class Globals:
 
 
 # ---------------------- Added by Axel Y. Rivera (UofU) --------------------------
-# This part is to extract the function declaration, it is for CHiLL purpouse
-
-
+# This part is to extract the function declaration, it is for CHiLL purpose
+    # BN: TODO -- this is language specific, should probably be moved to 
+    # Chill module
 
     def setFuncDec(self,src_code):
 
         src = filter(None,re.split(',|\n|\(|\)',src_code))
 
-	self.funcName = filter(None,re.split(' |\{',src[0]))
+        self.funcName = filter(None,re.split(' |\{',src[0]))
+    
+        acum = 1
+        line = src[1]
+    
+        while line != '{' and acum < len(src)-1:
+            self.funcDec = self.funcDec + line + ','
+            acum = acum +1
+            line = src[acum]
+    
+        self.funcDec = self.funcDec[:-1]
+    
+        src = filter(None,re.split('\n',src_code))
+    
+        inParams = 0
+        inVars = 0
+        for line in src:
+            secSplit = filter(None,re.split(' |\t',line))
+    
+            if len(secSplit) > 2:
+                if secSplit[1] == 'input_params':
+                    inParams = 1
+                    inVars = 0
+                if secSplit[1] == 'input_vars':
+                    inParams = 0
+                    inVars = 1
+            if len(secSplit) == 1:
+                if secSplit[0] == '}':
+                    inVars = 0
+                    inParams = 0
+    
+            if inParams == 1:
+                if secSplit[0] != '#' and len(secSplit)>1 and secSplit[1] != 'input_params':
+                    var = filter(None,re.split('\[|\]',secSplit[1]))[0]
+                    val = filter(None,re.split('\[|\]',secSplit[len(secSplit)-1]))[0]
+                    self.input_params[var] = val
+    
+            if inVars == 1:
+                if secSplit[0] != '#' and len(secSplit)>3:
+                    info = filter(None,re.split('\[|\]',secSplit[3]))
+                    if len(info)>1: self.input_vars[info[0]] = info[1]
 
-	acum = 1
-	line = src[1]
 
-	while line != '{' and acum < len(src)-1:
-		self.funcDec = self.funcDec + line + ','
-		acum = acum +1
-		line = src[acum]
-
-	self.funcDec = self.funcDec[:-1]
-
-	src = filter(None,re.split('\n',src_code))
-
-	inParams = 0
-	inVars = 0
-	for line in src:
-		secSplit = filter(None,re.split(' |\t',line))
-
-		if len(secSplit) > 2:
-			if secSplit[1] == 'input_params':
-				inParams = 1
-				inVars = 0
-			if secSplit[1] == 'input_vars':
-				inParams = 0
-				inVars = 1
-		if len(secSplit) == 1:
-			if secSplit[0] == '}':
-				inVars = 0
-				inParams = 0
-
-		if inParams == 1:
-			if secSplit[0] != '#' and len(secSplit)>1 and secSplit[1] != 'input_params':
-				var = filter(None,re.split('\[|\]',secSplit[1]))[0]
-				val = filter(None,re.split('\[|\]',secSplit[len(secSplit)-1]))[0]
-				self.input_params[var] = val
-
-		if inVars == 1:
-			if secSplit[0] != '#' and len(secSplit)>3:
-				info = filter(None,re.split('\[|\]',secSplit[3]))
-				if len(info)>1: self.input_vars[info[0]] = info[1]
-
-
-    def getFuncDec(self):
+    def getFuncDecl(self):
         return self.funcDec
 
-    def getFuncN(self):
+    def getFuncName(self):
         return self.funcName
 
     def getFuncInputParams(self):
-	return self.input_params
+        return self.input_params
 
     def getFuncInputVars(self):
-	return self.input_vars
+        return self.input_vars
 
+#------------------ end of Globals class
 
-def getFunction():
-	return Globals().getFuncDec()
+#------------------ exception class
+class TransformationException(Exception):
+    def __init__(self, message, Errors=[]):
 
-def getFuncName():
-	return Globals().getFuncN()
+        # Call the base class constructor with the parameters it needs
+        Exception.__init__(self, message)
 
-def getInputParams():
-	return Globals().getFuncInputParams()
-
-def getInputVars():
-	return Globals().getFuncInputVars()
-
-
-# ---------------------------------------------------------------------------------
+        # A list of specific values 
+        self.Errors = Errors
+        
 """ 
-Various error-handling related miscellanea
+Various error-handling related miscellaneous
 """
 
 def err(errmsg='',errcode=1, doexit=True):
