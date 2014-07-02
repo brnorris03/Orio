@@ -436,8 +436,8 @@ class Transformation:
                     tinfo = (lid, tsize, tindex)
                     tstmt = self.__tile(tstmt, tinfo)
         except Exception, e:
-            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
-                 'loop tiling: "%s"\ntiling annotation: %s\n --> %s: %s') \
+            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'loop tiling: "%s"\ntiling annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.tile_smod.__class__.__name__, self.tiles, e.__class__.__name__, e))
 
         # apply loop permutation/interchange
@@ -445,8 +445,8 @@ class Transformation:
             for seq in self.permuts:
                 tstmt = self.perm_smod.permute(seq, tstmt)
         except Exception, e:
-            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
-                 'loop permutations: "%s"\npermutation annotation: %s\n --> %s: %s') \
+            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'loop permutations: "%s"\npermutation annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.perm_smod.__class__.__name__, self.permuts, e.__class__.__name__, e))
 
         # apply array-copy optimization
@@ -456,8 +456,8 @@ class Transformation:
                     dimsizes = [1] * len(dimsizes)
                 tstmt = self.acop_smod.optimizeArrayCopy(aref, suffix, dtype, dimsizes, tstmt)
         except Exception, e:
-            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
-                 'array copy: "%s"\narray copy annotation: %s\n --> %s: %s') \
+            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'array copy: "%s"\narray copy annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.acop_smod.__class__.__name__, self.arrcopy, e.__class__.__name__, e))
 
         # apply register tiling
@@ -466,8 +466,8 @@ class Transformation:
             if len(loops) > 0:
                 tstmt = self.regt_smod.tileForRegs(loops, ufactors, tstmt)
         except Exception, e:
-            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
-                 'register tiling: "%s"\nregtile annotation: %s\n --> %s: %s') \
+            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'register tiling: "%s"\nregtile annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.regt_smod.__class__.__name__, self.regtiles, e.__class__.__name__, e))
                   
 
@@ -483,8 +483,8 @@ class Transformation:
             if len(tinfos) > 0:
                 tstmt,_ = self.__unrollJam(tstmt, tinfos)
         except Exception, e:
-            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
-                 'loop unrolling/jamming: "%s"\nunroll/jam annotation: %s\n --> %s: %s') \
+            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'loop unrolling/jamming: "%s"\nunroll/jam annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.ujam_smod.__class__.__name__, self.ujams, e.__class__.__name__, e))
 
         # apply scalar replacement
@@ -493,8 +493,8 @@ class Transformation:
             if do_scalarrep:
                 tstmt = self.srep_smod.replaceScalars(dtype, prefix, tstmt)
         except Exception, e:
-            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
-                 'scalar replacement: "%s"\nscalar replacement annotation: %s\n --> %s: %s') \
+            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'scalar replacement: "%s"\nscalar replacement annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.srep_smod.__class__.__name__, self.scalarrep, e.__class__.__name__, e))
         
         # apply bound replacement
@@ -503,8 +503,8 @@ class Transformation:
             if do_boundrep:
                 tstmt = self.brep_smod.replaceBounds(lprefix, uprefix, tstmt)
         except Exception, e:
-            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
-                 'bound replacement: "%s"\nbounds annotation: %s\n --> %s: %s') \
+            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'bound replacement: "%s"\nbounds annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.srep_smod.__class__.__name__, self.boundrep, e.__class__.__name__, e))
 
         # insert pragma directives
@@ -516,8 +516,8 @@ class Transformation:
                     tinfo = (lid, pragmas)
                     tstmt = self.__insertPragmas(tstmt, tinfo)
         except Exception, e:
-            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
-                 'pragma directives: "%s"\npragma annotation: %s\n --> %s: %s') \
+            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'pragma directives: "%s"\npragma annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.srep_smod.__class__.__name__, self.pragma, e.__class__.__name__, e))
 
         # insert openmp directives (apply only on outermost loops)
@@ -527,8 +527,8 @@ class Transformation:
                 tinfo = (pragmas, )
                 tstmt = self.__insertOpenMPPragmas(tstmt, tinfo)
         except Exception, e:
-            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
-                 'openmp directives: "%s"\nopenmp annotation: %s\n --> %s: %s') \
+            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'openmp directives: "%s"\nopenmp annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.srep_smod.__class__.__name__, self.openmp, e.__class__.__name__, e))
 
         # insert vectorization directives (apply only on innermost loops)
@@ -538,8 +538,8 @@ class Transformation:
                 tinfo = (pragmas, )
                 tstmt = self.__insertVectorPragmas(tstmt, tinfo)
         except Exception, e:
-            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
-                 'vectorization: "%s"\nvector annotation: %s\n --> %s: %s') \
+            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'vectorization: "%s"\nvector annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.srep_smod.__class__.__name__, self.vector, e.__class__.__name__, e))
             
         # apply cuda transformation
@@ -550,8 +550,8 @@ class Transformation:
                 tstmt = self.__cudify(tstmt, targs)
             
         except Exception, e:
-            err(('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
-                 'cuda: "%s"\ncuda annotation: %s\n --> %s: %s') \
+            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
+                 'cuda: "%s"\ncuda annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.cuda_smod.__class__.__name__, self.cuda, e.__class__.__name__, e))
         # return the transformed statement
         return tstmt

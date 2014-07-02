@@ -18,6 +18,7 @@ class Transformation:
         self.tindex = tindex
         self.language = language
         self.stmt = stmt
+        self.localvars = set([])
         
         self.flib = orio.module.loop.ast_lib.forloop_lib.ForLoopLib()
         self.cfolder = orio.module.loop.ast_lib.constant_folder.ConstFolder()
@@ -59,20 +60,20 @@ class Transformation:
         try:
             stride_val = eval(str(stride_exp))
         except Exception, e:
-            err('orio.module.loop.submodule.tile.transformation:%s: failed to evaluate expression: "%s"\n --> %s: %s' %
-                   (stride_exp.line_no, stride_exp,e.__class__.__name__, e))
+            raise TransformationException('orio.module.loop.submodule.tile.transformation:%s: failed to evaluate expression: "%s"\n --> %s: %s' %
+                   (stride_exp.line_no, stride_exp,e.__class__.__name__, e.message))
         if not isinstance(stride_val, int) or stride_val <= 0:
-            err('orio.module.loop.submodule.tile.transformation:%s: loop stride size must be a positive integer: %s' %
+            raise TransformationException('orio.module.loop.submodule.tile.transformation:%s: loop stride size must be a positive integer: %s' %
                    (stride_exp.line_no, stride_exp))
 
         # check whether tile_size % stride == 0
         if self.tsize % stride_val != 0:
-            err('orio.module.loop.submodule.tile.transformation:%s: tile size (%s) must be divisible by the stride value (%s)'
+            raise TransformationException('orio.module.loop.submodule.tile.transformation:%s: tile size (%s) must be divisible by the stride value (%s)'
                    % (stride_exp.line_no, self.tsize, stride_val))
 
         # sanity check whether tile_size > stride
         if self.tsize <= stride_val:
-            err('orio.module.loop.submodule.tile.transformation:%s: tile size (%s) must be greater than the stride value (%s)'
+            raise TransformationException('orio.module.loop.submodule.tile.transformation:%s: tile size (%s) must be greater than the stride value (%s)'
                    % (stride_exp.line_no, self.tsize, stride_val))
 
         # create the tile index name

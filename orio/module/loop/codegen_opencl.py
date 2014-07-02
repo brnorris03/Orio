@@ -200,11 +200,11 @@ class CodeGen_OpenCL (CodeGen_C):
         elif isinstance(tnode, ast.VarDecl):
             s += indent + str(tnode.type_name) + ' '
             if isinstance(tnode.var_names[0], ast.IdentExp): 
-              s += ', '.join(map(self.generate, tnode.var_names))
+                s += ', '.join(map(self.generate, tnode.var_names))
             else:
-              s += ', '.join(tnode.var_names)
+                s += ', '.join(tnode.var_names)
             s += ';\n'
-
+ 
         elif isinstance(tnode, ast.VarDeclInit):
             s += indent + str(tnode.type_name) + ' '
             s += self.generate(tnode.var_name, indent, extra_indent)
@@ -214,9 +214,9 @@ class CodeGen_OpenCL (CodeGen_C):
         elif isinstance(tnode, ast.FieldDecl):
             s += tnode.ty + ' '
             if isinstance(tnode.name, ast.IdentExp):
-              s+= tnode.name.name
+                s+= tnode.name.name
             else:
-              s += tnode.name
+                s += tnode.name
 
         elif isinstance(tnode, ast.FunDecl):
             s += indent + ' '.join(tnode.modifiers) + ' '

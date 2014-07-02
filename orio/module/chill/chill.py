@@ -46,12 +46,12 @@ class CHiLL(orio.module.module.Module):
 	code = self.annot_body_code
 	fname = '_orio_chill_.c'
 	hname = '_orio_chill_.h'
-	func = getFunction()
+	func = Globals().getFuncDecl()
 	func1 = func.replace("{",";")
 	func2 = func1.replace("double *","")
-	funcName = getFuncName()
-	self.input_params = getInputParams()
-	self.input_vars = getInputVars()
+	funcName = Globals().getFuncName()
+	self.input_params = Globals().getFuncInputParams()
+	self.input_vars = Globals().getFuncInputVars()
 	
 
 	#print "Informatio variables: \nperf_params: ",self.perf_params,"\nmodule_body_code: ",self.module_body_code,"\nline_no: ",self.line_no,"\nindent_size: ",self.indent_size
