@@ -5,6 +5,7 @@
 
 import logging, os, sys, traceback, re
 from matplotlib_logger import MatplotlibLogger
+from orio.main.tuner.stats import *
 
 
 class Globals:
@@ -135,6 +136,8 @@ class Globals:
           
             #self.loggers['Matplotlib'] = MatplotlibLogger().getLogger()
       
+            # TODO: specific class for stats recording (needs new cmdline opt)
+            self.stats = MatlabStats()
     
             # Enable debugging
             self.debug_level = 5
