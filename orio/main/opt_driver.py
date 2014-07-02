@@ -212,6 +212,5 @@ class OptDriver:
         
         # unexpected type of code fragment
         else:
-            err('orio.main.opt_driver internal error:  unexpected type of code fragment')
-            sys.exit(1)
+            err('orio.main.opt_driver internal error:  unexpected type of code fragment',doexit=True)
 

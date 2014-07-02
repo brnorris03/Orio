@@ -18,7 +18,6 @@ class Globals:
         """ Implementation of the singleton interface """
 
         def __init__(self,cmdline={}):
-            
             self.loggers = {}
             self.language = 'c'         # default language is C
             self.error_pre = "\x1B[00;31m"
@@ -139,7 +138,7 @@ class Globals:
     
             # Enable debugging
             self.debug_level = 5
-            if 'ORIO_DEBUG' in os.environ.keys() and os.environ['ORIO_DEBUG'] == '1': 
+            if 'ORIO_DEBUG' in os.environ.keys() and os.environ['ORIO_DEBUG'] == '1' or 'debug' in cmdline.keys(): 
                 self.debug = True
                 self.loggers['TuningLog'].setLevel(logging.DEBUG)
                 if 'ORIO_DEBUG_LEVEL' in os.environ.keys():
@@ -273,6 +272,25 @@ class TransformationException(Exception):
         # A list of specific values 
         self.Errors = Errors
         
+    def __repr__(self):
+        s= str(self.message)
+        if self.Errors: s += '\n' + str(self.Errors)
+        return s
+ 
+class TestException(Exception):
+    def __init__(self, message, Errors=[]):
+
+        # Call the base class constructor with the parameters it needs
+        Exception.__init__(self, message)
+
+        # A list of specific values 
+        self.Errors = Errors
+        
+    def __repr__(self):
+        s= str(self.message)
+        if self.Errors: s += '\n' + str(self.Errors)
+        return s
+       
 """ 
 Various error-handling related miscellaneous
 """
