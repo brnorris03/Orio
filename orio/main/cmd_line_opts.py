@@ -22,17 +22,25 @@ Options:
   -d, --debug                    Enable debugging output
   -e, --erase-annot              remove annotations from the output
   -h, --help                     display this message
-  -o <file>, --output=<file>     place the output in <file> (only valid when processing 
+  -k, --keep-temps               keep all temporary files (default is to delete them after each test)
+  -n, --dry_run                  Don't execute anything, just print commands [FUTURE]
+  -o <file>, --output=<file>     place the output in <file> (only valid when processing
                                  single files)
   -p, --output-prefix=<string>   generate output filename from input filename by prepending 
                                  the specified string (default is '_', e.g., f.c becomes _f.c).
-  -r, --rename-objects           after compiling the Orio-generated source, rename the object 
+  -R <file>, --restart=<file>    restart search given the tuning log file from a previous
+    (possibly incomplete) search [FUTURE].
+  -r, --rename-objects           after compiling the Orio-generated source, rename the object
                                  files to be the same as those that would result from compiling
                                  the original source code
   -s <file>, --spec=<file>       read tuning specifications from <file>
+  -t <num>, --top=<num>          keep the top-performing <num> code variants (default: 1)
   -x, --external                 run orio in external mode
   --config=<p1:v1,p2:v2,..>      configurations for external mode
   --configfile=filename          configuration filename 
+  --vtime=<num|'mean'|'min'>     indicate which time to choose as "best" given the times of all the runs
+                                 of a given code variant. The value is a number (e.g., --vtime=3 would
+                                 mean "select third-best" time), or one of the strings: mean, min
   -v, --verbose                  verbosely show details of the results of the running program
   --validate                     validate by comparing output of original and transformed codes
 
@@ -122,9 +130,9 @@ class CmdParser:
         # get all options
         try:
             opts, args = getopt.getopt(orioargv,
-                                       'c:dehko:p:rs:vx',
-                                       ['pre-command=','debug','config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=', 
-                                       'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern', 'validate', 'post-command='])
+                                       'c:dehko:p:R:rs:t:vx',
+                                       ['pre-command=','debug','config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=', 'time='
+                                       'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern', 'validate', 'post-command=', 'restart=', 'top=', 'dry_run'])
         except Exception, e:
             sys.stderr.write('Orio command-line error: %s' % e)
             sys.stderr.write(USAGE_MSG + '\n')
@@ -145,14 +153,20 @@ class CmdParser:
                 sys.exit(0)
             elif opt in ('-k', '--keep-temps'):
                 cmdline['keep_temps'] = True
+            elif opt in ('-n','--dry_run'):
+                cmdline['dry_run'] = True
             elif opt in ('-o', '--output'):
                 cmdline['out_filename'] = arg
             elif opt in ('-p', '--output-prefix'):
                 cmdline['out_prefix'] = arg
             elif opt in ('-r', '--rename-objects'):
                 cmdline['rename_objects'] = True
+            elif opt in ('-R', '--restart'):
+                cmdlne['restart'] = arg
             elif opt in ('-s', '--spec'):
                 cmdline['spec_filename'] = arg
+            elif opt in ('-t', '--top'):
+                cmdline['top'] = int(arg)
             elif opt in ('-v', '--verbose'):
                 cmdline['verbose'] = True
             elif opt in ('-x','--extern'):
@@ -163,10 +177,16 @@ class CmdParser:
                 cmdline['configfile'] = arg
             elif opt in ('--validate'):
                 cmdline['validate'] = True
-                
+            elif opt in ('--vtime'):
+                if arg.isdigit(): cmdline['vtime'] = ('min',int(arg))
+                elif arg in ['min','mean']: cmdline['vtime'] = (arg,1)
+                else:
+                    sys.stderr.write("Command line error: Unrecognized --vtime argument")
+                    sys.exit(1)
+
         # check on the arguments
         if len(srcfiles) < 1:
-            if otherargv: 
+            if otherargv:
                 cmdline['disable_orio'] = True
             else:
                 sys.stderr.write('Orio command-line error: missing file arguments')

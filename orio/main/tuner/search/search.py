@@ -87,6 +87,7 @@ class Search:
         (i.e. minimum performance cost).
         
         This is the function that needs to be implemented in each new search engine subclass.
+        It should return the list of "best" coordinates
         '''
         raise NotImplementedError('%s: unimplemented abstract function "searchBestCoord"' %
                                   self.__class__.__name__)
@@ -108,26 +109,34 @@ class Search:
             if not startCoord:
                 startCoord = self.__findLastCoord()
 
-        # find the coordinate resulting in the best performance
-        best_coord,best_perf,search_time,runs = self.searchBestCoord(startCoord)
+        # Perform the search to find the coordinate resulting in the best performance
+        #best_coord,best_perf,search_time,runs = self.searchBestCoord(startCoord)
+        search_time,runs = self.searchBestCoord(startCoord)
+        
+                    
         corr_transfer = self.MAXFLOAT
         if isinstance(best_perf,tuple): #unpack optionally
           corr_transfer = best_perf[1]
           best_perf     = best_perf[0]
 
         # if no best coordinate can be found
-        if best_coord == None:
+        if len(Globals.best) == 0:
             err ('the search cannot find a valid set of performance parameters. ' +
                  'the search time limit might be too short, or the performance parameter ' +
                  'constraints might prune out the entire search space.')
         else:
             info('----- begin summary -----')
-            info(' best coordinate: %s=%s, cost=%e, transfer_time=%e, inputs=%s, search_time=%.2f, runs=%d' % \
-                 (best_coord, self.coordToPerfParams(best_coord), best_perf, corr_transfer, str(self.input_params), search_time, runs))
+            info('Top %d best-performing variants' % Globals().top)
+            i = 0
+            for (best_coord, best_perf, corr_transfer) in Globals().best:
+                info('%d. %s=%s, compute time=%e, transfer time=%e, inputs=%s, search_time=%.2f, runs=%d' % \
+                     (i, best_coord, self.coordToPerfParams(best_coord), best_perf, corr_transfer,
+                      str(self.input_params), search_time, runs))
+                i+=1
             info('----- end summary -----')
 
                 
-        if not Globals().extern:    
+        if not Globals().extern and not Globals().dry_run:
             # get the performance cost of the best parameters
             best_perf_cost = self.getPerfCost(best_coord)
             # convert the coordinate to the corresponding performance parameters
@@ -158,7 +167,7 @@ class Search:
 
     def getPerfCost(self, coord):
         '''
-        To empirically evaluate the performance cost of the code corresponding to the given coordinate
+        Empirically evaluate the performance cost of the code corresponding to the given coordinate
         '''
 
         perf_costs = self.getPerfCosts([coord])
@@ -269,7 +278,7 @@ class Search:
             code_map[coord_key] = (transformed_code, externals)
         if code_map == {}: # nothing to test
             return perf_costs
-        #debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
+        debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, self, level=6)
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)
         perf_param = self.coordToPerfParams(uneval_coords[0])

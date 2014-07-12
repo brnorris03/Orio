@@ -54,7 +54,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         # record the best coordinate and its best performance cost
         best_coord = None
         top_coords = {}
-        best_perf_cost = self.MAXFLOAT
+        best_compute_time = self.MAXFLOAT
         corr_transfer  = self.MAXFLOAT
         
         # start the timer
@@ -93,30 +93,42 @@ class Exhaustive(orio.main.tuner.search.search.Search):
             # compare to the best result
             pcost_items = perf_costs.items()
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
-            for coord_str, (perf_cost,transfer_costs) in pcost_items:
+            for coord_str, (compute_times,transfer_times) in pcost_items:
                 coord_val = eval(coord_str)
-                #info('cost: %s' % (perf_cost))
-                floatNums = [float(x) for x in perf_cost]
-                transferFloats = [float(x) for x in transfer_costs]
+                #info('cost: %s' % (compute_times))
+                floatNums = [float(x) for x in compute_times]
+                transferFloats = [float(x) for x in transfer_times]
 
-                if len(perf_cost) == 1:
-                    mean_perf_cost = sum(floatNums)
+                (mean_or_min,num) = Globals().vtime
+                if mean_or_min == 'mean':
+                    # Use the mean of all times (except the first one)
+                    if len(compute_times) == 1:
+                        compute_time = sum(floatNums)
+                    else:
+                        compute_time = sum(floatNums[1:]) / (len(compute_times)-1) # ignore first timing result
+                    transfer_time = sum(transferFloats) / len(transfer_times)
+                elif mean_or_min == 'min':
+                    # Use the n-th minimum time
+                    compute_time = min(floatNums)
+                    transfer_time = min(transferFloats)
                 else:
-                    mean_perf_cost = sum(floatNums[1:]) / (len(perf_cost)-1)
-                mean_transfer = sum(transferFloats) / len(transfer_costs)
-
-                info('coordinate: %s, average cost: %s, all costs: %s, average transfer time: %s' % (coord_val, mean_perf_cost, perf_cost, mean_transfer))
-                
-                if mean_perf_cost < best_perf_cost and perf_cost > 0.0:
+                    err('Internal error: unrecognized Globals().vtime value', self, doexit=True)
+                    
+            
+                info('coordinate: %s, compute cost: %s, all costs: %s, transfer time: %s' % (coord_val, compute_time, compute_times, transfer_time))
+            
+                Globals().processTrialTime(coord_val,transfer_time,transfer_time)
+            
+                if compute_time < best_compute_time and compute_times > 0.0:
                     best_coord = coord_val
-                    best_perf_cost = mean_perf_cost
-                    corr_transfer  = mean_transfer
-                    info('>>>> best coordinate found: %s, average cost: %e, average transfer time: %s' % (coord_val, mean_perf_cost, mean_transfer))
+                    best_compute_time = compute_time
+                    corr_transfer  = transfer_time
+                    info('>>>> best coordinate found: %s, average cost: %e, average transfer time: %s' % (coord_val, compute_time, transfer_time))
             
             # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
             #progress = 'init' if recFlag else 'continue'
             #recFlag = False
-            #IOtime = Globals().stats.record(time.time()-start_time, best_perf_cost, best_coord, progress)
+            #IOtime = Globals().stats.record(time.time()-start_time, best_compute_time, best_coord, progress)
             # don't include time on recording data in the tuning time
             #start_time += IOtime
 
@@ -145,10 +157,10 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         info('----- end exhaustive search -----')
         
         # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
-        #Globals().stats.record(time.time()-start_time, best_perf_cost, best_coord, 'done')
+        #Globals().stats.record(time.time()-start_time, best_compute_time, best_coord, 'done')
         
-        # return the best coordinate
-        return best_coord,(best_perf_cost,corr_transfer),search_time,len(coords)
+        # return the best coordinate(s)
+        return search_time,len(coords)
     
     # Private methods       
     #--------------------------------------------------
