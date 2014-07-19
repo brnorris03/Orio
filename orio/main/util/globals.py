@@ -31,9 +31,6 @@ class Globals:
             else:
                 self.topnum = 1
                     
-            # The set of the self.topnum best coordinates and corresponding performance
-            self.best = []
-        
             # Which code version to consider "best" among multiple executions of the same
             # code variant
             if 'vtime' in cmdline.keys(): self.vtime = cmdline['vtime']
@@ -188,29 +185,6 @@ class Globals:
             """ Test method, return singleton id """
             return id(self)
 
-        def processTrialTime(self,coord_val,compute_time,transfer_time=0.0):
-            newval = (coord_val,compute_time,transfer_time)
-            i = 0
-            if len(self.best) < 1:
-                self.__updateBest(0,newval)
-            else:
-                for i in range(0,len(self.best)):
-                    if compute_time > self.best[i]: continue
-                    else:
-                        self.__updateBest(i,newval)
-                        return
-            if i < self.topnum-1: self.__updateBest(i,newval)
-
-        def getBestSoFar(self):
-            if len(self.best) > 0: return self.best[0]
-            else: return ()
-
-        def __updateBest(self,i,newval):
-            # Private, not meant to be called by external classes
-            info('>>>> best coordinate found: %s, average cost: %e, average transfer time: %s' \
-                 % newval) # newval is a 3-tuple, see processTime
-            self.best.insert(i,newval)
-            if len(self.best) > self.topnum: self.best.pop() # keep the list from growing
 
         # ---------------------- Added by Axel Y. Rivera (UofU) --------------------------
         # This part is to extract the function declaration, it is for CHiLL purpose

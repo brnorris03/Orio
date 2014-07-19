@@ -35,7 +35,7 @@ Options:
                                  the original source code
   -s <file>, --spec=<file>       read tuning specifications from <file>
   -t <num>, --top=<num>          keep the top-performing <num> code variants (default: 1)
-  -x, --external                 run orio in external mode
+  -x, --external                 run Orio in external mode (advanced)
   --config=<p1:v1,p2:v2,..>      configurations for external mode
   --configfile=filename          configuration filename 
   --vtime=<num|'mean'|'min'>     indicate which time to choose as "best" given the times of all the runs
@@ -45,9 +45,9 @@ Options:
   --validate                     validate by comparing output of original and transformed codes
 
 environment variables: 
-  ORIO_FLAGS                     the string value is used to augment the list of Orio command-lin
+  ORIO_FLAGS                     the string value is used to augment the list of Orio command-line
                                  options
-  ORIO_DEBUG                     when set, print debugging information (orio.main.y for developer use)
+  ORIO_DEBUG                     when set, print debugging information (primarily for developer use)
                                  
 For more details, please refer to the documentation at https://trac.mcs.anl.gov/projects/performance/wiki/OrioUserGuide
 ''' % os.path.basename(sys.argv[0])
@@ -162,7 +162,7 @@ class CmdParser:
             elif opt in ('-r', '--rename-objects'):
                 cmdline['rename_objects'] = True
             elif opt in ('-R', '--restart'):
-                cmdlne['restart'] = arg
+                cmdline['restart'] = arg
             elif opt in ('-s', '--spec'):
                 cmdline['spec_filename'] = arg
             elif opt in ('-t', '--top'):

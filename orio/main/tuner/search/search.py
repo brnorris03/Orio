@@ -20,6 +20,10 @@ class Search:
 
         self.params=params
         debug('[Search] performance parameters: %s\n' % str(params), self)
+        
+        # The set of the self.topnum best coordinates and corresponding performance
+        self.best = []
+
 
         # the class variables that are essential to know when developing a new search engine subclass
         if 'search_time_limit' in params.keys(): self.time_limit = params['search_time_limit']
@@ -105,19 +109,19 @@ class Search:
         if self.resume:
             startCoord = self.search_opts.get('start_coord')
             if not isinstance(startCoord,list):
-              err('%s argument "%s" must be a list of coordinate indices' % (self.__class__.__name__,'start_coord'))
+                err('%s argument "%s" must be a list of coordinate indices' % (self.__class__.__name__,'start_coord'))
             if not startCoord:
                 startCoord = self.__findLastCoord()
 
         # Perform the search to find the coordinate resulting in the best performance
         #best_coord,best_perf,search_time,runs = self.searchBestCoord(startCoord)
-        search_time,runs = self.searchBestCoord(startCoord)
+        best_coord,best_perf,search_time,runs = self.searchBestCoord(startCoord)
         
                     
         corr_transfer = self.MAXFLOAT
         if isinstance(best_perf,tuple): #unpack optionally
-          corr_transfer = best_perf[1]
-          best_perf     = best_perf[0]
+            corr_transfer = best_perf[1]
+            best_perf     = best_perf[0]
 
         # if no best coordinate can be found
         if len(Globals.best) == 0:
@@ -148,6 +152,9 @@ class Search:
 
         # return the best performance parameters
         return (best_perf_params, best_perf_cost)
+
+# ============== PRIVATE methods ==========================
+
 
     #----------------------------------------------------------
 
@@ -183,6 +190,39 @@ class Search:
         return compile_time
     
     
+    def processTrialTime(self, coord_val, compute_times, transfer_time=0.0):
+        # compute_times is a list of the compute times for all trials
+        
+        transform_time = self.getTransformTime()
+        compile_time = self.getCompileTime()    
+
+        if Globals().cmdline['vtime'] == 'mean': 
+            compute_time = reduce(lambda x, y: x + y, compute_times) / len(compute_times)
+        else: 
+            compute_time = min(compute_times)
+        newval = (coord_val,compute_time,transfer_time)
+        info('coordinate: %s, compute cost: %s, all costs: %s, transfer time: %s' % (coord_val, compute_time, compute_times, transfer_time))
+        i = 0
+        if len(self.best) < 1:
+            self.__updateBest(0,newval)
+        else:
+            for i in range(0,len(self.best)):
+                if compute_time > self.best[i]: continue
+                else:
+                    self.__updateBest(i,newval)
+                    return
+        if i < self.topnum-1: self.__updateBest(i,newval)
+
+    def getBestSoFar(self):
+        if len(self.best) > 0: return self.best[0]
+        else: return ()
+
+    def __updateBest(self,i,newval):
+        # Private, not meant to be called by external classes
+        info('>>>> best coordinate found: %s, average cost: %e, average transfer time: %s' \
+             % newval) # newval is a 3-tuple, see processTime
+        self.best.insert(i,newval)
+        if len(self.best) > self.topnum: self.best.pop() # keep the list from growing
     #----------------------------------------------------------
 
     def getPerfCosts(self, coords):

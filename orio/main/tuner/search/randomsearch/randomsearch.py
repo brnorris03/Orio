@@ -114,27 +114,26 @@ class Randomsearch(orio.main.tuner.search.search.Search):
                 else: perf_cost = pcost
                 coord_val = eval(coord_str)
                 #info('%s %s' % (coord_val,perf_cost))
-                perf_params = self.coordToPerfParams(coord_val)
-                try:
-                    floatNums = [float(x) for x in perf_cost]
-                    mean_perf_cost=sum(floatNums) / len(perf_cost)
-                except:
-                    mean_perf_cost=perf_cost
+                #perf_params = self.coordToPerfParams(coord_val)
+                #try:
+                #    floatNums = [float(x) for x in perf_cost]
+                #    mean_perf_cost=sum(floatNums) / len(perf_cost)
+                #except:
+                #    mean_perf_cost=perf_cost
                     
-                transform_time=self.getTransformTime()
-                compile_time=self.getCompileTime()    
                 #info('(run %s) coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs+i+1, coord_val, perf_params, transform_time, compile_time,perf_cost))
-                if mean_perf_cost < best_perf_cost and mean_perf_cost > 0.0:
-                    best_coord = coord_val
-                    best_perf_cost = mean_perf_cost
-                    info('>>>> best coordinate found: %s, cost: %e' % (coord_val, mean_perf_cost))
+                #self.processTrialTime(coord_val,perf_cost,transfer_time)
+
+                #if mean_perf_cost < best_perf_cost and mean_perf_cost > 0.0:
+                #    best_coord = coord_val
+                #    best_perf_cost = mean_perf_cost
+                #    info('>>>> best coordinate found: %s, cost: %e' % (coord_val, mean_perf_cost))
 
             # if a better coordinate is found, explore the neighboring coordinates
             if False and old_perf_cost != best_perf_cost:
                 neigh_coords.extend(self.getNeighbors(best_coord, self.local_distance))
                 old_perf_cost = best_perf_cost
 
-            
                            
             # increment the number of runs    
             runs += 1 #len(mean_perf_cost)
