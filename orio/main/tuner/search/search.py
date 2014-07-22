@@ -3,6 +3,7 @@
 #
 import sys, math, time
 from orio.main.util.globals import *
+from pickle import dump, load
 
 
 class Search:
@@ -18,12 +19,18 @@ class Search:
         #print params
         #print 'done'
 
+        self.algorithmName = 'Search' # Should never be used (this is the base class)
         self.params=params
         debug('[Search] performance parameters: %s\n' % str(params), self)
         
         # The set of the self.topnum best coordinates and corresponding performance
-        self.best = []
-
+        self.best = ()
+        successfulTrials = 0        # number of successfully executed and timed variants
+        failedTrials = 0            # number of failed variants (e.g., did not compile or run)
+        self.perf_cost_records = {} 
+        self.transform_time = 0
+        self.compile_time = 0
+        self.counter = 0
 
         # the class variables that are essential to know when developing a new search engine subclass
         if 'search_time_limit' in params.keys(): self.time_limit = params['search_time_limit']
@@ -80,9 +87,7 @@ class Search:
         self.timing_code = ''
         
         self.verbose = Globals().verbose
-        self.perf_cost_records = {}
-        self.transform_time=0
-        self.compile_time=0
+        pass   # end of constructor
     #----------------------------------------------------------
 
     def searchBestCoord(self):
@@ -95,17 +100,23 @@ class Search:
         '''
         raise NotImplementedError('%s: unimplemented abstract function "searchBestCoord"' %
                                   self.__class__.__name__)
+        pass 
     
     #----------------------------------------------------------
 
     def search(self, startCoord=None):
-        '''To initiate the search process and return the best performance parameters'''
+        '''
+        Initiate the search process and return the best performance parameters
+        after it completes.
+        Specific search strategies are implemented by child classes of Search.
+        '''
 
         # if the search space is empty
         if self.total_dims == 0:
             return {}
 
-
+        info('\n------ begin %s ------' % self.algorithmName)
+        
         if self.resume:
             startCoord = self.search_opts.get('start_coord')
             if not isinstance(startCoord,list):
@@ -114,7 +125,7 @@ class Search:
                 startCoord = self.__findLastCoord()
 
         # Perform the search to find the coordinate resulting in the best performance
-        #best_coord,best_perf,search_time,runs = self.searchBestCoord(startCoord)
+        # The searchBestCoord method is implemented by each search algorithm (subclasses of SearcH)
         best_coord,best_perf,search_time,runs = self.searchBestCoord(startCoord)
         
                     
@@ -134,7 +145,7 @@ class Search:
             i = 0
             for (best_coord, best_perf, corr_transfer) in Globals().best:
                 info('%d. %s=%s, compute time=%e, transfer time=%e, inputs=%s, search_time=%.2f, runs=%d' % \
-                     (i, best_coord, self.coordToPerfParams(best_coord), best_perf, corr_transfer,
+                     (i, best_coord, self.__coordToPerfParams(best_coord), best_perf, corr_transfer,
                       str(self.input_params), search_time, runs))
                 i+=1
             info('----- end summary -----')
@@ -144,21 +155,38 @@ class Search:
             # get the performance cost of the best parameters
             best_perf_cost = self.getPerfCost(best_coord)
             # convert the coordinate to the corresponding performance parameters
-            best_perf_params = self.coordToPerfParams(best_coord)
+            best_perf_params = self.__coordToPerfParams(best_coord)
         else:
             best_perf_cost=0
             best_perf_params=Globals().config
         
-
         # return the best performance parameters
         return (best_perf_params, best_perf_cost)
 
-# ============== PRIVATE methods ==========================
+    def getPerfCost(self, coord):
+        '''
+        Empirically evaluate the performance cost of the code corresponding to the 
+        given coordinate.
+        '''
+        perf_costs = self.getPerfCosts([coord])
+        [(perf_cost,_),] = perf_costs.values()
+        return perf_cost
+
+    def getTransformTime(self):
+        trans_time = self.transform_time
+        return trans_time
+    
+    def getCompileTime(self):
+        compile_time = self.compile_time
+        return compile_time
+
+# ============== Methods typically used by child classes of Search ==========
+# ============== (not intended for use by non-search Orio components ========
 
 
     #----------------------------------------------------------
 
-    def coordToPerfParams(self, coord):
+    def __coordToPerfParams(self, coord):
         '''To convert the given coordinate to the corresponding performance parameters'''
 
         # get the performance parameters that correspond the given coordinate
@@ -172,26 +200,13 @@ class Search:
 
     #----------------------------------------------------------
 
-    def getPerfCost(self, coord):
+    def __processTrialTime(self, coord_val, compute_times, transfer_time=0.0):
         '''
-        Empirically evaluate the performance cost of the code corresponding to the given coordinate
+        This method is used by Search subclasses to record information about
+        each trial.
+        
+        @param compute_times: a list of the compute times for all trials
         '''
-
-        perf_costs = self.getPerfCosts([coord])
-        [(perf_cost,_),] = perf_costs.values()
-        return perf_cost
-
-    def getTransformTime(self):
-        trans_time = self.transform_time
-        return trans_time
-    
-    def getCompileTime(self):
-        compile_time = self.compile_time
-        return compile_time
-    
-    
-    def processTrialTime(self, coord_val, compute_times, transfer_time=0.0):
-        # compute_times is a list of the compute times for all trials
         
         transform_time = self.getTransformTime()
         compile_time = self.getCompileTime()    
@@ -202,6 +217,7 @@ class Search:
             compute_time = min(compute_times)
         newval = (coord_val,compute_time,transfer_time)
         info('coordinate: %s, compute cost: %s, all costs: %s, transfer time: %s' % (coord_val, compute_time, compute_times, transfer_time))
+        self.counter += 1
         i = 0
         if len(self.best) < 1:
             self.__updateBest(0,newval)
@@ -212,8 +228,23 @@ class Search:
                     self.__updateBest(i,newval)
                     return
         if i < self.topnum-1: self.__updateBest(i,newval)
+        
+        # Write results to disk 
+        self.__checkpointResults()
+        
+    def __checkpointResults(self,force=False):
+        if force or self.counter % 100 == 0:
+            # TODO: generate file name corresponding to this variant
+            resultsFile = open('.results.tmp','w')
+            dump(self.perf_cost_records,resultsFile)
+            resultsFile.close()
+            
+    def __loadResults(self):
+        resultsFile = open('.results.tmp','r')
+        self.perf_cost_records = load(resultsFile)
+        resultsFile.close()
 
-    def getBestSoFar(self):
+    def __getBestSoFar(self):
         if len(self.best) > 0: return self.best[0]
         else: return ()
 
@@ -223,22 +254,32 @@ class Search:
              % newval) # newval is a 3-tuple, see processTime
         self.best.insert(i,newval)
         if len(self.best) > self.topnum: self.best.pop() # keep the list from growing
+
     #----------------------------------------------------------
 
     def getPerfCosts(self, coords):
         '''
-        Empirically evaluate the performance costs of the codes corresponding the given coordinates
+        Empirically evaluate the performance costs of the codes corresponding to
+        the given coordinates. This methods sets up the optimization problem and
+        triggers code generation and evaluation of the resulting variants, using 
+        a search approach implemented by one of the Search child classes. 
+        
         @param coords:  all search space coordinates
         '''
 
         # initialize the performance costs mapping
-        perf_costs = {}
+        self.perf_costs = {}
         
-
         # filter out all invalid coordinates and previously evaluated coordinates
         uneval_coords = []
         for coord in coords:
-            coord_key = str(coord)
+            #coord_key = str(coord)
+            coord_key = abs(hash(str(coord))) % (10 ** 8)
+            
+            # if the given coordinate has been computed before
+            if coord_key in self.perf_cost_records:
+                self.perf_costs[coord_key] = self.perf_cost_records[coord_key]
+                continue
 
             # if the given coordinate is out of the search space
             is_out = False
@@ -247,35 +288,29 @@ class Search:
                     is_out = True
                     break
             if is_out:
-                perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
-                continue
-
-            # if the given coordinate has been computed before
-            if coord_key in self.perf_cost_records:
-                perf_costs[coord_key] = self.perf_cost_records[coord_key]
+                self.perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
                 continue
 
             # get the performance parameters
-            perf_params = self.coordToPerfParams(coord)
+            perf_params = self.__coordToPerfParams(coord)
 
-            
             # test if the performance parameters are valid
             try:
                 is_valid = eval(self.constraint, perf_params, dict(self.input_params))
             except Exception, e:
                 err('failed to evaluate the constraint expression: "%s"\n%s %s' % (self.constraint,e.__class__.__name__, e))
 
-            # if invalid performance parameters
+            # in this case performance parameters violate the user-specified constraints
             if not is_valid:
-                perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
+                self.perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
                 continue
 
             # store all unevaluated coordinates
             uneval_coords.append(coord)
 
-        # check the unevaluated coordinates
+        # check for unevaluated coordinates
         if len(uneval_coords) == 0:
-            return perf_costs
+            return self.perf_costs
 
         #debug('search perf_params=' + str(perf_params))
         # execute the original code and obtain results for validation
@@ -292,7 +327,7 @@ class Search:
         code_map = {}
         for coord in uneval_coords:
             coord_key = str(coord)
-            perf_params = self.coordToPerfParams(coord)
+            perf_params = self.__coordToPerfParams(coord)  # for debugging output
             #info('transformation time = %e',time.time())
             self.transform_time=0
             start = time.time()
@@ -305,7 +340,7 @@ class Search:
                 err('failed during evaluation of coordinate: %s=%s\n%s\nError:%s' \
                     % (str(coord), str(perf_params), str(e.__class__), e.message), 
                     code=0, doexit=False)
-                perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
+                self.perf_costs[coord_key] = ([-1],[-1])  # use -1 to indicate that we should never test this again
                 continue
 
             elapsed = (time.time() - start)
@@ -317,99 +352,30 @@ class Search:
             transformed_code, _, externals = transformed_code_seq[0]
             code_map[coord_key] = (transformed_code, externals)
         if code_map == {}: # nothing to test
-            return perf_costs
+            return self.perf_costs
+        
         debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, self, level=6)
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)
-        perf_param = self.coordToPerfParams(uneval_coords[0])
+        perf_param = self.__coordToPerfParams(uneval_coords[0])
+        
+        # Run the generated code variant
         new_perf_costs = self.ptdriver.run(test_code, perf_param=perf_param)
-        #new_perf_costs = self.getPerfCostConfig(coord_key,perf_params)
+
         # remember the performance cost of previously evaluated coordinate
         self.perf_cost_records.update(new_perf_costs.items())
-        # merge the newly obtained performance costs
-        perf_costs.update(new_perf_costs.items())
-        # also take the compile time
+       
+        # merge the newly obtained performance costs with previous results
+        self.perf_costs.update(new_perf_costs.items())
+        
+        # also measure the compile time
         self.compile_time=self.ptdriver.compile_time
 
-        #sys.exit()
+        #return the performance costs dictionary
 
-        #return the performance cost
-
-        return perf_costs
+        return self.perf_costs
 
     #----------------------------------------------------------
-
-    def getPerfCostConfig(self, coord_key,param_config):
-        '''
-        Empirically evaluate the performance costs of the codes corresponding the given coordinates
-        @param coords:  all search space coordinates
-        '''
-
-        is_valid=False
-        perf_costs = []
-        
-        # test if the performance parameters are valid
-        try:
-            is_valid = eval(self.constraint, param_config)
-        except Exception, e:
-            err('failed to evaluate the constraint expression: "%s"\n%s %s' % (self.constraint,e.__class__.__name__, e))
-
-            
-        # if invalid performance parameters
-        if not is_valid:
-            perf_costs[coord_key] = [self.MAXFLOAT]
-            return perf_costs
-
-
-        #config=Globals().config
-        params=self.params['axis_names']
-        vals=self.params['axis_val_ranges']
-
-
-        is_out=False
-        for i, p in enumerate(params):
-            min_val=min(vals[i])
-            max_val=max(vals[i])
-            #print p, min_val,max_val
-            if param_config[p] < min_val or param_config[p] > max_val:
-                is_out=True
-                break
-                
-        if is_out:
-            perf_costs[coord_key] = [self.MAXFLOAT]
-            return perf_costs
-            
-
-        code_map = {}
-        self.transform_time=0
-        start = time.time()
-        transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, param_config)
-
-
-        elapsed = (time.time() - start)
-        self.transform_time=elapsed
-        if len(transformed_code_seq) != 1:
-            err('internal error: the optimized annotation code cannot contain multiple versions')
-            sys.exit(1)
-
-        #coord_key='param'    
-        transformed_code, _, externals = transformed_code_seq[0]
-        code_map[coord_key] = (transformed_code, externals)
-        #debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
-        # evaluate the performance costs for all coordinates
-        test_code = self.ptcodegen.generate(code_map)
-        new_perf_costs = self.ptdriver.run(test_code)
-        self.compile_time=self.ptdriver.compile_time
-        
-        #print new_perf_costs
-        #print perf_params.keys()
-
-        #sys.exit()
-
-        return new_perf_costs
-
-    #----------------------------------------------------------
-
     
     def factorial(self, n):
         '''Return the factorial value of the given number'''
@@ -489,7 +455,7 @@ class Search:
 
     #----------------------------------------------------------
 
-    def getNeighbors(self, coord, distance):
+    def __getNeighbors(self, coord, distance):
         '''Return all the neighboring coordinates (within the specified distance)'''
         
         # get all valid distances
@@ -514,7 +480,7 @@ class Search:
 
     #----------------------------------------------------------
 
-    def searchBestNeighbor(self, coord, distance):
+    def __searchBestNeighbor(self, coord, distance):
         '''
         Perform a local search by starting from the given coordinate then examining
         the performance costs of the neighboring coordinates (within the specified distance),
@@ -523,7 +489,7 @@ class Search:
         '''
 
         # get all neighboring coordinates within the specified distance
-        neigh_coords = self.getNeighbors(coord, distance)
+        neigh_coords = self.__getNeighbors(coord, distance)
 
         # record the best neighboring coordinate and its performance cost so far
         best_coord = coord
@@ -538,7 +504,7 @@ class Search:
 
         # recursively apply this local search, if new best neighboring coordinate is found
         if best_coord != coord:
-            return self.searchBestNeighbor(best_coord, distance)
+            return self.__searchBestNeighbor(best_coord, distance)
         
         # return the best neighboring coordinate and its performance cost
         return (best_coord, best_perf_cost)

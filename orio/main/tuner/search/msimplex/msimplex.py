@@ -45,6 +45,8 @@ class MSimplex(orio.main.tuner.search.search.Search):
         
         orio.main.tuner.search.search.Search.__init__(self, params)
 
+        self.algorithmName = 'Modified Nelder-Mead Simplex Search'
+
         if self.use_parallel_search:
             err('parallel search for msimplex is not supported yet.\n')
             
@@ -185,8 +187,6 @@ class MSimplex(orio.main.tuner.search.search.Search):
             best_perf_cost = perf_costs[0]
             
 
-            
-            
             # replace simplex's best vertex with a better unvisited neighbor if simplex has been reduced to a point
             if simplex[1:] == simplex[:-1]:
                 while not self.localmin:
@@ -526,7 +526,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
     
     def __initAvailableNeighbors(self, bestVertex, simplex):
         '''return a list of available neighbors given a best vertex. Not used any more. See __chooseRandomNeighbor'''
-        neighbors = self.getNeighbors(bestVertex, self.search_distance)
+        neighbors = self.__getNeighbors(bestVertex, self.search_distance)
         visited_neighbors = self.__intersectCoords(neighbors, simplex)
         self.avail_neighbors = self.__removeCommonCoords(neighbors, visited_neighbors)
         #debug('neighbors avail: %s' % (self.avail_neighbors))

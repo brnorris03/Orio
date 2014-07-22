@@ -41,6 +41,8 @@ class Simplex(orio.main.tuner.search.search.Search):
         
         orio.main.tuner.search.search.Search.__init__(self, params)
 
+        self.algorithmName = 'Nelder-Mead Simplex Search'
+
         if self.use_parallel_search:
             err('parallel search for simplex is not supported yet.\n')
             
@@ -295,7 +297,7 @@ class Simplex(orio.main.tuner.search.search.Search):
 
                 # perform a local search on the best simplex coordinate
                 (best_simplex_coord,
-                 best_simplex_perf_cost) = self.searchBestNeighbor(best_simplex_coord,
+                 best_simplex_perf_cost) = self.__searchBestNeighbor(best_simplex_coord,
                                                                    self.local_distance)
                  
                  

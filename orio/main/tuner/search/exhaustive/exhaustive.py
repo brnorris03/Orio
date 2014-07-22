@@ -19,6 +19,8 @@ class Exhaustive(orio.main.tuner.search.search.Search):
 
         orio.main.tuner.search.search.Search.__init__(self, params)
 
+        self.algorithmName = 'Exhaustive Search'
+
         self.start_coord = None
       
         # read all algorithm-specific arguments
@@ -117,7 +119,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
             
                 info('coordinate: %s, compute cost: %s, all costs: %s, transfer time: %s' % (coord_val, compute_time, compute_times, transfer_time))
             
-                Globals().processTrialTime(coord_val,compute_time,transfer_time)
+                self.__processTrialTime(coord_val,compute_time,transfer_time)
             
                 if compute_time < best_compute_time and compute_times > 0.0:
                     best_coord = coord_val

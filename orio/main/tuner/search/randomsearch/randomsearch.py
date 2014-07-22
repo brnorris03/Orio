@@ -32,6 +32,8 @@ class Randomsearch(orio.main.tuner.search.search.Search):
         
         orio.main.tuner.search.search.Search.__init__(self, params)
 
+        self.algorithmName = 'Random Search'
+
         # set all algorithm-specific arguments to their default values
         self.local_distance = 0
 
@@ -46,8 +48,9 @@ class Randomsearch(orio.main.tuner.search.search.Search):
     # Method required by the search interface
     def searchBestCoord(self, startCoord=None):
         '''
-        To explore the search space and retun the coordinate that yields the best performance
-        (i.e. minimum performance cost).
+        Use a random strategy to explore the search space and return the coordinate 
+        that yields the best performance (i.e. minimum performance cost).
+        
         '''
         # TODO: implement startCoord support
         
@@ -76,6 +79,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
         # start the timer
         start_time = time.time()
         init = True
+        
         # execute the randomized search method
         while True:
 
@@ -107,14 +111,15 @@ class Randomsearch(orio.main.tuner.search.search.Search):
                 info('FAILED: %s %s' % (e.__class__.__name__, e))
                 fruns +=1
             # compare to the best result
-            pcost_items = perf_costs.items()
-            pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
+            pcost_items = [x > 0 for x in perf_costs.items().sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))]
+            #pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
+
             for i, (coord_str, pcost) in enumerate(pcost_items):
                 if type(pcost) == tuple: (perf_cost,_) = pcost    # ignore transfer costs -- GPUs only
                 else: perf_cost = pcost
                 coord_val = eval(coord_str)
                 #info('%s %s' % (coord_val,perf_cost))
-                #perf_params = self.coordToPerfParams(coord_val)
+                #perf_params = self.__coordToPerfParams(coord_val)
                 #try:
                 #    floatNums = [float(x) for x in perf_cost]
                 #    mean_perf_cost=sum(floatNums) / len(perf_cost)
@@ -122,7 +127,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
                 #    mean_perf_cost=perf_cost
                     
                 #info('(run %s) coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs+i+1, coord_val, perf_params, transform_time, compile_time,perf_cost))
-                #self.processTrialTime(coord_val,perf_cost,transfer_time)
+                self.__processTrialTime(coord_val,perf_cost,transfer_time)
 
                 #if mean_perf_cost < best_perf_cost and mean_perf_cost > 0.0:
                 #    best_coord = coord_val
@@ -131,7 +136,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
 
             # if a better coordinate is found, explore the neighboring coordinates
             if False and old_perf_cost != best_perf_cost:
-                neigh_coords.extend(self.getNeighbors(best_coord, self.local_distance))
+                neigh_coords.extend(self.__getNeighbors(best_coord, self.local_distance))
                 old_perf_cost = best_perf_cost
 
                            

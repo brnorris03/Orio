@@ -190,7 +190,7 @@ class Annealing(orio.main.tuner.search.search.Search):
             if self.time_limit <= 0 or (time.time()-start_time) <= self.time_limit:
                 
                 # perform a local search on the best annealing coordinate
-                best_coord, best_perf_cost = self.searchBestNeighbor(best_coord, self.local_distance)
+                best_coord, best_perf_cost = self.__searchBestNeighbor(best_coord, self.local_distance)
 
                 # if the neighboring coordinate has a better performance cost
                 if best_perf_cost < old_best_perf_cost:

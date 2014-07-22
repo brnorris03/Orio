@@ -4,6 +4,7 @@ import orio.main.tuner.search.search
 class ChaosGA(orio.main.tuner.search.search.Search):
     def __init__(self, params):
         orio.main.tuner.search.search.Search.__init__(self, params)
+        self.algorithmName = 'ChaosGA Search'
         self.search_time = -1
         self.numEvals=500
 
