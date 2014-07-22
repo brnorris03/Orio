@@ -5,7 +5,8 @@
 
 import logging, os, sys, traceback, re
 from matplotlib_logger import MatplotlibLogger
-from orio.main.tuner.stats import *
+from orio.main.dyn_loader import DynLoader
+import orio.main.tuner.stats
 
 
 class Globals:
@@ -24,6 +25,7 @@ class Globals:
             self.error_pre = "\x1B[00;31m"
             self.error_post = "\x1B[00m"
             self.metadata = {'loop_transformations':[]}
+            self.dloader = DynLoader()
             
             # Top <num> variants (default is 1, -t/--top user option)
             if 'top' in cmdline.keys():
@@ -139,6 +141,23 @@ class Globals:
                 if not self.disable_orio:
                     self.logfile = 'tuning' + str(os.getpid()) + '.log'
                     thelogger.addHandler(logging.FileHandler(filename=self.logfile))
+                    
+            # Output statistics formatting of tuning statistics output
+            if 'stats_format' in cmdline.keys():
+                # Try to load specified module
+                try:
+                    class_name = cmdline['stats_format'].lower().title()
+                    mod_name = 'orio.main.tuner.stats'
+                    self.statsWriter = self.dloader.loadClass(mod_name, class_name)()
+                except:
+                    classlist = self.__getClasses(mod_name)
+                    classlist.remove('Stats')
+                    warn('Could not find a tuning statistics writer for the specified format: %s\n' + 
+                         'Available modules are %s' % (cmdline['stats_format'], ','.join(classlist)))
+            else:
+                self.statsWriter = orio.main.tuner.stats.Simple()
+                    
+
             # Because commands are output with extra formatting, for now do not use the logger for stderr output
             #streamhandler = logging.StreamHandler()
             #streamhandler.setLevel(logging.INFO)
@@ -147,11 +166,8 @@ class Globals:
           
             #self.loggers['Matplotlib'] = MatplotlibLogger().getLogger()
       
-            # TODO: specific class for stats recording (needs new cmdline opt)
-            self.stats = MatlabStats()
-    
             # Enable debugging
-            self.debug_level = 5
+            self.debug_level = 5   # default
             if 'ORIO_DEBUG' in os.environ.keys() and os.environ['ORIO_DEBUG'] == '1' or 'debug' in cmdline.keys(): 
                 self.debug = True
                 self.loggers['TuningLog'].setLevel(logging.DEBUG)
@@ -249,6 +265,21 @@ class Globals:
 
         def getFuncInputVars(self):
             return self.input_vars
+        
+        def getCounter(self):
+            """ Increments the global counter and returns the new value """
+            self.counter += 1
+            return self.counter
+        
+        def getClasses(self,moduleName):
+            '''
+            @return: a list of all classes defined in the module or an empty list if module not found.
+            '''
+            import pyclbr
+            classes = []
+            try: classes = pyclbr.readmodule(moduleName).keys()
+            except: pass
+            return classes
                  
         # ==================== end of class Globals.__impl ===========================
 
@@ -269,10 +300,6 @@ class Globals:
         """ Delegate access to implementation """
         return setattr(self.__single, attr, value)
 
-    def getcounter(self):
-        """ Increments the global counter and returns the new value """
-        self.counter += 1
-        return self.counter
 
 
     

@@ -5,7 +5,7 @@
 import re, sys, os
 
 from orio.main.util.globals import *
-import orio.main.dyn_loader, orio.main.tspec.tspec, orio.main.tuner.ptest_codegen, orio.main.tuner.ptest_driver
+import orio.main.tspec.tspec, orio.main.tuner.ptest_codegen, orio.main.tuner.ptest_driver
 
 
 #--------------------------------------------------
@@ -29,7 +29,6 @@ class PerfTuner:
         '''To instantiate an empirical performance tuner object'''
 
         self.odriver = odriver
-        self.dloader = orio.main.dyn_loader.DynLoader()
 
         self.num_params=0
         self.num_configs=0
@@ -107,7 +106,7 @@ class PerfTuner:
             
         class_name = tinfo.search_algo
         mod_name = '.'.join([SEARCH_MOD_NAME, class_name.lower(), class_name.lower()])
-        search_class = self.dloader.loadClass(mod_name, class_name)
+        search_class = Globals().dloader.loadClass(mod_name, class_name)
 
         # convert the search time limit (from minutes to seconds) and get the total number of
         # search runs

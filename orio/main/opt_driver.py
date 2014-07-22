@@ -4,7 +4,7 @@
 
 import sys, traceback, os
 from orio.main.util.globals import *
-import orio.main.code_frag, orio.main.dyn_loader, orio.main.tuner.tuner
+import orio.main.code_frag, orio.main.tuner.tuner
 
 #----------------------------------------------------------------
 
@@ -23,7 +23,6 @@ class OptDriver:
         '''To instantiate an optimization driver'''
         self.lang = language
         self.ptuner = orio.main.tuner.tuner.PerfTuner(self)
-        self.dloader = orio.main.dyn_loader.DynLoader()
         self.input_params = None
     
     #-------------------------------------------------------------
@@ -84,8 +83,7 @@ class OptDriver:
                     if (isinstance(nested_cf, orio.main.code_frag.LeaderAnn) and
                         nested_cf.mod_name == PTUNE_NAME):
                         err(('orio.main.opt_driver: %s: performance-tuning annotations must be defined at ' +
-                                'top level and cannot be nested') % nested_cf.line_no)
-                        sys.exit(1)
+                                'top level and cannot be nested') % nested_cf.line_no, doexit=True)
                                                 
                     # if the nested code fragment is an annotation code region
                     if isinstance(nested_cf, orio.main.code_frag.AnnCodeRegion):
@@ -96,22 +94,31 @@ class OptDriver:
     #-------------------------------------------------------------
 
     def __optimizeCodeFrag(self, cfrag, perf_params):
-        '''Apply optimization described in the annotations to the given code fragment'''
+        '''
+        Apply optimization described in the annotations to the given code fragment.
+        
+        @param cfrag: The annotaed code fragment
+        @param perf_params: Performance parameters (from tuning spec)
+        @return: A list of three-element tuples. Each tuple contains the code fragment, 
+        a list of input code parameters (for code fragments specialized by inputs), 
+        and a string of external (to the annotated region) code, which will be output
+        before the generated code.
+        '''
 
         debug('__optimizeCodeFrag: code_frag type is ' + cfrag.__class__.__name__, self)
 
         # apply no optimizations to non-annotation code fragment
         if isinstance(cfrag, orio.main.code_frag.NonAnn):
-            debug("OptDriver line 79", self)
+            debug("OptDriver line 79", self, level=7)
             return [(cfrag.code, [], '')]
 
         # optimize annotated code region
         elif isinstance(cfrag, orio.main.code_frag.AnnCodeRegion):
 
-            debug("OptDriver line 85: %s" % cfrag.leader_ann.mod_name, self)
+            debug("OptDriver line 85: %s" % cfrag.leader_ann.mod_name, self, level=7)
             # initiate empirical performance tuning
             if cfrag.leader_ann.mod_name == PTUNE_NAME:
-                debug("OptDriver line 88, detected tuning spec", self)
+                debug("OptDriver line 88, detected tuning spec", self, level=7)
                 # apply empirical performance tuning
                 optimized_code_seq = self.ptuner.tune(cfrag.leader_ann.mod_code,
                                                       cfrag.leader_ann.mod_code_line_no,
@@ -137,7 +144,7 @@ class OptDriver:
 
             # initiate code transformation and generation
             else:
-                debug("OptDriver line 114, detected code annotated for tuning", self)
+                debug("OptDriver line 114, detected code annotated for tuning", self, level=7)
 
                 # recursively apply optimizations to the annotation body
                 optimized_body_code_seq = self.optimizeCodeFrags(cfrag.cfrags, perf_params)
@@ -157,7 +164,7 @@ class OptDriver:
                 
                 debug('about to load module.class %s.%s corresponding to annotation %s' % (mod_name,class_name,class_name), self)
                 try:
-                    mod_class = self.dloader.loadClass(mod_name, class_name)
+                    mod_class = Globals().dloader.loadClass(mod_name, class_name)
                 except Exception, e:
                     err('orio.main.opt_driver: %s: unable to load class %s.%s' % (cfrag.leader_ann.mod_name_line_no,mod_name,class_name))
                     

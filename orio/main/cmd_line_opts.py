@@ -21,6 +21,9 @@ Options:
                                  e.g., taudb_loadtrial
   -d, --debug                    Enable debugging output
   -e, --erase-annot              remove annotations from the output
+  -F, --format=<format string>   stats file output format, where format string is one of the following:
+                                 simple: CSV using semicolon as separator
+                                 matlab: [FUTURE]
   -h, --help                     display this message
   -k, --keep-temps               keep all temporary files (default is to delete them after each test)
   -n, --dry_run                  Don't execute anything, just print commands [FUTURE]
@@ -44,12 +47,14 @@ Options:
   -v, --verbose                  verbosely show details of the results of the running program
   --validate                     validate by comparing output of original and transformed codes
 
-environment variables: 
+Environment variables: 
   ORIO_FLAGS                     the string value is used to augment the list of Orio command-line
                                  options
   ORIO_DEBUG                     when set, print debugging information (primarily for developer use)
-                                 
-For more details, please refer to the documentation at https://trac.mcs.anl.gov/projects/performance/wiki/OrioUserGuide
+  ORIO_DEBUG_LEVEL               control the amount of debugging output (1 is minimal, greater values 
+                                 more details)
+
+For more details, please refer to the documentation at http://brnorris03.github.io/Orio/.
 ''' % os.path.basename(sys.argv[0])
 
 #----------------------------------------------
@@ -78,7 +83,7 @@ class CmdParser:
         for arg in argv[1:]:
             if not wrapper and arg.startswith('-'):
                 orioargv.append(arg)
-                if arg in ['-c','-o','-p','-s']: # switch with an argument
+                if arg in ['-c','-F','-o','-p','-R','-s','-t']: # switch with an argument
                     orioarg = True
                 continue
             argisinput = False
@@ -130,8 +135,9 @@ class CmdParser:
         # get all options
         try:
             opts, args = getopt.getopt(orioargv,
-                                       'c:dehko:p:R:rs:t:vx',
-                                       ['pre-command=','debug','config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=', 'time='
+                                       'c:deF:hko:p:R:rs:t:vx',
+                                       ['pre-command=','debug','config=','configfile=', 'erase-annot', 'format', 
+                                        'help', 'keep-temps',' output=', 'time='
                                        'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern', 'validate', 'post-command=', 'restart=', 'top=', 'dry_run'])
         except Exception, e:
             sys.stderr.write('Orio command-line error: %s' % e)
@@ -148,6 +154,8 @@ class CmdParser:
                 cmdline['post_cmd'] = arg
             elif opt in ('-e', '--erase-annot'):
                 cmdline['erase_annot'] = True
+            elif opt in ('-F', '--format'):
+                cmdline['stats_format'] = arg
             elif opt in ('-h', '--help'):
                 sys.stdout.write(USAGE_MSG +'\n')
                 sys.exit(0)
