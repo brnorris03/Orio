@@ -2,7 +2,7 @@
 # The transformation that applies code transformation procedures
 #
 
-import ast, orio.main.dyn_loader
+import ast
 from orio.main.util.globals import *
 
 #-----------------------------------------
@@ -20,7 +20,7 @@ class Transformation:
         self.perf_params = perf_params
         self.verbose = verbose
         self.language = language
-        self.dloader = orio.main.dyn_loader.DynLoader()
+        self.dloader = Globals().dloader
         self.tinfo = tinfo
         
     #--------------------------------------

@@ -434,7 +434,7 @@ class Transformation:
             
         # generate the orio.main.unrolled loop
         
-        lbound_name = 'orio_lbound'+str(g.Globals().getcounter())
+        lbound_name = 'orio_lbound'+str(g.Globals().getCounter())
         lbound_name_exp = orio.module.loop.ast.IdentExp(lbound_name)
         lbound_init = orio.module.loop.ast.VarDeclInit('int', lbound_name_exp, new_lbound_exp)
         loop = self.flib.createForLoop(index_id, new_lbound_exp, new_ubound_exp,
@@ -474,7 +474,7 @@ class Transformation:
         # Not sure why there is an if else condition in the first place.
         
         # generate the clean-up loop
-        cleanup_lbound_name = 'orio_lbound'+str(g.Globals().getcounter())
+        cleanup_lbound_name = 'orio_lbound'+str(g.Globals().getCounter())
         cleanup_lbound_name_exp = orio.module.loop.ast.IdentExp(cleanup_lbound_name)
         cleanup_lbound_init = orio.module.loop.ast.VarDeclInit('int', cleanup_lbound_name_exp, cleanup_lbound_exp)
         

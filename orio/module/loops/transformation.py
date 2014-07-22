@@ -1,6 +1,5 @@
 import orio.main.util.globals as g
 import orio.module.loops.ast as ast
-import orio.main.dyn_loader
 
 #----------------------------------------------------------------------------------------------------------------------
 # prefix of transformation submodules
@@ -12,7 +11,6 @@ class Transformation:
     '''Code transformation implementation'''
 
     def __init__(self, perf_params, verbose, language='C', tinfo=None):
-        self.dloader = orio.main.dyn_loader.DynLoader()
         self.perf_params = perf_params
         self.verbose = verbose
         self.language = language
@@ -64,7 +62,7 @@ class Transformation:
             # dynamically load the transformation submodule class
             class_name = stmt.name
             submod_name = '.'.join([TSUBMOD_NAME, class_name.lower(), class_name.lower()])
-            submod_class = self.dloader.loadClass(submod_name, class_name)
+            submod_class = g.Globals().dloader.loadClass(submod_name, class_name)
             
             # apply code transformations
             t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language, self.tinfo)

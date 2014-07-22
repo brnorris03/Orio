@@ -956,7 +956,7 @@ class Transformation(object):
         intarrays = list(int_ids_pass2.intersection(array_ids))
         kdeclints = list(kdeclints.difference(intarrays))
         if str(lbound_exp) != '0':
-          lbound_id = self.cs['prefix'] + 'var' + str(g.Globals().getcounter())
+          lbound_id = self.cs['prefix'] + 'var' + str(g.Globals().getCounter())
           self.model['lbound'] = VarDeclInit('int', IdentExp(lbound_id), lbound_exp)
           kdeclints += [lbound_id]
         array_ids = array_ids.difference(intarrays)
@@ -964,7 +964,7 @@ class Transformation(object):
         ktempdbls = []
         if self.model['isReduction']:
             for var in lhs_ids:
-                tempIdent = self.cs['prefix'] + 'var' + str(g.Globals().getcounter())
+                tempIdent = self.cs['prefix'] + 'var' + str(g.Globals().getCounter())
                 ktempdbls += [tempIdent]
                 rrLhs = lambda n: IdentExp(tempIdent) if (isinstance(n, IdentExp) and n.name == var) else n
                 loop_body = loop_lib.rewriteNode(rrLhs, loop_body)
@@ -1103,10 +1103,10 @@ class Transformation(object):
         # begin reduction statements
         reducts      = 'reducts'
         reductsIdent = IdentExp(reducts)
-        blkdata      = self.cs['prefix'] + 'vec'+str(g.Globals().getcounter())
+        blkdata      = self.cs['prefix'] + 'vec'+str(g.Globals().getCounter())
         blkdataIdent = IdentExp(blkdata)
-        dev_kernel_name     = self.cs['prefix'] + 'kernel'#+str(g.Globals().getcounter())
-        dev_redkern_name    = self.cs['prefix'] + 'blksum'#+str(g.Globals().getcounter())
+        dev_kernel_name     = self.cs['prefix'] + 'kernel'#+str(g.Globals().getCounter())
+        dev_redkern_name    = self.cs['prefix'] + 'blksum'#+str(g.Globals().getCounter())
         dev_warpkern64_name = self.cs['prefix'] + 'warpReduce64'
         dev_warpkern32_name = self.cs['prefix'] + 'warpReduce32'
         reduceStmts = []
