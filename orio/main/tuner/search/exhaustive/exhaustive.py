@@ -5,7 +5,6 @@
 import sys, time
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
-from orio.main.tuner.stat_record import recCoords
 
 #-----------------------------------------------------
 
@@ -117,7 +116,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
             # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
             #progress = 'init' if recFlag else 'continue'
             #recFlag = False
-            #IOtime = recCoords(time.time()-start_time, best_perf_cost, best_coord, progress)
+            #IOtime = Globals().stats.record(time.time()-start_time, best_perf_cost, best_coord, progress)
             # don't include time on recording data in the tuning time
             #start_time += IOtime
 
@@ -146,7 +145,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         info('----- end exhaustive search -----')
         
         # record time elapsed vs best perf cost found so far in a format that could be read in by matlab/octave
-        #recCoords(time.time()-start_time, best_perf_cost, best_coord, 'done')
+        #Globals().stats.record(time.time()-start_time, best_perf_cost, best_coord, 'done')
         
         # return the best coordinate
         return best_coord,(best_perf_cost,corr_transfer),search_time,len(coords)

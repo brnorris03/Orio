@@ -26,6 +26,7 @@ class Transformation:
         self.newVarsOp = set([])  #tells you which operation is operated on the new set of variables (either none, plus, or multiply)
         self.varsToAdd = set([])  #tells you which variable names considered for introduction. Need ufactor to deduce the full set of variables introduced.
         self.varsNoAdd = set([])
+        self.localvars = set([])
     #----------------------------------------------------------
 
     def __addIdentWithExp(self, tnode, index_name, exp):
@@ -219,6 +220,9 @@ class Transformation:
               
         elif isinstance(tnode, orio.module.loop.ast.VarDecl):
             return binOpExprs
+        
+        elif isinstance(tnode, orio.module.loop.ast.Comment):
+            return binOpExprs
 
         else:
             err('orio.module.loop.submodule.unrolljam.transformation.__analyzeForNewVars internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
@@ -358,7 +362,10 @@ class Transformation:
         for_loop_info = self.flib.extractForLoopInfo(self.stmt)
         index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
 
-        index_decl = ast.VarDecl('int', [index_id.name])
+        if not index_id.name in self.localvars:
+            index_decl = ast.VarDecl('int', [index_id.name])
+            self.localvars.add(index_id.name)
+            debug('loop.unrolljam.transformation: generating var decl: %s %s'% (int, index_id.name),self)
         
         # when ufactor = 1, no transformation will be applied
         if self.ufactor == 1:
@@ -451,9 +458,9 @@ class Transformation:
         
                                           
         #t = orio.module.loop.ast.BinOpExp(orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
-         #                            orio.module.loop.ast.NumLitExp(self.ufactor,
-          #                                                         orio.module.loop.ast.NumLitExp.INT),
-           #                         orio.module.loop.ast.BinOpExp.MOD)
+        #                            orio.module.loop.ast.NumLitExp(self.ufactor,
+        #                                                         orio.module.loop.ast.NumLitExp.INT),
+        #                         orio.module.loop.ast.BinOpExp.MOD)
         #cleanup_lbound_exp = orio.module.loop.ast.BinOpExp(
          #                            orio.module.loop.ast.ParenthExp(ubound_exp.replicate()),
           #                           orio.module.loop.ast.ParenthExp(t),

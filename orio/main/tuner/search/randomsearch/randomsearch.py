@@ -109,7 +109,9 @@ class Randomsearch(orio.main.tuner.search.search.Search):
             # compare to the best result
             pcost_items = perf_costs.items()
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
-            for i, (coord_str, (perf_cost,_)) in enumerate(pcost_items):
+            for i, (coord_str, pcost) in enumerate(pcost_items):
+                if type(pcost) == tuple: (perf_cost,_) = pcost    # ignore transfer costs -- GPUs only
+                else: perf_cost = pcost
                 coord_val = eval(coord_str)
                 #info('%s %s' % (coord_val,perf_cost))
                 perf_params = self.coordToPerfParams(coord_val)

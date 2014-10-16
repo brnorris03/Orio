@@ -24,8 +24,8 @@ class OptDriver:
         self.lang = language
         self.ptuner = orio.main.tuner.tuner.PerfTuner(self)
         self.dloader = orio.main.dyn_loader.DynLoader()
-
-	self.input_params = None
+        self.input_params = None
+    
     #-------------------------------------------------------------
 
     def optimizeCodeFrags(self, cfrags, perf_params, is_top_level = False):
@@ -162,7 +162,7 @@ class OptDriver:
                     err('orio.main.opt_driver: %s: unable to load class %s.%s' % (cfrag.leader_ann.mod_name_line_no,mod_name,class_name))
                     
                 debug("about to instantiate transformation class: %s.%s" %(mod_name,class_name), self)
-                debug("perf_params=" + str(perf_params),self)
+                debug("perf_params=" + str(perf_params),self,level=6)
 
                 # apply code transformations
                 # This instantiates the transformation module and initializes it with the
@@ -212,6 +212,5 @@ class OptDriver:
         
         # unexpected type of code fragment
         else:
-            err('orio.main.opt_driver internal error:  unexpected type of code fragment')
-            sys.exit(1)
+            err('orio.main.opt_driver internal error:  unexpected type of code fragment',doexit=True)
 

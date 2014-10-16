@@ -330,8 +330,11 @@ class PerfTestCodeGen(object):
         validation_code = ''
         if self.validation_file:
             include_validation_code = '#include "%s"\n' % self.validation_file
-            validation_code = 'if (!%s()) printf("validation function %s returned a false/zero");' \
-                                % (self.validation_func_name, self.validation_func_name)
+            validation_code = '''
+      if (!%s()) {
+         fprintf(stderr,"validation function %s returned an error code.\\\\n");
+         return 1;
+      }''' % (self.validation_func_name, self.validation_func_name)
         
         # create code for the global definition section
         global_code = ''

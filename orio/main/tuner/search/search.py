@@ -19,7 +19,7 @@ class Search:
         #print 'done'
 
         self.params=params
-        debug('[Search] performance parameters:\n', params)
+        debug('[Search] performance parameters: %s\n' % str(params), self)
 
         # the class variables that are essential to know when developing a new search engine subclass
         if 'search_time_limit' in params.keys(): self.time_limit = params['search_time_limit']
@@ -251,8 +251,11 @@ class Search:
 
             try:
                 transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
-            except Exception, e:
-                err('failed during evaluation of coordinate: %s=%s\n%s %s' % (coord, self.coordToPerfParams(coord), e.__class__.__name__, e), 0, False)
+            except TransformationException, e:
+                # Do not stop if a single test fails, continue with other transformations
+                err('failed during evaluation of coordinate: %s=%s\n%s\nError:%s' \
+                    % (str(coord), str(perf_params), str(e.__class__), e.message), 
+                    code=0, doexit=False)
                 perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
                 continue
 

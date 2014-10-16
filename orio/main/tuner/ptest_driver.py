@@ -5,6 +5,7 @@
 import os, time, re, datetime, uuid
 
 from orio.main.util.globals import *
+import subprocess as sp
 
 #-----------------------------------------------------
 
@@ -81,6 +82,13 @@ class PerfTestDriver:
 
         # for efficiency
         self.first = True
+        
+        # Keep track of failed and succcessful runs
+        self.failedRuns = 0
+        self.successfulRuns = 0
+        
+        # For processing output
+        self.resultre = re.compile(r'\w*({.*})')
 
     #-----------------------------------------------------
 
@@ -295,11 +303,16 @@ class PerfTestDriver:
             cmd = '%s ./%s' % (Globals().pre_cmd,self.exe_name)
             info(' running test:\n\t' + cmd)
             try:
-                f = os.popen(cmd)
+                #process = sp.Popen(cmd, 'w', shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                #retCode = process.stdin.close()
+                #out = process.stdout.readlines()
+                f = os.popen(cmd)    
                 out = f.readlines()
                 f.close()
             except Exception, e:
-                err('orio.main.tuner.ptest_driver: failed to execute the test code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
+                self.failedruns += 1
+                err('orio.main.tuner.ptest_driver: failed to execute the test code: "%s"\n --> %s: %s' \
+                    % (cmd,e.__class__.__name__, e),doexit = False)
                 
             if Globals().post_cmd is not None:
                 try:
@@ -309,46 +322,54 @@ class PerfTestDriver:
                         cmd = cmd % (uniq, uniq)
                     status = os.system(cmd) 
                     if status:
-                        err('orio.main.tuner.ptest_driver: failed to execute the post-command: "%s"' % Globals().post_cmd)
+                        err('orio.main.tuner.ptest_driver: failed to execute the post-command: "%s"' % Globals().post_cmd, doexit=False)
                 except Exception, e:
-                    err('orio.main.tuner.ptest_driver: failed to execute the post-command: "%s"\n --> %s: %s' % (Globals().post_cmd,e.__class__.__name__, e))
+                    err('orio.main.tuner.ptest_driver: failed to execute the post-command: "%s"\n --> %s: %s' \
+                        % (Globals().post_cmd,e.__class__.__name__, e), doexit = False)
         
                 
+            # Parse the output to get the times (and in some cases, e.g., for GPU code, the data transfer times)
             try:
                 if out:
-                    #info('out: %s' % out)
+                    #info('out:\n %s' % out)
                     perf_costs={}
                     perf_costs_reps=[]
                     transfers=[]
                     for line in out: 
+                        #info('the line:\n%s' % line)
+                        # Output lines have the form {'[coordinate]' : time} or {'[coordinate]' : (time, transfer_time)}
+                        # where [coordinate] is a list of indices, e.g., [2,4,1,0,0]
                         if line.strip().startswith('{'): 
                             output = line.strip()
                             rep=eval(str(output))
-                            key=rep.keys()[0]
-                            if isinstance(rep[key],tuple):
-                              perf_costs_reps.append(rep[key][0])
-                              transfers.append(rep[key][1])
-                            else:
-                              perf_costs_reps.append(rep[key])
-                              transfers.append(float('inf'))
+                            key=rep.keys()[0]  # the coordinate, e.g., [2,4,1,0,0]
+                            if isinstance(rep[key],tuple):    # cases where we have (time, transfer_time) values
+                                perf_costs_reps.append(rep[key][0])
+                                transfers.append(rep[key][1])
+                            else:   # cases where we have just time values
+                                perf_costs_reps.append(rep[key])
+                                transfers.append(float('inf'))
                             perf_costs[key]=(perf_costs_reps,transfers)
                         else:
+                            #warn(errmsg="Error processing test result: %s" % line)
                             parts = line.strip().split('@')
-                            err(parts[0], 0, False)
                             rep=eval(str(parts[1]))
-                            key=rep.keys()[0]
-                            perf_costs_reps.append(float('inf'))
-                            transfers.append(float('inf'))
+                            key=rep.keys()[0]     # the coordinate, e.g., [2,4,1,0,0]
+                            perf_costs_reps.append(float('inf'))    # time
+                            transfers.append(float('inf'))          # transfer time
                             perf_costs[key]=(perf_costs_reps,transfers)
                 #if output: perf_costs = eval(str(output))
+                self.successfulRuns += 1
             except Exception, e:
+                self.failedRuns += 1
                 err('orio.main.tuner.ptest_driver: failed to process test result, command was "%s", output: "%s\n --> %s: %s' %
-                      (cmd,perf_costs,e.__class__.__name__,e))
+                      (cmd,perf_costs,e.__class__.__name__,str(e)), doexit=False)
 
         #exit()        
         # check if the performance cost is already acquired
+        #info(str(perf_costs))
         if not perf_costs:
-            err('orio.main.tuner.ptest_driver:  performance testing failed: "%s"' % cmd)
+            err('orio.main.tuner.ptest_driver:  performance testing failed: "%s"' % cmd, doexit=False)
 
         # compare original and transformed codes' results
         if Globals().validationMode and Globals().executedOriginal:
@@ -356,7 +377,9 @@ class PerfTestDriver:
             info(' running diff:\n\t' + cmd)
             status = os.system(cmd)
             if status:
-                err('orio.main.tuner.ptest_driver: results of transformed code differ from the original: "%s"' % status)
+                infpair = (float('inf'),float('inf'))
+                for k in perf_costs.keys(): perf_costs[k] = infpair 
+                err('orio.main.tuner.ptest_driver: results of transformed code differ from the original: "%s"' % status, doexit=False)
 
         # return the performance costs dictionary
         return perf_costs

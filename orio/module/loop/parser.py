@@ -41,7 +41,7 @@ tokens = reserved + [
     ]
 
 # Comments
-t_LINECOMMENT    = r'[\#!][^\n\r]*'
+t_LINECOMMENT    = r'[\#!][^\n\r]*|//[^\n\r]*'
       
 # operators
 t_PLUS             = r'\+'

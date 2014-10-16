@@ -227,7 +227,7 @@ class ForLoopLib:
             index_id, lbound_exp, ubound_exp, stride_exp, loop_body = self.extractForLoopInfo(stmt)
             if index_id.name not in inames:
                 inames.append(index_id.name)
-            return inames
+            return list(sets.Set(inames))
 
         elif isinstance(stmt, orio.module.loop.ast.TransformStmt):
             err('orio.module.loop.ast_lib.forloop_lib internal error: unprocessed transform statement')

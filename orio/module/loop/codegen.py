@@ -42,6 +42,7 @@ class CodeGen_C (CodeGen):
     def __init__(self):
         '''To instantiate a code generator'''
         self.arrayref_level = 0
+        self.alldecls = set([])
         pass
 
     #----------------------------------------------
@@ -152,6 +153,7 @@ class CodeGen_C (CodeGen):
                 
         elif isinstance(tnode, ast.CompStmt):
             s += indent + '{\n'
+            self.alldecls = set([])
             for stmt in tnode.stmts:
                 s += self.generate(stmt, indent + extra_indent, extra_indent)
             s += indent + '}\n'
@@ -192,6 +194,7 @@ class CodeGen_C (CodeGen):
             if isinstance(tnode.stmt, ast.CompStmt): 
                 stmt_s = self.generate(tnode.stmt, indent, extra_indent)
                 s += stmt_s[stmt_s.index('{'):]
+                self.alldecls = set([])
             else:
                 s += '\n'
                 s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
@@ -200,9 +203,12 @@ class CodeGen_C (CodeGen):
             g.err('orio.module.loop.codegen internal error: a transformation statement is never generated as an output')
 
         elif isinstance(tnode, ast.VarDecl):
-            s += indent + str(tnode.type_name) + ' '
-            s += ', '.join(tnode.var_names)
-            s += ';\n'
+            sv = indent + str(tnode.type_name) + ' '
+            sv += ', '.join(tnode.var_names)
+            sv += ';\n'
+            if not sv in self.alldecls: 
+                s += sv
+                self.alldecls.add(sv)
 
         elif isinstance(tnode, ast.VarDeclInit):
             s += indent + str(tnode.type_name) + ' '
