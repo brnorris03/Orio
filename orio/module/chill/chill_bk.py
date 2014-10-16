@@ -4,7 +4,6 @@
 
 import ann_parser, orio.module.module
 import sys, re, os, glob
-import collections
 from orio.main.util.globals import *
 
 #-----------------------------------------
@@ -153,72 +152,18 @@ class CHiLL(orio.module.module.Module):
 				transforms = transforms + perm
 
 			if recipeTest[0] == 'cuda':
-				TBt = filter(None,re.split('\t|\n|\(|\)|:|\{|\}|=|block|thread',transCMD[trans]))
-				blocksT = filter(None,re.split(',',TBt[2]))
-				threadsT = filter(None,re.split(',',TBt[4]))
-
-				blocksNew = 'block={'
-				blocksNew1 = 'block={'
-
-
-				Bt = []
-				Bt1 = []
-				Tt1 = []
-
-				for i in range(len(blocksT)):
-
-					if blocksT[i] in self.perf_params.keys():
-						if self.perf_params[blocksT[i]] != "1":
-							blocksNew = blocksNew + '\"' + self.perf_params[blocksT[i]]  + '\",'
-						blocksNew1 = blocksNew1 + '\"' + self.perf_params[blocksT[i]]  + '\",'
-
-						Bt.append('\"' + self.perf_params[blocksT[i]] + '\"')
-
-					else:
-						blocksNew = blocksNew +  blocksT[i] +','
-						Bt.append(blocksT[i])
-
-
-				blocksNew = blocksNew[:-1] + '}'
-				blocksNew1 = blocksNew1[:-1] + '}'
-
-				threadsNew = 'thread={'
-
-				threadsNew1 = 'thread={'
-
-				for i in range(len(threadsT)):
-
-					if threadsT[i] in self.perf_params.keys():
-						if self.perf_params[threadsT[i]] != "1":
-							threadsNew = threadsNew + '\"' + self.perf_params[threadsT[i]] + '\",'
-						threadsNew1 = threadsNew1 + '\"' + self.perf_params[threadsT[i]] + '\",'
-
-						Bt.append('\"' +self.perf_params[threadsT[i]]+'\"')
-					else:
-						threadsNew = threadsNew +  threadsT[i] + ','
-						threadsNew1 = threadsNew1 +  threadsT[i] + ','
-
-						Bt.append(threadsT[i])
-				threadsNew = threadsNew[:-1] + '}'
-				threadsNew1 = threadsNew1[:-1] + '}'
-
-				inter =  [x for x, y in collections.Counter(Bt).items() if y > 1]
-
-
-
-				if len(inter) > 0:
-					print "Warning: Threand and block decomposition wrong. Version not counted."
-					print blocksNew1
-					print threadsNew1 
-					return output_code
-
-
 				funcs.append(funcName[1] + '_GPU_'+recipeTest[1])
 				cudaVal = 'cudaize('+ recipeTest[1] + ',\"'+funcName[1] + '_GPU_' + recipeTest[1] + '\",{' 
 				for key,val in self.input_vars.items():
 					cudaVal = cudaVal + key + '=' + val + ','
-				cudaVal = cudaVal[:-1] + '},{' 
-				cudaVal = cudaVal + blocksNew + ',' + threadsNew + '},{})\n'
+				cudaVal = cudaVal[:-1] + '},{' + recipeTest[2] + ',' + recipeTest[3] 
+				if len(recipeTest) < 6:
+					cudaVal = cudaVal + ',' +recipeTest[4] +'},{})\n'
+
+				elif len(recipeTest)  == 6:
+					cudaVal = cudaVal + ',' +recipeTest[4] +',' + recipeTest[5] + '},{})\n'
+				else:
+					cudaVal = cudaVal + ',' +recipeTest[4] +',' + recipeTest[5] + ',' + recipeTest[6] + '},{})\n'
 				cudaize = cudaize + cudaVal
 				cudaCount = cudaCount+1
 				
@@ -350,133 +295,161 @@ class CHiLL(orio.module.module.Module):
 
 	fnew2 = open('rose__orio_chill_.cu')
 
-	dataCopy = {}
-	dataMalloc = {}
-	dataFree = []
-	cudaKern = {}
-	variables = []
-	Grid = {}
+	
+	Tblocks = []
+	Mallocs = []
+	dataCopy = []
+	cudaFunc = []
+	countBlocks = 0
 
-	vari = 0
-	kernCall = 0
-	kernelName = 'kernel_' + str(kernCall)
-	acumData = 0
+	countDataDec = 0
+	countDatacopy=0
 
-	dCopy = []
+	dim3 = []
 	dMalloc = []
-	dGrid = []
-
+	dCopy = []
+	tempVars = []
+	tempFrees = []
 	for line in fnew2:
-	
-		lineInfo = filter(None,re.split(' |(double|cudaMalloc|cudaMemcpy|dim|cudaFree|\_GPU\_)',line))
-	
-		if lineInfo[0] == 'cudaMemcpy':
+		varVal = filter(None,re.split('(double|\*|dev|cudaFree)',line))
+		if len(varVal) >= 5: 
+			if varVal[1] == 'cudaFree':
+				tempFrees.append(line)
+
+			if varVal[1] == 'double' and varVal[3] == '*' and varVal[4] == 'dev':
+				tempVars.append(line)
+ 
+		funcC = filter(None,re.split('<<<|>>>| |\(|\)',line))
+		if funcC[0] == 'dim3':
+			dim3.append(line)
+			countBlocks = countBlocks + 1
+			if countBlocks == 2:
+				Tblocks.append(dim3)
+				dim3 = []
+				countBlocks = 0
+
+		if funcC[0] == 'cudaMemcpy':
 			dCopy.append(line)
+			countDatacopy = countDatacopy + 1
+			if countDatacopy == 4:
+				dataCopy.append(dCopy)
+				dCopy = []
+				countDatacopy = 0
 
-		if lineInfo[0] == 'cudaMalloc':
+		if funcC[0] == 'cudaMalloc':
 			dMalloc.append(line)
-			acumData = acumData + 1
+			countDataDec = countDataDec + 1
+			if countDataDec == 3:
+				Mallocs.append(dMalloc)
+				dMalloc = []
+				countDataDec = 0
 
-		if lineInfo[0] == 'dim':
-			dGrid.append(line)
-
-		if len(lineInfo) > 2:
-			if lineInfo[1] == '_GPU_':
-				cudaKern[kernelName] = line
-
-
-		if lineInfo[0] == 'cudaFree':
-			acumData = acumData - 1
-
-		if acumData == 0 and len(dMalloc) > 0:
-
-			dataCopy[kernelName] = dCopy
-			dCopy = []
-
-			dataMalloc[kernelName] = dMalloc
-			dMalloc = []
-			Grid[kernelName] = dGrid
-			dGrid = []
-
-			kernCall = kernCall + 1
-			kernelName = 'kernel_' + str(kernCall)
+		for i in funcs:
+			if funcC[0] == i:
+				cudaFunc.append(line)
 
 
+	variable = {}
+	acum = 0
+	incount = 1
+	outcount = 1
+	usedVal = []
 
-	usedValues = {}
-	newCopyIn = []
-	newCopyOut = []
-	newMalloc = []
-	newKernel = [None] * len(cudaKern)
+	inDataCopy = 0
+	for sec in dataCopy:
+		inDataCopy = 1
+		change = []
+		acum2 = 0
+		for j in sec:
+			info2 = {}
+			
+			varChange = []
+			inter = ''
+			splitC = filter(None,re.split(',|\(|\)',j))
+			dev = filter(None,re.split('(dev)',splitC[2]))
+			if dev[0] != 'dev':
+				if splitC[2] not in variable:
+					info2['original']=splitC[1]
 
-	dataCounter = [1,1]
-	for key in dataCopy:
-		oldValue = {}
-		for j in dataCopy[key]:
-			lineInfo = filter(None, re.split('(\(|,|\))',j))
-			pointer = filter(None,re.split('(dev|I|O|Ptr)',lineInfo[2]))
+					dev2 = filter(None,re.split('(dev|Ptr|I|O)',splitC[1]))
+					if splitC[1] not in usedVal:
 
-			if pointer[0] == 'dev':
-				oldValue[lineInfo[2]] = lineInfo[4]
+						info2['new']=splitC[1]
+						usedVal.append(splitC[1])
+						if dev2[1] == 'I':
+							incount = incount +1
+						elif dev2[1] == 'O':
+							outcount = outcount +1
 
-				val = 1
-				if pointer[1] == 'I':
-					val = 0
+					else:
+
+						if dev2[1] == 'I':
+							dev2[2] = str(incount)
+							incount = incount+1
+						elif dev2[1] == 'O':
+							dev2[2] = str(outcount)
+							outcount = outcount+1
+
+						newVal = ''
+						for i in dev2:
+							newVal = newVal + i
+
+						info2['new'] = newVal
+						usedVal.append(newVal)
+					variable[splitC[2]] = info2
+				inter = splitC[1]
+				varChange.append(inter)
+				varChange.append(variable[splitC[2]]['new'])
+				change.append(varChange)
+
+				splitD = filter(None,re.split('(&|,|\(|\))',Mallocs[acum][acum2]))
+		
+
+				newMalloc = ''
+				acum3 = 0
+				for i in splitD:
+					if i != varChange[0]:
+						newMalloc = newMalloc + i
+					else:
+						newMalloc = newMalloc + varChange[1]
+
+				Mallocs[acum][acum2] = newMalloc
 
 
-				if not lineInfo[4] in usedValues:
-					usedValues[lineInfo[4]] = pointer[0] + pointer[1] + str(dataCounter[val]) + pointer[3]
+			elif dev[0] == 'dev':
+				inter = splitC[2]
+				varChange.append(inter)
+				varChange.append(variable[splitC[1]]['new'])
 
-				dataCounter[val] = dataCounter[val] + 1
+			splitC = filter(None,re.split('(,|\(|\))',j))
+			newCopy = ''
+			for i in splitC:
 
-			if lineInfo[4] in usedValues:
-				lineInfo[2] = usedValues[lineInfo[4]]
+				if i != varChange[0]:
+					newCopy = newCopy + i
+				else:
+					newCopy = newCopy + varChange[1]
 
-			if lineInfo[2] in usedValues:
-				lineInfo[4] = usedValues[lineInfo[2]]
+			dataCopy[acum][acum2] = newCopy
+			acum2 = acum2 + 1
 
-					
-			cudaCopy = ''
-			for i in lineInfo:
-				cudaCopy = cudaCopy + i
+		newFunc = ''
+		splitC = filter(None,re.split('(,|\(|\))',cudaFunc[acum]))
+		acum3 = 0
+		acum4 = 0
 
-			if pointer[0] == 'dev':
-				if not cudaCopy in newCopyIn:
-					newCopyIn.append(cudaCopy)
+		for i in splitC:
+			if i != change[acum3][0]:
+				newFunc = newFunc + i
 			else:
-				if not cudaCopy in newCopyOut:
-					newCopyOut.append(cudaCopy)
-	
-		kernInfo = filter(None, re.split('(\(|,|_GPU_|<<<|\))',cudaKern[key]))
-		newKern = ''
-		for i in range(len(kernInfo)):
-			if kernInfo[i] in oldValue:
-				kernInfo[i] = usedValues[oldValue[kernInfo[i]]]
-			newKern = newKern + kernInfo[i]
+				newFunc = newFunc + change[acum3][1]
+				if acum3 < len(change)-1:
+					acum3 = acum3 + 1
+		cudaFunc[acum] = newFunc
 
-		newKernel[int(kernInfo[2])] = newKern
-		cudaKern[key] = newKern
-
-		for j in dataMalloc[key]:
-			lineInfo = filter(None,re.split('(\(|\&|\))',j))
-
-			cudaMalloc = ''
-			for i in range(len(lineInfo)):
-				if lineInfo[i] in oldValue:
-					lineInfo[i] = usedValues[oldValue[lineInfo[i]]]
-				cudaMalloc = cudaMalloc+lineInfo[i]
-
-			if not cudaMalloc in newMalloc:
-				newMalloc.append(cudaMalloc)
-
+		acum = acum+1
 
 	fnew2.close()
-	
-
-	for key in usedValues:
-		dataFree.append('  cudaFree('+usedValues[key]+');\n')
-		variables.append('  double *'+usedValues[key]+';\n')
-
  	fnameNew = open('rose__orio_chill_clean.cu','w')
 	fnew2 = open('rose__orio_chill_.cu')
 
@@ -488,119 +461,138 @@ class CHiLL(orio.module.module.Module):
 
 	fnameNew.write('#include \"_orio_chill_.h\"\n\n')
 
-	inspectorCounter = 0
-	lock = 0
-	lockBody = 0
-	kernAcum = 0
-	kernLocks = 0
-	forLock = 0
-	acum = 0
-	inspLock = 0
-	unrollAcum = 0
-	combineSt = {}
+	lock1 = 0
+	inspector = 0
+	inspFunc = 0
+	varLock=0
+	acumFor = 0
+	newSTM = ''
+	varPos = ''
+	acumVar = 0
+	usedVal = []
 	for line in fnew2:
+		check1 = filter(None,re.split('\n| ',line))
+		insp = filter(None,re.split('\n| |\(|\)|,|_|;',line))
 
-		lineInfo = filter(None,re.split('(_inspector|\(|\))',line))
-		lineInfo3 = filter(None, re.split(' ',line))
-		lineInfo2 = filter(None,re.split('(newVariable|for| = )',line))
+		for i in insp:
+			if i == 'inspector':
+				inspFunc = 1
 	
-		if len(lineInfo) > 1:
-			if lineInfo[1] == '_inspector':		
-				inspectorCounter = inspectorCounter + 1
-				inspLock = 3
-
-		if lineInfo3[0] == '__global__':
-			combineSt = {}
-
-
-		if lineInfo[0] == '}\n' and inspectorCounter == inspLock:
-			lock = 0
-			kernLocks = 1
-
-
-		if kernLocks == 1:
-			if len(lineInfo2) > 4:
-				if lineInfo2[4] == 'newVariable':
-					forLock = 1
-
-		if lock == 0 and forLock == 0:
+		if lock1 == 0 and inspFunc == 0:
+			
 			fnameNew.write(line)
 
-		if len(lineInfo2) > 3:
-			if forLock == 1 and lineInfo2[1] == 'newVariable':
-		
-				
-				var = lineInfo2[1] + lineInfo2[2]
+		inspFunc = 0
+		if len(check1)==1:
+			if check1[0] == '{' and lock1 ==0:
+				lock1 =1
 
-			
-				if var in combineSt and len(lineInfo2) >5:
-					combineSt[var] = combineSt[var] + ' \t\t' + lineInfo2[5][1:]
-					combineSt[var] = combineSt[var][:-2] + '\n'
+			if check1[0] == '}' and lock1 == 2:
+				lock1 = 3
 
-				if not var in combineSt and len(lineInfo2) >5:
-					
-					combineSt[var] = lineInfo2[5][1:]
-					combineSt[var] = combineSt[var][:-2] + '\n'
-				
-		if forLock == 1 and lineInfo3[0] == '}\n':
-			unrollAcum = unrollAcum + 1
-		if len(lineInfo2)>2:
-			if forLock == 1 and lineInfo2[2] == 'newVariable':
+		if lock1 ==1:
 
-				for key in combineSt:
-					fnameNew.write('    ' + key + ' = ' + key + ' ' + combineSt[key][:-1] + ';\n')
+			frees = ''
+			if inDataCopy == 0:
+				for i in tempVars:
+					fnameNew.write(i)
+				for i in tempFrees:
+					frees = frees + i
+			else:
+				for key,val in variable.items():
+					fnameNew.write("  double *" +val['new'] +";\n")
+					frees = frees + '  cudaFree('+val['new']+');\n'
 
-				if unrollAcum > 0:
-					fnameNew.write('    }\n')
-				fnameNew.write(line)
-				forLock = 0
 
-		if lineInfo[0] == '{\n' and lockBody == 0:
-			lock = 1
-			lockBody = 1
+			fnameNew.write('  struct timeval time1,time2;\n')
+			fnameNew.write('  double time;\n')
+			fnameNew.write("  std::ofstream timefile;\n")
 
-		if lockBody == 1:
+			for i in Mallocs:
+				for j in i:
+					if j not in usedVal:
+						fnameNew.write(j)
+						usedVal.append(j)
 
-			for i in variables:
-				fnameNew.write(i)
+			for i in dataCopy:
+				for j in range(len(i)-1):
+					if i[j] not in usedVal:
+						fnameNew.write(i[j])
+						usedVal.append(i[j])
 
-			fnameNew.write('  struct timeval time1, time2;\n  double time;\n  std::ofstream timefile;\n')
-			for i in newMalloc:
-				fnameNew.write(i)
-
-			fnameNew.write('\n')
-			for i in newCopyIn:
-				fnameNew.write(i)
-
-			for key in Grid:
-				fnameNew.write('\n')
-				for j in Grid[key]:
-					fnameNew.write(j)
-
-			fnameNew.write('\n')
-			for i in newKernel:
-				fnameNew.write('  gettimeofday(&time1, 0);\n')
-				fnameNew.write(i)
+			kernAcum =0
+			for i in range(len(cudaFunc)):
+				fnameNew.write(Tblocks[i][0])
+				fnameNew.write(Tblocks[i][1])
+				fnameNew.write("  gettimeofday(&time1, 0);\n")
+				fnameNew.write(cudaFunc[i])
 				fnameNew.write("  cudaThreadSynchronize();\n")
 				fnameNew.write("  gettimeofday(&time2, 0);\n")
 				fnameNew.write("  time = (1000000.0*(time2.tv_sec-time1.tv_sec) + time2.tv_usec-time1.tv_usec)/1000000.0;\n")
 				fnameNew.write("  timefile.open(\"./times/time_of_"+tag+".txt\", std::ofstream::out | std::ofstream::app );\n")
 				fnameNew.write('  timefile<<\"Time spent in kernel '+str(kernAcum)+': \"<<time<<std::endl;\n')
-				fnameNew.write("  timefile.close();\n\n")
+				fnameNew.write("  timefile.close();\n")
 
 				kernAcum = kernAcum +1
 
+			for i in dataCopy:
 
-			for i in newCopyOut:
-				fnameNew.write(i)
+				fnameNew.write(i[len(i)-1])
 
-			fnameNew.write('\n')
-			for i in dataFree:
-				fnameNew.write(i) 
+			fnameNew.write(frees)
+			if unrollFix == 1:
+				fnameNew.write('}\n')
+			lock1=2
 
-			lockBody = lockBody + 1
+		for i in insp:
+			if i == 'inspector':
+				if insp[len(insp)-1] != ';':
+					inspector = 1
+
+
+		newVar = filter(None,re.split('(newVariable|\n)| |;',line))
+		
+		if len(newVar) > 1:
+			if newVar[0] == 'newVariable' and newVar[3] == 'newVariable' and inspector == 0:
+				varPos = newVar[1]
+				if acumVar > 0:
+					newSTM = newSTM + '\t\t\t'
+					for i in range(acumFor):
+						newSTM = newSTM + '\t'
 				
+				for i in range(5,len(newVar)):
+					newSTM = newSTM + ' ' + newVar[i]
+
+				acumVar = acumVar+1
+				varLock = 1
+		
+			if newVar[0] != 'newVariable' and varLock == 1:
+				
+				newVar2 = ''
+				for i in range(acumFor):
+					newVar2 = newVar2 + '\t'
+				newVar2 = '  ' + newVar2 +  'newVariable' + varPos + ' = newVariable' + varPos + newSTM[:-2] +';\n'
+				fnameNew.write(newVar2)
+				acumVar = 0
+				newSTM = ''
+				varPos = ''
+				varLock = 0
+				acumFor = 0
+
+
+		if len(newVar) > 1:
+			if newVar[0] == 'for' and inspector == 0:
+				acumFor = acumFor+1
+
+		if line == '}\n' and inspector == 1:
+			inspector = 0
+		elif lock1==3 and inspector == 0 and varLock == 0:
+			fnameNew.write(line)
+
+
+
 	fnameNew.close()
+
 
 ##########################################################################
 	cmd = 'cp rose__orio_chill_clean.cu rose__orio_chill_.cu'
