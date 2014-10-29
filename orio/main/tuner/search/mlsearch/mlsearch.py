@@ -1,5 +1,5 @@
 #
-# Implementation of the ml search algorithm
+# Implementation of the random search algorithm
 #
 
 import sys, time
@@ -7,6 +7,9 @@ import math
 import random
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
+
+from sklearn import linear_model
+#from sklearn.ensemble import GradientBoostingRegressor
 
 from sklearn import ensemble
 import numpy as np
@@ -19,10 +22,12 @@ import json
 
 class Mlsearch(orio.main.tuner.search.search.Search):
     '''
-    The search engine that uses a ml search approach
+    The search engine that uses a random search approach, enhanced with a local search that finds
     the best neighboring coordinate.
 
     Below is a list of algorithm-specific arguments used to steer the search algorithm.
+      local_distance            the distance number used in the local search to find the best
+                                neighboring coordinate located within the specified distance
     '''
 
     # algorithm-specific argument names
@@ -48,7 +53,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
         
         # complain if both the search time limit and the total number of search runs are undefined
         if self.time_limit <= 0 and self.total_runs <= 0:
-            err(('orio.main.tuner.search.mlsearch.mlsearch: %s search requires either (both) the search time limit or (and) the ' +
+            err(('orio.main.tuner.search.randomsearch.randomsearch: %s search requires either (both) the search time limit or (and) the ' +
                     'total number of search runs to be defined') % self.__class__.__name__)
      
     # Method required by the search interface
@@ -59,7 +64,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
         '''
         # TODO: implement startCoord support
         
-        info('\n----- begin ml search -----')
+        info('\n----- begin model-based search -----')
 
         # get the total number of coordinates to be tested at the same time
         coord_count = 1
@@ -76,7 +81,8 @@ class Mlsearch(orio.main.tuner.search.search.Search):
         best_coord = None
         best_perf_cost = self.MAXFLOAT
         old_perf_cost = best_perf_cost
-
+	
+	remove_invalid=False 
         # record the number of runs
         runs = 0
         sruns=0
@@ -131,7 +137,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 	      
 	      uneval_coords.append(coord)
 	      uneval_params.append(perf_params)
-
+	        
  
         print len(coords)
         print len(uneval_coords)
@@ -146,7 +152,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 	#indices=random.sample(range(1,len(uneval_coords)),  5)
 	indices.insert(0,0)
 	print indices
-
+	  
 	for index in indices:
 	  coord=uneval_coords[index]
 	  params=uneval_params[index]
@@ -180,16 +186,17 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 	  transform_time=self.getTransformTime()
           compile_time=self.getCompileTime()    
           
-          res_obj={}
-          res_obj['run']=runs
-          res_obj['coordinate']=coord
-          res_obj['perf_params']=params
-          res_obj['transform_time']=transform_time
-          res_obj['compile_time']=compile_time
-          res_obj['cost']=perf_cost
-          info('(run %s) |'%runs+json.dumps(res_obj))
+          if False:
+	    res_obj={}
+	    res_obj['run']=runs
+	    res_obj['coordinate']=coord
+	    res_obj['perf_params']=params
+	    res_obj['transform_time']=transform_time
+	    res_obj['compile_time']=compile_time
+	    res_obj['cost']=perf_cost
+	    info('(run %s) |'%runs+json.dumps(res_obj))
           
-          #info('(run %s) coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs, coord, params, transform_time, compile_time,perf_cost))
+          info('run %s | coordinate: %s | perf_params: %s | transform_time: %s | compile_time: %s | cost: %s' % (runs, coord, params, transform_time, compile_time,perf_cost))
           
           eval_cost.append(mean_perf_cost)
           
@@ -227,22 +234,22 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 	  print '+++++++++++++++++'
 	  batch_size=min(self.batch_size,self.total_runs-len(eval_coords))
 	  
-	  #print eval_cost
-	  #max_val=10*max(filter(lambda x: x != float('inf'), eval_cost))
+	  print eval_cost
 	  
-	  
+	  if remove_invalid:
+	    eval_cost=map(lambda x: min(x,100),eval_cost)
+	    print eval_cost
 
-	  
-	  print eval_cost
-	  eval_cost=map(lambda x: min(x,100),eval_cost)
-	  print eval_cost
-	  
-	  
 	  #print eval_params
 	  X_train= pd.DataFrame(eval_params)
 	  Y_train= np.array(eval_cost)
 	  X_test = pd.DataFrame(uneval_params)
 	  
+	  
+	  if not remove_invalid: 
+	    invalid_index=[i for i in range(len(eval_cost)) if math.isinf(eval_cost[i])]
+	    X_train.drop(X_train.index[invalid_index],inplace=True)
+	    Y_train = Y_train[~np.isinf(Y_train)]
 	  
 	  # Train the model using the training sets
 	  print X_train.shape
@@ -305,15 +312,17 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 	    transform_time=self.getTransformTime()
             compile_time=self.getCompileTime()
             
-            
-            res_obj={}
-	    res_obj['run']=runs
-	    res_obj['coordinate']=coord
-	    res_obj['perf_params']=params
-	    res_obj['transform_time']=transform_time
-	    res_obj['compile_time']=compile_time
-	    res_obj['cost']=perf_cost
-            info('(run %s) |'%runs+json.dumps(res_obj))
+            if False:
+	      res_obj={}
+	      res_obj['run']=runs
+	      res_obj['coordinate']=coord
+	      res_obj['perf_params']=params
+	      res_obj['transform_time']=transform_time
+	      res_obj['compile_time']=compile_time
+	      res_obj['cost']=perf_cost
+	      info('(run %s) |'%runs+json.dumps(res_obj))
+
+	    info('run %s | coordinate: %s | perf_params: %s | transform_time: %s | compile_time: %s | cost: %s' % (runs, coord, params, transform_time, compile_time,perf_cost))
             
             if mean_perf_cost < best_perf_cost and mean_perf_cost > 0.0:
 	      best_coord = coord
@@ -365,14 +374,15 @@ class Mlsearch(orio.main.tuner.search.search.Search):
         # compute the total search time
         search_time = time.time() - start_time
         
-        info('----- end ml search -----')
-        info('----- begin ml  search summary -----')
+        info('----- end model-based search -----')
+        
+        info('----- begin model-based search summary -----')
         info(' total completed runs: %s' % runs)
         info(' total successful runs: %s' % sruns)
         info(' total failed runs: %s' % fruns)
         info(' speedup: %s' % speedup)
         info(' fount at: %s' % num_eval_best)
-        info('----- end ml search summary -----')
+        info('----- end model-based search summary -----')
 	
 
         
