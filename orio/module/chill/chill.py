@@ -209,8 +209,8 @@ class CHiLL(orio.module.module.Module):
 				if len(inter) > 0:
 					print "Warning: Threand and block decomposition wrong. Version not counted."
 					print blocksNew1
-					print threadsNew1 
-					return output_code
+					print threadsNew1
+					
 
 
 				funcs.append(funcName[1] + '_GPU_'+recipeTest[1])
