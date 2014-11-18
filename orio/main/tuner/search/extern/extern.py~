@@ -162,7 +162,10 @@ class Extern(orio.main.tuner.search.search.Search):
             res_obj['compile_time']=compile_time
             res_obj['cost']=perf_cost
             info('(run %s) |'%runs+json.dumps(res_obj))
+
             #info('(run %s) sruns: %s, fruns: %s, coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs, sruns, fruns, coord, pf, transform_time, compile_time,perf_cost))
+            
+
             break
             
 

@@ -8,6 +8,7 @@ import random
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
 import copy
+import json
 
 #-----------------------------------------------------
 
@@ -149,6 +150,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
 
 	for index in indices:
 	  coord=uneval_coords[index]
+	  coord_key = str(coord)
 	  params=uneval_params[index]
 	  eval_coords.append(coord)
 	  eval_params.append(params)
@@ -176,11 +178,21 @@ class Randomsearch(orio.main.tuner.search.search.Search):
               mean_perf_cost=sum(floatNums) / len(perf_cost)
             except:
               mean_perf_cost=perf_cost
-                    
-	  transform_time=self.getTransformTime()
-          compile_time=self.getCompileTime()    
           
-          info('run %s | coordinate: %s | perf_params: %s | transform_time: %s | compile_time: %s | cost: %s' % (runs, coord, params, transform_time, compile_time,perf_cost))
+          
+	  transform_time=self.getTransformTime(coord_key)
+          compile_time=self.getCompileTime(coord_key)    
+          
+          
+          res_obj={}
+          res_obj['run']=runs
+          res_obj['coordinate']=coord
+          res_obj['perf_params']=params
+          res_obj['transform_time']=transform_time
+          res_obj['compile_time']=compile_time
+          res_obj['cost']=perf_cost
+          info('(run %s) |'%runs+json.dumps(res_obj))
+          #info('run %s | coordinate: %s | perf_params: %s | transform_time: %s | compile_time: %s | cost: %s' % (runs, coord, params, transform_time, compile_time,perf_cost))
           
           eval_cost.append(mean_perf_cost)
           
