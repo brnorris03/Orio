@@ -7,6 +7,7 @@ import math
 import random
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
+import json
 
 #-----------------------------------------------------
 
@@ -106,95 +107,61 @@ class Extern(orio.main.tuner.search.search.Search):
             if configfile != '':
                 f = open(configfile, 'r') 
                 for line in f:
-                    param_val=''.join(line)
-                    param_val=param_val.strip()
-                    param_val=param_val.replace('\n','')
-                    break
+		    lstr=line.strip() 
+		    if lstr.startswith('[') and lstr.endswith(']'):
+		      coord=eval(lstr)
+		      break
                 f.close()
-
-                param_val=param_val.split(' ')
-
-                #print param_val
-
-                for i, p in enumerate(params):
-                    if i < len(param_val):
-                        param_config[p]=vals[i][int(param_val[i])]
-
-                #print param_config
-                    
-            
-            
-            n=len(param_config.keys())
-            s = range(n)
-            coord=[0*x for x in s]
-            coord_key=str(coord)
-            pf = param_config.copy()
-
-            try:
-                perf_costs=self.getPerfCostConfig(coord_key,param_config)
-            except:
-                perf_costs[coord_key]=[self.MAXFLOAT]
-                info('FAILED')
-                fruns +=1
-                sys.stderr.write('FAILED\n')
-
-            perf_cost,_=perf_costs.get(coord_key)
-
-
-            try:
-                floatNums = [float(x) for x in perf_cost]
-                mean_perf_cost=sum(floatNums) / len(perf_cost)
-            except:
-                mean_perf_cost=perf_cost
-
-                    
-            transform_time=self.getTransformTime()
-            compile_time=self.getCompileTime()
-            
-            best_coord = coord
+                #print coord
+                perf_params = self.coordToPerfParams(coord)
+                #print perf_params
+                coord_key = str(coord)
+		 
+	    perf_costs={}
+	    try:
+	      perf_costs = self.getPerfCosts([coord])
+	    except Exception, e:
+	      perf_costs[str(coords)]=[self.MAXFLOAT]
+	      info('FAILED: %s %s' % (e.__class__.__name__, e))
+	      fruns +=1
+	      
+	    # compare to the best result
+	    pcost_items = perf_costs.items()
+	    pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
+	    for i, (coord_str, pcost) in enumerate(pcost_items):
+	      if type(pcost) == tuple: (perf_cost,_) = pcost    # ignore transfer costs -- GPUs only
+	      else: perf_cost = pcost
+	    
+	      try:
+		floatNums = [float(x) for x in perf_cost]
+		mean_perf_cost=sum(floatNums) / len(perf_cost)
+	      except:
+		mean_perf_cost=perf_costs
+              
+            print perf_costs        
+	    
+	    best_coord = coord
             best_perf_cost = mean_perf_cost
-            
-            res_obj={}
-            res_obj['run']=runs
-            res_obj['coordinate']=coord
-            res_obj['perf_params']=params
-            res_obj['transform_time']=transform_time
-            res_obj['compile_time']=compile_time
-            res_obj['cost']=perf_cost
-            info('(run %s) |'%runs+json.dumps(res_obj))
-            #info('(run %s) sruns: %s, fruns: %s, coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs, sruns, fruns, coord, pf, transform_time, compile_time,perf_cost))
-            break
-            
-
-        search_time = time.time() - start_time
+	    
+	    transform_time=self.getTransformTime(coord_key)
+	    compile_time=self.getCompileTime(coord_key)    
+	    
+	    
+	    
+	    
+	    res_obj={}
+	    res_obj['run']=runs
+	    res_obj['coordinate']=coord
+	    res_obj['perf_params']=perf_params
+	    res_obj['transform_time']=transform_time
+	    res_obj['compile_time']=compile_time
+	    res_obj['cost']=perf_cost
+	    info('(run %s) | '%runs+json.dumps(res_obj))
+	    search_time = time.time() - start_time
+	    break
         
         info('----- end extern eval -----')
 
-        count=0
-        if (transform_time>0.0):
-         count=1
-        #count=1 
-        #info('----- begin summary -----')
-        #info(' best coordinate: %s, cost: %e' % (best_coord, best_perf_cost))
-        #info(' total search time: %.2f seconds' % search_time)
-        #info(' total completed runs: %s' % runs)
-        #info(' total successful runs: %s' % sruns)
-        #info(' total failed runs: %s' % fruns)
-        #info('----- end summary -----')
-        if configfile != '':
-            res=('%1.8f' % (best_perf_cost))
-            print res, count, perf_cost
-            outstring=('%s %d %s\n'%(res, count, perf_cost))
-            outfile=Globals().configfile+'.out'
-            f = open(outfile, 'w')
-            f.write(outstring)
-            f.close
-            #print res, count, perf_cost
-            #sys.stderr.write(outfile+'\n')
-            result=('%s %d\n'%(res, count))
-            sys.stderr.write(result)
-            #sys.stderr.write('%s\n'%pf)
-        # return the best coordinate
         return best_coord, best_perf_cost, search_time, sruns
    
    # Private methods

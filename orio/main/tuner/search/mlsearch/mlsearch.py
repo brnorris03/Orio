@@ -184,8 +184,10 @@ class Mlsearch(orio.main.tuner.search.search.Search):
             except:
               mean_perf_cost=perf_cost
                     
-	  transform_time=self.getTransformTime()
-          compile_time=self.getCompileTime()    
+	  #transform_time=self.getTransformTime()
+          #compile_time=self.getCompileTime()
+          transform_time=self.getTransformTime(coord_key)
+          compile_time=self.getCompileTime(coord_key)   
           
           res_obj={}
           res_obj['run']=runs
@@ -194,7 +196,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
           res_obj['transform_time']=transform_time
           res_obj['compile_time']=compile_time
           res_obj['cost']=perf_cost
-          info('(run %s) |'%runs+json.dumps(res_obj))
+          info('(run %s) | '%runs+json.dumps(res_obj))
           
           #info('(run %s) coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs, coord, params, transform_time, compile_time,perf_cost))
           
