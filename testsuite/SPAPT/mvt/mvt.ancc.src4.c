@@ -26,8 +26,8 @@
     param RT2_J[] = [1,8,32];
 
 
-    constraint tileI2 = ((T2_Ia == 1) or (T2_Ia % T2_I == 0));
-    constraint tileJ2 = ((T2_Ja == 1) or (T2_Ja % T2_J == 0));
+    constraint tileI2 = ((T2_Ia == 1) or ((T2_Ia % T2_I == 0) and (T2_Ia > T2_I )));
+    constraint tileJ2 = ((T2_Ja == 1) or ((T2_Ja % T2_J == 0) and (T2_Ja > T2_J )));
     constraint reg_capacity = (RT2_I*RT2_J <= 150);
     constraint unroll_limit = ((U2_I == 1) or (U2_J == 1));
     
