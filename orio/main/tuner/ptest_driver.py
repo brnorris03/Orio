@@ -99,6 +99,8 @@ class PerfTestDriver:
         suffix = str(perftest_counter)
         perftest_counter += 1
         self.src_name = self.__PTEST_FNAME + suffix + self.ext
+        self.obj_name = self.__PTEST_FNAME + suffix + '.o'
+        self.exe_name = self.__PTEST_FNAME + suffix + '.exe'
         paraminfo = '/*\n'
         if perf_param is not None:
             for pname, pval in perf_param.items():

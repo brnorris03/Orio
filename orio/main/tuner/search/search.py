@@ -256,7 +256,8 @@ class Search:
 	      elapsed = (time.time() - start)
 	      #info('2. transformation time = %e'%time.time())
 	      self.transform_time[coord_key]=elapsed
-	    except:
+	    except Exception,e:
+              print str(e)
 	      info('Unexpected error: %s'%sys.exc_info()[0])
               # Do not stop if a single test fails, continue with other transformations
               #err('failed during evaluation of coordinate: %s=%s\n%s\nError:%s' \
