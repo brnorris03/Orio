@@ -319,8 +319,8 @@ class PerfTestDriver:
                 try:
                     cmd = Globals().post_cmd
                     uniq = "profile-" + datetime.datetime.now().strftime("%y-%m-%d:%H:%S") + '-' + uuid.uuid4().hex
-                    if "%s" in cmd:
-                        cmd = cmd % (uniq, uniq)
+                    cmd = cmd.replace("%unique", uniq)
+                    cmd = cmd.replace("%exe", self.exe_name)
                     status = os.system(cmd) 
                     if status:
                         err('orio.main.tuner.ptest_driver: failed to execute the post-command: "%s"' % Globals().post_cmd, doexit=False)
