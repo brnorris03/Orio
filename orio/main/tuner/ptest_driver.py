@@ -96,7 +96,9 @@ class PerfTestDriver:
         '''Write the test code into a file'''
 
         global perftest_counter 
+        global last_counter
         suffix = str(perftest_counter)
+        last_counter = perftest_counter
         perftest_counter += 1
         self.src_name = self.__PTEST_FNAME + suffix + self.ext
         self.obj_name = self.__PTEST_FNAME + suffix + '.o'
@@ -256,6 +258,7 @@ class PerfTestDriver:
     #-----------------------------------------------------
 
     def __execute(self):
+        global last_counter
         '''Execute the test to get the performance costs'''
 
         Globals().metadata['src_filenames'] = ",".join(Globals().src_filenames)
@@ -320,6 +323,7 @@ class PerfTestDriver:
                     cmd = Globals().post_cmd
                     uniq = "profile-" + datetime.datetime.now().strftime("%y-%m-%d:%H:%S") + '-' + uuid.uuid4().hex
                     cmd = cmd.replace("%unique", uniq)
+                    cmd = cmd.replace("%iter", str(last_counter))
                     cmd = cmd.replace("%exe", self.exe_name)
                     status = os.system(cmd) 
                     if status:
