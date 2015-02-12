@@ -2,7 +2,7 @@
 # To compile and execute the performance-testing code to get the performance cost
 #
 
-import os, time, re, datetime, uuid
+import os, time, re, datetime, uuid, json
 
 from orio.main.util.globals import *
 import subprocess as sp
@@ -134,6 +134,38 @@ class PerfTestDriver:
                     f.close()
                 except:
                     err('orio.main.tuner.ptest_driver:  cannot open file for writing: %s' % self.original_src_name)
+
+
+        if Globals().meta is not None:
+            try:
+                cmd = ''
+                if Globals().out_filename is not None:
+                    try:
+                        cmd = Globals().out_filename
+                        cmd = cmd.replace("%iter", str(last_counter))
+
+                    except Exception, e:
+                        err('orio.main.tuner.ptest_driver: failed to execute the outfile rename: "%s"\n --> %s: %s' \
+                                % (Globals().out_filename,e.__class__.__name__, e), doexit = False)
+
+                if perf_param is not None:
+                    for pname, pval in perf_param.items():
+                        a_dict = {pname: pval}
+                        Globals().metadata.update(a_dict)
+                ## get filename
+                for key in Globals().src_filenames:
+                    Globals().metadata.update({'SourceName': key})
+                if not os.path.exists(cmd):
+                    os.makedirs(cmd)
+                with open(cmd + '/meta.json', 'w') as outfile:
+                    json.dump(Globals().metadata, outfile)
+
+            except Exception, e:
+                err('orio.main.tuner.ptest_driver: failed to execute meta export: "%s"\n --> %s: %s' \
+                        % (Globals().meta,e.__class__.__name__, e), doexit = False)
+                
+            
+
         return
   
     #-----------------------------------------------------
@@ -317,7 +349,7 @@ class PerfTestDriver:
                 self.failedruns += 1
                 err('orio.main.tuner.ptest_driver: failed to execute the test code: "%s"\n --> %s: %s' \
                     % (cmd,e.__class__.__name__, e),doexit = False)
-                
+
             if Globals().post_cmd is not None:
                 try:
                     cmd = Globals().post_cmd

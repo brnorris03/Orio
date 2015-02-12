@@ -35,6 +35,7 @@ Options:
   --configfile=filename          configuration filename 
   -v, --verbose                  verbosely show details of the results of the running program
   --validate                     validate by comparing output of original and transformed codes
+  --meta                         export metadata as json
 
 environment variables: 
   ORIO_FLAGS                     the string value is used to augment the list of Orio command-lin
@@ -124,7 +125,7 @@ class CmdParser:
             opts, args = getopt.getopt(orioargv,
                                        'c:dehko:p:rs:vx',
                                        ['pre-command=','debug','config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=', 
-                                       'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern', 'validate', 'post-command='])
+                                       'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern', 'validate', 'post-command=', 'meta'])
         except Exception, e:
             sys.stderr.write('Orio command-line error: %s' % e)
             sys.stderr.write(USAGE_MSG + '\n')
@@ -163,7 +164,9 @@ class CmdParser:
                 cmdline['configfile'] = arg
             elif opt in ('--validate'):
                 cmdline['validate'] = True
-                
+            elif opt in ('--meta'):
+                cmdline['meta'] = True
+
         # check on the arguments
         if len(srcfiles) < 1:
             if otherargv: 
