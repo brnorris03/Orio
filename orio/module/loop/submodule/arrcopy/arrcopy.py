@@ -35,7 +35,6 @@ class ArrCopy(orio.module.loop.submodule.submodule.SubModule):
 
         # iterate over all transformation arguments
         for aname, rhs, line_no in transf_args:
-            
             # evaluate the RHS expression
             try:
                 rhs = eval(rhs, perf_params)

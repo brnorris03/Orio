@@ -101,7 +101,7 @@ class Transformation:
     #----------------------------------------------------------
     def __cudify(self, stmt, targs):
         if isinstance(stmt, orio.module.loop.ast.ForStmt):
-            stmt = self.cuda_smod.cudify(stmt, self.cuda_smod.getDeviceProps(), targs)
+            stmt = self.cuda_smod.cudify(stmt, targs)
         elif isinstance(stmt, orio.module.loop.ast.VarDecl):
             pass
         elif isinstance(stmt, orio.module.loop.ast.VarDeclInit):
@@ -546,13 +546,13 @@ class Transformation:
         try:
             threadCount, cacheBlocks, pinHost, streamCount = self.cuda
             if threadCount:
-                targs = {'threadCount':threadCount, 'cacheBlocks':cacheBlocks, 'pinHostMem':pinHost, 'streamCount':streamCount, 'domain':None, 'dataOnDevice':False}
+                targs = {'threadCount':threadCount, 'cacheBlocks':cacheBlocks, 'pinHostMem':pinHost, 'streamCount':streamCount, 'domain':None, 'dataOnDevice':False, 'blockCount':5, 'unrollInner':0, 'preferL1Size':16}
                 tstmt = self.__cudify(tstmt, targs)
             
         except Exception, e:
-            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
-                 'cuda: "%s"\ncuda annotation: %s\n --> %s: %s' \
-                 % (self.stmt.line_no, self.cuda_smod.__class__.__name__, self.cuda, e.__class__.__name__, e))
+            import traceback
+            import sys
+            raise TransformationException('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying cuda: "%s"\ncuda annotation: %s\n --> %s: %s\n %s\n' % (self.stmt.line_no, self.cuda_smod.__class__.__name__, self.cuda, e.__class__.__name__, e, traceback.format_exc()))
         # return the transformed statement
         return tstmt
 
