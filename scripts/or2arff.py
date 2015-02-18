@@ -6,8 +6,9 @@ Created on Feb 17, 2015
 '''
 import re, sys, os
 
-besttol = 0.2
-fairtol = 0.4
+besttol = 0.25
+fairtol = 0.50
+includetimes = False
 
 def readTuningLog(filename):
     f=open(filename,'r')
@@ -19,9 +20,9 @@ def readTuningLog(filename):
     @param lines list of lines (strings)
 '''
 def convertToARFF(lines):
-    global besttol, worsttol
+    global besttol, worsttol, includetimes
     featuresre = re.compile(r'^(\[\'.*\'\])$')
-    datare = re.compile(r'^.*({.*})$')
+    datare = re.compile(r'^\(run \d+\) \| ({.*}?)$')
     subdatare = re.compile(r'^({.*}), "transform_time": ([\d\.]+)}$')
     datalist = []
     mintime = sys.float_info.max
@@ -33,7 +34,10 @@ def convertToARFF(lines):
             featureslist = eval(m.groups(1)[0])
             for feature in featureslist:
                 buf += '@ATTRIBUTE %s NUMERIC\n' % feature
-            buf += '@ATTRIBUTE TIME NUMERIC\n'
+            if includetimes:
+                buf += '@ATTRIBUTE MINTIME NUMERIC\n'
+                buf += '@ATTRIBUTE MAXTIME NUMERIC\n'
+                buf += '@ATTRIBUTE AVGTIME NUMERIC\n'
             buf += '@ATTRIBUTE class {best,fair,worst}'
             buf += '\n@DATA\n\n'
             #print featureslist
@@ -41,33 +45,42 @@ def convertToARFF(lines):
         if m: 
             #{"T1_I": 1, "T1_J": 1, "U_J": 1, "U_I": 1, "T2_I": 1, "T2_J": 1, "U1_I": 1, 
             # "OMP": false, "VEC2": false, "VEC1": false, "RT_I": 1, "SCR": false, "RT_J": 1}, "transform_time": 1.88651704788208
-            tmpdata = (m.groups(1)[0]).split('}')
-            tmpdata[0] = tmpdata[0]
-            paramvalues = dict((k.strip(), v.strip()) for k,v in 
-              (item.split(':') for item in tmpdata[0].split(',')))
+            infostr = m.group(1).strip()
+            if not infostr.endswith('}'): infostr += '}'
+            tmpdata = eval(infostr.replace('true','1').replace('false','0').replace('Infinity','float("inf")'))
+            cost = tmpdata['cost']
+            mintm, maxtm, avgtm = min(cost), max(cost), sum(cost)/len(cost)
+            # Here we can choose to consider min, max, avg or something else
+            dtime = avgtm
+            paramvalues = tmpdata['perf_params']
             for k,v in paramvalues.items(): 
                 if type(v) == bool: 
                     if v: paramvalues[k] = 1 
                     else: paramvalues[k] = 0
-            dtime = float(tmpdata[-2].split(':')[-1])
-            datalist.append((paramvalues,dtime))
+            datalist.append((paramvalues,(mintm,maxtm,avgtm)))
             if dtime < mintime: mintime = dtime
-            elif dtime > maxtime: maxtime = dtime
+            if dtime > maxtime: maxtime = dtime
             
     
     for d in datalist:
         params=d[0]
-        tm = d[1]
-        if tm <= (1.0+besttol) * mintime: label = 'best'
-        elif tm >= (1.0+fairtol) * mintime: label = 'fair'
+        mintm,maxtm,avgtm = d[1]      # (mintime, maxtime, avgtime) triplet
+        dtime = avgtm
+        if dtime != float("inf") and dtime <= (1.0+besttol) * mintime: label = 'best'
+        elif dtime != float("inf") and dtime >= (1.0+fairtol) * mintime: label = 'fair'
         else: label = 'worst'
+        for v in params.values():
+            buf += str(v) + ','
+        if includetimes:
+            for v in d[1]: buf += str(v) + ','
+        buf += label + '\n'
         
-        buf += ','.join(params.values()) + ',' + str(tm) + ',' + label + '\n'
+        buf = buf.replace('inf',str(sys.float_info.max))
         
     return buf
 
 def writeToFile(buf, fname):
-    with open(os.path.basename(fname) + '.arff', "w") as arff_file:
+    with open(os.path.basename(fname) + '2.arff', "w") as arff_file:
         arff_file.write(buf)
         arff_file.close()
     return 
