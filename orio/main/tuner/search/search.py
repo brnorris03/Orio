@@ -77,8 +77,7 @@ class Search:
         
         self.verbose = Globals().verbose
         self.perf_cost_records = {}
-        self.transform_time=0
-        self.compile_time=0
+        self.transform_time={}
     #----------------------------------------------------------
 
     def searchBestCoord(self):
@@ -165,12 +164,16 @@ class Search:
         [(perf_cost,_),] = perf_costs.values()
         return perf_cost
 
-    def getTransformTime(self):
-        trans_time = self.transform_time
+    def getTransformTime(self, key):
+	trans_time=0.0
+        if key in self.transform_time:
+	  trans_time=self.transform_time[key]
         return trans_time
     
-    def getCompileTime(self):
-        compile_time = self.compile_time
+    def getCompileTime(self,key):
+        compile_time = 0.0
+        if key in self.ptdriver.compile_time:
+	  compile_time=self.ptdriver.compile_time[key]
         return compile_time
     
     
@@ -244,23 +247,27 @@ class Search:
         for coord in uneval_coords:
             coord_key = str(coord)
             perf_params = self.coordToPerfParams(coord)
-            #info('transformation time = %e',time.time())
-            self.transform_time=0
+            
+            
             start = time.time()
-            #print self.getPerfCostConfig(coord_key,perf_params)
-
+            #info('1. transformation time = %e'%time.time())
             try:
-                transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
-            except TransformationException, e:
-                # Do not stop if a single test fails, continue with other transformations
-                err('failed during evaluation of coordinate: %s=%s\n%s\nError:%s' \
-                    % (str(coord), str(perf_params), str(e.__class__), e.message), 
-                    code=0, doexit=False)
-                perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
-                continue
-
-            elapsed = (time.time() - start)
-            self.transform_time=elapsed
+	      transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
+	      elapsed = (time.time() - start)
+	      #info('2. transformation time = %e'%time.time())
+	      self.transform_time[coord_key]=elapsed
+	    except:
+	      info('Unexpected error: %s'%sys.exc_info()[0])
+              # Do not stop if a single test fails, continue with other transformations
+              #err('failed during evaluation of coordinate: %s=%s\n%s\nError:%s' \
+              #% (str(coord), str(perf_params), str(e.__class__), e.message), 
+              #code=0, doexit=False)
+              perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
+	      elapsed = (time.time() - start)
+	      #info('2. transformation time = %e'%time.time())
+	      self.transform_time[coord_key]=elapsed
+	      continue
+            
             #info('transformation time = %e' % self.transform_time)
             if len(transformed_code_seq) != 1:
                 err('internal error: the optimized annotation code cannot contain multiple versions')
@@ -273,14 +280,14 @@ class Search:
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)
         perf_param = self.coordToPerfParams(uneval_coords[0])
-        new_perf_costs = self.ptdriver.run(test_code, perf_param=perf_param)
+        new_perf_costs = self.ptdriver.run(test_code, perf_param=perf_param,coord=coord_key)
         #new_perf_costs = self.getPerfCostConfig(coord_key,perf_params)
         # remember the performance cost of previously evaluated coordinate
         self.perf_cost_records.update(new_perf_costs.items())
         # merge the newly obtained performance costs
         perf_costs.update(new_perf_costs.items())
         # also take the compile time
-        self.compile_time=self.ptdriver.compile_time
+        
 
         #sys.exit()
 
@@ -332,13 +339,9 @@ class Search:
             
 
         code_map = {}
-        self.transform_time=0
-        start = time.time()
         transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, param_config)
 
-
-        elapsed = (time.time() - start)
-        self.transform_time=elapsed
+        
         if len(transformed_code_seq) != 1:
             err('internal error: the optimized annotation code cannot contain multiple versions')
             sys.exit(1)
@@ -350,12 +353,7 @@ class Search:
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)
         new_perf_costs = self.ptdriver.run(test_code)
-        self.compile_time=self.ptdriver.compile_time
-        
-        #print new_perf_costs
-        #print perf_params.keys()
 
-        #sys.exit()
 
         return new_perf_costs
 

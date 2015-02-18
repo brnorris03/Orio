@@ -206,50 +206,44 @@ class Globals:
 
     def setFuncDec(self,src_code):
 
-        src = filter(None,re.split(',|\n|\(|\)',src_code))
-
-        self.funcName = filter(None,re.split(' |\{',src[0]))
-    
-        acum = 1
-        line = src[1]
-    
-        while line != '{' and acum < len(src)-1:
-            self.funcDec = self.funcDec + line + ','
-            acum = acum +1
-            line = src[acum]
-    
-        self.funcDec = self.funcDec[:-1]
-    
         src = filter(None,re.split('\n',src_code))
-    
-        inParams = 0
-        inVars = 0
-        for line in src:
-            secSplit = filter(None,re.split(' |\t',line))
-    
-            if len(secSplit) > 2:
-                if secSplit[1] == 'input_params':
-                    inParams = 1
-                    inVars = 0
-                if secSplit[1] == 'input_vars':
-                    inParams = 0
-                    inVars = 1
-            if len(secSplit) == 1:
-                if secSplit[0] == '}':
-                    inVars = 0
-                    inParams = 0
-    
-            if inParams == 1:
-                if secSplit[0] != '#' and len(secSplit)>1 and secSplit[1] != 'input_params':
-                    var = filter(None,re.split('\[|\]',secSplit[1]))[0]
-                    val = filter(None,re.split('\[|\]',secSplit[len(secSplit)-1]))[0]
-                    self.input_params[var] = val
-    
-            if inVars == 1:
-                if secSplit[0] != '#' and len(secSplit)>3:
-                    info = filter(None,re.split('\[|\]',secSplit[3]))
-                    if len(info)>1: self.input_vars[info[0]] = info[1]
+	self.funcDec = src[0].replace('{',';')
 
+	self.funcName = filter(None,re.split('\n|\(|\)| ',src[0]))[1]
+
+	i = 1
+	line = src[i]
+	self.input_params = []
+	self.input_vars = []
+	while('@*/' not in line):
+		if 'input_params' in line:
+			i = i+1
+			line = src[i]
+			while ('}' not in line):
+				inputs = filter(None,re.split('param| |\[|\]|=|;',line))
+				self.input_params.append(inputs)
+				i+=1
+				line=src[i]
+
+		if 'input_vars' in line:
+			i = i+ 1
+			line = src[i]
+			while ('}' not in line):
+				inputs = filter(None,re.split(' |(=)',line))
+				for j in range(len(inputs)):
+					if inputs[j] == '=':
+						inputs2 = filter(None,re.split('\[|\]',inputs[j-1]))
+						self.input_vars.append(inputs2)
+					
+					
+				i+=1
+				line = src[i]
+
+
+		i+=1
+		line = src[i]
+
+	
 
     def getFuncDecl(self):
         return self.funcDec

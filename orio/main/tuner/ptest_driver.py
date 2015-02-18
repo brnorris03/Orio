@@ -32,7 +32,7 @@ class PerfTestDriver:
 
         self.tinfo = tinfo
         self.use_parallel_search = use_parallel_search
-        self.compile_time=0
+        self.compile_time={}
         self.extra_compiler_opts = ''
         
         global perftest_counter 
@@ -155,7 +155,7 @@ class PerfTestDriver:
     
     #-----------------------------------------------------
 
-    def __build(self, perf_param=None):
+    def __build(self, perf_param=None,coord=None):
         '''Compile the testing code'''
                 
         # compile the timing code (if needed)
@@ -232,14 +232,13 @@ class PerfTestDriver:
                                              timer_objfile, self.tinfo.libs))
         info(' building test:\n\t' + cmd)
         
-        self.compile_time=0
+        
         start=time.time()
-
         # TODO: log all commands
         status = os.system(cmd)
-
         elapsed=time.time()-start
-        self.compile_time=elapsed
+	if coord is not None:     
+	  self.compile_time[coord]=elapsed
     
         if status:
             err('orio.main.tuner.ptest_driver:  failed to compile the testing code: "%s"' % cmd)
@@ -411,7 +410,7 @@ class PerfTestDriver:
 
     #-----------------------------------------------------
             
-    def run(self, test_code, perf_param=None):
+    def run(self, test_code, perf_param=None, coord=None):
         '''To compile and to execute the given testing code to get the performance cost
         @param test_code: the code for testing multiple coordinates in the search space
         @return: a dictionary of the times corresponding to each coordinate in the search space
@@ -423,7 +422,7 @@ class PerfTestDriver:
         self.__preprocess()
         
         # compile the testing code
-        self.__build(perf_param=perf_param)
+        self.__build(perf_param=perf_param,coord=coord)
 
         # execute the testing code to get performance costs
         perf_costs = self.__execute()
