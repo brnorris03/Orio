@@ -4,11 +4,7 @@ Created on Feb 17, 2015
 
 @author: norris
 '''
-import re, sys, os
-
-besttol = 0.25
-fairtol = 0.50
-includetimes = False
+import re, sys, os, argparse
 
 def readTuningLog(filename):
     f=open(filename,'r')
@@ -19,8 +15,7 @@ def readTuningLog(filename):
 '''
     @param lines list of lines (strings)
 '''
-def convertToARFF(lines):
-    global besttol, worsttol, includetimes
+def convertToARFF(lines,besttol,fairtol,includetimes=False):
     featuresre = re.compile(r'^(\[\'.*\'\])$')
     datare = re.compile(r'^\(run \d+\) \| ({.*}?)$')
     subdatare = re.compile(r'^({.*}), "transform_time": ([\d\.]+)}$')
@@ -87,8 +82,38 @@ def writeToFile(buf, fname):
         
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f','--file', 
+                        help="The file name of the Orio tuning log", type=str)
+    parser.add_argument('-b', '--besttol', default=20,
+                        help='The tolerance for assigning "best" to a time, e.g.,'+\
+                              'if 20 is specified, then all times within 20%% of the minimum'+\
+                              'will be assigned the "best" label',
+                        type=int)
+    parser.add_argument('-r', '--fairtol', default=40,
+                        help='The tolerance for assigning "fair" to a time, e.g.,'+\
+                              'if 40 is specified, then all times greater than the "best"'+\
+                              'criterion but within 40%% of the minimum'+\
+                              'will be assigned the "fair" label',
+                        type=int)
+    parser.add_argument('-t', '--times', default=False, 
+                        help='If True, include the minimum, maximum, and average times in the'+\
+                              'features.', action='store_true')
+
+    args = parser.parse_args()
+
+    fname = args.file
+    besttol = args.besttol / 100.0
+    fairtol = args.fairtol / 100.0
+    includetimes = args.times   
+
+    if not fname or not os.path.exists(fname): 
+        print "Error: Please specify a valid Orio log file name."
+        parser.print_usage(sys.stderr)
+        sys.exit(1)
+    
     fname = sys.argv[1]
     lines = readTuningLog(fname)
-    buf = convertToARFF(lines)
+    buf = convertToARFF(lines,besttol,fairtol,includetimes)
     writeToFile(buf,fname)
     pass
