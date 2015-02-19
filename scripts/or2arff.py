@@ -18,7 +18,6 @@ def readTuningLog(filename):
 def convertToARFF(lines,besttol,fairtol,includetimes=False):
     featuresre = re.compile(r'^(\[\'.*\'\])$')
     datare = re.compile(r'^\(run \d+\) \| ({.*}?)$')
-    subdatare = re.compile(r'^({.*}), "transform_time": ([\d\.]+)}$')
     datalist = []
     mintime = sys.float_info.max
     maxtime = 0
@@ -112,7 +111,6 @@ if __name__ == '__main__':
         parser.print_usage(sys.stderr)
         sys.exit(1)
     
-    fname = sys.argv[1]
     lines = readTuningLog(fname)
     buf = convertToARFF(lines,besttol,fairtol,includetimes)
     writeToFile(buf,fname)
