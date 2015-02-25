@@ -2,7 +2,7 @@
 # Implementation of the exhaustive search algorithm 
 #
 
-import sys, time
+import sys, time, json
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
 
@@ -106,7 +106,28 @@ class Exhaustive(orio.main.tuner.search.search.Search):
                 mean_transfer = sum(transferFloats) / len(transfer_costs)
 
                 info('coordinate: %s, average cost: %s, all costs: %s, average transfer time: %s' % (coord_val, mean_perf_cost, perf_cost, mean_transfer))
-                
+
+                if Globals().meta is not None:
+                    co_dict = {'coordinate': coord_val}
+                    avg_cost = {'average_cost': mean_perf_cost}
+                    all_costs = {'all_costs': perf_cost}
+                    mean_xfer = {'mean_transfer': mean_transfer}
+                    Globals().metadata.update(co_dict)
+                    Globals().metadata.update(avg_cost)
+                    Globals().metadata.update(all_costs)
+                    Globals().metadata.update(mean_xfer)
+
+                    try:
+                        cmd=''
+                        if Globals().out_filename is not None:
+                            cmd = Globals().out_filename
+                            cmd = cmd.replace("%iter", str(Globals().metadata['LastCounter']))
+
+                        with open(cmd + '/meta.json', 'w') as outfile:
+                            json.dump(Globals().metadata, outfile)
+                    except Exception, e:
+                        err('orio.main.tuner.ptest_driver: failed to execute meta export: "%s"\n --> %s: %s' % (Globals().meta,e.__class__.__name__, e), doexit = False)
+
                 if mean_perf_cost < best_perf_cost and perf_cost > 0.0:
                     best_coord = coord_val
                     best_perf_cost = mean_perf_cost

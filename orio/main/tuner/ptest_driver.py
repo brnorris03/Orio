@@ -149,19 +149,20 @@ class PerfTestDriver:
                                 % (Globals().out_filename,e.__class__.__name__, e), doexit = False)
 
                 if perf_param is not None:
+                    Globals().metadata.update({'LastCounter': last_counter})
                     for pname, pval in perf_param.items():
-                        a_dict = {pname: pval}
-                        Globals().metadata.update(a_dict)
+                        Globals().metadata.update({pname: pval})
                 ## get filename
                 for key in Globals().src_filenames:
                     Globals().metadata.update({'SourceName': key})
+                    Globals().metadata.update({'LastCounter': last_counter})
                 if not os.path.exists(cmd):
                     os.makedirs(cmd)
-                with open(cmd + '/meta.json', 'w') as outfile:
-                    json.dump(Globals().metadata, outfile)
+                # with open(cmd + '/meta.json', 'w') as outfile:
+                #     json.dump(Globals().metadata, outfile)
 
             except Exception, e:
-                err('orio.main.tuner.ptest_driver: failed to execute meta export: "%s"\n --> %s: %s' \
+                err('orio.main.tuner.ptest_driver: failed to execute meta update: "%s"\n --> %s: %s' \
                         % (Globals().meta,e.__class__.__name__, e), doexit = False)
                 
             
@@ -427,7 +428,7 @@ class PerfTestDriver:
         '''Delete all the generated files'''
 
         if Globals().keep_temps:
-            if self.first: self.first = False
+            if self.first: self.first = False                
             return
         
         if self.first:

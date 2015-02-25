@@ -105,7 +105,7 @@ def start(argv, lang):
                 info('\n----- begin optimizations -----')
                 odriver = opt_driver.OptDriver(language=language)
                 optimized_code_seq = odriver.optimizeCodeFrags(cfrags, True)
-                ##print 'In here: ', optimized_code_seq
+
                 info('----- finish optimizations -----')
         
                 # remove all annotations from output
