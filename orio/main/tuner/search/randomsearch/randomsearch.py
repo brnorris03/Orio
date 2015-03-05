@@ -124,7 +124,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
 	      temp=[]
 	      for k in sorted(perf_params):
 		temp.append(perf_params[k])
-	      print 'sample-point:'+str(coord)
+	      debug('sample-point:'+str(coord))
 	      uneval_coords.append(coord)
 	      uneval_params.append(perf_params)
 
