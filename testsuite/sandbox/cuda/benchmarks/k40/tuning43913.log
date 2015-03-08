@@ -1,0 +1,115 @@
+
+====== START ORIO ======
+
+----- begin reading the source file: matVec2D-32.c -----
+----- finished reading the source file -----
+
+----- begin parsing annotations -----
+----- finished parsing annotations -----
+
+----- begin optimizations -----
+main.tuner.skeleton_code:  missing "validation code" tag in the skeleton code
+Search_Space         = 5.120e+03
+Number_of_Parameters = 05
+Numeric_Parameters   = 05
+Binary_Parameters    = 00
+['TC', 'BC', 'UIF', 'PL', 'CFLAGS']
+[[32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800, 832, 864, 896, 928, 960, 992, 1024], [15, 30, 45, 60, 75, 90, 105, 120], [1, 2, 3, 4, 5], [16, 48], ['', '-use_fast_math']]
+
+----- begin empirical tuning for problem size -----
+ DOF = 1
+ M = 32
+ N = 32
+ NOS = 5
+
+----- begin exhaustive search -----
+ compiling the original code:
+	nvcc -g -lineinfo -arch=sm_20 -O3   -DORIO_REPS=10 -DORIGINAL -o __orio_perftest_original.o -c __orio_perftest1.cu
+ building the original code:
+	nvcc -g -lineinfo -arch=sm_20 -O3   -DORIO_REPS=10 -DORIGINAL -o __orio_perftest_original.exe __orio_perftest_original.o
+ compiling test:
+	nvcc -g -lineinfo -arch=sm_20 -O3   -DORIO_REPS=10 -o __orio_perftest1.o -c __orio_perftest1.cu
+ building test:
+	nvcc -g -lineinfo -arch=sm_20 -O3   -DORIO_REPS=10 -o __orio_perftest1.exe __orio_perftest1.o
+ running test:
+	 ./__orio_perftest1.exe
+orio.main.tuner.ptest_driver: failed to execute the post-command: "python ~/repos/cubin_parse/cubinProcessing.py -v --json --outdir /home/users/roblim1/repos/Orio/testsuite/sandbox/cuda/benchmarks/k40/matVec2D-32/data%iter --events 'TIME,CUDA.Tesla_K40c.domain_d.inst_executed,CUDA.Tesla_K40c.domain_d.active_cycles,CUDA.Tesla_K40c.domain_d.l1_local_load_miss,CUDA.Tesla_K40c.domain_d.l1_global_load_miss' --all ./%exe 50"
+  File "/home/users/roblim1/repos/Orio/orcuda", line 24, in <module>
+    orio.main.orio_main.start(sys.argv, orio.main.orio_main.CUDA)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/orio_main.py", line 107, in start
+    optimized_code_seq = odriver.optimizeCodeFrags(cfrags, True)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/opt_driver.py", line 44, in optimizeCodeFrags
+    cur_seq = self.__optimizeCodeFrag(cf, perf_params)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/opt_driver.py", line 118, in __optimizeCodeFrag
+    cfrag.cfrags)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/tuner/tuner.py", line 151, in tune
+    best_perf_params, best_perf_cost = search_eng.search()
+
+  File "/home/users/roblim1/repos/Orio/orio/main/tuner/search/search.py", line 111, in search
+    best_coord,best_perf,search_time,runs = self.searchBestCoord(startCoord)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/tuner/search/exhaustive/exhaustive.py", line 91, in searchBestCoord
+    perf_costs = self.getPerfCosts(coords)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/tuner/search/search.py", line 284, in getPerfCosts
+    new_perf_costs = self.ptdriver.run(test_code, perf_param=perf_param,coord=coord_key)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/tuner/ptest_driver.py", line 467, in run
+    perf_costs = self.__execute()
+
+  File "/home/users/roblim1/repos/Orio/orio/main/tuner/ptest_driver.py", line 363, in __execute
+    err('orio.main.tuner.ptest_driver: failed to execute the post-command: "%s"' % Globals().post_cmd, doexit=False)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/util/globals.py", line 302, in err
+    Globals().loggers['TuningLog'].error(errmsg + '\n' + '\n'.join(traceback.format_stack()))
+
+coordinate: [0, 0, 0, 0, 0], average cost: 0.0397724444444, all costs: [0.069728, 0.041184, 0.037536, 0.037408, 0.049344, 0.036544, 0.036288, 0.03616, 0.035232, 0.048256], average transfer time: 0.3038592
+>>>> best coordinate found: [0, 0, 0, 0, 0], average cost: 3.977244e-02, average transfer time: 0.3038592
+ compiling test:
+	nvcc -g -lineinfo -arch=sm_20 -O3   -DORIO_REPS=10 -o __orio_perftest2.o -c __orio_perftest2.cu
+ building test:
+	nvcc -g -lineinfo -arch=sm_20 -O3   -DORIO_REPS=10 -o __orio_perftest2.exe __orio_perftest2.o
+ running test:
+	 ./__orio_perftest2.exe
+orio.main.tuner.ptest_driver: failed to execute the post-command: "python ~/repos/cubin_parse/cubinProcessing.py -v --json --outdir /home/users/roblim1/repos/Orio/testsuite/sandbox/cuda/benchmarks/k40/matVec2D-32/data%iter --events 'TIME,CUDA.Tesla_K40c.domain_d.inst_executed,CUDA.Tesla_K40c.domain_d.active_cycles,CUDA.Tesla_K40c.domain_d.l1_local_load_miss,CUDA.Tesla_K40c.domain_d.l1_global_load_miss' --all ./%exe 50"
+  File "/home/users/roblim1/repos/Orio/orcuda", line 24, in <module>
+    orio.main.orio_main.start(sys.argv, orio.main.orio_main.CUDA)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/orio_main.py", line 107, in start
+    optimized_code_seq = odriver.optimizeCodeFrags(cfrags, True)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/opt_driver.py", line 44, in optimizeCodeFrags
+    cur_seq = self.__optimizeCodeFrag(cf, perf_params)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/opt_driver.py", line 118, in __optimizeCodeFrag
+    cfrag.cfrags)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/tuner/tuner.py", line 151, in tune
+    best_perf_params, best_perf_cost = search_eng.search()
+
+  File "/home/users/roblim1/repos/Orio/orio/main/tuner/search/search.py", line 111, in search
+    best_coord,best_perf,search_time,runs = self.searchBestCoord(startCoord)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/tuner/search/exhaustive/exhaustive.py", line 91, in searchBestCoord
+    perf_costs = self.getPerfCosts(coords)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/tuner/search/search.py", line 284, in getPerfCosts
+    new_perf_costs = self.ptdriver.run(test_code, perf_param=perf_param,coord=coord_key)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/tuner/ptest_driver.py", line 467, in run
+    perf_costs = self.__execute()
+
+  File "/home/users/roblim1/repos/Orio/orio/main/tuner/ptest_driver.py", line 363, in __execute
+    err('orio.main.tuner.ptest_driver: failed to execute the post-command: "%s"' % Globals().post_cmd, doexit=False)
+
+  File "/home/users/roblim1/repos/Orio/orio/main/util/globals.py", line 302, in err
+    Globals().loggers['TuningLog'].error(errmsg + '\n' + '\n'.join(traceback.format_stack()))
+
+coordinate: [1, 0, 0, 0, 0], average cost: 0.03472, all costs: [0.064832, 0.037632, 0.03392, 0.033664, 0.045568, 0.033344, 0.033216, 0.032032, 0.031552, 0.031552], average transfer time: 0.29184
+>>>> best coordinate found: [1, 0, 0, 0, 0], average cost: 3.472000e-02, average transfer time: 0.29184
+ compiling test:
+	nvcc -g -lineinfo -arch=sm_20 -O3   -DORIO_REPS=10 -o __orio_perftest3.o -c __orio_perftest3.cu
