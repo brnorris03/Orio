@@ -76,6 +76,7 @@ class Randomlocal(orio.main.tuner.search.search.Search):
         # start the timer
         start_time = time.time()
         init = True
+        coord_key=''
         # execute the randomized search method
         while True:
 
@@ -83,6 +84,7 @@ class Randomlocal(orio.main.tuner.search.search.Search):
             coords = []
             while len(coords) < coord_count:
                 coord = self.__getNextCoord(coord_records, neigh_coords, init)
+                coord_key = str(coord)
                 init=False
                 if coord:
                     coords.append(coord)
@@ -121,8 +123,8 @@ class Randomlocal(orio.main.tuner.search.search.Search):
                 except:
                     mean_perf_cost=perf_cost
                     
-                transform_time=self.getTransformTime()
-                compile_time=self.getCompileTime()    
+                transform_time=self.getTransformTime(coord_key)
+                compile_time=self.getCompileTime(coord_key)    
                 #info('(run %s) coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs+i+1, coord_val, perf_params, transform_time, compile_time,perf_cost))
                 if mean_perf_cost < best_perf_cost and mean_perf_cost > 0.0:
                     best_coord = coord_val

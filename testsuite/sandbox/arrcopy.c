@@ -1,20 +1,84 @@
+/*@ begin PerfTuning (  
+  def build
+  {
+  arg build_command = 'gcc -g -O2 -fopenmp -DDYNAMIC'; 
+  arg libs = '-lm '; #-lrt';
+  }
+  
+  def performance_counter  
+  { 
+    arg repetitions = 10;
+  }
 
-/*@ begin Loop(
-  transform ArrCopy(aref='C[i][j]', dimsizes=[32,32], suffix='_copy')
-  transform ArrCopy(aref='A[i][k]', dimsizes=[32,32])
-  transform ArrCopy(aref='B[k][j]', dimsizes=[32,32], dtype='double')
-  for (iii=0; iii<=cbv_1; iii=iii+128) 
-   for (jjj=0; jjj<=N-1; jjj=jjj+512) 
-    for (kkk=0; kkk<=K-1; kkk=kkk+64) 
-     for (ii=iii; ii<=min(M-1,iii+96); ii=ii+32) 
-      for (jj=jjj; jj<=min(N-1,jjj+480); jj=jj+32) 
-       for (kk=kkk; kk<=min(K-1,kkk+32); kk=kk+32) 
-        for (i=ii; i<=min(M-1,ii+31); i=i+1) 
-	 for (j=jj; j<=min(N-1,jj+31); j=j+1) 
-          for (k=kk; k<=min(K-1,kk+31); k=k+1) 
-           C[i][j]=C[i][j]+A[i][k]*B[k][j];
+  
+  def performance_params 
+  {
+    let BSIZE = 512*32;
+    # Cache tiling
+    param T_I[] = [1,16,32];
+    param T_J[] = [1,16,32,64];
+    param T_K[] = [1,16,32,64,128];
+
+    # Array copy
+    param ACOPY_A[] = [False,True];
+    param ACOPY_B[] = [False,True];
+    param ACOPY_C[] = [False,True];
+  }
+
+  def input_params 
+  {
+    param SM[] = [2000];
+    param SN[] = [2000];
+    param SK[] = [2000];
+  }
+
+  def input_vars
+  {
+    decl int M = SM;
+    decl int N = SN;
+    decl int K = SK;
+    decl dynamic double A[SM][SK] = random;
+    decl dynamic double B[SK][SN] = random;
+    decl dynamic double C[SM][SN] = 0;
+  }
+
+  def search 
+  { 
+    arg algorithm = 'Randomsearch'; 
+    arg total_runs = 10;
+  } 
+
 ) @*/
 
-/*@ end @*/                                        
-                                    
-                                
+void mxm(int M, int N, int K, double **A, double **B, double **C) {
+  register int i, ii, j, jj, k, kk;
+
+  /*@ begin Loop(
+        transform Composite(
+            tile = [('i',T_I,'ii'),('j',T_J,'jj'),('k',T_K,'kk')],
+            arrcopy = [(ACOPY_C, 'C[i][j]', [(T_I if T_I>1 else 5000),(T_J if T_J>1 else 5000)], '_copy'),
+                       (ACOPY_A, 'A[i][k]', [(T_I if T_I>1 else 5000),(T_K if T_K>1 else 5000)], '_copy'),
+                       (ACOPY_B, 'B[k][j]', [(T_K if T_K>1 else 5000),(T_J if T_J>1 else 5000)], '_copy')]
+        )
+
+  for (ii=0; ii<=M-1; ii++)
+    for (jj=0; jj<=N-1; jj++)
+      for (kk=0; kk<=K-1; kk++)
+        for (i=ii; i<=min(M-1,ii+31); i++)
+          for (j=jj; j<=min(N-1,jj+31); j++)
+            for (k=kk; k<=min(K-1,kk+31); k++)
+              C[i][j]+=A[i][k]*B[k][j];
+
+  ) @*/
+
+  for (ii=0; ii<=M-1; ii++)
+    for (jj=0; jj<=N-1; jj++)
+      for (kk=0; kk<=K-1; kk++)
+        for (i=ii; i<=min(M-1,ii+31); i++)
+          for (j=jj; j<=min(N-1,jj+31); j++)
+            for (k=kk; k<=min(K-1,kk+31); k++)
+              C[i][j]+=A[i][k]*B[k][j];
+
+  /*@ end @*/
+}
+/*@ end @*/

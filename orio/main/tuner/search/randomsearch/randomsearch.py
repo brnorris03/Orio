@@ -148,6 +148,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
         random.shuffle(remain_indices)
         indices.extend(remain_indices)
 
+        perf_cost, mean_perf_cost = self.MAXFLOAT, self.MAXFLOAT
         for index in indices:
             coord=uneval_coords[index]
             coord_key = str(coord)
