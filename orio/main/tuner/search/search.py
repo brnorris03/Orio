@@ -176,7 +176,6 @@ class Search:
             compile_time=self.ptdriver.compile_time[key]
         return compile_time
     
-    
     #----------------------------------------------------------
 
     def getPerfCosts(self, coords):

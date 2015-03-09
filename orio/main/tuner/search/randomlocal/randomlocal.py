@@ -99,6 +99,8 @@ class Randomlocal(orio.main.tuner.search.search.Search):
             #perf_costs = self.getPerfCosts(coords)
 
             perf_costs={}
+            transform_time = 0.0
+            compile_time = 0.0
             # determine the performance cost of all chosen coordinates
             #perf_costs = self.getPerfCosts(coords)
             #sys.exit()
@@ -144,7 +146,14 @@ class Randomlocal(orio.main.tuner.search.search.Search):
 
             if not math.isinf(mean_perf_cost):
                 sruns +=1
-                info('(run %s) sruns: %s, fruns: %s, coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs+i, sruns, fruns, coord_val, perf_params, transform_time, compile_time,perf_cost))        
+                pcosts = '[]'
+                if perf_cost and len(perf_cost)>1:
+                    pcosts = '[' + ', '.join(["%2.4e" % x for x in perf_cost]) + ']'
+                msgstr1 = '(run %d) sruns: %d, fruns: %d, coordinate: %s, perf_params: %s, ' % \
+                      (runs+i, sruns, fruns, str(coord_val), str(perf_params))
+                msgstr2 =  'transform_time: %2.4e, compile_time: %2.4e, cost: %s' % \
+                      (transform_time, compile_time, pcosts) 
+                info(msgstr1 + msgstr2)
             
             
             # check if the time is up
