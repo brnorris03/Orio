@@ -49,12 +49,27 @@ class AST:
         self.line_no = line_no           # may be null (i.e. empty string)
         self.parent = parent
         self.meta = meta
+        self.initMeta('uses')
+        self.initMeta('defs')
         
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
         raise NotImplementedError('%s: abstract function "replicate" not implemented' %
                                   self.__class__.__name__)
 
+    def initMeta(self, key, val=0):
+        self.meta[key] = val
+
+    def updateMeta(self, key, val=1):
+        if self.meta.get(key):
+            self[key] += val
+        else:
+            self[key] = val 
+            
+    def getMeta(self, key):
+        if self.meta.get(key): return self.meta[key]
+        else: return 0
+                     
     def __repr__(self):
         '''Return a string representation for this AST object'''
         return codegen.CodeGen().generate(self)
@@ -216,9 +231,15 @@ class BinOpExp(Exp):
         self.lhs = lhs
         self.rhs = rhs
         self.op_type = op_type
+        if op_type == self.EQ_ASGN:
+            self.lhs.updateMeta('defs')
+            self.rhs.updateMeta('uses')
+        pass
+
 
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
+        self.lhs
         return BinOpExp(self.lhs.replicate(), self.rhs.replicate(), 
                         self.op_type, self.line_no, meta=self.meta)
 
@@ -384,15 +405,19 @@ class ForStmt(Stmt):
 class AssignStmt(Stmt):
 
     def __init__(self, var, exp, line_no = '', label=None, meta={}):
-        '''Create a statement'''
+        '''Create an assignment statement.'''
+        #TODO: this does not appear to be used anywhere, assignemnts are treated
+        # as binary operators
         Stmt.__init__(self, line_no, label, meta)
         self.var = var
         self.exp = exp
 
     def replicate(self):
         '''Replicate this node'''
-        return AssignStmt(self.var, self.exp.replicate(), 
-                          self.line_no, self.label, meta=self.meta)
+        self.var.updateMeta('defs')
+        newexp = self.exp.replicate()
+        newexp.updateMeta('uses')
+        return AssignStmt(self.var, newexp, self.line_no, self.label, meta=self.meta)
 
 #-----------------------------------------------
 # Transformation
