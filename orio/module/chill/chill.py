@@ -1,5 +1,5 @@
 #
-# This Orio 
+# This Orio
 #
 
 import ann_parser, orio.module.module
@@ -17,12 +17,12 @@ class CHiLL(orio.module.module.Module):
 
         orio.module.module.Module.__init__(self, perf_params, module_body_code, annot_body_code,
                                       line_no, indent_size, language)
-	##Module.__init__(self, perf_params, module_body_code, annot_body_code,
+        ##Module.__init__(self, perf_params, module_body_code, annot_body_code,
         ##                              line_no, indent_size, language)
-	self.tinfo = tinfo
+        self.tinfo = tinfo
 
     #---------------------------------------------------------------------
-    
+
     def transform(self):
         '''To simply rewrite the annotated code'''
 
@@ -42,503 +42,500 @@ class CHiLL(orio.module.module.Module):
         # /*@ begin Chill ( transform Recipe(recipe filename) ) @*/
         # ...
         # The code to be transformed by CHiLL here
-        # ... 
+        # ...
         # /*@ end Chill @*/
-	code = self.annot_body_code
-	fname = '_orio_chill_.c'
-	hname = '_orio_chill_.h'
-	func = Globals().getFuncDecl()
-	funcName = Globals().getFuncName()
-	self.input_params = Globals().getFuncInputParams()
-	self.input_vars = Globals().getFuncInputVars()
-	
+        code = self.annot_body_code
+        fname = '_orio_chill_.c'
+        hname = '_orio_chill_.h'
+        func = Globals().getFuncDecl()
+        funcName = Globals().getFuncName()
+        self.input_params = Globals().getFuncInputParams()
+        self.input_vars = Globals().getFuncInputVars()
 
-	#print "Informatio variables: \nperf_params: ",self.perf_params,"\nmodule_body_code: ",self.module_body_code,"\nline_no: ",self.line_no,"\nindent_size: ",self.indent_size
 
-	defines = ''
+        #print "Informatio variables: \nperf_params: ",self.perf_params,"\nmodule_body_code: ",self.module_body_code,"\nline_no: ",self.line_no,"\nindent_size: ",self.indent_size
 
+        defines = ''
 
-	cudaize = []
-	permute = []
-	registers = []
-	distribute = ''
 
-	output_code = ''
+        cudaize = []
+        permute = []
+        registers = []
+        distribute = ''
 
-	cont = True
+        output_code = ''
 
-	exits = 1
+        cont = True
 
-	stm = 0
+        exits = 1
 
-	for key, val in self.perf_params.items():
-		if 'TX' in key:
-			stm +=1
+        stm = 0
 
-	TB = []
-	for i in range(stm):
+        for key, val in self.perf_params.items():
+            if 'TX' in key:
+                stm +=1
 
-	
-		temp = [self.perf_params['TX' + str(i)],self.perf_params['TY' + str(i)],self.perf_params['BX' + str(i)],self.perf_params['BY' + str(i)]] 
+        TB = []
+        for i in range(stm):
 
-		if self.perf_params['TX' + str(i)] == '1':
-			cont = False
-			exits = 0
 
-		if len(temp) != len(set(temp)):
-			cont = False
-			exits = 0
+            temp = [self.perf_params['TX' + str(i)],self.perf_params['TY' + str(i)],self.perf_params['BX' + str(i)],self.perf_params['BY' + str(i)]]
 
-		else:
+            if self.perf_params['TX' + str(i)] == '1':
+                cont = False
+                exits = 0
 
-			TB.append(temp)
+            if len(temp) != len(set(temp)):
+                cont = False
+                exits = 0
 
-	if cont == True:
+            else:
 
-		counter = 0
-		loopsNumber = []
-	
-		unrolls = []
+                TB.append(temp)
 
-		codeInfo = filter(None,re.split('\n',code))
+        if cont == True:
 
-		temp = []
-		for line in codeInfo:
-			if 'for' in line and 'dummyLoop' not in line:
-				temp.append(line)
+            counter = 0
+            loopsNumber = []
 
-			elif len(temp) > 0:
-				
-				loopsNumber.append(temp)
-				temp = []
+            unrolls = []
 
-		stamp = ''
-		for key,val in self.perf_params.items():
+            codeInfo = filter(None,re.split('\n',code))
 
-			stamp += '_'+str(val)
+            temp = []
+            for line in codeInfo:
+                if 'for' in line and 'dummyLoop' not in line:
+                    temp.append(line)
 
+                elif len(temp) > 0:
 
-		annot = filter(None,re.split('\t|\n| ',self.module_body_code))
-		stm = 0
-		dist = ''
-		for line in annot:
-			
-			lineInfo = filter(None,re.split('\(|\)',line))
+                    loopsNumber.append(temp)
+                    temp = []
 
-			if lineInfo[0] == 'cuda':
+            stamp = ''
+            for key,val in self.perf_params.items():
 
-				cuda = 'cudaize('+str(stm)+',"'+funcName+'_GPU_'+ str(stm)+'\",{'
-				for vars1 in self.input_vars:
-					cuda += vars1[0] + '=' + vars1[1] + ','
+                stamp += '_'+str(val)
 
-				cuda = cuda[:-1] + '},{block={\"' + TB[stm][2] + '\",\"' + TB[stm][3] + '\"},thread={\"' + TB[stm][0] + '\",\"' + TB[stm][1] + '\"}},{})'
-				stm+=1
-				cudaize.append(cuda)
 
-			if lineInfo[0] == 'registers':
-				registers.append(line)
+            annot = filter(None,re.split('\t|\n| ',self.module_body_code))
+            stm = 0
+            dist = ''
+            for line in annot:
 
-			if lineInfo[0] == 'unroll':
-				unrollInfo = filter(None,re.split(',|\"',lineInfo[1]))
-				unrollPos = unrollInfo[1]+'++'
-				stmPos = int(unrollInfo[0])
-				loopPos = 0
-				for l in range(len(loopsNumber[stmPos])):
-					loopsInfo = filter(None,re.split(' |\(|\)|;',loopsNumber[stmPos][l]))
-					if unrollPos == loopsInfo[3]:
-						
-						loopPos = l
+                lineInfo = filter(None,re.split('\(|\)',line))
 
-				ammount = 1
-				if unrollInfo[2].isdigit():
-					ammout = unrollInfo[2]
-				else:
-					ammount = self.perf_params[unrollInfo[2]]
+                if lineInfo[0] == 'cuda':
 
+                    cuda = 'cudaize('+str(stm)+',"'+funcName+'_GPU_'+ str(stm)+'\",{'
+                    for vars1 in self.input_vars:
+                        cuda += vars1[0] + '=' + vars1[1] + ','
 
+                    cuda = cuda[:-1] + '},{block={\"' + TB[stm][2] + '\",\"' + TB[stm][3] + '\"},thread={\"' + TB[stm][0] + '\",\"' + TB[stm][1] + '\"}},{})'
+                    stm+=1
+                    cudaize.append(cuda)
 
-				unrollCmd = 'unroll('+unrollInfo[0] + ','+ str(loopPos+2) + ',' + str(ammount)+')'
+                if lineInfo[0] == 'registers':
+                    registers.append(line)
 
-				unrolls.append(unrollCmd)
+                if lineInfo[0] == 'unroll':
+                    unrollInfo = filter(None,re.split(',|\"',lineInfo[1]))
+                    unrollPos = unrollInfo[1]+'++'
+                    stmPos = int(unrollInfo[0])
+                    loopPos = 0
+                    for l in range(len(loopsNumber[stmPos])):
+                        loopsInfo = filter(None,re.split(' |\(|\)|;',loopsNumber[stmPos][l]))
+                        if unrollPos == loopsInfo[3]:
 
-			if lineInfo[0] == 'distribute':
-				dist = lineInfo[1]
+                            loopPos = l
 
+                    ammount = 1
+                    if unrollInfo[2].isdigit():
+                        ammout = unrollInfo[2]
+                    else:
+                        ammount = self.perf_params[unrollInfo[2]]
 
-		distribute = ''
-		if dist != '':
 
-			distribute = 'distribute({'
-			for i in range(stm):
-				distribute += str(i) + ','
-			distribute = distribute[:-1] + '},' + dist + ')'
-		
-		rname = 'recipe'+stamp+'.lua'
 
+                    unrollCmd = 'unroll('+unrollInfo[0] + ','+ str(loopPos+2) + ',' + str(ammount)+')'
 
-		recipe = 'init(\"'+fname+'\",\"'+funcName+'\",0)\ndofile(\"cudaize.lua\")\n\n'
+                    unrolls.append(unrollCmd)
 
-		defines = ''
-		for inputs in self.input_params:
-			defines += '#define ' + inputs[0] + ' ' + inputs[1] + '\n'
-			recipe += inputs[0] + '=' + inputs[1] + '\n'
+                if lineInfo[0] == 'distribute':
+                    dist = lineInfo[1]
 
-		recipe += distribute + '\n\n'
 
-		for cuda in cudaize:
-			recipe += cuda.replace(',\"1\"}','}') + '\n'
+            distribute = ''
+            if dist != '':
 
-		recipe += '\n'
-		for unroll in unrolls:
+                distribute = 'distribute({'
+                for i in range(stm):
+                    distribute += str(i) + ','
+                distribute = distribute[:-1] + '},' + dist + ')'
 
-			recipe += unroll + '\n'
+            rname = 'recipe'+stamp+'.lua'
 
-		code = defines + '\n' + func + '\n{' + code + '\n}\n'
 
+            recipe = 'init(\"'+fname+'\",\"'+funcName+'\",0)\ndofile(\"cudaize.lua\")\n\n'
 
-		cfile = open(fname,'w')
-		cfile.write(code)
-		cfile.close()
+            defines = ''
+            for inputs in self.input_params:
+                defines += '#define ' + inputs[0] + ' ' + inputs[1] + '\n'
+                recipe += inputs[0] + '=' + inputs[1] + '\n'
 
-		hfile = open(hname,'w')
-		hfile.write(func + ';\n')
-		hfile.close()
+            recipe += distribute + '\n\n'
 
+            for cuda in cudaize:
+                recipe += cuda.replace(',\"1\"}','}') + '\n'
 
-		rfile = open(rname,'w')
-		rfile.write(recipe)
-		rfile.close()
+            recipe += '\n'
+            for unroll in unrolls:
 
-		os.system('cuda-chill '+rname)
+                recipe += unroll + '\n'
 
-		if not os.path.isdir('./recipes'):
-			try:
-		    		os.system('mkdir recipes')
-				os.system('mkdir outputs')
-				os.system('mkdir times')
-			except:
-		            err('orio.module.chill.chill:  failed to create folders')
+            code = defines + '\n' + func + '\n{' + code + '\n}\n'
 
-		try:
-			os.system('mv ' + rname + ' recipes/./')
 
-		except:
-			err('orio.module.chill.chill:  failed to move files')
+            cfile = open(fname,'w')
+            cfile.write(code)
+            cfile.close()
 
+            hfile = open(hname,'w')
+            hfile.write(func + ';\n')
+            hfile.close()
 
-		chillout = 'rose__orio_chill_.cu'
 
+            rfile = open(rname,'w')
+            rfile.write(recipe)
+            rfile.close()
 
-		fname = open(chillout)
+            os.system('cuda-chill '+rname)
 
-		newHost = ''
+            if not os.path.isdir('./recipes'):
+                try:
+                    os.system('mkdir recipes')
+                    os.system('mkdir outputs')
+                    os.system('mkdir times')
+                except:
+                    err('orio.module.chill.chill:  failed to create folders')
 
-		dCopy = []
-		dMalloc = []
-		dGrid = []
-		cudaKern = []
-		pointers = {}
+            try:
+                os.system('mv ' + rname + ' recipes/./')
 
-		lock = 0
-		lock2 = 1
+            except:
+                err('orio.module.chill.chill:  failed to move files')
 
 
-		lockHost = 0
-		
-		cudaKernels = []
-		kernel = ''
-		for line in fname:
+            chillout = 'rose__orio_chill_.cu'
 
-			###################Grab the mallocs, memcpy, etc###################
 
-			lineInfo = filter(None,re.split(' |(double|cudaMalloc|cudaMemcpy|dim|cudaFree|<<<|__global__|;)',line))
+            fname = open(chillout)
 
-			if 'void '+funcName+'(' in line:
-				lockHost = 1
-			
-			if lineInfo[0] == 'cudaMemcpy':
-				dCopy.append(line)
+            newHost = ''
 
-			if lineInfo[0] == 'cudaMalloc':
-				dMalloc.append(line)
+            dCopy = []
+            dMalloc = []
+            dGrid = []
+            cudaKern = []
+            pointers = {}
 
-			if lineInfo[0] == 'dim':
-				dGrid.append(line)
+            lock = 0
+            lock2 = 1
 
-			if len(lineInfo) > 1:
-				if lineInfo[1] == '<<<':
-					cudaKern.append(line)
 
-			if lock == 0:
-				newHost += line
+            lockHost = 0
 
-			if line == '{\n':
-				lock = 1
+            cudaKernels = []
+            kernel = ''
+            for line in fname:
 
+                ###################Grab the mallocs, memcpy, etc###################
 
-	#################################Grab the kernels for future use #################################
-			if lineInfo[0] == '__global__' and lineInfo[len(lineInfo)-2] != ';':
-				lock2 = 0
+                lineInfo = filter(None,re.split(' |(double|cudaMalloc|cudaMemcpy|dim|cudaFree|<<<|__global__|;)',line))
 
-			if lock2 == 0:
-				kernel += line
+                if 'void '+funcName+'(' in line:
+                    lockHost = 1
 
-			if line == '}\n':
-				lock2 = 1
-				if kernel != '':
-					cudaKernels.append(kernel)
-					kernel = ''
+                if lineInfo[0] == 'cudaMemcpy':
+                    dCopy.append(line)
 
+                if lineInfo[0] == 'cudaMalloc':
+                    dMalloc.append(line)
 
-		timeInfo = '#include <sys/time.h>\n'
-		timeInfo += '#include <iostream>\n'
-		timeInfo += '#include <fstream>\n'
-		timeInfo += '#include \"_orio_chill_.h\"\n\n'
-		
-		newHost = timeInfo + newHost + '\n'
+                if lineInfo[0] == 'dim':
+                    dGrid.append(line)
 
-		fname.close()
+                if len(lineInfo) > 1:
+                    if lineInfo[1] == '<<<':
+                        cudaKern.append(line)
 
-		dMalloc = []
-		cudaFrees = []
+                if lock == 0:
+                    newHost += line
 
-		counterIn = 1
-		counterOut = 1
-		stm = 0
-		stm2 = 0
-		for i in range(len(dCopy)):
+                if line == '{\n':
+                    lock = 1
 
-			if 'cudaMemcpyHostToDevice' in dCopy[i]:
-				if stm2 == 1:
-					stm+=1
-					stm2 = 0
 
-				cpInfo = filter(None,re.split(',| |\(|\)',dCopy[i]))
-	
-				tempKern = filter(None,re.split('(>>>)',cudaKern[stm]))
+        #################################Grab the kernels for future use #################################
+                if lineInfo[0] == '__global__' and lineInfo[len(lineInfo)-2] != ';':
+                    lock2 = 0
 
-				if cpInfo[2] in pointers:
-					devPointer = pointers[cpInfo[2]]
-					
-				else:
-					devPointer = 'devI' + str(counterIn) + 'Ptr'
-					pointers[cpInfo[2]] = devPointer
-					counterIn += 1
-					cudaFrees.append('cudaFree('+devPointer+')')
+                if lock2 == 0:
+                    kernel += line
 
+                if line == '}\n':
+                    lock2 = 1
+                    if kernel != '':
+                        cudaKernels.append(kernel)
+                        kernel = ''
 
-				tempKern[2] = tempKern[2].replace(cpInfo[1],devPointer,1)
-				cudaKern[stm] = tempKern[0] + tempKern[1] + tempKern[2]
-				dCopy[i] = dCopy[i].replace(cpInfo[1],devPointer)
-				
-				mallocs = 'cudaMalloc(((void **)(&'+devPointer+')),'+cpInfo[3]+' * sizeof(double ));'
 
-				dMalloc.append(mallocs)
-				
+            timeInfo = '#include <sys/time.h>\n'
+            timeInfo += '#include <iostream>\n'
+            timeInfo += '#include <fstream>\n'
+            timeInfo += '#include \"_orio_chill_.h\"\n\n'
 
-			if 'cudaMemcpyDeviceToHost' in dCopy[i]:
-				cpInfo = filter(None,re.split(',| |\(|\)',dCopy[i]))
-				tempKern = filter(None,re.split('(>>>)',cudaKern[stm]))
+            newHost = timeInfo + newHost + '\n'
 
-				if cpInfo[1] in pointers:
-					devPointer = pointers[cpInfo[1]]
-					
-				else:
-					devPointer = 'devO' + str(counterOut) + 'Ptr'
-					pointers[cpInfo[1]] = devPointer
-					counterOut += 1
-					cudaFrees.append('cudaFree('+devPointer+')')
+            fname.close()
 
-				tempKern[2] = tempKern[2].replace(cpInfo[2],devPointer,1)
-				cudaKern[stm] = tempKern[0] + tempKern[1] + tempKern[2]
-				dCopy[i] = dCopy[i].replace(cpInfo[2],devPointer)
-				
-				mallocs = 'cudaMalloc(((void **)(&'+devPointer+')),'+cpInfo[3]+' * sizeof(double ));'
+            dMalloc = []
+            cudaFrees = []
 
-				dMalloc.append(mallocs)
+            counterIn = 1
+            counterOut = 1
+            stm = 0
+            stm2 = 0
+            for i in range(len(dCopy)):
 
+                if 'cudaMemcpyHostToDevice' in dCopy[i]:
+                    if stm2 == 1:
+                        stm+=1
+                        stm2 = 0
 
-				stm2 = 1
+                    cpInfo = filter(None,re.split(',| |\(|\)',dCopy[i]))
 
-		dCopy = list(set(dCopy))
-		dMalloc = list(set(dMalloc))
+                    tempKern = filter(None,re.split('(>>>)',cudaKern[stm]))
 
+                    if cpInfo[2] in pointers:
+                        devPointer = pointers[cpInfo[2]]
 
-		for key, vals in pointers.items():
+                    else:
+                        devPointer = 'devI' + str(counterIn) + 'Ptr'
+                        pointers[cpInfo[2]] = devPointer
+                        counterIn += 1
+                        cudaFrees.append('cudaFree('+devPointer+')')
 
-			newHost += '  double *' + vals + ';\n'
 
+                    tempKern[2] = tempKern[2].replace(cpInfo[1],devPointer,1)
+                    cudaKern[stm] = tempKern[0] + tempKern[1] + tempKern[2]
+                    dCopy[i] = dCopy[i].replace(cpInfo[1],devPointer)
 
-		newHost += '\n'
+                    mallocs = 'cudaMalloc(((void **)(&'+devPointer+')),'+cpInfo[3]+' * sizeof(double ));'
 
-		newHost += '  struct timeval time1, time2;\n  double time;\n  std::ofstream timefile;\n'
-		for mallocs in dMalloc:
-			newHost += '  ' + mallocs + '\n'
+                    dMalloc.append(mallocs)
 
-		copyIns = ''
-		copyOuts = ''
-		for copies in dCopy:
-			if 'cudaMemcpyDeviceToHost' in copies:
-				copyOuts += copies
-			if 'cudaMemcpyHostToDevice' in copies:
-				copyIns += copies 
 
-		newHost += '\n' + copyIns + '\n'
+                if 'cudaMemcpyDeviceToHost' in dCopy[i]:
+                    cpInfo = filter(None,re.split(',| |\(|\)',dCopy[i]))
+                    tempKern = filter(None,re.split('(>>>)',cudaKern[stm]))
 
-		for grids in dGrid:
-			newHost += grids
+                    if cpInfo[1] in pointers:
+                        devPointer = pointers[cpInfo[1]]
 
-		newHost += '\n'
+                    else:
+                        devPointer = 'devO' + str(counterOut) + 'Ptr'
+                        pointers[cpInfo[1]] = devPointer
+                        counterOut += 1
+                        cudaFrees.append('cudaFree('+devPointer+')')
 
-		newHost += '  gettimeofday(&time1, 0);\n'
-		for cuda in cudaKern:
-			newHost += cuda 
-			
-		newHost += '  cudaThreadSynchronize();\n'
-		newHost += '  gettimeofday(&time2, 0);\n'
-		newHost += '  time = (1000000.0*(time2.tv_sec-time1.tv_sec) + time2.tv_usec-time1.tv_usec)/1000000.0;\n'
-		newHost += '  timefile.open(\"./times/time_'+stamp+'.txt\", std::ofstream::out | std::ofstream::app );\n'
-		newHost += '  timefile<<\"Time spent in rose__orio_chill_ '+stamp+'.cu: \"<<time<<std::endl;\n'
-		newHost += '  timefile.close();\n\n'
+                    tempKern[2] = tempKern[2].replace(cpInfo[2],devPointer,1)
+                    cudaKern[stm] = tempKern[0] + tempKern[1] + tempKern[2]
+                    dCopy[i] = dCopy[i].replace(cpInfo[2],devPointer)
 
-		newHost += '\n' + copyOuts + '\n'
+                    mallocs = 'cudaMalloc(((void **)(&'+devPointer+')),'+cpInfo[3]+' * sizeof(double ));'
 
-		for frees in cudaFrees:
+                    dMalloc.append(mallocs)
 
-			newHost += '  ' + frees + ';\n'
 
-		newHost += '\n}\n\n' 
-		
-		
-		stm = 0
-		for cuda in cudaKernels:
+                    stm2 = 1
 
-			lock = 0
-			fors = []
-			
-			lineInfo = filter(None,re.split('\n',cuda))
-			StmLine = []
-			var = 1
+            dCopy = list(set(dCopy))
+            dMalloc = list(set(dMalloc))
 
-			for info in lineInfo:
-				if 'for' in info:
-					lock = 1
-					fors.append(info)
-				if lock == 1 and 'for' not in info:
-					StmLine.append(info)
-				if lock == 0:
-					newHost += info + '\n'
 
-			newHost += '  double newVar' + str(var) + ';\n'
-			regs = filter(None,re.split('\(|\)|registers|,|\"',registers[stm]))
+            for key, vals in pointers.items():
 
-			copyReg = filter(None,re.split('=',StmLine[0]))
-			copyReg[0] = copyReg[0].strip()
+                newHost += '  double *' + vals + ';\n'
 
-			StmLine[0] = StmLine[0].replace(copyReg[0],'newVar' + str(var))
-			StmLine[0] = StmLine[0].replace(';','')
 
+            newHost += '\n'
 
+            newHost += '  struct timeval time1, time2;\n  double time;\n  std::ofstream timefile;\n'
+            for mallocs in dMalloc:
+                newHost += '  ' + mallocs + '\n'
 
-			for i in range(1,len(StmLine)):
+            copyIns = ''
+            copyOuts = ''
+            for copies in dCopy:
+                if 'cudaMemcpyDeviceToHost' in copies:
+                    copyOuts += copies
+                if 'cudaMemcpyHostToDevice' in copies:
+                    copyIns += copies
 
-				StmLine[i] = StmLine[i].replace('= ','')
-				StmLine[i] = StmLine[i].replace(copyReg[0],'')
-				StmLine[i] = StmLine[i].replace(';','')
+            newHost += '\n' + copyIns + '\n'
 
+            for grids in dGrid:
+                newHost += grids
 
+            newHost += '\n'
 
+            newHost += '  gettimeofday(&time1, 0);\n'
+            for cuda in cudaKern:
+                newHost += cuda
 
+            newHost += '  cudaThreadSynchronize();\n'
+            newHost += '  gettimeofday(&time2, 0);\n'
+            newHost += '  time = (1000000.0*(time2.tv_sec-time1.tv_sec) + time2.tv_usec-time1.tv_usec)/1000000.0;\n'
+            newHost += '  timefile.open(\"./times/time_'+stamp+'.txt\", std::ofstream::out | std::ofstream::app );\n'
+            newHost += '  timefile<<\"Time spent in rose__orio_chill_ '+stamp+'.cu: \"<<time<<std::endl;\n'
+            newHost += '  timefile.close();\n\n'
 
-			counter = 0
-			temp = 0
-			temp2 = ''
-			space = '  '
-			closing = ''
-			for loops in fors:
+            newHost += '\n' + copyOuts + '\n'
 
-				if regs[1] + ' +=' in loops:
-					newHost += space + 'newVar' + str(var) + ' = '+ copyReg[0] + ';\n' 
-					par = ''
-					closing = space +  copyReg[0] + ' = newVar' + str(var) +';\n' + closing
-				
-				loops2 = loops.replace('{','')
-				newHost += loops2 + '{\n'
+            for frees in cudaFrees:
 
-				closing = space + '}\n' + closing
+                newHost += '  ' + frees + ';\n'
 
-				space += '  '
+            newHost += '\n}\n\n'
 
 
+            stm = 0
+            for cuda in cudaKernels:
 
-			for stms in StmLine:
-				if '}' not in stms:
-					newHost += stms + '\n'
-			newHost =newHost[:-1] + ';\n' + closing + '\n}\n'
+                lock = 0
+                fors = []
 
+                lineInfo = filter(None,re.split('\n',cuda))
+                StmLine = []
+                var = 1
 
-			stm += 1
-			
+                for info in lineInfo:
+                    if 'for' in info:
+                        lock = 1
+                        fors.append(info)
+                    if lock == 1 and 'for' not in info:
+                        StmLine.append(info)
+                    if lock == 0:
+                        newHost += info + '\n'
 
+                newHost += '  double newVar' + str(var) + ';\n'
+                regs = filter(None,re.split('\(|\)|registers|,|\"',registers[stm]))
 
+                copyReg = filter(None,re.split('=',StmLine[0]))
+                copyReg[0] = copyReg[0].strip()
 
+                StmLine[0] = StmLine[0].replace(copyReg[0],'newVar' + str(var))
+                StmLine[0] = StmLine[0].replace(';','')
 
-		newCode = open('rose__orio_chill_.cu','w')
 
-		newCode.write(newHost)
-		newCode.close()
 
+                for i in range(1,len(StmLine)):
 
-		cmd = 'nvcc -O3 -arch=sm_20 rose__orio_chill_.cu -c -o rose__orio_chill_.o'
-	
-		try:
-			os.system(cmd)
-			cmd = 'mv rose__orio_chill_.cu outputs/rose__orio_chill_' + stamp + '.cu'
-			os.system(cmd)
-		except:
-			err('orio.module.chill.chill:  failed to compile with nvcc: %s' % cmd)
-		
+                    StmLine[i] = StmLine[i].replace('= ','')
+                    StmLine[i] = StmLine[i].replace(copyReg[0],'')
+                    StmLine[i] = StmLine[i].replace(';','')
 
-		output_code = '\n\n //Testing with: recipe' + stamp + '.lua'
-		output_code += '\n //Output file is: rose__orio_chill_' +stamp + '.cu'
 
 
-  	        output_code = output_code + '\n\n#include \"_orio_chill_.h\" \n\n'
 
-		func2 = func.replace('void','')
-		func2 = func2.replace('double *','')
 
-		output_code += func2 + ';\n'
+                counter = 0
+                temp = 0
+                temp2 = ''
+                space = '  '
+                closing = ''
+                for loops in fors:
 
+                    if regs[1] + ' +=' in loops:
+                        newHost += space + 'newVar' + str(var) + ' = '+ copyReg[0] + ';\n'
+                        par = ''
+                        closing = space +  copyReg[0] + ' = newVar' + str(var) +';\n' + closing
 
-		return output_code
-#		exits = 1
+                    loops2 = loops.replace('{','')
+                    newHost += loops2 + '{\n'
 
-	exit()
-#	else:
+                    closing = space + '}\n' + closing
 
-#		code2 = func + '{\n}'
-#		cfile = open(fname,'w')
-#		cfile.write(code2)
-#		cfile.close()
+                    space += '  '
 
-#		hfile = open(hname,'w')
-#		hfile.write(func + ';\n')
-#		hfile.close()
 
-#		output_code = '\n\n //Testing bad run'
-#		output_code += '\n //don\'t use for measurments'
 
+                for stms in StmLine:
+                    if '}' not in stms:
+                        newHost += stms + '\n'
+                newHost =newHost[:-1] + ';\n' + closing + '\n}\n'
 
- # 	        output_code = output_code + '\n\n#include \"_orio_chill_.h\" \n\n'
 
-#		func2 = func.replace('void','')
-#		func2 = func2.replace('double *','')
+                stm += 1
 
-#		output_code += func2+ ';\n'
 
 
-	return output_code
 
 
+            newCode = open('rose__orio_chill_.cu','w')
 
+            newCode.write(newHost)
+            newCode.close()
+
+
+            cmd = 'nvcc -O3 -arch=sm_20 rose__orio_chill_.cu -c -o rose__orio_chill_.o'
+
+            try:
+                os.system(cmd)
+                cmd = 'mv rose__orio_chill_.cu outputs/rose__orio_chill_' + stamp + '.cu'
+                os.system(cmd)
+            except:
+                err('orio.module.chill.chill:  failed to compile with nvcc: %s' % cmd)
+
+
+            output_code = '\n\n //Testing with: recipe' + stamp + '.lua'
+            output_code += '\n //Output file is: rose__orio_chill_' +stamp + '.cu'
+
+
+            output_code = output_code + '\n\n#include \"_orio_chill_.h\" \n\n'
+
+            func2 = func.replace('void','')
+            func2 = func2.replace('double *','')
+
+            output_code += func2 + ';\n'
+
+
+            return output_code
+#               exits = 1
+
+        exit()
+#       else:
+
+#               code2 = func + '{\n}'
+#               cfile = open(fname,'w')
+#               cfile.write(code2)
+#               cfile.close()
+
+#               hfile = open(hname,'w')
+#               hfile.write(func + ';\n')
+#               hfile.close()
+
+#               output_code = '\n\n //Testing bad run'
+#               output_code += '\n //don\'t use for measurments'
+
+
+ #              output_code = output_code + '\n\n#include \"_orio_chill_.h\" \n\n'
+
+#               func2 = func.replace('void','')
+#               func2 = func2.replace('double *','')
+
+#               output_code += func2+ ';\n'
+
+
+        return output_code

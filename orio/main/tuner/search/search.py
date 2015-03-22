@@ -103,7 +103,7 @@ class Search:
         if self.resume:
             startCoord = self.search_opts.get('start_coord')
             if not isinstance(startCoord,list):
-              err('%s argument "%s" must be a list of coordinate indices' % (self.__class__.__name__,'start_coord'))
+                err('%s argument "%s" must be a list of coordinate indices' % (self.__class__.__name__,'start_coord'))
             if not startCoord:
                 startCoord = self.__findLastCoord()
 
@@ -111,8 +111,8 @@ class Search:
         best_coord,best_perf,search_time,runs = self.searchBestCoord(startCoord)
         corr_transfer = self.MAXFLOAT
         if isinstance(best_perf,tuple): #unpack optionally
-          corr_transfer = best_perf[1]
-          best_perf     = best_perf[0]
+            corr_transfer = best_perf[1]
+            best_perf     = best_perf[0]
 
         # if no best coordinate can be found
         if best_coord == None:
@@ -165,17 +165,16 @@ class Search:
         return perf_cost
 
     def getTransformTime(self, key):
-	trans_time=0.0
+        trans_time=0.0
         if key in self.transform_time:
-	  trans_time=self.transform_time[key]
+            trans_time=self.transform_time[key]
         return trans_time
     
     def getCompileTime(self,key):
         compile_time = 0.0
         if key in self.ptdriver.compile_time:
-	  compile_time=self.ptdriver.compile_time[key]
+            compile_time=self.ptdriver.compile_time[key]
         return compile_time
-    
     
     #----------------------------------------------------------
 
@@ -252,21 +251,22 @@ class Search:
             start = time.time()
             #info('1. transformation time = %e'%time.time())
             try:
-	      transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
-	      elapsed = (time.time() - start)
-	      #info('2. transformation time = %e'%time.time())
-	      self.transform_time[coord_key]=elapsed
-	    except:
-	      info('Unexpected error: %s'%sys.exc_info()[0])
-              # Do not stop if a single test fails, continue with other transformations
-              #err('failed during evaluation of coordinate: %s=%s\n%s\nError:%s' \
-              #% (str(coord), str(perf_params), str(e.__class__), e.message), 
-              #code=0, doexit=False)
-              perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
-	      elapsed = (time.time() - start)
-	      #info('2. transformation time = %e'%time.time())
-	      self.transform_time[coord_key]=elapsed
-	      continue
+                transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
+                elapsed = (time.time() - start)
+                #info('2. transformation time = %e'%time.time())
+                self.transform_time[coord_key]=elapsed
+            except:
+                info('Unexpected error: %s'%sys.exc_info()[0])
+                # Do not stop if a single test fails, continue with other transformations
+                #err('failed during evaluation of coordinate: %s=%s\n%s\nError:%s' \
+                #% (str(coord), str(perf_params), str(e.__class__), e.message), 
+                #code=0, doexit=False)
+                perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
+                
+                elapsed = (time.time() - start)
+                #info('2. transformation time = %e'%time.time())
+                self.transform_time[coord_key]=elapsed
+                continue
             
             #info('transformation time = %e' % self.transform_time)
             if len(transformed_code_seq) != 1:
