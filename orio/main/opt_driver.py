@@ -193,7 +193,7 @@ class OptDriver:
                 try:
                     optimized_code = transformation.transform()
                 except Exception, e:
-                    err('orio.main.opt_driver: encountered an error during transformation:\n %s' % e, doexit=True)
+                    err('orio.main.opt_driver: encountered an error during transformation %s:\n %s' % (transformation,e)) 
 
                 
                 # create the optimized code sequence

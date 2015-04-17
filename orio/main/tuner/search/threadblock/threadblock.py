@@ -28,8 +28,7 @@ class ThreadBlock(orio.main.tuner.search.search.Search):
         # only needs to be run once)
         if self.total_runs > 1:
             err('orio.main.tuner.search.exhaustive: the total number of %s search runs must be one (or can be undefined)' %
-                   self.__class__.__name__)
-            sys.exit(1)
+                   self.__class__.__name__, doexit=True)
             
 
     #-----------------------------------------------------

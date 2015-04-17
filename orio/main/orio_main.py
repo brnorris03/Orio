@@ -80,10 +80,12 @@ def start(argv, lang):
                     f = open(g.spec_filename, 'r')
                     tspec_prog = f.read()
                     f.close()
-                except:
-                    err('orio.main.main: cannot open file for reading: %s' % g.spec_filename)
+                except Exception, e:
+                    err('orio.main.main: Exception %s. Cannot open file for reading: %s' % \
+                        (e,g.spec_filename))
+                else:
                 #tuning_spec_dict = tspec.tspec.TSpec().parseProgram(tspec_prog)
-                info('----- finish reading the tuning specification -----')
+                    info('----- finished reading the tuning specification -----')
                 
             # Just add the tuning spec to the file being parsed
             if tspec_prog:

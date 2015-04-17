@@ -255,8 +255,9 @@ class Search:
                 elapsed = (time.time() - start)
                 #info('2. transformation time = %e'%time.time())
                 self.transform_time[coord_key]=elapsed
-            except:
-                info('Unexpected error: %s'%sys.exc_info()[0])
+            except Exception:
+                err('[search] failed evaluation of coordinate: %s=%s.\tException: %s' %\
+                    (str(coord), str(perf_params), str(sys.exc_info()[0])))
                 # Do not stop if a single test fails, continue with other transformations
                 #err('failed during evaluation of coordinate: %s=%s\n%s\nError:%s' \
                 #% (str(coord), str(perf_params), str(e.__class__), e.message), 
@@ -270,8 +271,8 @@ class Search:
             
             #info('transformation time = %e' % self.transform_time)
             if len(transformed_code_seq) != 1:
-                err('internal error: the optimized annotation code cannot contain multiple versions')
-                sys.exit(1)
+                err('internal error: the optimized annotation code cannot contain multiple versions', doexit=True)
+
             transformed_code, _, externals = transformed_code_seq[0]
             code_map[coord_key] = (transformed_code, externals)
         if code_map == {}: # nothing to test
@@ -343,8 +344,7 @@ class Search:
 
         
         if len(transformed_code_seq) != 1:
-            err('internal error: the optimized annotation code cannot contain multiple versions')
-            sys.exit(1)
+            err('internal error: the optimized annotation code cannot contain multiple versions', doexit=True)
 
         #coord_key='param'    
         transformed_code, _, externals = transformed_code_seq[0]

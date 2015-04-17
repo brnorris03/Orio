@@ -128,6 +128,13 @@ class Globals:
                 if not self.disable_orio:
                     self.logfile = 'tuning' + str(os.getpid()) + '.log'
                     thelogger.addHandler(logging.FileHandler(filename=self.logfile))
+                    
+            # Stopping on error
+            if 'stop-on-error' in cmdline.keys():
+                self.stop_on_error = True
+            else:
+                self.stop_on_error = False
+                
             # Because commands are output with extra formatting, for now do not use the logger for stderr output
             #streamhandler = logging.StreamHandler()
             #streamhandler.setLevel(logging.INFO)
@@ -295,9 +302,10 @@ Various error-handling related miscellaneous
 def err(errmsg='',errcode=1, doexit=True):
     sys.stderr.write(Globals().error_pre + 'ERROR: ' + errmsg + Globals().error_post + '\n')
     Globals().loggers['TuningLog'].error(errmsg + '\n' + '\n'.join(traceback.format_stack()))
-    if Globals().debug:
+    if Globals().debug or Globals().stop_on_error:
         traceback.print_stack()
-    if doexit: sys.exit(errcode)
+    if doexit or Globals().debug or Globals().stop_on_error: 
+        sys.exit(errcode)
 
 def warn(msg='',end = '\n', pre='', post=''):
     sys.stderr.write(pre + 'WARNING: ' +  msg + post + end)

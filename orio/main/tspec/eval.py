@@ -73,8 +73,7 @@ class TSpecEvaluator:
             try:
                 eval(vname, env)
             except:
-                err('orio.main.tspec.eval: %s: invalid reference: "%s"' % (rhs_line_no, vname))
-                sys.exit(1)
+                err('orio.main.tspec.eval: %s: invalid reference: "%s"' % (rhs_line_no, vname), doexit=True)
 
         # evaluate the RHS expression
         try:
