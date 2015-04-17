@@ -52,8 +52,13 @@ class Loop(Module):
             transformed_code += cgen.generate(s, indent, extra_indent)
             
         # Example on applying another visitor, e.g., for analysis
-        exampleVisitor = astvisitor.ExampleVisitor()
-        exampleVisitor.visit(transformed_stmts)
+        #exampleVisitor = astvisitor.ExampleVisitor()
+        #exampleVisitor.visit(transformed_stmts)
+        
+        # Count operations visitor
+        opsVisitor = astvisitor.CountingVisitor()
+        opsVisitor.visit(transformed_stmts)
+        info(str(opsVisitor))
 
 
         # return the transformed code

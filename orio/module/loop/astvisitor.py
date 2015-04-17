@@ -3,8 +3,9 @@ Created on Feb 26, 2015
 
 @author: norris
 '''
-import ast, sys, os
-import orio.main.util.globals as g
+import ast, sys, os, traceback
+from orio.main.util.globals import *
+
 import orio.module.loop.codegen
 
 class ASTVisitor:
@@ -27,13 +28,15 @@ class ExampleVisitor(ASTVisitor):
         else:
             self.verbose = False
         
-    def display(self,msg):
+    def display(self, msg):
         if self.verbose:
             sys.stdout.write(msg+'\n')
         
-    def visit(self, nodes, preorder=True, params={}):
+    def visit(self, nodes, params={}):
         '''Invoke accept method for specified AST node'''
-
+        if not isinstance(nodes, (list, tuple)):
+            nodes = list(nodes)
+            
         for node in nodes:
             try:
                 if isinstance(node, ast.NumLitExp):
@@ -222,9 +225,166 @@ class ExampleVisitor(ASTVisitor):
                 traceback.print_stack()
                 raise e
             
-            pass
+        pass
 
     def _generate(self, node):
         # Private method
         return self.cgen.generate(node)
+    pass
         
+class CountingVisitor(ASTVisitor):
+    def __init__(self):
+        self.loops = 0
+        self.maxnest = 0
+        self.adds = 0
+        self.mults = 0
+        self.divs = 0
+        self.lops = 0
+        self.reads = 0
+        self.writes = 0
+        self.comps = 0
+        self.gotos = 0        
+        self._nest = 0
+        pass
+
+    
+    def visit(self, nodes, params={}):
+        '''Invoke accept method for specified AST node'''
+        nodelist = nodes
+        if not isinstance(nodes,(list,tuple)):
+            nodelist = [nodes]
+        for node in nodelist:
+            try:
+                if isinstance(node, ast.NumLitExp):
+                    pass
+        
+                elif isinstance(node, ast.StringLitExp):
+                    pass
+        
+                elif isinstance(node, ast.IdentExp):
+                    self.reads += 1
+        
+                elif isinstance(node, ast.ArrayRefExp):
+                    self.visit(node.exp)
+                    self.visit(node.sub_exp)    # array index
+                    
+                elif isinstance(node, ast.FunCallExp):
+                    self.visit(node.args)
+        
+                elif isinstance(node, ast.UnaryExp):
+                    self.visit(node.exp)  # the operand
+                    if node.op_type in [node.PLUS, node.MINUS]:
+                        pass
+                    elif node.op_type == node.LNOT:
+                        self.lops += 1
+                    elif node.op_type in [node.PRE_INC, node.PRE_DEC, node.POST_INC, node.POST_DEC]:
+                        self.adds += 1
+                        self.reads += 1
+                        self.writes += 1
+                    elif node.op_type == node.DEREF:
+                        self.reads += 1
+                    elif node.op_type == node.ADDRESSOF:
+                        self.reads += 1
+                    else:
+                        err('[ExampleVisitor] Unknown unary operator:'+ str(node.op_type))
+    
+                elif isinstance(node, ast.BinOpExp):
+                    self.visit(node.lhs)
+                    if node.op_type == node.MUL:
+                        self.mults += 1
+                    elif node.op_type == node.DIV:
+                        self.divs += 1
+                    elif node.op_type in [node.MOD, node.ADD, node.SUB]:
+                        self.adds += 1
+                    elif node.op_type in [node.LT, node.GT, node.LE, node.EQ, node.NE]:
+                        self.comps += 1
+                    elif node.op_type in [node.LOR, node.LAND]:
+                        self.lops += 1
+                    elif node.op_type == node.COMMA:
+                        pass
+                    elif node.op_type == node.EQ_ASGN:
+                        self.writes += 1
+                    else:
+                        err('Unknown binary operator:'+ str(node.op_type))
+                    self.visit(node.rhs)
+        
+                elif isinstance(node, ast.ParenthExp):
+                    self.visit(node.exp)
+        
+                elif isinstance(node, ast.Comment):
+                    pass
+                    
+                elif isinstance(node, ast.ExpStmt):
+                    self.visit(node.exp)
+                    
+                elif isinstance(node, ast.GotoStmt):
+                    self.gotos += 1
+                        
+                elif isinstance(node, ast.CompStmt):
+                    self.visit(node.stmts)
+    
+                elif isinstance(node, ast.IfStmt):
+                    self.visit(node.test)
+                    self.visit(node.true_stmt)
+                    self.visit(node.false_stmt)                        
+        
+                elif isinstance(node, ast.ForStmt):
+                    self._nest += 1
+                    self.visit(node.init)
+                    self.visit(node.test)
+                    self.visit(node.iter)
+                    self.visit(node.stmt)
+                    self.loops += 1
+                    if self._nest > self.maxnest: self.maxnest = self._nest    
+                    self._nest -= 1
+        
+                elif isinstance(node, ast.TransformStmt):
+                    err('[CountingVisitor] orio.module.loop.codegen internal error: a transformation statement is never generated as an output')
+        
+                elif isinstance(node, ast.VarDecl):
+                    pass
+        
+                elif isinstance(node, ast.VarDeclInit):
+                    self.writes += 1
+                    self.visit(node.init_exp)
+
+                elif isinstance(node, ast.Pragma):
+                    pass
+                    
+                elif isinstance(node, ast.Container):
+                    self.visit(node.ast)
+        
+                else:
+                    err('[CountingVisitor] orio.module.loop.codegen internal error: unrecognized type of AST: %s' % node.__class__.__name__)
+            except Exception, e:
+                err("[CountingVisitor] Exception in node %s: %s" % (node.__class__,e))
+
+            
+        pass
+        
+        
+    def __str__(self):
+        s = "Code stats:\n"
+        s += '''
+        Number of loops: \t%d
+        Max loop nest depth: \t%d
+        Additions: \t\t%d
+        Multiplications: \t%d
+        Divisions: \t\t%d
+        Logical: \t\t%d
+        Reads: \t\t\t%d
+        Writes: \t\t%d
+        Comparisons:\t\t%d
+        Gotos: \t\t\t%d
+        ''' % (self.loops,    
+            self.maxnest,
+            self.adds, 
+            self.mults, 
+            self.divs, 
+            self.lops, 
+            self.reads, 
+            self.writes, 
+            self.comps, 
+            self.gotos)
+        return s
+
