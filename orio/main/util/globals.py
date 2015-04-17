@@ -126,7 +126,7 @@ class Globals:
                 self.logfile = cmdline['logfile']
             else:
                 if not self.disable_orio:
-                    self.logfile = 'tuning' + str(os.getpid()) + '.log'
+                    self.logfile = 'tuning_' + '_'.join(self.src_filenames.keys()) + '_' + str(os.getpid()) + '.log'
                     thelogger.addHandler(logging.FileHandler(filename=self.logfile))
                     
             # Stopping on error
