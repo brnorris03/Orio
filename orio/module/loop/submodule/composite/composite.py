@@ -344,8 +344,8 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
             transformed_stmt = self.applyTransf(tiles, permuts, regtiles, ujams, scalarrep, boundrep,
                                                 pragma, openmp, vector, arrcopy, cuda, self.stmt)
         except Exception, e:
-            err('orio.module.loop.submodule.composite.composite : error transforming "%s"\n --> %s: %s' %
-                    (self.stmt, e.__class__.__name__, e))
+            err('orio.module.loop.submodule.composite.composite : error transforming "%s"\n --> %s:%s' %
+                    (self.stmt, e.__class__, e))
 
         # return the transformed statement
         return transformed_stmt

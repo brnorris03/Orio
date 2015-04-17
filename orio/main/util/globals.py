@@ -299,7 +299,7 @@ class TestException(Exception):
 Various error-handling related miscellaneous
 """
 
-def err(errmsg='',errcode=1, doexit=True):
+def err(errmsg='',errcode=1, doexit=False):
     sys.stderr.write(Globals().error_pre + 'ERROR: ' + errmsg + Globals().error_post + '\n')
     Globals().loggers['TuningLog'].error(errmsg + '\n' + '\n'.join(traceback.format_stack()))
     if Globals().debug or Globals().stop_on_error:
@@ -309,7 +309,7 @@ def err(errmsg='',errcode=1, doexit=True):
 
 def warn(msg='',end = '\n', pre='', post=''):
     sys.stderr.write(pre + 'WARNING: ' +  msg + post + end)
-    Globals().loggers['TuningLog'].warning(msg)
+    Globals().loggers['TuningLog'].warning('WARNING: ' + msg)
 
 def info(msg='', end='\n', pre='', post='', logging=True):
     if Globals().verbose:

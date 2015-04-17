@@ -69,14 +69,14 @@ class Transformation:
         # check whether tile_size % stride == 0
         if self.tsize % stride_val != 0:
             err('orio.module.loop.submodule.tile.transformation:%s: tile size (%s) must be divisible by the stride value (%s)'
-                   % (stride_exp.line_no, self.tsize, stride_val))
+                   % (stride_exp.line_no, str(self.tsize), str(stride_val)))
 
         # sanity check whether tile_size > stride
         if self.tsize <= stride_val:
             # Issue a warning, then return the untransformed statement without performing tiling
-            warn('orio.module.loop.submodule.tile.transformation: tile size (%s) must be greater than the stride value (%s);' + \
-                 'will not tile this statement (%s,%s) for this parameter combination' \
-                   % (self.tsize, stride_val, index_id.line_no, self.tindex))
+            msg = 'tile size ' + str(self.tsize) + ' must be greater than the stride value ' + str(stride_val) + \
+                '; tile index = ' + str(self.tindex)
+            warn('orio.module.loop.submodule.tile.transformation: ' + msg)
             return self.stmt.replicate()
 
         # create the tile index name
