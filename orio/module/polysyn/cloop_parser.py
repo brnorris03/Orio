@@ -205,8 +205,8 @@ class CLoopParser:
 
         # check the Cloog code contains only variable declarations
         if len(rests) == 0:
-            print 'internal-error:polysyn: Cloog code cannot be empty'
-            sys.exit(1)
+            err('module.polysyn.cloop_parser: internal-error:polysyn: Cloog code cannot be empty',
+                doexit=True)
 
         # move all variables declarations to prologue code and place the opening tag accordingly
         code = prologue_code

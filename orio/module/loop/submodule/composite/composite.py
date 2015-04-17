@@ -322,8 +322,9 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
             lids.append(isinstance(lid, tuple))
             lids.extend(lid)
         else:
-            err('orio.module.loop.submodule.composite.composite internal error: incorrect representation of the loop IDs')
-            sys.exit(1)
+            err('orio.module.loop.submodule.composite.composite internal error: '+
+                'incorrect representation of the loop IDs', doexit=True)
+        
         return lids
 
     #-----------------------------------------------------------------
@@ -331,7 +332,7 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
     def transform(self):
         '''To apply various loop transformations'''
         # debugging info
-        debug("perf_params=" + str(self.perf_params), self,level=6)
+        #debug("perf_params=" + str(self.perf_params), self,level=6)
         
         # read all transformation arguments
         args_info = self.__readTransfArgs(self.perf_params, self.transf_args)
@@ -339,8 +340,12 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
          boundrep, pragma, openmp, vector, arrcopy, cuda) = args_info
         
         # perform all transformations
-        transformed_stmt = self.applyTransf(tiles, permuts, regtiles, ujams, scalarrep, boundrep,
-                                            pragma, openmp, vector, arrcopy, cuda, self.stmt)
+        try:
+            transformed_stmt = self.applyTransf(tiles, permuts, regtiles, ujams, scalarrep, boundrep,
+                                                pragma, openmp, vector, arrcopy, cuda, self.stmt)
+        except Exception, e:
+            err('orio.module.loop.submodule.composite.composite : error transforming "%s"\n --> %s: %s' %
+                    (self.stmt, e.__class__.__name__, e))
 
         # return the transformed statement
         return transformed_stmt

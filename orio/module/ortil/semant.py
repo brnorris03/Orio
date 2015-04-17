@@ -88,9 +88,8 @@ class SemanticAnalyzer:
                 self.__checkStmt(s, oloop_inames)
             for s in stmt.stmts:
                 if isinstance(s, ast.CompStmt):
-                    print ('error:OrTil: does not support a compound statement directly nested ' +
-                           'inside another compound statement')
-                    sys.exit(1)
+                    err('orio.module.ortil.semant: does not support a compound statement directly nested ' +
+                           'inside another compound statement', doexit=True)
         
         elif isinstance(stmt, ast.IfStmt):
             self.__checkStmt(stmt.true_stmt, oloop_inames)

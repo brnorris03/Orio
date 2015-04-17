@@ -364,7 +364,7 @@ class CountingVisitor(ASTVisitor):
         
         
     def __str__(self):
-        s = "Code stats:\n"
+        s = "Code stats:"
         s += '''
         Number of loops: \t%d
         Max loop nest depth: \t%d
