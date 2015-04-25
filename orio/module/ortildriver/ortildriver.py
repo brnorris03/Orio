@@ -60,8 +60,7 @@ class OrTilDriver(orio.module.module.Module):
             # compare both header and trailer directives
             if header_iters != trailer_iters:
                 err('orio.module.ortildriver.ortildriver: different loop iterators in the opening and closing ' +
-                       'directives of full core tiles region')
-                sys.exit(1)
+                       'directives of full core tiles region', doexit=True)
 
             # get the specified loop iterators
             iters = header_iters.split(',')

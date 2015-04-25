@@ -39,65 +39,71 @@ class Transformation:
 
     def __transformStmt(self, stmt):
         '''Apply code transformation on the given statement'''
- 
-        if isinstance(stmt, ast.ExpStmt):
-            return stmt
-        
-        if isinstance(stmt, ast.GotoStmt):
-            return stmt
 
-        elif isinstance(stmt, ast.CompStmt):
-            stmt.stmts = [self.__transformStmt(s) for s in stmt.stmts]
-            return stmt
-
-        elif isinstance(stmt, ast.IfStmt):
-            stmt.true_stmt = self.__transformStmt(stmt.true_stmt)
-            if stmt.false_stmt:
-                stmt.false_stmt = self.__transformStmt(stmt.false_stmt)
-            return stmt
-
-        elif isinstance(stmt, ast.ForStmt):
-            stmt.stmt = self.__transformStmt(stmt.stmt)
-            return stmt
-
-        elif isinstance(stmt, ast.Comment):
-            stmt.stmt = stmt
-            return stmt
-        
-        elif isinstance(stmt, ast.TransformStmt):
-
-            # transform the nested statement
-            stmt.stmt = self.__transformStmt(stmt.stmt)
-
-            # check for repeated transformation argument names
-            arg_names = {}
-            for [aname, _, line_no] in stmt.args:
-                if aname in arg_names:
-                    err('orio.module.loop.transformation: %s: repeated transformation argument: "%s"' % (line_no, aname))
-                arg_names[aname] = None
-
-            # dynamically load the transformation submodule class
-            class_name = stmt.name
-            submod_name = '.'.join([TSUBMOD_NAME, class_name.lower(), class_name.lower()])
-            submod_class = self.dloader.loadClass(submod_name, class_name)
+        try:
+            if isinstance(stmt, ast.ExpStmt):
+                return stmt
             
-            # apply code transformations
-            #try:
-            if self.language == 'cuda' or self.language == 'opencl':
-                t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language, self.tinfo)
+            if isinstance(stmt, ast.GotoStmt):
+                return stmt
+    
+            elif isinstance(stmt, ast.CompStmt):
+                stmt.stmts = [self.__transformStmt(s) for s in stmt.stmts]
+                return stmt
+    
+            elif isinstance(stmt, ast.IfStmt):
+                stmt.true_stmt = self.__transformStmt(stmt.true_stmt)
+                if stmt.false_stmt:
+                    stmt.false_stmt = self.__transformStmt(stmt.false_stmt)
+                return stmt
+    
+            elif isinstance(stmt, ast.ForStmt):
+                stmt.stmt = self.__transformStmt(stmt.stmt)
+                return stmt
+    
+            elif isinstance(stmt, ast.Comment):
+                stmt.stmt = stmt
+                return stmt
+            
+            elif isinstance(stmt, ast.TransformStmt):
+    
+                # transform the nested statement
+                stmt.stmt = self.__transformStmt(stmt.stmt)
+    
+                # check for repeated transformation argument names
+                arg_names = {}
+                for [aname, _, line_no] in stmt.args:
+                    if aname in arg_names:
+                        err('orio.module.loop.transformation: %s: repeated transformation argument: "%s"' % (line_no, aname))
+                    arg_names[aname] = None
+    
+                # dynamically load the transformation submodule class
+                class_name = stmt.name
+                submod_name = '.'.join([TSUBMOD_NAME, class_name.lower(), class_name.lower()])
+                submod_class = self.dloader.loadClass(submod_name, class_name)
+                
+                # apply code transformations
+                try:
+                    if self.language == 'cuda' or self.language == 'opencl':
+                        t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language, self.tinfo)
+                    else:
+                        t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language)
+                except Exception as e:
+                    err('orio.module.loop.transformation could not load submodule %s: %s' % (submod_name,e))
+                    
+                try:
+                    transformed_stmt = t.transform()
+                except Exception, e:
+                    err(('orio.module.loop.transformation:%s: encountered an error during transformation of ' +
+                            'statement: "%s"\n --> %s: %s') % (stmt.line_no, class_name,e.__class__.__name__, e), 0, False)
+                    raise Exception, e
+    
+                # return the transformed statement
+                return transformed_stmt
+    
             else:
-                t = submod_class(self.perf_params, stmt.args, stmt.stmt, self.language)
-            transformed_stmt = t.transform()
-            #except Exception, e:
-            #    err(('orio.module.loop.transformation:%s: encountered an error as optimizing the transformation ' +
-            #            'statement: "%s"\n --> %s: %s') % (stmt.line_no, class_name,e.__class__.__name__, e), 0, False)
-            #    raise Exception, e
-
-            # return the transformed statement
-            return transformed_stmt
-
-        else:
-            err('orio.module.loop.transformation internal error: unknown statement type: %s' % stmt.__class__.__name__)
+                err('orio.module.loop.transformation internal error: unknown statement type: %s' % stmt.__class__.__name__)
    
-        
+        except Exception,e:
+            err('orio.module.loop.transformation exception for statement %s' % stmt.__class__.name)
 

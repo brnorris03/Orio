@@ -190,8 +190,12 @@ class OptDriver:
                     
                 debug("successfully instantiated transformation class: %s.%s" %(mod_name,class_name),self)
                 
-                optimized_code = transformation.transform()
+                try:
+                    optimized_code = transformation.transform()
+                except Exception, e:
+                    err('orio.main.opt_driver: encountered an error during transformation %s:\n %s' % (transformation,e)) 
 
+                
                 # create the optimized code sequence
                 g = Globals()
                 externals = ''

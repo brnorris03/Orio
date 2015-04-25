@@ -126,8 +126,15 @@ class Globals:
                 self.logfile = cmdline['logfile']
             else:
                 if not self.disable_orio:
-                    self.logfile = 'tuning' + str(os.getpid()) + '.log'
+                    self.logfile = 'tuning_' + '_'.join(self.src_filenames.keys()) + '_' + str(os.getpid()) + '.log'
                     thelogger.addHandler(logging.FileHandler(filename=self.logfile))
+                    
+            # Stopping on error
+            if 'stop-on-error' in cmdline.keys():
+                self.stop_on_error = True
+            else:
+                self.stop_on_error = False
+                
             # Because commands are output with extra formatting, for now do not use the logger for stderr output
             #streamhandler = logging.StreamHandler()
             #streamhandler.setLevel(logging.INFO)
@@ -207,43 +214,43 @@ class Globals:
     def setFuncDec(self,src_code):
 
         src = filter(None,re.split('\n',src_code))
-	self.funcDec = src[0].replace('{',';')
+        self.funcDec = src[0].replace('{',';')
+    
+        self.funcName = filter(None,re.split('\n|\(|\)| ',src[0]))[1]
+    
+        i = 1
+        line = src[i]
+        self.input_params = []
+        self.input_vars = []
+        while('@*/' not in line):
+            if 'input_params' in line:
+                i = i+1
+                line = src[i]
+                while ('}' not in line):
+                    inputs = filter(None,re.split('param| |\[|\]|=|;',line))
+                    self.input_params.append(inputs)
+                    i+=1
+                    line=src[i]
+    
+            if 'input_vars' in line:
+                i = i+ 1
+                line = src[i]
+                while ('}' not in line):
+                    inputs = filter(None,re.split(' |(=)',line))
+                    for j in range(len(inputs)):
+                        if inputs[j] == '=':
+                            inputs2 = filter(None,re.split('\[|\]',inputs[j-1]))
+                            self.input_vars.append(inputs2)
+                        
+                        
+                    i+=1
+                    line = src[i]
+    
+    
+            i+=1
+            line = src[i]
 
-	self.funcName = filter(None,re.split('\n|\(|\)| ',src[0]))[1]
-
-	i = 1
-	line = src[i]
-	self.input_params = []
-	self.input_vars = []
-	while('@*/' not in line):
-		if 'input_params' in line:
-			i = i+1
-			line = src[i]
-			while ('}' not in line):
-				inputs = filter(None,re.split('param| |\[|\]|=|;',line))
-				self.input_params.append(inputs)
-				i+=1
-				line=src[i]
-
-		if 'input_vars' in line:
-			i = i+ 1
-			line = src[i]
-			while ('}' not in line):
-				inputs = filter(None,re.split(' |(=)',line))
-				for j in range(len(inputs)):
-					if inputs[j] == '=':
-						inputs2 = filter(None,re.split('\[|\]',inputs[j-1]))
-						self.input_vars.append(inputs2)
-					
-					
-				i+=1
-				line = src[i]
-
-
-		i+=1
-		line = src[i]
-
-	
+    
 
     def getFuncDecl(self):
         return self.funcDec
@@ -292,16 +299,17 @@ class TestException(Exception):
 Various error-handling related miscellaneous
 """
 
-def err(errmsg='',errcode=1, doexit=True):
+def err(errmsg='',errcode=1, doexit=False):
     sys.stderr.write(Globals().error_pre + 'ERROR: ' + errmsg + Globals().error_post + '\n')
     Globals().loggers['TuningLog'].error(errmsg + '\n' + '\n'.join(traceback.format_stack()))
-    if Globals().debug:
+    if Globals().debug or Globals().stop_on_error:
         traceback.print_stack()
-    if doexit: sys.exit(errcode)
+    if doexit or Globals().debug or Globals().stop_on_error: 
+        sys.exit(errcode)
 
 def warn(msg='',end = '\n', pre='', post=''):
     sys.stderr.write(pre + 'WARNING: ' +  msg + post + end)
-    Globals().loggers['TuningLog'].warning(msg)
+    Globals().loggers['TuningLog'].warning('WARNING: ' + msg)
 
 def info(msg='', end='\n', pre='', post='', logging=True):
     if Globals().verbose:

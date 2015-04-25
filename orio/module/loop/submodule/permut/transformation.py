@@ -135,7 +135,10 @@ class Transformation:
     #-------------------------------------------------
 
     def transform(self):
-        '''To permute/interchange loops'''
+        '''
+        Permute/interchange loops, returns a new AST for the statement being 
+        transformed.
+        '''
 
         # copy the statement
         transformed_stmt = self.stmt.replicate()
@@ -161,7 +164,7 @@ class Transformation:
                         skip = True
                         break
                     else:
-                       to_seq.append(i)
+                        to_seq.append(i)
                 elif i[0] in inames:
                     to_seq.append(i[0])
             if skip:

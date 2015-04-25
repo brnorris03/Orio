@@ -26,6 +26,7 @@ class ForLoopLib:
         Subtraction is not considered at the iteration expression for the sake of
         the implementation simplicity.
         '''
+    
 
         # get rid of compound statement that contains only a single statement
         while isinstance(stmt, orio.module.loop.ast.CompStmt) and len(stmt.stmts) == 1:
@@ -205,6 +206,9 @@ class ForLoopLib:
     def getLoopIndexNames(self, stmt):
         '''Return a list of all loop index names'''
 
+        if stmt == None:
+            return []
+        
         if isinstance(stmt, orio.module.loop.ast.ExpStmt):
             return []
 
@@ -221,7 +225,7 @@ class ForLoopLib:
                 inames.extend(self.getLoopIndexNames(stmt.false_stmt))
             return list(sets.Set(inames))
 
-        elif isinstance(stmt, orio.module.loop.ast.ForStmt):
+        elif isinstance(stmt, orio.module.loop.ast.ForStmt) and stmt:
             inames = []
             inames.extend(self.getLoopIndexNames(stmt.stmt))
             index_id, lbound_exp, ubound_exp, stride_exp, loop_body = self.extractForLoopInfo(stmt)

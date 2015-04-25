@@ -36,6 +36,7 @@
 #   simplify the input language.
 #
 
+import astvisitor
 import codegen
 
 #-----------------------------------------------
@@ -56,6 +57,10 @@ class AST:
         '''Replicate this abstract syntax tree node'''
         raise NotImplementedError('%s: abstract function "replicate" not implemented' %
                                   self.__class__.__name__)
+        
+    def accept(self, visitor, params={}):
+        '''Visitor pattern accept function'''
+        visitor.visit(self,params)
 
     def initMeta(self, key, val=0):
         self.meta[key] = val

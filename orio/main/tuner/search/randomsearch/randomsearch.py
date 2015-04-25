@@ -36,17 +36,17 @@ class Randomsearch(orio.main.tuner.search.search.Search):
 
         # set all algorithm-specific arguments to their default values
         self.local_distance = 0
+        self.total_runs = 100
 
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
 
 
-        self.init_samp = 10000
+        self.init_samp = 2*self.total_runs   # BN: used to be hard-coded to 10,000
         # complain if both the search time limit and the total number of search runs are undefined
         if self.time_limit <= 0 and self.total_runs <= 0:
             err(('orio.main.tuner.search.randomsearch.randomsearch: %s search requires either (both) the search time limit or (and) the ' +
                     'total number of search runs to be defined') % self.__class__.__name__)
-
 
     def searchBestCoord(self, startCoord=None):
         '''
@@ -380,7 +380,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
 
         # check for algorithm-specific arguments
         for vname, rhs in self.search_opts.iteritems():
-
+            print vname, rhs
             # local search distance
             if vname == self.__LOCAL_DIST:
                 if not isinstance(rhs, int) or rhs < 0:
@@ -389,6 +389,8 @@ class Randomsearch(orio.main.tuner.search.search.Search):
                 self.local_distance = rhs
 
             # unrecognized algorithm-specific argument
+            elif vname == 'total_runs':
+                self.total_runs = rhs
             else:
                 err('orio.main.tuner.search.randomsearch: unrecognized %s algorithm-specific argument: "%s"' %
                        (self.__class__.__name__, vname))
