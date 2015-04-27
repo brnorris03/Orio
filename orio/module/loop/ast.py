@@ -67,9 +67,9 @@ class AST:
 
     def updateMeta(self, key, val=1):
         if self.meta.get(key):
-            self[key] += val
+            self.meta[key] += val
         else:
-            self[key] = val 
+            self.meta[key] = val 
             
     def getMeta(self, key):
         if self.meta.get(key): return self.meta[key]
