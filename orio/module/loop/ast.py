@@ -36,8 +36,8 @@
 #   simplify the input language.
 #
 
-import astvisitor
 import codegen
+from orio.main.util.globals import Globals
 
 #-----------------------------------------------
 # AST - Abstract Syntax Tree
@@ -52,6 +52,8 @@ class AST:
         self.meta = meta
         self.initMeta('uses')
         self.initMeta('defs')
+        self.id = str(Globals().incrementCounter())
+        self.temp = None
         
     def replicate(self):
         '''Replicate this abstract syntax tree node'''

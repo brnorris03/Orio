@@ -24,6 +24,7 @@ class Globals:
             self.error_pre = "\x1B[00;31m"
             self.error_post = "\x1B[00m"
             self.metadata = {'loop_transformations':[]}
+            self.counter = 0
 
             self.funcDec = ''           #Added by Axel Y. Rivera (UofU)
             self.funcName = ''            #Added by Axel Y. Rivera (UofU)
@@ -172,6 +173,9 @@ class Globals:
                 self.validationMode = False
             self.executedOriginal = False
             
+            # Temporary filename for various helper files (not source)
+            self.tempfilename = 'temp'
+            
             pass
 
         def addLogger(self, thelogger):
@@ -180,8 +184,12 @@ class Globals:
         def test(self):
             """ Test method, return singleton id """
             return id(self)
+        
+        def incrementCounter(self):
+            self.counter += 1
+            return self.counter
     
-
+    pass   # end of Globals class
 
     __single = None  # Used for ensuring singleton instance
     def __init__(self,cmdline={}):
