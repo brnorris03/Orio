@@ -62,7 +62,7 @@ class Loop(Module):
         info(str(opsVisitor))
         
         # CFG
-        if False:
+        if True:
             try:
                 from orio.module.loop.cfg import CFGGraph
                 cfg = CFGGraph(transformed_stmts)

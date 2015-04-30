@@ -116,14 +116,17 @@ class CFGVisitor(astvisitors.ASTVisitor):
                     self.cfg.add_v(v)
                     self.cfg.add_e(CFGEdge(self.stack.pop(),v))
                     self.stack.append(v)
+                    
                     self.lead = True
                     self.visit(node.true_stmt)
+                    truelast = self.stack.pop()                    
                     self.stack.append(v)
-                    truelast = self.stack.pop()
+                    
                     self.lead = True
                     self.visit(node.false_stmt)
                     falselast = self.stack.pop()
                     self.lead = True
+                    
                     vbottom = CFGVertex('_JOIN_' + str(node.id))
                     self.cfg.add_v(vbottom)
                     self.cfg.add_e(CFGEdge(truelast,vbottom))
