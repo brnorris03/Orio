@@ -19,6 +19,18 @@ class CFGVertex(graph.Vertex):
     def append(self, node):
         self.stmts.append(node)
         
+    def copy(self):
+        v = CFGVertex(self.name)
+        v.e = self.e
+        v.data = self.data
+        return v
+    
+    def succ(self):
+        return self.out_v()
+    
+    def pred(self):
+        return self.in_v()
+        
     def __str__(self):
         return "<%s> " % self.name + str(self.stmts)
     
@@ -39,11 +51,18 @@ class CFGGraph(graph.Graph):
         self.cfgVisitor.visit(nodes)
                 
         if True:
-            self.display()
-        
-        
+            self.display()   
         
         pass
+    
+    def nodes(self):
+        return self.v
+    
+    def pred(self, bb):
+        return self.v[bb.name].in_v()
+    
+    def succ(self, bb):
+        return self.v[bb.name].out_v()
     
     def display(self):
         #sys.stdout.write(str(self))

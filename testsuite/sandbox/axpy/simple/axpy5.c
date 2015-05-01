@@ -1,7 +1,7 @@
 /*@ begin PerfTuning (
  def build {
    arg build_command = 'gcc -O3';
-   arg libs = '-lrt';
+   #arg libs = '-lrt';
  } 
  def performance_counter {
    #arg method = 'bgp counter';
