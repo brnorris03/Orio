@@ -197,14 +197,22 @@ Liner Algebra Subprogram.</p>
 /*@ end @*/</code></pre>
 
 	<p>In order to apply loop unrolling to the above code, run the following
-Orio command (assuming that the annotated code is stored in the file
-<code>examples/axpy5.c</code>).</p>
+Orio command in the <code>examples</code> subdirectory of the Orio source code tree, 
+which contains the above code in the file <code>axpy5-nospec.c</code>.
+</p>
 
-	<pre><code>$ orcc -v axpy5.c </code></pre>
+	<pre><code>$ orcc -v -s axpy5.spec axpy5-nospec.c </code></pre>
 
+	<p> Note that we also gave the <code>-s axpy5.spec</code> argument in addition to 
+	the <code>axpy5-nospec.c</code> source file. 
+	The <code>axpy5.spec</code> contains the <i>tuning specification</i> including 
+	information needed to compile the code, initialize parameters and explore different 
+	optimization options. The tuning spec is described in more detail below.
+	</p>
+	
 	<p>By default, the transformed output code is written to the file
-<code>_axpy5.c</code>. Optionally, users can specify the name of the output
-file using the command option <code>-o &lt;file&gt;</code>. Below is an example output 
+<code>_axpy5-nospec.c</code>. Optionally, users can specify the name of the output
+file using the command option <code>-o &lt;file&gt;</code>. Below is an example  
 output code.</p>
 
 	<pre><code>/*@ begin Loop ( 
