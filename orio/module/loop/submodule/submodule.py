@@ -15,6 +15,8 @@ class SubModule:
            stmt               the statement AST to be transformed
         '''
 
+        if perf_params is True:
+            perf_params = None
         self.perf_params = perf_params
         self.transf_args = transf_args
         self.language = language

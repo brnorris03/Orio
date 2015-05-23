@@ -276,9 +276,10 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         bcmd = 'nvcc'
       if bcmd.find('-arch') == -1:
         bcmd += ' -arch=sm_' + str(props['major']) + str(props['minor'])
-      if self.perf_params.has_key('CFLAGS') and bcmd.find('@CFLAGS') == -1:
+      if self.perf_params is not None and self.perf_params.has_key('CFLAGS') and bcmd.find('@CFLAGS') == -1:
         bcmd += ' @CFLAGS'
-      self.tinfo.build_cmd = bcmd
+      if self.tinfo is not None:
+        self.tinfo.build_cmd = bcmd
 
       # return queried device props
       return props
