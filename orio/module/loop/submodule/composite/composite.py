@@ -20,7 +20,7 @@ from orio.main.util.globals import *
 class Composite(orio.module.loop.submodule.submodule.SubModule):
     '''The composite loop transformation submodule.'''
     
-    def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C'):
+    def __init__(self, perf_params = None, transf_args = None, stmt = None, language='C', tinfo = None):
         '''To instantiate a composite loop transformation submodule.'''
         
         orio.module.loop.submodule.submodule.SubModule.__init__(self, perf_params, transf_args, stmt, language)

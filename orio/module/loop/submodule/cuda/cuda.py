@@ -292,6 +292,8 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         g.debug('orio.module.loop.submodule.cuda.CUDA: starting CUDA transformations')
 
         # perform transformation
+        if self.props is None:
+            self.props = self.getDeviceProps()
         t = transformation.Transformation(stmt, self.props, targs, self.tinfo)
         transformed_stmt = t.transform()
 
