@@ -369,6 +369,8 @@ class PerfTestDriver:
         #info(str(perf_costs))
         if not perf_costs:
             err('orio.main.tuner.ptest_driver:  performance testing failed: "%s"' % cmd, doexit=False)
+            infpair = (float('inf'),float('inf'))
+            for k in perf_costs.keys(): perf_costs[k] = infpair
 
         # compare original and transformed codes' results
         if Globals().validationMode and Globals().executedOriginal:
