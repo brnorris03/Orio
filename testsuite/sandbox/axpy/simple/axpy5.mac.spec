@@ -1,19 +1,19 @@
-/*@ begin PerfTuning (
+spec unroll_vectorize {
  def build {
-   arg build_command = 'gcc -O3';
-   #arg libs = '-lrt';
+   arg build_command = 'gcc';
  } 
  def performance_counter {
    #arg method = 'bgp counter';
-   arg repetitions = 3;
+   arg repetitions = 5;
  }
  def performance_params {  
    param UF[] = range(1,11);
    param VEC[] = [False,True];
+   param CFLAGS[] = ['-O0', '-O1','-O2','-O3'];
    #constraint divisible_by_two = (UF % 2 == 0);
  }
  def input_params {
-   param N[] = [100000];
+   param N[] = [1000000];
  }
  def input_vars {
    decl dynamic double x1[N] = random;
@@ -31,22 +31,4 @@
  def search {
    arg algorithm = 'Exhaustive';
  }
-) 
-@*/
-
-
-register int i;
-
-/*@ begin Loop ( 
-    transform Composite(
-      unrolljam = (['i'],[UF]),
-      vector = (VEC, ['ivdep','vector always'])
-     )
-  for (i=0; i<=N-1; i++)
-    y[i]=y[i]+a1*x1[i]+a2*x2[i]+a3*x3[i]+a4*x4[i]+a5*x5[i];
-) @*/
-
-
-/*@ end @*/
-/*@ end @*/
-
+}

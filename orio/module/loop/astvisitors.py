@@ -10,11 +10,17 @@ import orio.module.loop.codegen
 
 class ASTVisitor:
     ''' Standard visitor pattern abstract class'''
-    def __init__(self):
+    def __init__(self):        
+        if 'LOOPAST_DEBUG' in os.environ.keys(): self.verbose = True
+        else: self.verbose = False
         pass
     
     def __str__(self):
         return self.__class__.__name__
+    
+    def display(self, node, msg=''):
+        if self.verbose:
+            sys.stdout.write("[%s] " % self.__class__.__name__ + node.__class__.__name__ + ': ' + msg+'\n')
     
     def visit(self, node, params={}):
         ''' Default visit method to be overwritten by specific visitors'''
@@ -23,15 +29,8 @@ class ASTVisitor:
 class ExampleVisitor(ASTVisitor):
     def __init__(self):
         self.cgen = orio.module.loop.codegen.CodeGen_C()
-        if 'ORIO_TEST' in os.environ.keys():
-            self.verbose = True
-        else:
-            self.verbose = False
         
-    def display(self, msg):
-        if self.verbose:
-            sys.stdout.write(msg+'\n')
-        
+
     def visit(self, nodes, params={}):
         '''Invoke accept method for specified AST node'''
         if not isinstance(nodes, (list, tuple)):
@@ -40,22 +39,22 @@ class ExampleVisitor(ASTVisitor):
         for node in nodes:
             try:
                 if isinstance(node, ast.NumLitExp):
-                    self.display("[ExampleVisitor] Visiting NumLitExp: %s" % str(node.val))
+                    self.display(node, str(node.val))
         
                 elif isinstance(node, ast.StringLitExp):
-                    self.display("[ExampleVisitor] Visiting StringLitExp: %s" % str(node.val))
+                    self.display(node, str(node.val))
         
                 elif isinstance(node, ast.IdentExp):
-                    self.display("[ExampleVisitor] Visiting IdentExp: %s" % str(node.name))
+                    self.display(node, str(node.name))
         
                 elif isinstance(node, ast.ArrayRefExp):
-                    self.display("Visting ArrayRefExp: %s" % self._generate(node.exp))
+                    self.display(node, self._generate(node.exp))
                     
                 elif isinstance(node, ast.FunCallExp):
                     s = self._generate(node.exp) + '('
                     s += ','.join(map(lambda x: self._generate(x), node.args))
                     s += ')'
-                    self.display("[ExampleVisitor] Visiting FunCallExp: %s" % s)
+                    self.display(node, s)
         
                 elif isinstance(node, ast.UnaryExp):
                     s = self._generate(node.exp)
@@ -79,7 +78,7 @@ class ExampleVisitor(ASTVisitor):
                         s = '&' + s
                     else:
                         s = 'Unknown unary operator:'+ str(s.op_type)
-                    self.display('[ExampleVisitor] Visiting UnaryExp: %s' % s)
+                    self.display(node, s)
     
                 elif isinstance(node, ast.BinOpExp):
                     s = self._generate(node.lhs)
@@ -115,33 +114,33 @@ class ExampleVisitor(ASTVisitor):
                         s += '='
                     else:
                         s = 'Unknown binary operator:'+ str(s.op_type)
-                    self.display('[ExampleVisitor] Visiting BinaryExp: %s' % s)
+                    self.display(node, s)
         
                 elif isinstance(node, ast.ParenthExp):
                     s = '(' + self._generate(node.exp) + ')'
-                    self.display('[ExampleVisitor] Visiting ParenthExp: %s' % s)
+                    self.display(node, s)
         
                 elif isinstance(node, ast.Comment):
                     s = '/*' + str(node.text) + '*/'
-                    self.display('[ExampleVisitor] Visiting Comment: %s' % s)
+                    self.display(node, s)
                     
                 elif isinstance(node, ast.ExpStmt):
                     s=''
                     if node.getLabel(): s += str(node.getLabel()) + ':'
                     if node.exp:
                         s += str(self._generate(node.exp))
-                    self.display('[ExampleVisitor] Visiting ExpStmt: %s' % s)
+                    self.display(node, s)
         
                 elif isinstance(node, ast.GotoStmt):
                     s = ''
                     if node.getLabel(): s += node.getLabel() + ':'
                     if node.target:
                         s += 'goto ' + str(node.target) + ';\n'
-                    self.display('[ExampleVisitor] Visiting GotoStmt: %s' % s)
+                    self.display(node, s)
                         
                 elif isinstance(node, ast.CompStmt):
                     self.alldecls = set([])
-                    self.display('[ExampleVisitor] Visiting CompStmt')
+                    self.display(node)
                     self.visit(node.stmts)
     
                 elif isinstance(node, ast.IfStmt):
@@ -165,7 +164,7 @@ class ExampleVisitor(ASTVisitor):
                         else:
                             s += '\n'
                             s += self._generate(node.false_stmt)
-                    self.display('[ExampleVisitor] Visiting IfStmt:\n%s' % s)
+                    self.display(node, s)
                             
         
                 elif isinstance(node, ast.ForStmt):
@@ -188,11 +187,11 @@ class ExampleVisitor(ASTVisitor):
                     else:
                         s += '\n'
                         s += self._generate(node.stmt)
-                    self.display('[ExampleVisitor] Visiting ForStmt:\n%s' % s)
+                    self.display(node, s)
     
         
                 elif isinstance(node, ast.TransformStmt):
-                    self.display('[ExampleVisitor] orio.module.loop.codegen internal error: a transformation statement is never generated as an output')
+                    self.display(node, "Internal error: a transformation statement is never generated as an output")
         
                 elif isinstance(node, ast.VarDecl):
                     s =''
@@ -202,35 +201,32 @@ class ExampleVisitor(ASTVisitor):
                     if not sv in self.alldecls: 
                         s += sv
                         self.alldecls.add(sv)
-                    self.display('[ExampleVisitor] Visiting VarDecl: %s' % s)
+                    self.display(node, s)
         
                 elif isinstance(node, ast.VarDeclInit):
                     s = str(node.type_name) + ' '
                     s += self._generate(node.var_name)
                     s += '=' + self._generate(node.init_exp) + ';'
-                    self.display('[ExampleVisitor] Visiting VarDeclInit: %s' % s)
+                    self.display(node, s)
         
                 elif isinstance(node, ast.Pragma):
                     s = '#pragma ' + str(node.pstring) + '\n'
-                    self.display('[ExampleVisitor] Visiting Pragma: %s' % s)
+                    self.display(node, s)
                     
                 elif isinstance(node, ast.Container):
                     s = self._generate(node.ast)
         
                 else:
-                    self.display('[ExampleVisitor] orio.module.loop.codegen internal error: unrecognized type of AST: %s' % node.__class__.__name__)
+                    self.display('[module.loop.astvisitors.ExampleVisitor] orio.module.loop.codegen internal error: unrecognized type of AST: %s' % node.__class__.__name__)
             except Exception, e:
-                print "Exception in node %s: %s" % (node.__class__,e)
-                import traceback
-                traceback.print_stack()
-                raise e
+                err("[module.loop.astvisitors.ExampleVisitor] Exception in node %s: %s" % (node.__class__.__name__,e))
             
         pass
 
     def _generate(self, node):
         # Private method
         return self.cgen.generate(node)
-    pass
+    pass    # end of class ExampleVisitor
         
 class CountingVisitor(ASTVisitor):
     def __init__(self):
@@ -254,6 +250,7 @@ class CountingVisitor(ASTVisitor):
         if not isinstance(nodes,(list,tuple)):
             nodelist = [nodes]
         for node in nodelist:
+            if not node: continue
             try:
                 if isinstance(node, ast.NumLitExp):
                     pass
@@ -355,7 +352,7 @@ class CountingVisitor(ASTVisitor):
                     self.visit(node.ast)
         
                 else:
-                    err('[CountingVisitor] orio.module.loop.codegen internal error: unrecognized type of AST: %s' % node.__class__.__name__)
+                    err('[CountingVisitor] orio.module.loop.astvisitors.CountingVisitor internal error: unrecognized type of AST: %s' % node.__class__.__name__)
             except Exception, e:
                 err("[CountingVisitor] Exception in node %s: %s" % (node.__class__,e))
 

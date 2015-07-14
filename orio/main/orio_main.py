@@ -121,6 +121,7 @@ def start(argv, lang):
 
                 optimized_code, _, externals = optimized_code_seq[0]
                 if g.out_filename: out_filename = g.out_filename
+                g.tempfilename = out_filename
                 info('--> writing output to: %s' % out_filename)
                 try:
                     f = open(out_filename, 'w')

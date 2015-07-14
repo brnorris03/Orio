@@ -7,7 +7,8 @@ from orio.main.util.globals import *
 
 from orio.module.module import Module
 
-import codegen, parser, transformation, ast, astvisitor
+import codegen, parser, transformation, ast
+from orio.module.loop import astvisitors
 
 #-----------------------------------------
 
@@ -52,13 +53,21 @@ class Loop(Module):
             transformed_code += cgen.generate(s, indent, extra_indent)
             
         # Example on applying another visitor, e.g., for analysis
-        #exampleVisitor = astvisitor.ExampleVisitor()
+        #exampleVisitor = astvisitors.ExampleVisitor()
         #exampleVisitor.visit(transformed_stmts)
         
         # Count operations visitor
-        opsVisitor = astvisitor.CountingVisitor()
+        opsVisitor = astvisitors.CountingVisitor()
         opsVisitor.visit(transformed_stmts)
         info(str(opsVisitor))
+        
+        # CFG
+        if True:
+            try:
+                from orio.module.loop.cfg import CFGGraph
+                cfg = CFGGraph(transformed_stmts)
+            except Exception, e:
+                err('[module.loop.loop] cannot construct CFG: ',e)
 
 
         # return the transformed code
