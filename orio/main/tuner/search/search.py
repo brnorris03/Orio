@@ -93,7 +93,7 @@ class Search:
     #----------------------------------------------------------
 
     def search(self, startCoord=None):
-        '''To initiate the search process and return the best performance parameters'''
+        '''Initiate the search process and return the best performance parameters'''
 
         # if the search space is empty
         if self.total_dims == 0:
@@ -157,7 +157,7 @@ class Search:
 
     def getPerfCost(self, coord):
         '''
-        To empirically evaluate the performance cost of the code corresponding to the given coordinate
+        Empirically evaluate the performance cost of the code corresponding to the given coordinate
         '''
 
         perf_costs = self.getPerfCosts([coord])

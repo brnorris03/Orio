@@ -15,6 +15,10 @@ spec unroll_vectorize {
  def input_params {
    param N[] = [1000000];
  }
+ def cmdline_params {
+   param aaa[] = ['-a 0', '-a 1', '-a 2'];
+ }
+
  def input_vars {
    decl dynamic double x1[N] = random;
    decl dynamic double x2[N] = random;
