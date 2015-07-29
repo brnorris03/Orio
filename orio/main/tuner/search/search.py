@@ -241,12 +241,12 @@ class Search:
             _ = self.ptdriver.run(instrumented_code)
             Globals().executedOriginal = True
         
-        # get the transformed code for each corresponding coordinate
+        # get the transformed code for each corresponding coordinate for non-command-line parameters
         code_map = {}
         for coord in uneval_coords:
             coord_key = str(coord)
-            perf_params = self.coordToPerfParams(coord)
             
+            perf_params = self.coordToPerfParams(coord)
             
             start = time.time()
             #info('1. transformation time = %e'%time.time())
@@ -280,8 +280,8 @@ class Search:
         #debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
         # evaluate the performance costs for all coordinates
         test_code = self.ptcodegen.generate(code_map)
-        perf_param = self.coordToPerfParams(uneval_coords[0])
-        new_perf_costs = self.ptdriver.run(test_code, perf_param=perf_param,coord=coord_key)
+        perf_params = self.coordToPerfParams(uneval_coords[0])
+        new_perf_costs = self.ptdriver.run(test_code, perf_params=perf_params,coord=coord_key)
         #new_perf_costs = self.getPerfCostConfig(coord_key,perf_params)
         # remember the performance cost of previously evaluated coordinate
         self.perf_cost_records.update(new_perf_costs.items())

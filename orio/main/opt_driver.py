@@ -96,10 +96,10 @@ class OptDriver:
     #-------------------------------------------------------------
 
     def __optimizeCodeFrag(self, cfrag, perf_params):
-        '''Apply optimization described in the annotations to the given code fragment'''
+        '''Apply optimization described in the annotations to the given code fragment.
+        '''
 
         debug('__optimizeCodeFrag: code_frag type is ' + cfrag.__class__.__name__, self)
-        command_line_options = None
         
         # apply no optimizations to non-annotation code fragment
         if isinstance(cfrag, orio.main.code_frag.NonAnn):
@@ -109,10 +109,10 @@ class OptDriver:
         # optimize annotated code region
         elif isinstance(cfrag, orio.main.code_frag.AnnCodeRegion):
 
-            debug("OptDriver line 112: %s" % cfrag.leader_ann.mod_name, self)
+            debug("OptDriver line 113: %s" % cfrag.leader_ann.mod_name, self)
             # initiate empirical performance tuning
             if cfrag.leader_ann.mod_name == PTUNE_NAME:
-                debug("OptDriver line 115, detected tuning spec", self)
+                debug("OptDriver line 116, detected tuning spec", self)
                 # apply empirical performance tuning
                 optimized_code_seq = self.ptuner.tune(cfrag.leader_ann.mod_code,
                                                       cfrag.leader_ann.mod_code_line_no,
@@ -138,7 +138,7 @@ class OptDriver:
 
             # initiate code transformation and generation
             else:
-                debug("OptDriver line 114, detected code annotated for tuning", self)
+                debug("OptDriver line 142, detected code annotated for tuning", self)
 
                 # recursively apply optimizations to the annotation body
                 optimized_body_code_seq = self.optimizeCodeFrags(cfrag.cfrags, perf_params)
