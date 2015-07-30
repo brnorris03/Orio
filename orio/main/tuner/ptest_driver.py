@@ -90,16 +90,8 @@ class PerfTestDriver:
         # For processing output
         self.resultre = re.compile(r'\w*({.*})')
         
-        # Search method, to be set later
-        self.search = None
-
-    #-----------------------------------------------------
+        pass
     
-    def setSearch(self, searchobj):
-        '''Set the search object so that the driver can query the search space.
-        @param searchobj: an object of the Search class hierarchy
-        '''
-        self.search = searchobj
     
     #-----------------------------------------------------
 
@@ -286,7 +278,7 @@ class PerfTestDriver:
         cmdlineargs = ' '
         for pname,pval in perf_params.items():
             if pname.startswith('__cmdline_'):
-                cmdlineargs += str(pval) + ' '
+                cmdlineargs += pname.replace('__cmdline_','').strip('"') + ' ' + str(pval) + ' '
         
         # execute the search process in parallel
         if self.use_parallel_search:

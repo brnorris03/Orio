@@ -475,11 +475,11 @@ class TuningInfoGen:
             # skip all 'let' statements, and capture any unexpected statements
             if keyw == 'let':
                 continue
-            if keyw not in ('param', 'constraint'):
+            if keyw not in ('param', 'option', 'constraint'):
                 err('orio.main.tspec.tune_info: %s: unexpected statement type: "%s"' % (line_no, keyw))
                 
             # evaluate parameter
-            if keyw == 'param':
+            if keyw in ('param','option'):
                 _, _, (id_name, id_line_no), is_range, (rhs, rhs_line_no) = stmt
                 if not is_range:
                     rhs = [rhs]
@@ -782,7 +782,6 @@ class TuningInfoGen:
         pcount_info = ('basic timer', 5, None, None)
         search_info = ('Exhaustive', -1, -1, False, [])
         pparam_info = ([], [])
-        cmdline_info = ([], [])
         iparam_info = ([], [])
         ivar_info = None
         ptest_code_info = (None, )

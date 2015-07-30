@@ -23,10 +23,12 @@ DECL        = Token('decl')
 DEF         = Token('def')
 LET         = Token('let')
 PARAM       = Token('param')
+OPTION      = Token('option')
 SPEC        = Token('spec')
 
 # tokens
 ID          = Token('[A-Za-z_]([A-Za-z0-9_\.]*[A-Za-z0-9_]+)*', group=0) >> f_token
+STRING      = Token('"[^"]*"', group=0) >> f_token
 EQUALS      = Token('=')
 LBRACKET    = Token('\[')
 RBRACKET    = Token('\]')

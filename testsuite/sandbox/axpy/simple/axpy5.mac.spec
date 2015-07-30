@@ -16,7 +16,7 @@ spec unroll_vectorize {
    param N[] = [1000000];
  }
  def cmdline_params {
-   param aaa[] = ['-a 0', '-a 1', '-a 2'];
+   option "-a" = [0,1,2];
  }
 
  def input_vars {

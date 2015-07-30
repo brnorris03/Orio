@@ -207,6 +207,43 @@ class TSpecEvaluator:
         # return the evaluated statement
         return (keyw, line_no, (id_name, id_line_no), is_range, (rhs_val, rhs_line_no))
         
+    def __evalOption(self, stmt, env, name_space):
+        '''Evaluate the given "option" statement'''
+        # Example:  
+        # def cmdline_params {
+        #    option '-a' = [0,1,2];
+        # }
+
+        # unpack the statement
+        keyw, line_no, (option_string, id_line_no), is_range, (rhs, rhs_line_no) = stmt
+
+        # check for illegal variable references in the RHS
+        for vname in self.__extractVars(rhs):
+            try:
+                eval(vname, env)
+            except:
+                err('orio.main.tspec.eval: %s: invalid reference: "%s"' % (rhs_line_no, vname))
+
+        # evaluate the RHS expression
+        try:
+            rhs_val = eval(rhs, env)
+        except Exception, e:
+            err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
+
+        # check the RHS value
+        if is_range:
+            if not isinstance(rhs_val, list) and not isinstance(rhs_val, tuple):
+                err('orio.main.tspec.eval: %s: RHS must be a list/tuple' % rhs_line_no)
+            if len(rhs_val) == 0:
+                err('orio.main.tspec.eval: %s: RHS must not be an empty list' % rhs_line_no)
+            etype = type(rhs_val[0])
+            for e in rhs_val:
+                if not isinstance(e, etype):
+                    err('orio.main.tspec.eval: %s: RHS must be a list of equal-typed elements' % rhs_line_no)
+        
+        # return the evaluated statement
+        return (keyw, line_no, (option_string, id_line_no), is_range, (rhs_val, rhs_line_no))
+
     #----------------------------------------------------------------------------
 
     def __evalSpec(self, stmt, env, name_space):
@@ -239,6 +276,7 @@ class TSpecEvaluator:
             keyw = stmt[0]
             line_no = stmt[1]
             (id_name, id_line_no) = stmt[2]
+                
 
             # check for any predefined name
             if id_name in name_space:
@@ -261,6 +299,8 @@ class TSpecEvaluator:
                 e = self.__evalLet(stmt, env, name_space)
             elif keyw == 'param':
                 e = self.__evalParam(stmt, env, name_space)
+            elif keyw == 'option':
+                e = self.__evalOption(stmt, env, name_space)
             elif keyw == 'spec':
                 e = self.__evalSpec(stmt, env, name_space)
             else:
