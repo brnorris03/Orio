@@ -782,6 +782,7 @@ class TuningInfoGen:
         pcount_info = ('basic timer', 5, None, None)
         search_info = ('Exhaustive', -1, -1, False, [])
         pparam_info = ([], [])
+        cmdline_info = ([], [])
         iparam_info = ([], [])
         ivar_info = None
         ptest_code_info = (None, )
