@@ -9,10 +9,10 @@ import orio.main.util.globals as g
 # LEXER
 # reserved keywords
 keywords = [
-    'def', 'arg', 'param', 'decl', 'let', 'spec', 'constraint',
+    'def', 'arg', 'param', 'decl', 'let', 'spec', 'constraint', 'option',
     'build', 'build_command', 'batch_command', 'status_command', 'num_procs', 'libs',
     'input_params', 'input_vars', 'static', 'dynamic', 'void', 'char', 'short', 'int', 'long', 'float', 'double', '__device__',
-    'performance_params', 'performance_counter', 'method', 'repetitions',
+    'performance_params', 'performance_counter', 'cmdline_params', 'method', 'repetitions',
     'search', 'time_limit', 'total_runs', 'resume', 'algorithm',
     'init_file', 'decl_file',
     'exhaustive_start_coord',
@@ -30,7 +30,7 @@ for r in keywords:
     reserved[r] = r.upper()
 
 # tokens
-tokens = list(reserved.values()) + ['ID', 'EQ','EXPR', 'EXPR_IDX']
+tokens = list(reserved.values()) + ['ID', 'EQ','EXPR', 'STRING', 'EXPR_IDX']
 
 states = (
     ('pyexpr','inclusive'), # lexer state to match arbitrary expressions as raw strings
@@ -72,6 +72,11 @@ def t_EXPR_IDX(t):
     r'\[([^\]])+\]'
     # remove leading and trailing brackets
     t.value = t.lexer.lexdata[(t.lexer.lexpos-len(t.value)+1):t.lexer.lexpos-1]
+    return t
+
+def t_STRING(t):
+    r'"[^"]*"'
+    # String literal using double quotes
     return t
 
 # Error handling rule
@@ -135,6 +140,7 @@ def p_def_type(p):
     ''' deftype : BUILD
                 | PERFORMANCE_PARAMS
                 | PERFORMANCE_COUNTER
+                | CMDLINE_PARAMS
                 | INPUT_PARAMS
                 | INPUT_VARS
                 | SEARCH
@@ -160,6 +166,7 @@ def p_stmt(p):
     ''' stmt : let
              | arg
              | param
+             | option
              | constraint
              | decl
     '''
@@ -225,6 +232,13 @@ def p_param(p):
 def p_constraint(p):
     ''' constraint : CONSTRAINT ID EQ EXPR '''
     p[0] = (p[1], p.lineno(1), (p[2], p.lineno(2)), (p[4], p.lineno(4)))
+
+#----------------------------------------------------------------------------------------------------------------------
+# command-line option
+def p_option(p):
+    ''' option : OPTION STRING EQ EXPR '''
+    is_range = p[3]
+    p[0] = (p[1], p.lineno(1), (p[2], p.lineno(2)), True, (p[4], p.lineno(4)) )
 
 #----------------------------------------------------------------------------------------------------------------------
 # declaration statement

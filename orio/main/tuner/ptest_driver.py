@@ -89,10 +89,13 @@ class PerfTestDriver:
         
         # For processing output
         self.resultre = re.compile(r'\w*({.*})')
-
+        
+        pass
+    
+    
     #-----------------------------------------------------
 
-    def __write(self, test_code, perf_param=None):
+    def __write(self, test_code, perf_params=None):
         '''Write the test code into a file'''
 
         global perftest_counter 
@@ -100,8 +103,8 @@ class PerfTestDriver:
         perftest_counter += 1
         self.src_name = self.__PTEST_FNAME + suffix + self.ext
         paraminfo = '/*\n'
-        if perf_param is not None:
-            for pname, pval in perf_param.items():
+        if perf_params is not None:
+            for pname, pval in perf_params.items():
                 paraminfo += '%s:%s\n' % (pname, pval)
         paraminfo += '*/'
 
@@ -155,7 +158,7 @@ class PerfTestDriver:
     
     #-----------------------------------------------------
 
-    def __build(self, perf_param=None,coord=None):
+    def __build(self, perf_params=None, coord=None):
         '''Compile the testing code'''
                 
         # compile the timing code (if needed)
@@ -169,10 +172,10 @@ class PerfTestDriver:
         # build_cmd
         cflags_tag = '@CFLAGS'
         build_cmd = self.tinfo.build_cmd
-        if perf_param is not None:
+        if perf_params is not None:
             match_obj = re.search(cflags_tag, build_cmd)
             if match_obj:
-                build_cmd = re.sub(cflags_tag, perf_param.get('CFLAGS', ''), build_cmd)
+                build_cmd = re.sub(cflags_tag, perf_params.get('CFLAGS', ''), build_cmd)
             while True:
                 match_obj = None
                 match_obj = re.search('@(?P<alphanum>\w*)@', build_cmd)
@@ -180,7 +183,7 @@ class PerfTestDriver:
                     break
                 else:
                     param_val = match_obj.group('alphanum')
-                    build_cmd = re.sub(match_obj.group(), str(perf_param.get(param_val, '')), build_cmd)
+                    build_cmd = re.sub(match_obj.group(), str(perf_params.get(param_val, '')), build_cmd)
         
         if timer_objfile and not os.path.exists(timer_objfile):  
             # TODO: Too crude, need to make sure object is newer than source
@@ -253,8 +256,11 @@ class PerfTestDriver:
 
     #-----------------------------------------------------
 
-    def __execute(self):
-        '''Execute the test to get the performance costs'''
+    def __execute(self, perf_params):
+        '''Execute the test to get the performance costs. 
+        @param perf_params: a dictionary of current parameter name-value pairs
+                            corresponding to a single coordinate in teh search space.
+        '''
 
         Globals().metadata['src_filenames'] = ",".join(Globals().src_filenames)
 
@@ -268,9 +274,15 @@ class PerfTestDriver:
         perf_costs = {}
         output = None
 
+        # Extract command-line arguments if any
+        cmdlineargs = ' '
+        for pname,pval in perf_params.items():
+            if pname.startswith('__cmdline_'):
+                cmdlineargs += pname.replace('__cmdline_','').strip('"') + ' ' + str(pval) + ' '
+        
         # execute the search process in parallel
         if self.use_parallel_search:
-            cmd = '%s %s' % (self.tinfo.batch_cmd, self.exe_name)
+            cmd = '%s %s %s' % (self.tinfo.batch_cmd, self.exe_name, cmdlineargs)
             info(' running test:\n\t' + cmd)
             # TODO: redo this to take output file name
             try:
@@ -299,7 +311,7 @@ class PerfTestDriver:
                 
         # execute the search sequentially
         else:
-            cmd = '%s ./%s' % (Globals().pre_cmd,self.exe_name)
+            cmd = '%s ./%s %s' % (Globals().pre_cmd,self.exe_name, cmdlineargs)
             info(' running test:\n\t' + cmd)
             try:
                 #process = sp.Popen(cmd, 'w', shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -362,13 +374,15 @@ class PerfTestDriver:
             except Exception, e:
                 self.failedRuns += 1
                 err('orio.main.tuner.ptest_driver: failed to process test result, command was "%s", output: "%s\n --> %s: %s' %
-                      (cmd,perf_costs,e.__class__.__name__,str(e)), doexit=False)
+                      (cmd+cmdlineargs,perf_costs,e.__class__.__name__,str(e)), doexit=False)
 
         #exit()        
         # check if the performance cost is already acquired
         #info(str(perf_costs))
         if not perf_costs:
             err('orio.main.tuner.ptest_driver:  performance testing failed: "%s"' % cmd, doexit=False)
+            infpair = (float('inf'),float('inf'))
+            for k in perf_costs.keys(): perf_costs[k] = infpair
 
         # compare original and transformed codes' results
         if Globals().validationMode and Globals().executedOriginal:
@@ -410,22 +424,24 @@ class PerfTestDriver:
 
     #-----------------------------------------------------
             
-    def run(self, test_code, perf_param=None, coord=None):
+    def run(self, test_code, perf_params=None, coord=None):
         '''To compile and to execute the given testing code to get the performance cost
         @param test_code: the code for testing multiple coordinates in the search space
+        @param perf_params: the performance parameters
+        @param coord: current coordinate in the parameter space
         @return: a dictionary of the times corresponding to each coordinate in the search space
         '''
         # write the testing code
-        self.__write(test_code, perf_param=perf_param)
+        self.__write(test_code, perf_params=perf_params)
 
         # preprocess source code, e.g., run pbound if enabled
         self.__preprocess()
         
         # compile the testing code
-        self.__build(perf_param=perf_param,coord=coord)
+        self.__build(perf_params=perf_params,coord=coord)
 
         # execute the testing code to get performance costs
-        perf_costs = self.__execute()
+        perf_costs = self.__execute(perf_params)
 
         # delete all generated and used files
         self.__cleanup()

@@ -112,6 +112,7 @@ class CFGVisitor(astvisitors.ASTVisitor):
         try:
             for node in nodes:
                 if not node: continue
+                v = CFGVertex(node.id, node)
                 if isinstance(node, ast.ForStmt):
                     self.display(node)
                     # Children: header: node.init, node.test, node.iter; body: node.stmt

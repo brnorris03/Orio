@@ -13,7 +13,8 @@ class TuningInfo:
     specification.
     '''
 
-    def __init__(self, build_info, pcount_info, search_info, pparam_info, iparam_info, 
+    def __init__(self, build_info, pcount_info, search_info, pparam_info, 
+                 cmdline_info, iparam_info, 
                  ivar_info, ptest_code_info, validation_info):
         '''
         Tuning parameters specified by the user in the tuning spec.
@@ -24,6 +25,7 @@ class TuningInfo:
         pcount_method, pcount_reps, random_seed, timing_array_size = pcount_info
         search_algo, search_time_limit, search_total_runs, search_resume, search_opts = search_info
         pparam_params, pparam_constraints = pparam_info
+        cmdline_params, cmdline_constraints = cmdline_info
         iparam_params, iparam_constraints = iparam_info
         ivar_decls, ivar_decl_file, ivar_init_file = ivar_info
         ptest_skeleton_code_file, = ptest_code_info
@@ -58,6 +60,10 @@ class TuningInfo:
         # performance parameters
         self.pparam_params = pparam_params             # default: []
         self.pparam_constraints = pparam_constraints   # default: []
+        
+        # command-line parameters for each code version
+        self.cmdline_params = cmdline_params           # default: []
+        self.cmdline_constraints = cmdline_constraints # default: []
 
         # input parameters
         self.iparam_params = iparam_params             # default: []
@@ -106,12 +112,21 @@ class TuningInfo:
         s += ' search options: \n'
         for id_name, rhs in self.search_opts:
             s += '    %s: %s \n' % (id_name, rhs)
+            
         s += ' perf-parameter parameters: \n'
         for id_name, rhs in self.pparam_params:
             s += '    %s: %s \n' % (id_name, rhs)
         s += ' perf-parameter constraints: \n'
         for id_name, rhs in self.pparam_constraints:
             s += '    %s: %s \n' % (id_name, rhs)
+            
+        s += ' command-line-parameters: \n'
+        for id_name, rhs in self.cmdline_params:
+            s += '    %s: %s \n' % (id_name, rhs)
+        s += ' command-line-constraints: \n'
+        for id_name, rhs in self.cmdline_constraints:
+            s += '    %s: %s \n' % (id_name, rhs)
+            
         s += ' input-parameter parameters: \n'
         for id_name, rhs in self.iparam_params:
             s += '    %s: %s \n' % (id_name, rhs)
@@ -460,11 +475,11 @@ class TuningInfoGen:
             # skip all 'let' statements, and capture any unexpected statements
             if keyw == 'let':
                 continue
-            if keyw not in ('param', 'constraint'):
+            if keyw not in ('param', 'option', 'constraint'):
                 err('orio.main.tspec.tune_info: %s: unexpected statement type: "%s"' % (line_no, keyw))
                 
             # evaluate parameter
-            if keyw == 'param':
+            if keyw in ('param','option'):
                 _, _, (id_name, id_line_no), is_range, (rhs, rhs_line_no) = stmt
                 if not is_range:
                     rhs = [rhs]
@@ -756,6 +771,7 @@ class TuningInfoGen:
         PERF_COUNTER = 'performance_counter'
         SEARCH = 'search'
         PERF_PARAMS = 'performance_params'
+        CMDLINE_PARAMS = 'cmdline_params'
         INPUT_PARAMS = 'input_params'
         INPUT_VARS = 'input_vars'
         PTEST_CODE = 'performance_test_code'
@@ -789,7 +805,7 @@ class TuningInfoGen:
             _, _, (dname, dname_line_no), body_stmt_seq = stmt
 
             # unknown definition name
-            if dname not in (BUILD, PERF_COUNTER, SEARCH, PERF_PARAMS, INPUT_PARAMS, 
+            if dname not in (BUILD, PERF_COUNTER, SEARCH, PERF_PARAMS, CMDLINE_PARAMS, INPUT_PARAMS, 
                              INPUT_VARS, PTEST_CODE, VALIDATION):
                 err('orio.main.tspec.tune_info: %s: unknown definition name: "%s"' % (dname_line_no, dname))
                 
@@ -857,6 +873,15 @@ class TuningInfoGen:
                 pparam_info = (pparam_params, pparam_constraints)
                 debug("tune_info TuningInfo pparam_params" + str(pparam_params))
                 
+            elif dname == CMDLINE_PARAMS:
+                cmdline_params, cmdline_constraints = self.__genPerfParamsInfo(body_stmt_seq, line_no)
+                if len(cmdline_constraints) > 0 and len(cmdline_params) == 0:
+                    err('orio.main.tspec.tune_info: %s: command line constraints require command line parameters definitions' % dname_line_no)
+                    
+                cmdline_info = (cmdline_params, cmdline_constraints)
+                debug("tune_info TuningInfo cmdline_params" + str(cmdline_params))
+
+                
             # input parameters definition
             elif dname == INPUT_PARAMS:
                 iparam_params, iparam_constraints = self.__genInputParamsInfo(body_stmt_seq, line_no)
@@ -885,7 +910,7 @@ class TuningInfoGen:
             err('orio.main.tspec.tune_info:  missing input variables definition in the tuning specification')
             
         # return the tuning information
-        return TuningInfo(build_info, pcount_info, search_info, pparam_info, iparam_info,
-                          ivar_info, ptest_code_info, validation_info)
+        return TuningInfo(build_info, pcount_info, search_info, pparam_info, cmdline_info,
+                          iparam_info, ivar_info, ptest_code_info, validation_info)
 
 
