@@ -281,7 +281,7 @@ as exemplified in the following simple program.</p>
    param CFLAGS[] = ['-O0', '-O1', '-O2', '-O3'];
  }
  def cmdline_params {
-   param a[] = ['-a 0', '-a 1', '-a 2'];
+   option '-a' = [0,1,2];
  }
  def input_params { 
    param N[] = [1000,10000000];                         
