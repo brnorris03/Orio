@@ -400,10 +400,10 @@ const char *__wattprof_conf_file = "1_conf.rnp";
         if self.power: 
             prologue_code += ''' 
     if(rnet_pm_init() <=0){
-        printf("WattProf: No active devices found! Can't measure power.\n");
+        printf("WattProf: No active devices found! Can't measure power.\\\\n");
     }
     daqh = power_init(0,(char *)__wattprof_conf_file);
-    printf("Power initialization done, handle %lx...\n",__wattprof_daqh);
+    printf("Power initialization done, handle %lx...\\\\n",__wattprof_daqh);
     power_start_capture(__wattprof_daqh);
 
     power_start_task(__wattprof_daqh,0);

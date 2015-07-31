@@ -6,6 +6,10 @@ spec unroll_vectorize {
    #arg method = 'bgp counter';
    arg repetitions = 5;
  }
+ def power {
+   arg method = 'wattprof';
+   arg repetitions = 10;
+ }
  def performance_params {  
    param UF[] = range(1,11);
    param VEC[] = [False,True];

@@ -24,6 +24,7 @@ class PerfTestDriver:
     # types of performance-counting methods
     __PCOUNT_BASIC = 'basic timer'   # in microseconds (not accurate, large overhead)
     __PCOUNT_BGP = 'bgp counter'     # in clock cycles (accurate, low overhead)
+    __POWER_WATTPROF = 'wattprof'
 
     #-----------------------------------------------------
     
@@ -72,6 +73,9 @@ class PerfTestDriver:
         
         if self.tinfo.pcount_method not in (self.__PCOUNT_BASIC, self.__PCOUNT_BGP):
             err('orio.main.tuner.ptest_driver:  unknown performance-counting method: "%s"' % self.tinfo.pcount_method)
+
+        if self.tinfo.power_method not in (self.__POWER_WATTPROF, "none"):
+            err('orio.main.tuner.ptest_driver:  unknown power measurement method: "%s"' % self.tinfo.pcount_method)
 
         # get all extra options
         self.extra_compiler_opts = ''

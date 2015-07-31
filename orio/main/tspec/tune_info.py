@@ -13,7 +13,7 @@ class TuningInfo:
     specification.
     '''
 
-    def __init__(self, build_info, pcount_info, search_info, pparam_info, 
+    def __init__(self, build_info, pcount_info, power_info, search_info, pparam_info, 
                  cmdline_info, iparam_info, 
                  ivar_info, ptest_code_info, validation_info):
         '''
@@ -23,6 +23,7 @@ class TuningInfo:
         # unpack all information
         
         pcount_method, pcount_reps, random_seed, timing_array_size = pcount_info
+        power_method, power_reps, random_seed, power_array_size = power_info
         search_algo, search_time_limit, search_total_runs, search_resume, search_opts = search_info
         pparam_params, pparam_constraints = pparam_info
         cmdline_params, cmdline_constraints = cmdline_info
@@ -49,6 +50,10 @@ class TuningInfo:
         #self.pcount_subreps = pcount_subreps           # mandatory subrepetitions (to enable timing of very small computations), default: 10
         self.random_seed = random_seed                 # default: None
         self.timing_array_size = timing_array_size     # default an odd number >= pcount_reps
+        
+        self.power_method = power_method
+        self.power_reps = power_reps
+        self.power_array_size = power_array_size
 
         # search arguments
         self.search_algo = search_algo                 # default: 'Exhaustive'
@@ -104,6 +109,9 @@ class TuningInfo:
         s += ' perf-counting method: %s \n' % self.pcount_method
         s += ' perf-counting repetitions: %s \n' % self.pcount_reps
         s += ' number of timing results to store: %s \n ' % self.timing_array_size
+        s += ' power measurement method: %s \n' % self.power_method
+        s += ' power measurement repetitions: %s \n' % self.power_reps
+        s += ' number of power measurements to store: %s \n ' % self.power_array_size
         s += ' timer routine file: %s \n' % self.timer_file
         s += ' search algorithm: %s \n' % self.search_algo
         s += ' search time limit: %s \n' % self.search_time_limit
@@ -362,19 +370,88 @@ class TuningInfoGen:
                 
             elif id_name == TIMING_ARRAY_SIZE:
                 if not isinstance(rhs, int) or rhs <= 0:
-                    warn('orio.main.tspec.tune_info: %s: performance counting repetitions must be a positive integer' % rhs_line_no)
+                    warn('orio.main.tspec.tune_info: %s: performance counting array size must be a positive integer' % rhs_line_no)
                     
                 timing_array_size = rhs
                 
             # user-specified random seed (otherwhise non-repeatable value based on time is used)
             elif id_name == RANDOM_SEED:
                 if not isinstance(rhs, int):
-                    warn('orio.main.tspec.tune_info: %s: performance counting repetitions must be an integer' % rhs_line_no)
+                    warn('orio.main.tspec.tune_info: %s: performance counting random seed must be an integer' % rhs_line_no)
                 random_seed = rhs
         
         # return all performance counting information
         return (pcount_method, pcount_reps, random_seed, timing_array_size)
 
+
+    #-----------------------------------------------------------
+
+    def __genPowerInfo(self, stmt_seq, def_line_no):
+        '''To generate information about the performance counting techniques'''
+
+        # all expected argument names
+        METHOD = 'method'
+        REPS = 'repetitions'
+        RANDOM_SEED = 'random_seed'
+        POWER_ARRAY_SIZE = 'power_array_size'
+
+        # all expected performance counting information
+        power_method = None
+        power_reps = None
+        random_seed = None
+        power_array_size = None
+        
+
+        # iterate over each statement
+        for stmt in stmt_seq:
+
+            # get the statement keyword and its line number
+            keyw = stmt[0]
+            line_no = stmt[1]
+            
+            # skip all 'let' statements, and capture any unexpected statements
+            if keyw == 'let':
+                continue
+            if keyw not in ('arg',):
+                err('orio.main.tspec.tune_info: %s: unexpected statement type: "%s"' % (line_no, keyw))
+                
+
+            # unpack the statement
+            _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
+            
+            # unknown argument name
+            if id_name not in (METHOD, REPS, RANDOM_SEED, POWER_ARRAY_SIZE):
+                err('orio.main.tspec.tune_info: %s: unknown power measurement argument: "%s"' % (id_line_no, id_name))
+                
+
+            # evaluate build command
+            if id_name == METHOD:
+                if not isinstance(rhs, str):
+                    err('orio.main.tspec.tune_info: %s: power measurement method must be a string' % rhs_line_no)
+                    
+                power_method = rhs
+
+            # evaluate performance counting repetitions
+            elif id_name == REPS:
+                if not isinstance(rhs, int) or rhs <= 0:
+                    warn('orio.main.tspec.tune_info: %s: power measurement repetitions must be a positive integer' % rhs_line_no)
+                    
+                power_reps = rhs
+                
+            elif id_name == POWER_ARRAY_SIZE:
+                if not isinstance(rhs, int) or rhs <= 0:
+                    warn('orio.main.tspec.tune_info: %s: power measurement array size must be a positive integer' % rhs_line_no)
+                    
+                power_array_size = rhs
+                
+            # user-specified random seed (otherwhise non-repeatable value based on time is used)
+            elif id_name == RANDOM_SEED:
+                if not isinstance(rhs, int):
+                    warn('orio.main.tspec.tune_info: %s: power measurement random seed must be an integer' % rhs_line_no)
+                random_seed = rhs
+        
+        # return all performance counting information
+        return (power_method, power_reps, random_seed, power_array_size)
     #-----------------------------------------------------------
 
     def __genSearchInfo(self, stmt_seq, def_line_no):
@@ -769,6 +846,7 @@ class TuningInfoGen:
         # all expected definition names
         BUILD = 'build'
         PERF_COUNTER = 'performance_counter'
+        POWER = 'power'
         SEARCH = 'search'
         PERF_PARAMS = 'performance_params'
         CMDLINE_PARAMS = 'cmdline_params'
@@ -780,6 +858,7 @@ class TuningInfoGen:
         # all expected definition information
         build_info = {'build_cmd': 'gcc -O3', 'libs': ''}
         pcount_info = ('basic timer', 5, None, None)
+        power_info = ('none', 5, None, None)
         search_info = ('Exhaustive', -1, -1, False, [])
         pparam_info = ([], [])
         cmdline_info = ([], [])
@@ -806,7 +885,7 @@ class TuningInfoGen:
             _, _, (dname, dname_line_no), body_stmt_seq = stmt
 
             # unknown definition name
-            if dname not in (BUILD, PERF_COUNTER, SEARCH, PERF_PARAMS, CMDLINE_PARAMS, INPUT_PARAMS, 
+            if dname not in (BUILD, PERF_COUNTER, POWER, SEARCH, PERF_PARAMS, CMDLINE_PARAMS, INPUT_PARAMS, 
                              INPUT_VARS, PTEST_CODE, VALIDATION):
                 err('orio.main.tspec.tune_info: %s: unknown definition name: "%s"' % (dname_line_no, dname))
                 
@@ -849,6 +928,19 @@ class TuningInfoGen:
                 if not timing_array_size:
                     timing_array_size = pcount_reps + (pcount_reps+1) % 2
                 pcount_info = (pcount_method, pcount_reps, random_seed, timing_array_size)
+                
+            # Power/energy measurement
+            elif dname == POWER:
+                power_method, power_reps, random_seed, power_array_size = self.__genPowerInfo(body_stmt_seq, line_no)
+                default_p_method, default_p_reps, _, _ = power_info
+                if power_method == None:
+                    power_method = default_p_method
+                if power_reps == None:
+                    power_reps = default_p_reps
+                if not power_array_size:
+                    power_array_size = power_reps + (power_reps+1) % 2
+                power_info = (power_method, power_reps, random_seed, power_array_size)
+                
                 
             # search definition
             elif dname == SEARCH:
@@ -911,7 +1003,7 @@ class TuningInfoGen:
             err('orio.main.tspec.tune_info:  missing input variables definition in the tuning specification')
             
         # return the tuning information
-        return TuningInfo(build_info, pcount_info, search_info, pparam_info, cmdline_info,
+        return TuningInfo(build_info, pcount_info, power_info, search_info, pparam_info, cmdline_info,
                           iparam_info, ivar_info, ptest_code_info, validation_info)
 
 
