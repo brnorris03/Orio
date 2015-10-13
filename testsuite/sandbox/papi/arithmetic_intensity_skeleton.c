@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
 		long long fp_ops = values[2] ;
 		double arithmetic_int  = (double)fp_ops/(double)mem_ops;
 		double gflops = (fp_ops*NUM_EVENTS)/(tot_time* 1e9);
-          	printf("{'/*@ coordinate @*/' : [%f, %f] }\n", arithmetic_int,gflops);
+          	printf("{'/*@ coordinate @*/' : [%f, %f, %f] }\n", arithmetic_int,gflops,tot_time/NUM_EVENTS);
 
 
 		

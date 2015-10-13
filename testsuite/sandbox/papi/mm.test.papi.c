@@ -8,7 +8,7 @@
    
   def performance_counter         
   {
-    arg repetitions = 5;
+    arg repetitions = 1;
   }
   
   def performance_params
@@ -50,9 +50,9 @@
   {
     param CONT = 500;
     param NCONT = 500;
-    param M = 500;
-    param N = 500;
-    param K = 500;
+    param M = 2000;
+    param N = 2000;
+    param K = 2000;
   }
   def input_vars
   { 
