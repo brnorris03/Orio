@@ -45,6 +45,11 @@ class Globals:
             else:
                 self.verbose = False
 
+            if 'meta' in cmdline.keys():
+                self.meta = cmdline['meta']
+            else:
+                self.meta = False
+
             if 'extern' in cmdline.keys():
                 self.extern = cmdline['extern']
             else:

@@ -103,9 +103,13 @@ class PerfTestDriver:
         '''Write the test code into a file'''
 
         global perftest_counter 
+        global last_counter
         suffix = str(perftest_counter)
+        last_counter = perftest_counter
         perftest_counter += 1
         self.src_name = self.__PTEST_FNAME + suffix + self.ext
+        self.obj_name = self.__PTEST_FNAME + suffix + '.o'
+        self.exe_name = self.__PTEST_FNAME + suffix + '.exe'
         paraminfo = '/*\n'
         if perf_params is not None:
             for pname, pval in perf_params.items():
@@ -137,6 +141,37 @@ class PerfTestDriver:
                     f.close()
                 except:
                     err('orio.main.tuner.ptest_driver:  cannot open file for writing: %s' % self.original_src_name)
+
+
+        if Globals().meta is not None:
+            try:
+                cmd = ''
+                if Globals().out_filename is not None:
+                    try:
+                        cmd = Globals().out_filename
+                        cmd = cmd.replace("%iter", str(last_counter))
+
+                    except Exception, e:
+                        err('orio.main.tuner.ptest_driver: failed to execute the outfile rename: "%s"\n --> %s: %s' \
+                                % (Globals().out_filename,e.__class__.__name__, e), doexit = False)
+
+                if perf_param is not None:
+                    Globals().metadata.update({'LastCounter': last_counter})
+                    for pname, pval in perf_param.items():
+                        a_dict = {pname: pval}
+                        Globals().metadata.update(a_dict)
+                        Globals().metadata.update({pname: pval})
+                ## get filename
+                for key in Globals().src_filenames:
+                    Globals().metadata.update({'SourceName': key})
+                    Globals().metadata.update({'LastCounter': last_counter})
+                if not os.path.exists(cmd):
+                    os.makedirs(cmd)
+
+            except Exception, e:
+                err('orio.main.tuner.ptest_driver: failed to execute meta update: "%s"\n --> %s: %s' \
+                        % (Globals().meta,e.__class__.__name__, e), doexit = False)
+
         return
   
     #-----------------------------------------------------
@@ -263,8 +298,9 @@ class PerfTestDriver:
     def __execute(self, perf_params):
         '''Execute the test to get the performance costs. 
         @param perf_params: a dictionary of current parameter name-value pairs
-                            corresponding to a single coordinate in teh search space.
+                            corresponding to a single coordinate in the search space.
         '''
+        global last_counter
 
         Globals().metadata['src_filenames'] = ",".join(Globals().src_filenames)
 
@@ -333,8 +369,9 @@ class PerfTestDriver:
                 try:
                     cmd = Globals().post_cmd
                     uniq = "profile-" + datetime.datetime.now().strftime("%y-%m-%d:%H:%S") + '-' + uuid.uuid4().hex
-                    if "%s" in cmd:
-                        cmd = cmd % (uniq, uniq)
+                    cmd = cmd.replace("%unique", uniq)
+                    cmd = cmd.replace("%iter", str(last_counter))
+                    cmd = cmd.replace("%exe", self.exe_name)
                     status = os.system(cmd) 
                     if status:
                         err('orio.main.tuner.ptest_driver: failed to execute the post-command: "%s"' % Globals().post_cmd, doexit=False)
