@@ -19,9 +19,10 @@ TMOD_NAME = 'orio.module'
 class OptDriver:
     '''The optimization driver whose function is to initiate the optimization process'''
 
-    def __init__(self, language='C'):
+    def __init__(self, src, language='C'):
         '''To instantiate an optimization driver'''
         self.lang = language
+        self.srcname = src
         self.ptuner = orio.main.tuner.tuner.PerfTuner(self)
         self.dloader = orio.main.dyn_loader.DynLoader()
         self.input_params = None

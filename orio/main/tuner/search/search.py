@@ -90,6 +90,14 @@ class Search:
         raise NotImplementedError('%s: unimplemented abstract function "searchBestCoord"' %
                                   self.__class__.__name__)
     
+    def modelBased(self):
+        '''
+        Returns true if the search module uses model-based optimization and False if 
+        it's purely based on empirical testing.
+        By default, returns False, can be overridden by subclasses.
+        '''
+        return False
+    
     #----------------------------------------------------------
 
     def search(self, startCoord=None):
@@ -243,45 +251,58 @@ class Search:
         
         # get the transformed code for each corresponding coordinate for non-command-line parameters
         code_map = {}
+        transformed_code_seq = []
         for coord in uneval_coords:
             coord_key = str(coord)
             
             perf_params = self.coordToPerfParams(coord)
             
-            start = time.time()
-            #info('1. transformation time = %e'%time.time())
-            try:
-                transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
-                elapsed = (time.time() - start)
-                #info('2. transformation time = %e'%time.time())
-                self.transform_time[coord_key]=elapsed
-            except Exception:
-                err('[search] failed evaluation of coordinate: %s=%s.\tException: %s' %\
-                    (str(coord), str(perf_params), str(sys.exc_info()[0])))
-                # Do not stop if a single test fails, continue with other transformations
-                #err('failed during evaluation of coordinate: %s=%s\n%s\nError:%s' \
-                #% (str(coord), str(perf_params), str(e.__class__), e.message), 
-                #code=0, doexit=False)
-                perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
-                
-                elapsed = (time.time() - start)
-                #info('2. transformation time = %e'%time.time())
-                self.transform_time[coord_key]=elapsed
+            if self.modelBased():
+                self.transform_time[coord_key] = 0.0
+                perf_costs[coord_key] = self.getModelPerfCost(perf_params, coord)
                 continue
+            else: # Legacy, pure empirical
+                start = time.time()
+                #info('1. transformation time = %e'%time.time())
+                try:
+                    transformed_code_seq = self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
+                    elapsed = (time.time() - start)
+                    #info('2. transformation time = %e'%time.time())
+                    self.transform_time[coord_key]=elapsed
+                except Exception:
+                    err('[search] failed evaluation of coordinate: %s=%s.\tException: %s' %\
+                        (str(coord), str(perf_params), str(sys.exc_info()[0])))
+                    # Do not stop if a single test fails, continue with other transformations
+                    #err('failed during evaluation of coordinate: %s=%s\n%s\nError:%s' \
+                    #% (str(coord), str(perf_params), str(e.__class__), e.message), 
+                    #code=0, doexit=False)
+                    perf_costs[coord_key] = ([self.MAXFLOAT],[self.MAXFLOAT])
+                    
+                    elapsed = (time.time() - start)
+                    #info('2. transformation time = %e'%time.time())
+                    self.transform_time[coord_key]=elapsed
+                    continue
             
             #info('transformation time = %e' % self.transform_time)
-            if len(transformed_code_seq) != 1:
-                err('internal error: the optimized annotation code cannot contain multiple versions', doexit=True)
-
-            transformed_code, _, externals = transformed_code_seq[0]
-            code_map[coord_key] = (transformed_code, externals)
+            if transformed_code_seq:
+                if len(transformed_code_seq) != 1:
+                    err('internal error: the optimized annotation code cannot contain multiple versions', doexit=True)
+    
+                transformed_code, _, externals = transformed_code_seq[0]
+                code_map[coord_key] = (transformed_code, externals)
         if code_map == {}: # nothing to test
             return perf_costs
         #debug("search.py: about to test the following code segments (code_map):\n%s" % code_map, level=1)
-        # evaluate the performance costs for all coordinates
-        test_code = self.ptcodegen.generate(code_map)
-        perf_params = self.coordToPerfParams(uneval_coords[0])
-        new_perf_costs = self.ptdriver.run(test_code, perf_params=perf_params,coord=coord_key)
+        
+        
+        # Evaluate the performance costs for all coordinates
+        new_perf_costs = None
+        if self.modelBased():
+            new_perf_costs = self.getModelPerfCosts(perf_params=perf_params,coord=coord_key)
+        if not new_perf_costs:
+            test_code = self.ptcodegen.generate(code_map)
+            perf_params = self.coordToPerfParams(uneval_coords[0])
+            new_perf_costs = self.ptdriver.run(test_code, perf_params=perf_params,coord=coord_key)
         #new_perf_costs = self.getPerfCostConfig(coord_key,perf_params)
         # remember the performance cost of previously evaluated coordinate
         self.perf_cost_records.update(new_perf_costs.items())
@@ -295,6 +316,18 @@ class Search:
         #return the performance cost
 
         return perf_costs
+    
+    #----------------------------------------------------------
+
+    def getModelPerfCosts(self, perf_params, coord):
+        '''
+        Return performance costs based on a model or existing data, do not perform empirical tests.
+                This is the function that needs to be implemented in each new search engine subclass
+                that returns True in its implementation of the modelBased() method.
+        '''
+        raise NotImplementedError('%s: unimplemented abstract function "searchBestCoord"' %
+                                  self.__class__.__name__)
+
 
     #----------------------------------------------------------
 
