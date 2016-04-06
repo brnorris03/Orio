@@ -172,7 +172,7 @@ class ForLoopLib:
 
     #-------------------------------------------------
     
-    def createForLoop(self, index_id, lbound_exp, ubound_exp, stride_exp, loop_body):
+    def createForLoop(self, index_id, lbound_exp, ubound_exp, stride_exp, loop_body, meta=''):
         '''
         Generate a for loop:
           for (index_id = lbound_exp; index_id <= ubound_exp; index_id = index_id + stride_exp)
@@ -199,7 +199,7 @@ class ForLoopLib:
             iter_exp = orio.module.loop.ast.BinOpExp(index_id.replicate(),
                                                 it,
                                                 orio.module.loop.ast.BinOpExp.EQ_ASGN)
-        return orio.module.loop.ast.ForStmt(init_exp, test_exp, iter_exp, loop_body.replicate())
+        return orio.module.loop.ast.ForStmt(init_exp, test_exp, iter_exp, loop_body.replicate(), meta={'kind':meta})
     
     #-------------------------------------------------
 

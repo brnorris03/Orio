@@ -241,6 +241,7 @@ class CountingVisitor(ASTVisitor):
         self.comps = 0
         self.gotos = 0        
         self._nest = 0
+        self.vars = {}
         pass
 
     
@@ -262,7 +263,7 @@ class CountingVisitor(ASTVisitor):
                     self.reads += 1
         
                 elif isinstance(node, ast.ArrayRefExp):
-                    self.visit(node.exp)
+                    self.visit(node.exp)        # array variable
                     self.visit(node.sub_exp)    # array index
                     
                 elif isinstance(node, ast.FunCallExp):
