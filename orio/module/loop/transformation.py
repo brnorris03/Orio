@@ -28,8 +28,8 @@ class Transformation:
     def transform(self, stmts):
         '''Apply code transformations on each statement in the given statement list'''
         Globals().metadata['loop_transformations'] = []
-        for s in stmts:
-            Globals().metadata["loop_transformations"].append(s.name)
+        # for s in stmts:
+        #     Globals().metadata["loop_transformations"].append(s.name)
         return [self.__transformStmt(s) for s in stmts]
 
     #--------------------------------------
