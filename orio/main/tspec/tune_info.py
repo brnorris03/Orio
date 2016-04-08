@@ -491,7 +491,7 @@ class TuningInfoGen:
                 if search_algo == None or not id_name.startswith(search_algo.lower() + '_'):
                     err('orio.main.tspec.tune_info: %s: unknown search argument: "%s"' % (id_line_no, id_name))                    
 
-            # evaluate build command
+            # evaluate search algorithm options
             if id_name == ALGO:
                 if not isinstance(rhs, str):
                     err('orio.main.tspec.tune_info: %s: search algorithm must be a string' % rhs_line_no)
@@ -510,8 +510,8 @@ class TuningInfoGen:
                 if not isinstance(rhs, int) or rhs <= 0:
                     warn('orio.main.tspec.tune_info: %s: total number of search runs must be a positive number'  % rhs_line_no)
                     
-                search_total_runs = rhs
-
+                search_total_runs = rhs 
+                         
             # evaluate all other algorithm-specific arguments
             elif search_algo != None and id_name.startswith(search_algo.lower() + '_'):
                 id_name_orig = id_name
@@ -945,7 +945,8 @@ class TuningInfoGen:
             # search definition
             elif dname == SEARCH:
                 (search_algo, search_time_limit,
-                 search_total_runs, search_resume, search_opts) = self.__genSearchInfo(body_stmt_seq, line_no)
+                 search_total_runs, search_resume, 
+                 search_opts) = self.__genSearchInfo(body_stmt_seq, line_no)
                 default_s_algo, default_s_tlimit, default_s_truns, default_s_resume, _ = search_info
                 if search_algo == None:
                     search_algo = default_s_algo
@@ -955,7 +956,8 @@ class TuningInfoGen:
                     search_total_runs = default_s_truns
                 if search_resume == None: 
                     search_resume = False
-                search_info = (search_algo, search_time_limit, search_total_runs, search_resume, search_opts)
+                search_info = (search_algo, search_time_limit, search_total_runs, search_resume, 
+                               search_opts)
             
             # performance parameters definition
             elif dname == PERF_PARAMS:

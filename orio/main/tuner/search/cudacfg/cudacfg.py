@@ -5,6 +5,7 @@
 import sys, time
 import math
 import random
+import csv
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
 
@@ -12,7 +13,7 @@ from orio.main.util.globals import *
 
 class CUDACFG(orio.main.tuner.search.search.Search):
     '''
-    The search engine that uses a random search approach, enhanced with a local search that finds
+    The search engine that uses a model-based search approach, enhanced with a local search that finds
     the best neighboring coordinate.
 
     Below is a list of algorithm-specific arguments used to steer the search algorithm.
@@ -22,6 +23,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
 
     # algorithm-specific argument names
     __LOCAL_DIST = 'local_distance'       # default: 0
+    __INSTMIX = 'instmix'                 # required
     
     #--------------------------------------------------
     
@@ -38,9 +40,16 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
         
+        # TODO: update to invoke the static analysis tool in a separate method, not read csv
+        # Required (for now) option, reading file
+        #instrmix_filename = params.odriver.srcname 
+        # Source file name is in self.odriver.srcname 
+        with open(self.instmix, 'rb') as csvfile:
+            self.instmix = csv.DictReader(csvfile, delimiter=',', quotechar='"')        
+        
         # complain if both the search time limit and the total number of search runs are undefined
         #if self.time_limit <= 0 and self.total_runs <= 0:
-        #    err(('orio.main.tuner.search.randomlocal.randomlocal: %s search requires either (both) the search time limit or (and) the ' +
+        #    err(('orio.main.tuner.search.cudacfg.cudacfg: %s search requires either (both) the search time limit or (and) the ' +
         #            'total number of search runs to be defined') % self.__class__.__name__)
      
     def modelBased(self):
@@ -52,9 +61,6 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         '''Use existing data or a model to return performance cost.'''
         # Instead of self.ptdriver.run(test_code, perf_params=perf_params,coord=coord_key)
         
-        
-        # Source file name is in self.odriver.srcname 
-        print("In getModelPerfCost, src file is ", self.odriver.srcname)
         # Initialize the performance costs dictionary
         # (indexed by the string representation of the search coordinates)
         # e.g., {'[0,1]':(0.2,0.4), '[1,1]':(0.3,0,3)} key is coord, value is list of times, transfer time for reps
@@ -210,13 +216,15 @@ class CUDACFG(orio.main.tuner.search.search.Search):
             # local search distance
             if vname == self.__LOCAL_DIST:
                 if not isinstance(rhs, int) or rhs < 0:
-                    err('orio.main.tuner.search.randomlocal: %s argument "%s" must be a positive integer or zero'
+                    err('orio.main.tuner.search.cudacfg: %s argument "%s" must be a positive integer or zero'
                            % (self.__class__.__name__, vname))
                 self.local_distance = rhs
-
+            # CSV instruction mix file (TODO: revise)
+            elif vname == self.__INSTMIX:
+                self.instmix = rhs
             # unrecognized algorithm-specific argument
             else:
-                err('orio.main.tuner.search.randomlocal: unrecognized %s algorithm-specific argument: "%s"' %
+                err('orio.main.tuner.search.cudacfg: unrecognized %s algorithm-specific argument: "%s"' %
                        (self.__class__.__name__, vname))
 
     #--------------------------------------------------

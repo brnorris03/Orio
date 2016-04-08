@@ -105,7 +105,7 @@ def start(argv, lang):
             # perform optimizations based on information specified in the annotations
             if annotations_found:
                 info('\n----- begin optimizations -----')
-                odriver = opt_driver.OptDriver(src=src_code, language=language)
+                odriver = opt_driver.OptDriver(src=srcfile, language=language)
                 optimized_code_seq = odriver.optimizeCodeFrags(cfrags, True)
                 info('----- finish optimizations -----')
         
