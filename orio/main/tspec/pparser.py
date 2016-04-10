@@ -23,6 +23,7 @@ keywords = [
     'cudacfg_instmix',
     'validation', 'validation_file', 'expected_output',
     'macro', 'performance_test_code', 'skeleton_test_code', 'skeleton_code_file',
+    'other', 'device_spec_file',
 ]
 
 # map of reserved keywords
@@ -148,6 +149,7 @@ def p_def_type(p):
                 | SEARCH
                 | VALIDATION
                 | PERFORMANCE_TEST_CODE
+                | OTHER
     '''
     p[0] = (p[1], p.lineno(1))
 
@@ -220,6 +222,8 @@ def p_arg_type(p):
                 | EXPECTED_OUTPUT
                 | SKELETON_TEST_CODE
                 | SKELETON_CODE_FILE
+                | OTHER
+                | DEVICE_SPEC_FILE
     '''
     p[0] = (p[1], p.lineno(1))
 

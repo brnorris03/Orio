@@ -15,7 +15,7 @@ class TuningInfo:
 
     def __init__(self, build_info, pcount_info, power_info, search_info, pparam_info, 
                  cmdline_info, iparam_info, 
-                 ivar_info, ptest_code_info, validation_info):
+                 ivar_info, ptest_code_info, validation_info, other_info):
         '''
         Tuning parameters specified by the user in the tuning spec.
         '''
@@ -31,6 +31,7 @@ class TuningInfo:
         ivar_decls, ivar_decl_file, ivar_init_file = ivar_info
         ptest_skeleton_code_file, = ptest_code_info
         validation_file, expected_output = validation_info
+        device_spec_file,_ = other_info
 
         # build arguments
         self.pre_build_cmd = build_info.get('prebuild_cmd') # command to run before invoking build_cmd
@@ -85,6 +86,9 @@ class TuningInfo:
         # validation info
         self.validation_file = validation_file
         self.expected_output = expected_output
+        
+        # device spec file
+        self.device_spec_file = device_spec_file
 
     #-----------------------------------------------------------
 
@@ -840,6 +844,47 @@ class TuningInfoGen:
 
     #-----------------------------------------------------------
 
+    def __genOtherInfo(self, stmt_seq, def_line_no):
+        '''Generate other miscellaneous info such as GPU device identification, etc. '''
+
+        DEVICE = 'device_spec_file'
+    
+        device_spec_file = None
+
+        # iterate over each statement
+        for stmt in stmt_seq:
+            # get the statement keyword and its line number
+            keyw = stmt[0]
+            line_no = stmt[1]
+            
+            # capture any unexpected statements
+            if keyw not in ('arg'):
+                err('orio.main.tspec.tune_info: %s: unexpected statement type in [Other] section: "%s"' % (line_no, keyw))
+                
+            # evaluate arguments
+            if keyw == 'arg':
+                
+                # unpack the statement
+                _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
+                
+                # declaration code
+                if id_name == DEVICE:
+                    if not isinstance(rhs, str):
+                        err('orio.main.tspec.tune_info: %s: device specification must be a path (string)' % rhs_line_no)
+                        
+                    if not os.path.exists(rhs):
+                        err('orio.main.tspec.tune_info: %s: cannot find the device specification file: "%s"' % (rhs_line_no, rhs))
+                        
+                    device_spec_file = rhs
+
+                # unknown argument name
+                else:
+                    err('orio.main.tspec.tune_info: %s: unknown argument in [Other] section: "%s"' % (id_line_no, id_name))
+                
+        return (device_spec_file,None)
+
+    #-----------------------------------------------------------
+
     def generate(self, stmt_seq):
         '''To generate tuning information from the given sequence of statements'''
 
@@ -854,6 +899,7 @@ class TuningInfoGen:
         INPUT_VARS = 'input_vars'
         PTEST_CODE = 'performance_test_code'
         VALIDATION = 'validation'
+        OTHER = 'other'
 
         # all expected definition information
         build_info = {'build_cmd': 'gcc -O3', 'libs': ''}
@@ -866,6 +912,7 @@ class TuningInfoGen:
         ivar_info = None
         ptest_code_info = (None, )
         validation_info = (None, None)
+        other_info = None
 
         # iterate over each statement
         for stmt in stmt_seq:
@@ -886,7 +933,7 @@ class TuningInfoGen:
 
             # unknown definition name
             if dname not in (BUILD, PERF_COUNTER, POWER, SEARCH, PERF_PARAMS, CMDLINE_PARAMS, INPUT_PARAMS, 
-                             INPUT_VARS, PTEST_CODE, VALIDATION):
+                             INPUT_VARS, PTEST_CODE, VALIDATION, OTHER):
                 err('orio.main.tspec.tune_info: %s: unknown definition name: "%s"' % (dname_line_no, dname))
                 
             
@@ -999,6 +1046,10 @@ class TuningInfoGen:
             # performance-test code definition
             elif dname == VALIDATION:
                 validation_info = self.__genValidationInfo(body_stmt_seq, line_no)
+            
+            # Other misc. parameters
+            elif dname == OTHER:
+                other_info = self.__genOtherInfo(body_stmt_seq, line_no)
 
         # check if the input variables definition is missing
         if ivar_info == None:
@@ -1006,6 +1057,6 @@ class TuningInfoGen:
             
         # return the tuning information
         return TuningInfo(build_info, pcount_info, power_info, search_info, pparam_info, cmdline_info,
-                          iparam_info, ivar_info, ptest_code_info, validation_info)
+                          iparam_info, ivar_info, ptest_code_info, validation_info, other_info)
 
 

@@ -217,37 +217,41 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
     def getDeviceProps(self):
       '''Get device properties'''
 
-      # write the query code
-      qsrc  = "enum_cuda_props.cu"
-      qexec = qsrc + ".o"
-      qout  = qexec + ".props"
-      if not os.path.exists(qout):
-        # check for nvcc
-        qcmd = 'which nvcc'
-        status = os.system(qcmd)
-        if status != 0:
-          g.err("%s: could not locate nvcc with '%s'" % (self.__class__, qcmd))
-
-        try:
-          f = open(qsrc, 'w')
-          f.write(CUDA_DEVICE_QUERY_SKELET)
-          f.close()
-        except:
-          g.err('%s: cannot open file for writing: %s' % (self.__class__, qsrc))
-        
-        # compile the query
-        cmd = 'nvcc -o %s %s' % (qexec, qsrc)
-        status = os.system(cmd)
-        if status:
-          g.err('%s: failed to compile cuda device query code: "%s"' % (self.__class__, cmd))
-
-        # execute the query
-        runcmd = './%s' % (qexec)
-        status = os.system(runcmd)
-        if status:
-          g.err('%s: failed to execute cuda device query code: "%s"' % (self.__class__, runcmd))
-        os.remove(qsrc)
-        os.remove(qexec)
+      # First, check if user specified the device properties file
+      if self.tinfo.device_spec_file:
+        qsrc = self.tinfo.device_spec_file
+      else:
+          # generate the query code
+          qsrc  = "enum_cuda_props.cu"
+          qexec = qsrc + ".o"
+          qout  = qexec + ".props"
+          if not os.path.exists(qout):
+            # check for nvcc
+            qcmd = 'which nvcc'
+            status = os.system(qcmd)
+            if status != 0:
+              g.err("%s: could not locate nvcc with '%s'" % (self.__class__, qcmd))
+    
+            try:
+              f = open(qsrc, 'w')
+              f.write(CUDA_DEVICE_QUERY_SKELET)
+              f.close()
+            except:
+              g.err('%s: cannot open file for writing: %s' % (self.__class__, qsrc))
+            
+            # compile the query
+            cmd = 'nvcc -o %s %s' % (qexec, qsrc)
+            status = os.system(cmd)
+            if status:
+              g.err('%s: failed to compile cuda device query code: "%s"' % (self.__class__, cmd))
+    
+            # execute the query
+            runcmd = './%s' % (qexec)
+            status = os.system(runcmd)
+            if status:
+              g.err('%s: failed to execute cuda device query code: "%s"' % (self.__class__, runcmd))
+            os.remove(qsrc)
+            os.remove(qexec)
         
       # read device properties
       props = {}

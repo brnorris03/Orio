@@ -415,10 +415,16 @@ int main(int argc, char *argv[]) {
   cudaEvent_t tstart, tstop, start, stop;
   cudaEventCreate(&tstart); cudaEventCreate(&tstop);
   cudaEventCreate(&start);  cudaEventCreate(&stop);
+  /*@ begin outer measurement @*/
   for (int orio_i=0; orio_i<ORIO_REPS; orio_i++) {
+    /*@ begin inner measurement @*/
+    
     /*@ tested code @*/
+
+    /*@ end inner measurement @*/
     printf("{'/*@ coordinate @*/' : (%g,%g)}\n", orcu_elapsed, orcu_transfer);
   }
+  /*@ end outer measurement @*/
   cudaEventDestroy(tstart); cudaEventDestroy(tstop);
   cudaEventDestroy(start);  cudaEventDestroy(stop);
   

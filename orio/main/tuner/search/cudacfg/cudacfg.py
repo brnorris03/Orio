@@ -6,6 +6,7 @@ import sys, time
 import math
 import random
 import csv
+import hashlib
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
 
@@ -47,7 +48,21 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         with open(self.instmix, 'rb') as csvfile:
             self.instmixdata = list(csv.reader(csvfile, delimiter=',', quotechar='"') )
         
-        print self.instmixdata[0].index('coordinate_o')
+        #debug("Instruction mix data: %d" % self.instmixdata[0].index('coordinate_o'))
+        # Hash coordinates
+        ind = self.instmixdata[0].index('coordinate_o')
+        l = len(self.instmixdata[0])-1
+        self.instmixdata[0].insert(l,'coordinate_hash')
+        self.allcoords = []
+        times = []
+        for row in self.instmixdata[1:]:
+            if not row: continue
+            row.insert(l,self.__hashCoord(row[ind]))
+            self.allcoords.append(eval(row[ind]))
+            times.append(float(row[-1]))
+            
+        # Find best time
+        info("Best known time: %f" % min(times))
         # complain if both the search time limit and the total number of search runs are undefined
         #if self.time_limit <= 0 and self.total_runs <= 0:
         #    err(('orio.main.tuner.search.cudacfg.cudacfg: %s search requires either (both) the search time limit or (and) the ' +
@@ -66,9 +81,36 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         # (indexed by the string representation of the search coordinates)
         # e.g., {'[0,1]':(0.2,0.4), '[1,1]':(0.3,0,3)} key is coord, value is list of times, transfer time for reps
         
-        time = self.__lookupCost(coord)
-        perf_costs = (0,0)
+        perf_costs = (self.__lookupCost(coord),0)
         return perf_costs
+    
+    def getInitCoord(self):
+        '''Randomly pick a coordinate within the search space'''
+
+        random_coord = []
+        if self.allcoords: 
+            random_coord = eval(random.choice(self.allcoords))
+        else:
+            for i in range(0, self.total_dims):
+                #iuplimit = self.dim_uplimits[i]
+                #ipoint = self.getRandomInt(0, iuplimit-1)
+                random_coord.append(0)
+        debug("Starting search coordinate:", random_coord)
+        return random_coord
+    
+
+    def getRandomCoord(self):
+        '''Randomly pick a coordinate within the search space'''
+
+        random_coord = []
+        if self.allcoords: 
+            random_coord = eval(random.choice(self.allcoords))
+        else:
+            for i in range(0, self.total_dims):
+                iuplimit = self.dim_uplimits[i]
+                ipoint = self.getRandomInt(0, iuplimit-1)
+                random_coord.append(ipoint)
+        return random_coord
     
     # Method required by the search interface
     def searchBestCoord(self, startCoord=None):
@@ -78,7 +120,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         '''
         # TODO: implement startCoord support
         
-        info('\n----- begin random search -----')
+        info('\n----- begin CUDACFG search -----')
 
         # get the total number of coordinates to be tested at the same time
         coord_count = 1
@@ -106,24 +148,25 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         coord_key=''
         # execute the randomized search method
         while True:
-
-            # randomly pick a set of coordinates to be empirically tested
-            coords = []
-            while len(coords) < coord_count:
-                coord = self.__getNextCoord(coord_records, neigh_coords, init)
-                coord_key = str(coord)
-                init=False
-                if coord:
-                    coords.append(coord)
-                else:
-                    break
+        
+            # Use a predefined list of coordinates, if given
+            if self.allcoords: 
+                coords = self.allcoords
+            else:
+                # randomly pick a set of coordinates to be empirically tested
+                coords = []
+                while len(coords) < coord_count:
+                    coord = self.__getNextCoord(coord_records, neigh_coords, init)
+                    coord_key = str(coord)
+                    init=False
+                    if coord:
+                        coords.append(coord)
+                    else:
+                        break
 
             # check if all coordinates in the search space have been explored
             if len(coords) == 0:
                 break
-
-            # determine the performance cost of all chosen coordinates
-            #perf_costs = self.getPerfCosts(coords)
 
             perf_costs={}
             transform_time = 0.0
@@ -254,22 +297,27 @@ class CUDACFG(orio.main.tuner.search.search.Search):
                 coord_records[str(coord)] = None
                 return coord
     
-        # randomly pick a coordinate that has never been explored before
+        # Pick a coordinate that has never been explored before based on performance model
         while True:
+            # TODO: replace this with model-based selection of next coordinate
             coord = self.getRandomCoord()
+            debug(coord, ", peformance cost: ", self.__lookupCost(coord))
             if str(coord) not in coord_records:
                 coord_records[str(coord)] = None
                 return coord
     
     #--------------------------------------------------
-            
+    def __hashCoord(self, coord):
+        return int(hashlib.sha1(str(coord)).hexdigest(), 16) % (10 ** 8)
+        
     def __lookupCost(self, coord):
         ind = self.instmixdata[0].index('coordinate_o')
+        hcoord = self.__hashCoord(coord)
         for row in self.instmixdata[1:]:
             if not row: continue
-            else: print row[ind], coord
-            if row[ind] == coord: 
-                debug("Time for this coord:", row)
-                return row[-1]
+            #print coord, row[ind], hcoord, row[-2]
+            if not row or hcoord != row[-2]: continue
+            #debug("Time for this coord: %f" % float(row[-1]))
+            return float(row[-1])
 
         
