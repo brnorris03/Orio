@@ -42,11 +42,12 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         
         # TODO: update to invoke the static analysis tool in a separate method, not read csv
         # Required (for now) option, reading file
-        #instrmix_filename = params.odriver.srcname 
         # Source file name is in self.odriver.srcname 
+        self.instmixdata = []  # list of lists, first element contains column labels
         with open(self.instmix, 'rb') as csvfile:
-            self.instmix = csv.DictReader(csvfile, delimiter=',', quotechar='"')        
+            self.instmixdata = list(csv.reader(csvfile, delimiter=',', quotechar='"') )
         
+        print self.instmixdata[0].index('coordinate_o')
         # complain if both the search time limit and the total number of search runs are undefined
         #if self.time_limit <= 0 and self.total_runs <= 0:
         #    err(('orio.main.tuner.search.cudacfg.cudacfg: %s search requires either (both) the search time limit or (and) the ' +
@@ -55,7 +56,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
     def modelBased(self):
         '''This search algorithn uses existing data or models to evaluate objective function.
         '''
-        return True
+        return True 
     
     def getModelPerfCost(self, perf_params, coord):
         '''Use existing data or a model to return performance cost.'''
@@ -65,6 +66,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         # (indexed by the string representation of the search coordinates)
         # e.g., {'[0,1]':(0.2,0.4), '[1,1]':(0.3,0,3)} key is coord, value is list of times, transfer time for reps
         
+        time = self.__lookupCost(coord)
         perf_costs = (0,0)
         return perf_costs
     
@@ -261,3 +263,13 @@ class CUDACFG(orio.main.tuner.search.search.Search):
     
     #--------------------------------------------------
             
+    def __lookupCost(self, coord):
+        ind = self.instmixdata[0].index('coordinate_o')
+        for row in self.instmixdata[1:]:
+            if not row: continue
+            else: print row[ind], coord
+            if row[ind] == coord: 
+                debug("Time for this coord:", row)
+                return row[-1]
+
+        
