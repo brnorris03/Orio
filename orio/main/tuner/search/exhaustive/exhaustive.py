@@ -194,7 +194,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         Return the next neighboring coordinate to be considered in the search space.
         Return None if all coordinates in the search space have been visited.
         
-        @return: the
+        @return: the next coordinate
         '''
         next_coord = coord[:]
         for i in range(0, self.total_dims):

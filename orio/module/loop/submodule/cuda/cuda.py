@@ -219,7 +219,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
 
       # First, check if user specified the device properties file
       if self.tinfo.device_spec_file:
-        qsrc = self.tinfo.device_spec_file
+        qout = self.tinfo.device_spec_file
       else:
           # generate the query code
           qsrc  = "enum_cuda_props.cu"

@@ -260,6 +260,8 @@ class Search:
             if self.modelBased():
                 self.transform_time[coord_key] = 0.0
                 perf_costs[coord_key] = self.getModelPerfCost(perf_params, coord)
+                # Do the code gen for later (static) analysis
+                #self.odriver.optimizeCodeFrags(self.cfrags, perf_params)
                 continue
             else: # Legacy, pure empirical
                 start = time.time()

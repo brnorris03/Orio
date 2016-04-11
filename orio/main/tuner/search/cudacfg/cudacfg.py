@@ -40,36 +40,69 @@ class CUDACFG(orio.main.tuner.search.search.Search):
 
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
+        self.srun = 0
         
         # TODO: update to invoke the static analysis tool in a separate method, not read csv
         # Required (for now) option, reading file
         # Source file name is in self.odriver.srcname 
         self.instmixdata = []  # list of lists, first element contains column labels
-        with open(self.instmix, 'rb') as csvfile:
+        with open(self.instmix, 'rU') as csvfile:
             self.instmixdata = list(csv.reader(csvfile, delimiter=',', quotechar='"') )
         
+        bcoord = self.__hashCoord('[1, 5, 1, 1, 0, 0]')
         #debug("Instruction mix data: %d" % self.instmixdata[0].index('coordinate_o'))
         # Hash coordinates
         ind = self.instmixdata[0].index('coordinate_o')
         l = len(self.instmixdata[0])-1
-        self.instmixdata[0].insert(l,'coordinate_hash')
+        self.instmixdata[0].insert(l,'kernel_type')
+        self.instmixdata[0].insert(l+1,'hash_coordinate')
         self.allcoords = []
+        self.coords = []
         times = []
         for row in self.instmixdata[1:]:
             if not row: continue
-            row.insert(l,self.__hashCoord(row[ind]))
+            row.insert(l,self.getIntensity(row[ind]))
+            row.insert(l+1, self.__hashCoord(row[ind]))
             self.allcoords.append(eval(row[ind]))
             times.append(float(row[-1]))
+            # TODO: this is only for debugging, will remove:
+            if self.__hashCoord(row[ind]) == bcoord:
+                print("Best coordinate intensity: ", self.getIntensity(row), row)
             
-        # Find best time
+        # Some sanity checks, will remove; Find best time
         info("Best known time: %f" % min(times))
+       
+        
         # complain if both the search time limit and the total number of search runs are undefined
         #if self.time_limit <= 0 and self.total_runs <= 0:
         #    err(('orio.main.tuner.search.cudacfg.cudacfg: %s search requires either (both) the search time limit or (and) the ' +
         #            'total number of search runs to be defined') % self.__class__.__name__)
-     
+        
+        #         kernel_type = get_kernel_intensity(imix)
+    
+    def ind(self, name):
+        if name in ['ldst','tex','surf','fp','int','simd','conv','ctrl','move','pred','misc']: name += '_s'
+        return self.instmixdata[0].index(name)
+    
+    def val(self, row, label):
+        return row[self.ind(label)]
+
+    def getIntensity(self, d_instr_k):
+        mem_int=d_instr_k[self.ind('ldst')] + d_instr_k[self.ind('tex')] + d_instr_k[self.ind('surf')]
+        flops_int=d_instr_k[self.ind('fp')]+d_instr_k[self.ind('int')]+d_instr_k[self.ind('simd')]+d_instr_k[self.ind('conv')]
+        ctrl_int=d_instr_k[self.ind('ctrl')]+d_instr_k[self.ind('move')]+d_instr_k[self.ind('pred')]
+        total_int=mem_int + flops_int + ctrl_int + d_instr_k[self.ind('misc')]
+        intensity='FLOPS'
+        if (flops_int > mem_int) and (flops_int > ctrl_int):
+            intensity='FLOPS'
+        elif (mem_int > flops_int) and (mem_int > ctrl_int):
+            intensity='MEMORY'
+        else:
+            intensity='CONTROL'
+        return intensity
+    
     def modelBased(self):
-        '''This search algorithn uses existing data or models to evaluate objective function.
+        '''This search algorithm uses existing data or models to evaluate objective function.
         '''
         return True 
     
@@ -79,17 +112,53 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         
         # Initialize the performance costs dictionary
         # (indexed by the string representation of the search coordinates)
-        # e.g., {'[0,1]':(0.2,0.4), '[1,1]':(0.3,0,3)} key is coord, value is list of times, transfer time for reps
+        # e.g., {'[0,1]': 0.5, '[1,1]':0.2} key is coord, value is time
         
-        perf_costs = (self.__lookupCost(coord),0)
-        return perf_costs
+        #perf_costs = {str(coord): self.__lookupCost(coord) }
+        self.srun +=1
+        return ([self.__lookupCost(coord)],[0])
+    
+    def getModelBasedCoords(self):
+        initialCoord = self.getRandomCoord(self.allcoords)
+        prev = initialCoord
+        self.coords = []
+        tc = []
+        tcindices = range(0,len(self.axis_val_ranges[0]))
+        for row in self.instmixdata[1:]:
+            tc = []
+            #row = random.choice(self.instmixdata[1:])
+            kernel_type = self.val(row,'kernel_type')
+            coord = eval(self.val(row, 'coordinate_o'))
+            if coord in self.coords: continue
+            occupancy = float(self.val(row,'occupancy_mp_new').strip('%'))
+            #tmp = eval(self.val(row,'lmax_block_prev'))
+            tmp = tcindices
+            ind = len(tmp)/2
+            #print "kernel type, Occupancy, lmax_bloc_prev", kernel_type, occupancy, tmp
+            if occupancy == 100.0:
+                if kernel_type == "MEM":
+                    tc = tmp[ind:]
+                else:
+                    tc = tmp[:max(ind,1)]
+            elif occupancy > 60 and occupancy < 100:
+                if kernel_type in ['MEM', 'CTRL']:
+                    tc = tmp[:max(ind,1)]
+                else:
+                    tc = tmp[ind:]
+            if tc and coord[0] in tc: 
+                # TODO change this to not rely on knowing that TC is the first parameter!!!
+                self.coords.append(coord)
+            
+        info("Original search space size: %d. Reduced search space size: %d." %( len(self.allcoords),len(self.coords))) 
+        random.shuffle(self.coords)
+        return self.coords
     
     def getInitCoord(self):
         '''Randomly pick a coordinate within the search space'''
 
         random_coord = []
         if self.allcoords: 
-            random_coord = eval(random.choice(self.allcoords))
+            random_coord = eval(random.choice(self.coords))
         else:
             for i in range(0, self.total_dims):
                 #iuplimit = self.dim_uplimits[i]
@@ -99,12 +168,14 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         return random_coord
     
 
-    def getRandomCoord(self):
+    def getRandomCoord(self, coords=[]):
         '''Randomly pick a coordinate within the search space'''
 
         random_coord = []
-        if self.allcoords: 
-            random_coord = eval(random.choice(self.allcoords))
+        if coords:
+            random_coord = random.choice(coords)
+        elif self.allcoords: 
+            random_coord = random.choice(self.coords)
         else:
             for i in range(0, self.total_dims):
                 iuplimit = self.dim_uplimits[i]
@@ -151,7 +222,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         
             # Use a predefined list of coordinates, if given
             if self.allcoords: 
-                coords = self.allcoords
+                coords = self.getModelBasedCoords()
             else:
                 # randomly pick a set of coordinates to be empirically tested
                 coords = []
@@ -183,17 +254,22 @@ class CUDACFG(orio.main.tuner.search.search.Search):
             # compare to the best result
             pcost_items = perf_costs.items()
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
+            #print 'pcostitems', pcost_items
             for i, (coord_str, pcost) in enumerate(pcost_items):
                 if type(pcost) == tuple: (perf_cost,_) = pcost    # ignore transfer costs -- GPUs only
                 else: perf_cost = pcost
                 coord_val = eval(coord_str)
                 #info('%s %s' % (coord_val,perf_cost))
                 perf_params = self.coordToPerfParams(coord_val)
-                try:
-                    floatNums = [float(x) for x in perf_cost]
-                    mean_perf_cost=sum(floatNums) / len(perf_cost)
-                except:
-                    mean_perf_cost=perf_cost
+                if type(perf_cost) is list or type(perf_cost) is tuple:
+                    try:
+                        floatNums = [float(x) for x in perf_cost]
+                        mean_perf_cost=sum(floatNums) / len(perf_cost)
+                    except:
+                        mean_perf_cost=perf_cost
+                else:
+                    print 'Perf cost', perf_cost
+                    mean_perf_cost = perf_cost
                     
                 transform_time=self.getTransformTime(coord_key)
                 compile_time=self.getCompileTime(coord_key)    
@@ -242,7 +318,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         info('----- end random search -----')
         info('----- begin random search summary -----')
         info(' total completed runs: %s' % runs)
-        info(' total successful runs: %s' % sruns)
+        info(' total successful runs: %s' % self.srun)
         info(' total failed runs: %s' % fruns)
         info('----- end random search summary -----')
         
@@ -306,6 +382,9 @@ class CUDACFG(orio.main.tuner.search.search.Search):
                 coord_records[str(coord)] = None
                 return coord
     
+        
+
+           
     #--------------------------------------------------
     def __hashCoord(self, coord):
         return int(hashlib.sha1(str(coord)).hexdigest(), 16) % (10 ** 8)
