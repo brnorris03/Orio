@@ -31,7 +31,10 @@ class TuningInfo:
         ivar_decls, ivar_decl_file, ivar_init_file = ivar_info
         ptest_skeleton_code_file, = ptest_code_info
         validation_file, expected_output = validation_info
-        device_spec_file,_ = other_info
+        if other_info and len(other_info)>1:
+            device_spec_file,_ = other_info
+        else:
+            device_spec_file = other_info
 
         # build arguments
         self.pre_build_cmd = build_info.get('prebuild_cmd') # command to run before invoking build_cmd

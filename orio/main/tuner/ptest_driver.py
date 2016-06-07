@@ -144,7 +144,6 @@ class PerfTestDriver:
 
 
         if Globals().meta is not None:
-            try:
                 cmd = ''
                 if Globals().out_filename is not None:
                     try:
@@ -155,9 +154,9 @@ class PerfTestDriver:
                         err('orio.main.tuner.ptest_driver: failed to execute the outfile rename: "%s"\n --> %s: %s' \
                                 % (Globals().out_filename,e.__class__.__name__, e), doexit = False)
 
-                if perf_param is not None:
+                if perf_params is not None:
                     Globals().metadata.update({'LastCounter': last_counter})
-                    for pname, pval in perf_param.items():
+                    for pname, pval in perf_params.items():
                         a_dict = {pname: pval}
                         Globals().metadata.update(a_dict)
                         Globals().metadata.update({pname: pval})
@@ -165,11 +164,11 @@ class PerfTestDriver:
                 for key in Globals().src_filenames:
                     Globals().metadata.update({'SourceName': key})
                     Globals().metadata.update({'LastCounter': last_counter})
-                if not os.path.exists(cmd):
-                    os.makedirs(cmd)
-
-            except Exception, e:
-                err('orio.main.tuner.ptest_driver: failed to execute meta update: "%s"\n --> %s: %s' \
+                try:
+                    if cmd and not os.path.exists(cmd):
+                        os.makedirs(cmd)
+                except Exception, e:
+                    warn('orio.main.tuner.ptest_driver: failed to execute meta update: "%s"\n --> %s: %s' \
                         % (Globals().meta,e.__class__.__name__, e), doexit = False)
 
         return

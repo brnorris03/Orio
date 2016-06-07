@@ -121,11 +121,11 @@ class Exhaustive(orio.main.tuner.search.search.Search):
                         if Globals().out_filename is not None:
                             cmd = Globals().out_filename
                             cmd = cmd.replace("%iter", str(Globals().metadata['LastCounter']))
-
+                        if not cmd.strip(): cmd = '.'
                         with open(cmd + '/meta.json', 'w') as outfile:
                             json.dump(Globals().metadata, outfile)
                     except Exception, e:
-                        err('orio.main.tuner.ptest_driver: failed to execute meta export: "%s"\n --> %s: %s' % (Globals().meta,e.__class__.__name__, e), doexit = False)
+                        err('orio.search.Exhaustive: failed to execute meta export: "%s"\n --> %s: %s' % (Globals().meta,e.__class__.__name__, e),doexit = False)
                 
                 if mean_perf_cost < best_perf_cost and perf_cost > 0.0:
                     best_coord = coord_val

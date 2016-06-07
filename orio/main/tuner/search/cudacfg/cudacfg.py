@@ -46,6 +46,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         # Required (for now) option, reading file
         # Source file name is in self.odriver.srcname 
         self.instmixdata = []  # list of lists, first element contains column labels
+        self.instmix = None # TODO 
         with open(self.instmix, 'rU') as csvfile:
             self.instmixdata = list(csv.reader(csvfile, delimiter=',', quotechar='"') )
         
