@@ -126,26 +126,29 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         tcindices = range(0,len(self.axis_val_ranges[0]))
         for row in self.instmixdata[1:]:
             tc = []
+            bc = []
             #row = random.choice(self.instmixdata[1:])
             kernel_type = self.val(row,'kernel_type')
             coord = eval(self.val(row, 'coordinate_o'))
             if coord in self.coords: continue
             occupancy = float(self.val(row,'occupancy_mp_new').strip('%'))
-            #tmp = eval(self.val(row,'lmax_block_prev'))
+            tmpbc = eval(self.val(row,'lmax_block_prev'))
+            bci = len(bc)/2
             tmp = tcindices
             ind = len(tmp)/2
+            
             #print "kernel type, Occupancy, lmax_bloc_prev", kernel_type, occupancy, tmp
             if occupancy == 100.0:
-                if kernel_type == "MEM":
-                    tc = tmp[ind:]
-                else:
-                    tc = tmp[:max(ind,1)]
+                if kernel_type == "MEM": tc = tmp[ind:]
+                else: tc = tmp[:max(ind,1)]
+                if kernel_type in ['FLOPS','MEM']: bc = tmpbc[:max(bci,1)]
+                else: bc = tmpbc[bci:] 
             elif occupancy > 60 and occupancy < 100:
-                if kernel_type in ['MEM', 'CTRL']:
-                    tc = tmp[:max(ind,1)]
-                else:
-                    tc = tmp[ind:]
-            if tc and coord[0] in tc: 
+                if kernel_type in ['MEM', 'CONTROL']: tc = tmp[:max(ind,1)]
+                else: tc = tmp[ind:]
+                if kernel_type in ['MEM', 'CONTROL']: bc = tmpbc[:max(bci,1)]
+                else: bc = tmpbc[bci:] 
+            if tc and coord[0] in tc and bc and coord[1] in bc: 
                 # TODO change this to not rely on knowing that TC is the first parameter!!!
                 self.coords.append(coord)
             
