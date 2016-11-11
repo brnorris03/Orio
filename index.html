@@ -1,37 +1,25 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Orio : Orio is an open-source extensible framework for the definition of domain-specific languages and generation of optimized code for multiple architecture targets, including support for empirical autotuning of the generated code.">
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>Orio</title>
+    <meta charset="UTF-8">
+    <title>Orio by brnorris03</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-
   <body>
+    <section class="page-header">
+      <h1 class="project-name">Orio</h1>
+      <h2 class="project-tagline">Orio is an open-source extensible framework for the definition of domain-specific languages and generation of optimized code for multiple architecture targets, including support for empirical autotuning of the generated code.</h2>
+      <a href="https://github.com/brnorris03/Orio" class="btn">View on GitHub</a>
+      <a href="https://github.com/brnorris03/Orio/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/brnorris03/Orio/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/brnorris03/Orio">View on GitHub</a>
-
-          <h1 id="project_title">Orio</h1>
-          <h2 id="project_tagline">Orio is an open-source extensible framework for the definition of domain-specific languages and generation of optimized code for multiple architecture targets, including support for empirical autotuning of the generated code.</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/brnorris03/Orio/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/brnorris03/Orio/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>
+    <section class="main-content">
+      <h3>
 <a id="overview" class="anchor" href="#overview" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Overview</h3>
 
 <p>Orio is a Python framework for transformation and automatically tuning the performance of codes written in different source and target languages, including transformations from a number of simple languages (e.g., a restricted subset of C) to C, Fortran, CUDA, and OpenCL targets. The tool generates many tuned versions of the same operation using different optimization parameters, and performs an empirical search for selecting the best among multiple optimized code variants.</p>
@@ -227,28 +215,66 @@ for (i=0; i&lt;=N-1; i++)
 
 <p>The following table lists information about the search techniques implemented in the Orio's search engine.</p>
 
-<p>|| '''Search technique''' || '''Keyword''' || '''Algorithm-specific argument''' || '''Default value''' || '''Argument description''' ||
-|| ''Exhaustive'' || '<code>Exhaustive</code>' || - || - || - ||
-|| ''Random'' || '<code>Randomsearch</code>' || <code>local_distance</code> || 0 || * the maximum distance of neighboring coordinates considered by the local search ||
-|| ''Nelder-Mead simplex'' || '<code>Simplex</code>' || <code>local_distance</code> [[BR]] <code>reflection_coef</code> [[BR]] <code>expansion_coef</code> [[BR]] <code>contraction_coef</code> [[BR]] <code>shrinkage_coef</code> || 0 [[BR]] 1.0 [[BR]] 2.0 [[BR]] 0.5 [[BR]] 0.5 || * the maximum distance of neighboring coordinates considered by the local search [[BR]] * the amplitude/intensity of the reflection move [[BR]] * the amplitude/intensity of the expansion move [[BR]] * the amplitude/intensity of the contraction move [[BR]] * the amplitude/intensity of the shrinkage move
-|| ''Simulated annealing'' || '<code>Annealing</code>' || <code>local_distance</code> [[BR]] <code>cooling_factor</code> [[BR]] <code>final_temperature_ratio</code> [[BR]] <code>trials_limit</code> [[BR]] <code>moves_limit</code> || 0 [[BR]] 0.95 [[BR]] 0.05 [[BR]] 100 [[BR]] 20 || * the maximum distance of neighboring coordinates considered by the local search [[BR]] * the temperature reduction factor [[BR]] * the percentage of the termination temperature [[BR]] * the maximum limit of numbers of search trials at each temperature [[BR]] * the maximum limit of numbers of successful search moves at each temperature</p>
+<table>
+<thead>
+<tr>
+<th>'''Search technique'''</th>
+<th>'''Keyword'''</th>
+<th>'''Algorithm-specific argument'''</th>
+<th>'''Default value'''</th>
+<th>'''Argument description'''</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>''Exhaustive''</td>
+<td>'<code>Exhaustive</code>'</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>''Random''</td>
+<td>'<code>Randomsearch</code>'</td>
+<td><code>local_distance</code></td>
+<td>0</td>
+<td>* the maximum distance of neighboring coordinates considered by the local search</td>
+</tr>
+<tr>
+<td>''Nelder-Mead simplex''</td>
+<td>'<code>Simplex</code>'</td>
+<td>
+<code>local_distance</code> <br> <code>reflection_coef</code> <br> <code>expansion_coef</code> <br> <code>contraction_coef</code> <br> <code>shrinkage_coef</code>
+</td>
+<td>0 <br> 1.0 <br> 2.0 <br> 0.5 <br> 0.5</td>
+<td>* the maximum distance of neighboring coordinates considered by the local search <br> * the amplitude/intensity of the reflection move <br> * the amplitude/intensity of the expansion move <br> * the amplitude/intensity of the contraction move <br> * the amplitude/intensity of the shrinkage move</td>
+</tr>
+<tr>
+<td>''Simulated annealing''</td>
+<td>'<code>Annealing</code>'</td>
+<td>
+<code>local_distance</code> <br> <code>cooling_factor</code> <br> <code>final_temperature_ratio</code> <br> <code>trials_limit</code> <br> <code>moves_limit</code>
+</td>
+<td>0 <br> 0.95 <br> 0.05 <br> 100 <br> 20</td>
+<td>* the maximum distance of neighboring coordinates considered by the local search <br> * the temperature reduction factor <br> * the percentage of the termination temperature <br> * the maximum limit of numbers of search trials at each temperature <br> * the maximum limit of numbers of successful search moves at each temperature</td>
+</tr>
+</tbody>
+</table>
 
 <h3>
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
 
 <p>Boyana Norris <a href="https://github.com/brnorris03" class="user-mention">@brnorris03</a> (University of Oregon), Azamat Mametjanov (Argonne National Laboratory), Prasanna Balapraskash (Argonne National Laboratory), Albert Hartono (Intel), Nicholas Chaimov (University of Oregon)</p>
-      </section>
-    </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Orio maintained by <a href="https://github.com/brnorris03">brnorris03</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/brnorris03/Orio">Orio</a> is maintained by <a href="https://github.com/brnorris03">brnorris03</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
 
-              <script type="text/javascript">
+    </section>
+
+            <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -258,7 +284,6 @@ for (i=0; i&lt;=N-1; i++)
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
-
 
   </body>
 </html>
