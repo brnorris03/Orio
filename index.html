@@ -221,8 +221,7 @@ for (i=0; i&lt;=N-1; i++)
 <th>'''Search technique'''</th>
 <th>'''Keyword'''</th>
 <th>'''Algorithm-specific argument'''</th>
-<th>'''Default value'''</th>
-<th>'''Argument description'''</th>
+<th>'''Argument description [default value]'''</th>
 </tr>
 </thead>
 <tbody>
@@ -231,14 +230,12 @@ for (i=0; i&lt;=N-1; i++)
 <td>'<code>Exhaustive</code>'</td>
 <td>-</td>
 <td>-</td>
-<td>-</td>
 </tr>
 <tr>
 <td>''Random''</td>
 <td>'<code>Randomsearch</code>'</td>
 <td><code>local_distance</code></td>
-<td>0</td>
-<td>* the maximum distance of neighboring coordinates considered by the local search</td>
+<td>maximum distance of neighboring coordinates considered by the local search [0]</td>
 </tr>
 <tr>
 <td>''Nelder-Mead simplex''</td>
@@ -246,8 +243,7 @@ for (i=0; i&lt;=N-1; i++)
 <td>
 <code>local_distance</code> <br> <code>reflection_coef</code> <br> <code>expansion_coef</code> <br> <code>contraction_coef</code> <br> <code>shrinkage_coef</code>
 </td>
-<td>0 <br> 1.0 <br> 2.0 <br> 0.5 <br> 0.5</td>
-<td>* the maximum distance of neighboring coordinates considered by the local search <br> * the amplitude/intensity of the reflection move <br> * the amplitude/intensity of the expansion move <br> * the amplitude/intensity of the contraction move <br> * the amplitude/intensity of the shrinkage move</td>
+<td>- maximum distance of neighboring coordinates considered by the local search [0]<br> - amplitude/intensity of the reflection move [1.0] <br> - amplitude/intensity of the expansion move [2.0] <br> - amplitude/intensity of the contraction move [0.5] <br> - amplitude/intensity of the shrinkage move [0.5]</td>
 </tr>
 <tr>
 <td>''Simulated annealing''</td>
@@ -255,8 +251,7 @@ for (i=0; i&lt;=N-1; i++)
 <td>
 <code>local_distance</code> <br> <code>cooling_factor</code> <br> <code>final_temperature_ratio</code> <br> <code>trials_limit</code> <br> <code>moves_limit</code>
 </td>
-<td>0 <br> 0.95 <br> 0.05 <br> 100 <br> 20</td>
-<td>* the maximum distance of neighboring coordinates considered by the local search <br> * the temperature reduction factor <br> * the percentage of the termination temperature <br> * the maximum limit of numbers of search trials at each temperature <br> * the maximum limit of numbers of successful search moves at each temperature</td>
+<td>- maximum distance of neighboring coordinates considered by the local search [0]<br> - the temperature reduction factor [0.95]<br> - the percentage of the termination temperature [0.05]<br> - the maximum limit of numbers of search trials at each temperature [100] <br> - the maximum limit of numbers of successful search moves at each temperature [20]</td>
 </tr>
 </tbody>
 </table>
