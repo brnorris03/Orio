@@ -218,43 +218,42 @@ for (i=0; i&lt;=N-1; i++)
 <table>
 <thead>
 <tr>
-<th>'''Search technique'''</th>
-<th>'''Keyword'''</th>
-<th>'''Algorithm-specific argument'''</th>
-<th>'''Argument description [default value]'''</th>
+<th>Search technique</th>
+<th>Keyword</th>
+<th align="left">Algorithm-specific argument [default value]</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>''Exhaustive''</td>
-<td>'<code>Exhaustive</code>'</td>
-<td>-</td>
-<td>-</td>
+<td>Exhaustive</td>
+<td><code>Exhaustive</code></td>
+<td align="left">-</td>
 </tr>
 <tr>
-<td>''Random''</td>
-<td>'<code>Randomsearch</code>'</td>
-<td><code>local_distance</code></td>
-<td>maximum distance of neighboring coordinates considered by the local search [0]</td>
+<td>Random</td>
+<td><code>Randomsearch</code></td>
+<td align="left">
+<code>local_distance</code> : maximum distance of neighboring coordinates considered by the local search [0]</td>
 </tr>
 <tr>
-<td>''Nelder-Mead simplex''</td>
-<td>'<code>Simplex</code>'</td>
-<td>
-<code>local_distance</code> <br> <code>reflection_coef</code> <br> <code>expansion_coef</code> <br> <code>contraction_coef</code> <br> <code>shrinkage_coef</code>
-</td>
-<td>- maximum distance of neighboring coordinates considered by the local search [0]<br> - amplitude/intensity of the reflection move [1.0] <br> - amplitude/intensity of the expansion move [2.0] <br> - amplitude/intensity of the contraction move [0.5] <br> - amplitude/intensity of the shrinkage move [0.5]</td>
-</tr>
-<tr>
-<td>''Simulated annealing''</td>
-<td>'<code>Annealing</code>'</td>
-<td>
-<code>local_distance</code> <br> <code>cooling_factor</code> <br> <code>final_temperature_ratio</code> <br> <code>trials_limit</code> <br> <code>moves_limit</code>
-</td>
-<td>- maximum distance of neighboring coordinates considered by the local search [0]<br> - the temperature reduction factor [0.95]<br> - the percentage of the termination temperature [0.05]<br> - the maximum limit of numbers of search trials at each temperature [100] <br> - the maximum limit of numbers of successful search moves at each temperature [20]</td>
+<td>Nelder-Mead simplex</td>
+<td><code>Simplex</code></td>
+<td align="left"></td>
 </tr>
 </tbody>
 </table>
+
+<p><code>local_distance</code> : maximum distance of neighboring coordinates considered by the local search [0]<br>
+ <code>reflection_coef</code> : amplitude/intensity of the reflection move [1.0] <br>
+ <code>expansion_coef</code> : amplitude/intensity of the expansion move [2.0] <br>
+ <code>contraction_coef</code> : amplitude/intensity of the contraction move [0.5] <br> 
+ <code>shrinkage_coef</code> : amplitude/intensity of the shrinkage move [0.5]|
+| Simulated annealing | <code>Annealing</code> | 
+ <code>local_distance</code> : maximum distance of neighboring coordinates considered by the local search [0]<br> 
+ <code>cooling_factor</code> : the temperature reduction factor [0.95] <br>
+ <code>final_temperature_ratio</code> : the percentage of the termination temperature [0.05]<br> 
+ <code>trials_limit</code> : maximum limit of numbers of search trials at each temperature [100]<br> 
+ <code>moves_limit</code> " maximum limit of numbers of successful search moves at each temperature [20]|</p>
 
 <h3>
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
