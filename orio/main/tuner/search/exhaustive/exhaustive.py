@@ -2,7 +2,7 @@
 # Implementation of the exhaustive search algorithm 
 #
 
-import sys, time
+import sys, time, json
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
 
@@ -30,8 +30,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         # only needs to be run once)
         if self.total_runs > 1:
             err('orio.main.tuner.search.exhaustive: the total number of %s search runs must be one (or can be undefined)' %
-                   self.__class__.__name__)
-            sys.exit(1)
+                   self.__class__.__name__, doexit=True)
             
 
     #-----------------------------------------------------
@@ -114,6 +113,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
                     compute_time = min(floatNums)
                     transfer_time = min(transferFloats)
                 else:
+# TODO <<<<<<< HEAD
                     err('Internal error: unrecognized Globals().vtime value', self, doexit=True)
                     
             
@@ -122,6 +122,37 @@ class Exhaustive(orio.main.tuner.search.search.Search):
                 self.__processTrialTime(coord_val,compute_time,transfer_time)
             
                 if compute_time < best_compute_time and compute_times > 0.0:
+# TODO =======
+                    mastercode='''
+                    mean_perf_cost = sum(floatNums[1:]) / (len(perf_cost)-1)
+                mean_transfer = sum(transferFloats) / len(transfer_costs)
+
+                info('coordinate: %s, average cost: %s, all costs: %s, average transfer time: %s' % (coord_val, mean_perf_cost, perf_cost, mean_transfer))
+
+                if Globals().meta is not None:
+                    co_dict = {'coordinate': coord_val}
+                    avg_cost = {'average_cost': mean_perf_cost}
+                    all_costs = {'all_costs': perf_cost}
+                    mean_xfer = {'mean_transfer': mean_transfer}
+                    Globals().metadata.update(co_dict)
+                    Globals().metadata.update(avg_cost)
+                    Globals().metadata.update(all_costs)
+                    Globals().metadata.update(mean_xfer)
+
+                    try:
+                        cmd=''
+                        if Globals().out_filename is not None:
+                            cmd = Globals().out_filename
+                            cmd = cmd.replace("%iter", str(Globals().metadata['LastCounter']))
+                        if not cmd.strip(): cmd = '.'
+                        with open(cmd + '/meta.json', 'w') as outfile:
+                            json.dump(Globals().metadata, outfile)
+                    except Exception, e:
+                        err('orio.search.Exhaustive: failed to execute meta export: "%s"\n --> %s: %s' % (Globals().meta,e.__class__.__name__, e),doexit = False)
+                
+                if mean_perf_cost < best_perf_cost and perf_cost > 0.0:
+'''
+# TODO>>>>>>> origin/HEAD
                     best_coord = coord_val
                     best_compute_time = compute_time
                     corr_transfer  = transfer_time
@@ -179,8 +210,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
                 self.start_coord = rhs
             else:
                 err('orio.main.tuner.search.exhaustive: unrecognized %s algorithm-specific argument: "%s"' %
-                    (self.__class__.__name__, vname))
-                sys.exit(1)
+                    (self.__class__.__name__, vname), doexit=True)
 
     #--------------------------------------------------
 
@@ -189,7 +219,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         Return the next neighboring coordinate to be considered in the search space.
         Return None if all coordinates in the search space have been visited.
         
-        @return: the
+        @return: the next coordinate
         '''
         next_coord = coord[:]
         for i in range(0, self.total_dims):

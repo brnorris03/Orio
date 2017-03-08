@@ -124,6 +124,9 @@ class CodeGen_C (CodeGen):
             elif tnode.op_type == tnode.COMMA:
                 s += ','
             elif tnode.op_type == tnode.EQ_ASGN:
+                #print "(((((( Binop: tnode.lhs.meta=%s, tnode.rhs.meta=%s ))))) " \
+                #    % (str(tnode.lhs.meta),str(tnode.rhs.meta))
+
                 s += '='
             else:
                 g.err('orio.module.loop.codegen internal error: unknown binary operator type: %s' % tnode.op_type)

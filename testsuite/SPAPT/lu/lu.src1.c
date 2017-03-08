@@ -34,6 +34,7 @@
 
 
         
+    param U1_K[]  = [1];
     param U1_J[]  = range(1,31); 
     param VEC1[] = [False,True];
     
@@ -77,12 +78,12 @@ int iii, jjj, kkk;
 
 /*@ begin Loop (
 
-for (k=0; k<=N-1; k++) {
    transform Composite(
-      unrolljam = (['j'],[U1_J]),
+      unrolljam = (['k','j'],[U1_K,U1_J]),
       scalarreplace = (SCR, 'double'),
       vector = (VEC1, ['ivdep','vector always'])
      )
+  for (k=0; k<=N-1; k++) {
     for (j=k+1; j<=N-1; j++)
       A[k][j] = A[k][j]/A[k][k];
 

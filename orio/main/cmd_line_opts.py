@@ -39,6 +39,7 @@ Options:
   -s <file>, --spec=<file>       read tuning specifications from <file>
   -t <num>, --top=<num>          keep the top-performing <num> code variants (default: 1)
   -x, --external                 run Orio in external mode (advanced)
+  --stop-on-error                exit with an error code when first exception occurs
   --config=<p1:v1,p2:v2,..>      configurations for external mode
   --configfile=filename          configuration filename 
   --vtime=<num|'mean'|'min'>     indicate which time to choose as "best" given the times of all the runs
@@ -46,6 +47,7 @@ Options:
                                  mean "select third-best" time), or one of the strings: mean, min
   -v, --verbose                  verbosely show details of the results of the running program
   --validate                     validate by comparing output of original and transformed codes
+  --meta                         export metadata as json
 
 Environment variables: 
   ORIO_FLAGS                     the string value is used to augment the list of Orio command-line
@@ -137,8 +139,9 @@ class CmdParser:
             opts, args = getopt.getopt(orioargv,
                                        'c:deF:hko:p:R:rs:t:vx',
                                        ['pre-command=','debug','config=','configfile=', 'erase-annot', 'format', 
-                                        'help', 'keep-temps',' output=', 'time='
-                                       'output-prefix=', 'rename-objects', 'spec=', 'verbose', 'extern', 'validate', 'post-command=', 'restart=', 'top=', 'dry_run'])
+                                           'help', 'keep-temps',' output=', 'time=',
+                                        'output-prefix=', 'rename-objects',  'spec=', 'stop-on-error', 'verbose', 
+                                        'extern', 'validate', 'post-command=', 'restsart=', 'top=', 'meta', 'dry_run'])
         except Exception, e:
             sys.stderr.write('Orio command-line error: %s' % e)
             sys.stderr.write(USAGE_MSG + '\n')
@@ -191,7 +194,10 @@ class CmdParser:
                 else:
                     sys.stderr.write("Command line error: Unrecognized --vtime argument")
                     sys.exit(1)
-
+            elif opt in ('--meta'):
+                cmdline['meta'] = True
+            elif opt in ('--stop-on-error'):
+                cmdline['stop-on-error'] = True
         # check on the arguments
         if len(srcfiles) < 1:
             if otherargv:

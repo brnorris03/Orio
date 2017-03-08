@@ -370,7 +370,7 @@ class Transformation:
         # when ufactor = 1, no transformation will be applied
         if self.ufactor == 1:
             orig_loop = self.flib.createForLoop(index_id, lbound_exp, ubound_exp,
-                                                stride_exp, loop_body)
+                                                stride_exp, loop_body, meta="original")
             if self.parallelize:
                 inames = self.flib.getLoopIndexNames(orig_loop)
                 inames_str = ','.join(inames)
@@ -438,7 +438,7 @@ class Transformation:
         lbound_name_exp = orio.module.loop.ast.IdentExp(lbound_name)
         lbound_init = orio.module.loop.ast.VarDeclInit('int', lbound_name_exp, new_lbound_exp)
         loop = self.flib.createForLoop(index_id, new_lbound_exp, new_ubound_exp,
-                                            new_stride_exp, unrolled_loop_body)
+                                            new_stride_exp, unrolled_loop_body, meta="main")
         
         # generate the cleanup-loop lower-bound expression
         # if self.parallelize or self.language == 'fortran':
@@ -479,7 +479,7 @@ class Transformation:
         cleanup_lbound_init = orio.module.loop.ast.VarDeclInit('int', cleanup_lbound_name_exp, cleanup_lbound_exp)
         
         cleanup_loop = self.flib.createForLoop(index_id, cleanup_lbound_exp, ubound_exp,
-                                               stride_exp, loop_body)
+                                               stride_exp, loop_body, meta="cleanup")
         
         
         
