@@ -93,9 +93,9 @@ export PATH=/home/username/bin:$PATH
 
 <p>Orio annotation is denoted as a stylized C comment that starts with '<code>/*@</code>' and ends with <code>@*/</code>. For instance, the annotation <code>/*@ end @*/</code> is used to indicate the end of an annotated code region. The following simple grammar illustrates the fundamental structure of Orio annotations.</p>
 
-<p> ::=    [[BR]]
-   ::= <code>/*@ begin</code>  <code>(</code>  <code>) @*/</code> [[BR]]
-   ::= <code>/*@ end @*/</code> [[BR]]</p>
+<p> ::=   
+   ::= <code>/*@ begin</code>  <code>(</code>  <code>) @*/</code> 
+   ::= <code>/*@ end @*/</code> </p>
 
 <p>An ''annotation region'' consists of three main parts: ''leader annotation'', ''annotation body'', and ''trailer annotation''. The annotation body can either be empty or contain C code that may include other nested annotation regions. A leader annotation contains the ''module name'' of the code transformation component that is loaded dynamically by Orio. A high level abstraction of the computation and the performance hints are coded in the ''module body'' inside the leader annotation and are used as input by the transformation module during the transformation and code generation phases. A trailer annotation, which has a fixed form (i.e. <code>/*@ end @*/</code>), closes an annotation region.</p>
 
