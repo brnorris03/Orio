@@ -60,21 +60,24 @@ class Transformation:
         try:
             stride_val = eval(str(stride_exp))
         except Exception, e:
-            raise TransformationException('orio.module.loop.submodule.tile.transformation:%s: failed to evaluate expression: "%s"\n --> %s: %s' %
+            err('orio.module.loop.submodule.tile.transformation:%s: failed to evaluate expression: "%s"\n --> %s: %s' %
                    (stride_exp.line_no, stride_exp,e.__class__.__name__, e.message))
         if not isinstance(stride_val, int) or stride_val <= 0:
-            raise TransformationException('orio.module.loop.submodule.tile.transformation:%s: loop stride size must be a positive integer: %s' %
+            err('orio.module.loop.submodule.tile.transformation:%s: loop stride size must be a positive integer: %s' %
                    (stride_exp.line_no, stride_exp))
 
         # check whether tile_size % stride == 0
         if self.tsize % stride_val != 0:
-            raise TransformationException('orio.module.loop.submodule.tile.transformation:%s: tile size (%s) must be divisible by the stride value (%s)'
-                   % (stride_exp.line_no, self.tsize, stride_val))
+            err('orio.module.loop.submodule.tile.transformation:%s: tile size (%s) must be divisible by the stride value (%s)'
+                   % (stride_exp.line_no, str(self.tsize), str(stride_val)))
 
         # sanity check whether tile_size > stride
         if self.tsize <= stride_val:
-            raise TransformationException('orio.module.loop.submodule.tile.transformation:%s: tile size (%s) must be greater than the stride value (%s)'
-                   % (stride_exp.line_no, self.tsize, stride_val))
+            # Issue a warning, then return the untransformed statement without performing tiling
+            msg = 'tile size ' + str(self.tsize) + ' must be greater than the stride value ' + str(stride_val) + \
+                '; tile index = ' + str(self.tindex)
+            warn('orio.module.loop.submodule.tile.transformation: ' + msg)
+            return self.stmt.replicate()
 
         # create the tile index name
         tindex_id = orio.module.loop.ast.IdentExp(self.tindex)

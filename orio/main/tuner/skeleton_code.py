@@ -75,21 +75,24 @@ int main(int argc, char *argv[]) {
   /*@ declarations @*/  
   /*@ prologue @*/
 
-  double orio_t_start, orio_t_end, orio_t = (double)LONG_MAX;
   int orio_i;
 
+  /*
+   Coordinate: /*@ coordinate @*/ 
+  */
+  
+  /*@ begin outer measurement @*/
   for (orio_i=0; orio_i<ORIO_REPS; orio_i++) {
-    orio_t_start = getClock();
+    /*@ begin inner measurement @*/
     
     /*@ tested code @*/
 
-    orio_t_end = getClock();
-    orio_t = orio_t_end - orio_t_start;
-    printf("{'/*@ coordinate @*/' : %g}\n", orio_t);
+    /*@ end inner measurement @*/
     if (orio_i==0) {
       /*@ validation code @*/
     }
   }
+  /*@ end outer measurement @*/
   
   /*@ epilogue @*/
   return 0;
@@ -412,10 +415,16 @@ int main(int argc, char *argv[]) {
   cudaEvent_t tstart, tstop, start, stop;
   cudaEventCreate(&tstart); cudaEventCreate(&tstop);
   cudaEventCreate(&start);  cudaEventCreate(&stop);
+  /*@ begin outer measurement @*/
   for (int orio_i=0; orio_i<ORIO_REPS; orio_i++) {
+    /*@ begin inner measurement @*/
+    
     /*@ tested code @*/
+
+    /*@ end inner measurement @*/
     printf("{'/*@ coordinate @*/' : (%g,%g)}\n", orcu_elapsed, orcu_transfer);
   }
+  /*@ end outer measurement @*/
   cudaEventDestroy(tstart); cudaEventDestroy(tstop);
   cudaEventDestroy(start);  cudaEventDestroy(stop);
   
@@ -437,6 +446,10 @@ class PerfTestSkeletonCode:
     __PROLOGUE_TAG = r'/\*@\s*prologue\s*@\*/'
     __EPILOGUE_TAG = r'/\*@\s*epilogue\s*@\*/'
     __TCODE_TAG = r'/\*@\s*tested\s+code\s*@\*/'
+    __BEGIN_INNER_MEASURE_TAG = r'/\*@\s*begin\s+inner\s+measurement\s*@\*/'
+    __END_INNER_MEASURE_TAG = r'/\*@\s*end\s+inner\s+measurement\s*@\*/'
+    __BEGIN_OUTER_MEASURE_TAG = r'/\*@\s*begin\s+outer\s+measurement\s*@\*/'
+    __END_OUTER_MEASURE_TAG = r'/\*@\s*end\s+outer\s+measurement\s*@\*/'
     __VALIDATION_TAG = r'/\*@\s*validation\s+code\s*@\*/'
     __COORD_TAG = r'/\*@\s*coordinate\s*@\*/'
     __BEGIN_SWITCHBODY_TAG = r'/\*@\s*begin\s+switch\s+body\s*@\*/'
@@ -491,6 +504,23 @@ class PerfTestSkeletonCode:
         match_obj = re.search(self.__TCODE_TAG, code)
         if not match_obj:
             err('main.tuner.skeleton_code:  missing "tested code" tag in the skeleton code')
+            
+        match_obj = re.search(self.__BEGIN_INNER_MEASURE_TAG, code)
+        if not match_obj:
+            err('main.tuner.skeleton_code: missing "begin inner measurement" tag in the skeleton code')
+
+        match_obj = re.search(self.__END_INNER_MEASURE_TAG,code)
+        if not match_obj:
+            err('main.tuner.skeleton_code: missing "end inner measurement" tag in the skeleton code')
+
+        match_obj = re.search(self.__BEGIN_OUTER_MEASURE_TAG, code)
+        if not match_obj:
+            err('main.tuner.skeleton_code: missing "begin outer measurement" tag in the skeleton code')
+
+        match_obj = re.search(self.__END_OUTER_MEASURE_TAG,code)
+        if not match_obj:
+            err('main.tuner.skeleton_code: missing "end outer measurement" tag in the skeleton code')
+
 
         match_obj = re.search(self.__VALIDATION_TAG, code)
         if not match_obj:
@@ -530,7 +560,10 @@ class PerfTestSkeletonCode:
 
     #-----------------------------------------------------
 
-    def insertCode(self, global_code, prologue_code, epilogue_code, validation_code, tested_code_map):
+    def insertCode(self, global_code, prologue_code, epilogue_code, validation_code, 
+                   begin_inner_measure_code, end_inner_measure_code, 
+                   begin_outer_measure_code, end_outer_measure_code, 
+                   tested_code_map):
         '''
         Insert code fragments into the skeleton driver code.
         
@@ -539,6 +572,11 @@ class PerfTestSkeletonCode:
         @param global_code:
         @param prologue_code: 
         @param epilogue code:
+        @param validation_code: 
+        @param begin_inner_measure_code: start inner loop measurement, e.g., initialze time variable
+        @param end_inner_measure_code: stop inner loop measurement, e.g., get time and find elapsed time value
+        @param begin_outer_measure_code: start measurement around repetitions loop, e.g., initialze time variable
+        @param end_outer_measure_code: stop measurement around repetitions loop, e.g., get time and find elapsed time value
         @param tested_code_map:
         '''
 
@@ -587,6 +625,11 @@ class PerfTestSkeletonCode:
         # insert the sequential code
         else:
             ((coord_key, (tcode, externals)),) = tested_code_map.items()
+            # TODO: customizable timing code for parallel cases
+            code = re.sub(self.__BEGIN_INNER_MEASURE_TAG, begin_inner_measure_code, code)
+            code = re.sub(self.__END_INNER_MEASURE_TAG, re.sub(self.__COORD_TAG, coord_key, end_inner_measure_code), code)
+            code = re.sub(self.__BEGIN_OUTER_MEASURE_TAG, begin_outer_measure_code, code)
+            code = re.sub(self.__END_OUTER_MEASURE_TAG, re.sub(self.__COORD_TAG, coord_key, end_outer_measure_code), code)
             code = re.sub(self.__EXTERNAL_TAG, externals, code)
             code = re.sub(self.__COORD_TAG, coord_key, code)
             code = re.sub(self.__TCODE_TAG, tcode, code)
@@ -635,64 +678,71 @@ class PerfTestSkeletonCodeFortran:
 
         match_obj = re.search(self.__PROLOGUE_TAG, code)
         if not match_obj:
-            print 'error: missing "prologue" tag in the skeleton code'
-            sys.exit(1)
+            err('main.tuner.skeleton_code: missing "prologue" tag in the skeleton code', doexit=True)
 
         match_obj = re.search(self.__EPILOGUE_TAG, code)
         if not match_obj:
-            err('missing "epilogue" tag in the skeleton code')
+            err('main.tuner.skeleton_code: missing "epilogue" tag in the skeleton code')
 
         match_obj = re.search(self.__TCODE_TAG, code)
         if not match_obj:
-            err('missing "tested code" tag in the skeleton code')
+            err('main.tuner.skeleton_code: missing "tested code" tag in the skeleton code')
 
         match_obj = re.search(self.__COORD_TAG, code)
         if not match_obj:
-            err('missing "coordinate" tag in the skeleton code')
+            err('main.tuner.skeleton_code: missing "coordinate" tag in the skeleton code')
             
         if self.use_parallel_search:
 
             match_obj = re.search(self.__BEGIN_SWITCHBODY_TAG, code)
             if not match_obj:
-                err('error: missing "begin switch body" tag in the skeleton code')
+                err('main.tuner.skeleton_code: : missing "begin switch body" tag in the skeleton code')
         
             match_obj = re.search(self.__END_SWITCHBODY_TAG, code)
             if not match_obj:
-                err('missing "end switch body" tag in the skeleton code')
+                err('main.tuner.skeleton_code: missing "end switch body" tag in the skeleton code')
         
             match_obj = re.search(self.__SWITCHBODY_TAG, code)
             if not match_obj:
-                err('internal error: missing placement of switch body statement')
+                err('main.tuner.skeleton_code: internal error: missing placement of switch body statement')
 
             switch_body_code = match_obj.group(1)
 
             match_obj = re.search(self.__TCODE_TAG, switch_body_code)
             if not match_obj:
-                err('missing "tested code" tag in the switch body statement')
+                err('main.tuner.skeleton_code: missing "tested code" tag in the switch body statement')
             
             match_obj = re.search(self.__COORD_TAG, switch_body_code)
             if not match_obj:
-                err('missing "coordinate" tag in the switch body statement')
+                err('main.tuner.skeleton_code: missing "coordinate" tag in the switch body statement')
 
     #-----------------------------------------------------
 
-    def insertCode(self, decl_code, prologue_code, epilogue_code, tested_code_map):
+    def insertCode(self, decl_code, prologue_code, epilogue_code,
+                   begin_inner_measure_code, end_inner_measure_code, 
+                   begin_outer_measure_code, end_outer_measure_code, 
+                   tested_code_map):
         '''To insert code fragments into the skeleton code'''
 
         # check the given tested code mapping
         if len(tested_code_map) == 0:
-            err('internal error: the number of tested codes cannot be zero')
+            err('main.tuner.skeleton_code: internal error: the number of tested codes cannot be zero')
 
         if not self.use_parallel_search and len(tested_code_map) != 1:
-            err('internal error: the number of tested sequential codes must be exactly one')
+            err('main.tuner.skeleton_code: internal error: the number of tested sequential codes must be exactly one')
 
         # initialize the performance-testing code
         code = self.code
 
         # insert global definitions, prologue, and epilogue codes
         code = re.sub(self.__DECLARATIONS_TAG, decl_code, code)
-        code = re.sub(self.__PROLOGUE_TAG, prologue_code, code)
         code = re.sub(self.__EPILOGUE_TAG, epilogue_code, code)
+        
+        # TODO: Insert profiling (e.g., timing) code
+        code = re.sub(self.__BEGIN_INNER_MEASURE_TAG, begin_inner_measure_code, code)
+        code = re.sub(self.__END_INNER_MEASURE_TAG, re.sub(self.__COORD_TAG, coord_key, end_inner_measure_code), code)
+        code = re.sub(self.__BEGIN_OUTER_MEASURE_TAG, begin_outer_measure_code, code)
+        code = re.sub(self.__END_OUTER_MEASURE_TAG, re.sub(self.__COORD_TAG, coord_key, end_outer_measure_code), code)
 
         # insert the parallel code
         if self.use_parallel_search:

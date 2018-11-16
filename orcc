@@ -18,6 +18,9 @@ else:
     dirs = [os.path.join(cur_dir,'orio')]
 sys.path.extend(dirs)
 
+if 'ORIO_DEBUG' in os.environ.keys():
+    print "DEBUG: system search path:", sys.path
+
 
 # dispatch to Orio's main
 import orio.main.orio_main

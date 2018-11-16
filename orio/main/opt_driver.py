@@ -19,9 +19,10 @@ TMOD_NAME = 'orio.module'
 class OptDriver:
     '''The optimization driver whose function is to initiate the optimization process'''
 
-    def __init__(self, language='C'):
+    def __init__(self, src, language='C'):
         '''To instantiate an optimization driver'''
         self.lang = language
+        self.srcname = src
         self.ptuner = orio.main.tuner.tuner.PerfTuner(self)
         self.input_params = None
     
@@ -106,19 +107,18 @@ class OptDriver:
         '''
 
         debug('__optimizeCodeFrag: code_frag type is ' + cfrag.__class__.__name__, self)
-
+        
         # apply no optimizations to non-annotation code fragment
         if isinstance(cfrag, orio.main.code_frag.NonAnn):
-            debug("OptDriver line 79", self, level=7)
+            debug("OptDriver::__optimizeCodeFrag line 113", self, level=7)
             return [(cfrag.code, [], '')]
 
         # optimize annotated code region
         elif isinstance(cfrag, orio.main.code_frag.AnnCodeRegion):
-
-            debug("OptDriver line 85: %s" % cfrag.leader_ann.mod_name, self, level=7)
+            debug("OptDriver line 118: %s" % cfrag.leader_ann.mod_name, self, level=7)
             # initiate empirical performance tuning
             if cfrag.leader_ann.mod_name == PTUNE_NAME:
-                debug("OptDriver line 88, detected tuning spec", self, level=7)
+                debug("OptDriver line 121, detected tuning spec", self, level=7)
                 # apply empirical performance tuning
                 optimized_code_seq = self.ptuner.tune(cfrag.leader_ann.mod_code,
                                                       cfrag.leader_ann.mod_code_line_no,
@@ -144,7 +144,7 @@ class OptDriver:
 
             # initiate code transformation and generation
             else:
-                debug("OptDriver line 114, detected code annotated for tuning", self, level=7)
+                debug("OptDriver line 147, detected code annotated for tuning", self, level=7)
 
                 # recursively apply optimizations to the annotation body
                 optimized_body_code_seq = self.optimizeCodeFrags(cfrag.cfrags, perf_params)
@@ -197,8 +197,12 @@ class OptDriver:
                     
                 debug("successfully instantiated transformation class: %s.%s" %(mod_name,class_name),self)
                 
-                optimized_code = transformation.transform()
+                try:
+                    optimized_code = transformation.transform()
+                except Exception, e:
+                    err('orio.main.opt_driver: encountered an error during transformation %s:\n %s' % (transformation,e)) 
 
+                
                 # create the optimized code sequence
                 g = Globals()
                 externals = ''

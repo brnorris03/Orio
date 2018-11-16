@@ -31,6 +31,7 @@ class PerfTestCodeGen(object):
         self.validation_file = validation_file
         self.skeleton_code_file = skeleton_code_file
         self.use_parallel_search = use_parallel_search
+        self.power = False
 
         self.iparam_code = self.__genIParams(input_params)
         self.decl_code = self.__genDecls(input_decls)
@@ -319,17 +320,61 @@ class PerfTestCodeGen(object):
             decl_code += 'void %s() {\n%s\n}\n' % (self.malloc_func_name, self.malloc_code)
             #decl_code += 'void %s() {\n%s}\n'   % (self.dalloc_func_name, self.dalloc_code)
 
+        # Declaration for default timing
+        decl_code += 'double orio_t_start, orio_t_end, orio_t = (double)LONG_MAX;\n'
+        if self.power:
+            decl_code += '''
+#include "rnet_pm_api.h"
+task_op_t __wattprof_task_op;
+handle_t __wattprof_daqh;
+tag_handle_t __wattprof_total_tag;
+const char *__wattprof_conf_file = "1_conf.rnp";
+'''
+
         # generate the initialization code
         if self.init_file:
             init_code = '#include "%s"\n' % self.init_file
         else:
             init_code = 'void %s() {\n%s\n}\n' % (self.init_func_name, self.init_code)
 
+        # Default timing code
+        begin_inner_measure_code = 'orio_t_start = getClock();'
+        end_inner_measure_code = '''
+    orio_t_end = getClock();
+    orio_t = orio_t_end - orio_t_start;
+    printf("{'/*@ coordinate @*/' : %g}\\\\n", orio_t);
+    '''
+        begin_outer_measure_code = ''
+        end_outer_measure_code = ''
+        if self.power:
+            begin_outer_measure_code = '__wattprof_total_tag = power_start_measure(__wattprof_daqh,0);'
+            end_outer_measure_code = '''
+    power_end_measure(__wattprof_daqh,__wattprof_total_tag);
+    sleep(1);
+    power_stop_task(__wattprof_daqh,0);
+    power_stop_capture(__wattprof_daqh);
+    sleep(1);
+    {   
+        sample_op_t op = OP_MAX;
+        int c, channel_nums[64],num_channels;
+        __wattprof_task_op = power_get_task_opcode(__wattprof_daqh,0);
+        if (__wattprof_task_op == TASK_OP_RAW || __wattprof_task_op == TASK_OP_AGG_RAW)
+            op = OP_AVG;
+        else if(__wattprof_task_op == TASK_OP_INTEGRAL || __wattprof_task_op == TASK_OP_AGG_INTEGRAL)
+            op = OP_SUM;
+        num_channels = power_get_channel_list(__wattprof_daqh,0,channel_nums);
+        for(c = 0;c<num_channels;c++){
+            total_pow = power_get_channel_data(__wattprof_daqh,0,channel_nums[c],total_tag,op,NULL,NULL);
+        power_finalize(__wattprof_daqh);
+        rnet_pm_finalize();
+    }
+    '''
+
         # generate the validation code
         include_validation_code = ''
         validation_code = ''
         if self.validation_file:
-            include_validation_code = '#include "%s"\n' % self.validation_file
+            include_validation_code = '#include "%s"' % self.validation_file
             validation_code = '''
       if (!%s()) {
          fprintf(stderr,"validation function %s returned an error code.\\\\n");
@@ -351,6 +396,18 @@ class PerfTestCodeGen(object):
         if Globals().language == 'opencl':
             for (k, v) in Globals().metadata.iteritems():
                 prologue_code += 'TAU_METADATA("%s", "%s");\n' % (k, v)
+                
+        if self.power: 
+            prologue_code += ''' 
+    if(rnet_pm_init() <=0){
+        printf("WattProf: No active devices found! Can't measure power.\\\\n");
+    }
+    daqh = power_init(0,(char *)__wattprof_conf_file);
+    printf("Power initialization done, handle %lx...\\\\n",__wattprof_daqh);
+    power_start_capture(__wattprof_daqh);
+
+    power_start_task(__wattprof_daqh,0);
+    '''
 
         # create code for the epilogue section
         epilogue_code = ''
@@ -359,7 +416,10 @@ class PerfTestCodeGen(object):
 
         # get the performance-testing code
         ptest_code = self.ptest_skeleton_code.insertCode(global_code, prologue_code,
-                                                         epilogue_code, validation_code, code_map)
+                                                         epilogue_code, validation_code, 
+                                                         begin_inner_measure_code, end_inner_measure_code,
+                                                         begin_outer_measure_code, end_outer_measure_code,
+                                                         code_map)
 
         # return the performance-testing code
         return ptest_code
@@ -666,6 +726,7 @@ class PerfTestCodeGenFortran:
         # create code for the epilogue section
         epilogue_code = ''
 
+        # TODO: add extensible measurement similar to C
         # get the performance-testing code
         ptest_code = self.ptest_skeleton_code.insertCode(declaration_code, prologue_code,
                                                          epilogue_code, code_map)

@@ -2,12 +2,13 @@
 # The class for loop transformation module
 #
 
-import sys
+import sys, traceback
 from orio.main.util.globals import *
 
 from orio.module.module import Module
 
 import codegen, parser, transformation, ast
+from orio.module.loop import astvisitors
 
 #-----------------------------------------
 
@@ -42,6 +43,7 @@ class Loop(Module):
         t = transformation.Transformation(self.perf_params, self.verbose, self.language, self.tinfo)
         transformed_stmts = t.transform(stmts)
         
+        
         # generate code for the transformed ASTs
         indent = ' ' * self.indent_size
         extra_indent = '  '
@@ -49,6 +51,24 @@ class Loop(Module):
         transformed_code = '\n'
         for s in transformed_stmts:
             transformed_code += cgen.generate(s, indent, extra_indent)
+            
+        # Example on applying another visitor, e.g., for analysis
+        #exampleVisitor = astvisitors.ExampleVisitor()
+        #exampleVisitor.visit(transformed_stmts)
+        
+        # Count operations visitor
+        opsVisitor = astvisitors.CountingVisitor()
+        opsVisitor.visit(transformed_stmts)
+        info(str(opsVisitor))
+        
+        # CFG
+        if True:
+            try:
+                from orio.module.loop.cfg import CFGGraph
+                cfg = CFGGraph(transformed_stmts)
+            except Exception, e:
+                err('[module.loop.loop] cannot construct CFG: ',e)
+
 
         # return the transformed code
         return transformed_code

@@ -85,7 +85,7 @@ class PerfTuner:
 
         # get the axis names and axis value ranges to represent the search space
         
-        axis_names, axis_val_ranges = self.__buildCoordSystem(tinfo.pparam_params)
+        axis_names, axis_val_ranges = self.__buildCoordSystem(tinfo.pparam_params, tinfo.cmdline_params)
 
         info('%s' % axis_names)
         info('%s' % axis_val_ranges)
@@ -96,7 +96,7 @@ class PerfTuner:
         for vname, rhs in tinfo.pparam_constraints:
             pparam_constraint += ' and (%s)' % rhs
 
-        # dynamically load the search engine class
+        # dynamically load the search engine class and configure it
         
         #print tinfo.search_algo
         if Globals().extern:
@@ -133,9 +133,9 @@ class PerfTuner:
 
             debug(ptcodegen.input_params[:])
             # create the search engine
-            search_eng = search_class({'cfrags':cfrags, 
-                                       'axis_names':axis_names,          # performance parameter names
-                                       'axis_val_ranges':axis_val_ranges,  # performance parameter values
+            search_eng = search_class({'cfrags':cfrags,                     # code versions
+                                       'axis_names':axis_names,             # performance parameter names
+                                       'axis_val_ranges':axis_val_ranges,   # performance parameter values
                                        'pparam_constraint':pparam_constraint,
                                        'search_time_limit':search_time_limit, 
                                        'search_total_runs':search_total_runs, 
@@ -146,6 +146,7 @@ class PerfTuner:
                                        'use_parallel_search':use_parallel_search,
                                        'input_params':ptcodegen.input_params[:]})
 
+            
             # search for the best performance parameters
             best_perf_params, best_perf_cost = search_eng.search()
 
@@ -303,27 +304,22 @@ class PerfTuner:
 
     #-------------------------------------------------
 
-    def __buildCoordSystem(self, perf_params):
+    def __buildCoordSystem(self, perf_params, cmdline_params):
         '''Return information about the coordinate systems that represent the search space'''
 
         debug("BUILDING COORD SYSTEM")
+
         # get the axis names and axis value ranges
         axis_names = []
         axis_val_ranges = []
         for pname, prange in perf_params:
             axis_names.append(pname)
-            
-            # remove duplications and then perform sorting
-            n_prange = []
-            for r in prange:
-                if r not in n_prange:
-                    n_prange.append(r)
-            prange = n_prange
-            prange.sort()
-            axis_val_ranges.append(prange)
+            axis_val_ranges.append(self.__sort(prange))
 
-        
-        
+        for pname, prange in cmdline_params:
+            axis_names.append('__cmdline_' + pname)
+            axis_val_ranges.append(self.__sort(prange))
+
         self.num_params=len(axis_names)
         self.num_configs=1
         self.num_bin=0
@@ -398,5 +394,14 @@ class PerfTuner:
 #            os.system("chmod +x %s" % nomadfileobj)
 
         return (axis_names, axis_val_ranges)
-        
+    
+    def __sort(self, prange):
+        # Remove duplications and then perform sorting
+        n_prange = []
+        for r in prange:
+            if r not in n_prange:
+                n_prange.append(r)
+        prange = n_prange
+        prange.sort()
+        return prange
 

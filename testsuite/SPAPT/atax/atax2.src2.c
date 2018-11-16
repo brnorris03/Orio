@@ -2,7 +2,7 @@
   def build
   {
   arg build_command = 'gcc -O3 -fopenmp -DDYNAMIC'; 
-  arg libs = '-lm -lrt';
+  arg libs = '-lm '; #-lrt';
   }
   
   def performance_counter  

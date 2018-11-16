@@ -80,6 +80,10 @@ separate tuning specification file (orcc -v -s axpy5.spec axpy5-nospec.c) and
 another with two transformations specified using a Composite annotation
 (orcc -v axpy5a.c).
 
+
+To use machine learning based search (Mlsearch), install numpy, panda, scikit-learn modules
+
+
 If Orio reports problems building the code, adjust the compiler settings in 
 the tuning spec included in the axpy5.c.
 

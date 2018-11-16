@@ -217,37 +217,41 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
     def getDeviceProps(self):
       '''Get device properties'''
 
-      # write the query code
-      qsrc  = "enum_cuda_props.cu"
-      qexec = qsrc + ".o"
-      qout  = qexec + ".props"
-      if not os.path.exists(qout):
-        # check for nvcc
-        qcmd = 'which nvcc'
-        status = os.system(qcmd)
-        if status != 0:
-          g.err("%s: could not locate nvcc with '%s'" % (self.__class__, qcmd))
-
-        try:
-          f = open(qsrc, 'w')
-          f.write(CUDA_DEVICE_QUERY_SKELET)
-          f.close()
-        except:
-          g.err('%s: cannot open file for writing: %s' % (self.__class__, qsrc))
-        
-        # compile the query
-        cmd = 'nvcc -o %s %s' % (qexec, qsrc)
-        status = os.system(cmd)
-        if status:
-          g.err('%s: failed to compile cuda device query code: "%s"' % (self.__class__, cmd))
-
-        # execute the query
-        runcmd = './%s' % (qexec)
-        status = os.system(runcmd)
-        if status:
-          g.err('%s: failed to execute cuda device query code: "%s"' % (self.__class__, runcmd))
-        os.remove(qsrc)
-        os.remove(qexec)
+      # First, check if user specified the device properties file
+      if self.tinfo.device_spec_file:
+        qout = self.tinfo.device_spec_file
+      else:
+          # generate the query code
+          qsrc  = "enum_cuda_props.cu"
+          qexec = qsrc + ".o"
+          qout  = qexec + ".props"
+          if not os.path.exists(qout):
+            # check for nvcc
+            qcmd = 'which nvcc'
+            status = os.system(qcmd)
+            if status != 0:
+              g.err("%s: could not locate nvcc with '%s'" % (self.__class__, qcmd))
+    
+            try:
+              f = open(qsrc, 'w')
+              f.write(CUDA_DEVICE_QUERY_SKELET)
+              f.close()
+            except:
+              g.err('%s: cannot open file for writing: %s' % (self.__class__, qsrc))
+            
+            # compile the query
+            cmd = 'nvcc -o %s %s' % (qexec, qsrc)
+            status = os.system(cmd)
+            if status:
+              g.err('%s: failed to compile cuda device query code: "%s"' % (self.__class__, cmd))
+    
+            # execute the query
+            runcmd = './%s' % (qexec)
+            status = os.system(runcmd)
+            if status:
+              g.err('%s: failed to execute cuda device query code: "%s"' % (self.__class__, runcmd))
+            os.remove(qsrc)
+            os.remove(qexec)
         
       # read device properties
       props = {}
@@ -276,9 +280,10 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         bcmd = 'nvcc'
       if bcmd.find('-arch') == -1:
         bcmd += ' -arch=sm_' + str(props['major']) + str(props['minor'])
-      if self.perf_params.has_key('CFLAGS') and bcmd.find('@CFLAGS') == -1:
+      if self.perf_params is not None and self.perf_params.has_key('CFLAGS') and bcmd.find('@CFLAGS') == -1:
         bcmd += ' @CFLAGS'
-      self.tinfo.build_cmd = bcmd
+      if self.tinfo is not None:
+        self.tinfo.build_cmd = bcmd
 
       # return queried device props
       return props
@@ -291,6 +296,8 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         g.debug('orio.module.loop.submodule.cuda.CUDA: starting CUDA transformations')
 
         # perform transformation
+        if self.props is None:
+            self.props = self.getDeviceProps()
         t = transformation.Transformation(stmt, self.props, targs, self.tinfo)
         transformed_stmt = t.transform()
 

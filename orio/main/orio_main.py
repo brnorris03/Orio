@@ -80,10 +80,12 @@ def start(argv, lang):
                     f = open(g.spec_filename, 'r')
                     tspec_prog = f.read()
                     f.close()
-                except:
-                    err('orio.main.main: cannot open file for reading: %s' % g.spec_filename)
+                except Exception, e:
+                    err('orio.main.main: Exception %s. Cannot open file for reading: %s' % \
+                        (e,g.spec_filename))
+                else:
                 #tuning_spec_dict = tspec.tspec.TSpec().parseProgram(tspec_prog)
-                info('----- finish reading the tuning specification -----')
+                    info('----- finished reading the tuning specification -----')
                 
             # Just add the tuning spec to the file being parsed
             if tspec_prog:
@@ -103,7 +105,7 @@ def start(argv, lang):
             # perform optimizations based on information specified in the annotations
             if annotations_found:
                 info('\n----- begin optimizations -----')
-                odriver = opt_driver.OptDriver(language=language)
+                odriver = opt_driver.OptDriver(src=srcfile, language=language)
                 optimized_code_seq = odriver.optimizeCodeFrags(cfrags, True)
                 info('----- finish optimizations -----')
         
@@ -119,6 +121,7 @@ def start(argv, lang):
 
                 optimized_code, _, externals = optimized_code_seq[0]
                 if g.out_filename: out_filename = g.out_filename
+                g.tempfilename = out_filename
                 info('--> writing output to: %s' % out_filename)
                 try:
                     f = open(out_filename, 'w')

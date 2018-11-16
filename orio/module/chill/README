@@ -11,28 +11,35 @@ University of Oregon
 norris@cs.uoregon.edu 
 
 CHiLL expansion for ORIO
-date: 05/26/2014
+date: 10/16/2014
 
 
 Updates:
 
+	10-16-14:	Cuda command accepts performance parameters to study different thread and block decomposition.
+			If two performance parameters for the grid are the same, it won't be tested.
+			Fixed some bugs related to code cleaning.
+			Fuse added
+			Distribute added
+
 	05-26-14:	Unroll added (see How to write annotations).
-			Tile and Unroll accept values from performance_param or the user can input the exact amount.
+			Tile and Unroll accepts the values from performance_param or the user can input the exact amount.
 
 	05-24-14:	New interface for adding cuda CHiLL commands (see How to write annotations).
 			Cleaner implementation
 			Use the input_vars and input_params definitions as defines and variables information.
-			Currently allows cuda, tile, permute and copy to registers, other functions comming in the future.
-			If more than 1 function is created, the interface automatically reorganize the code in the following way:
+			Currently, it allows cuda, tile, permute and copy to registers, other functions comming in the future.
+			If 2 or more kernels are created, the interface automatically reorganize the code in the following way:
 
 				cuda-mallocs
 				cuda-mem-copy (host to device)
-				kernels
+				kernel calls
 				cuda-mem-copy (device to host)
 				cuda-free
-			  This permites better performance.
 
-			The timing information provided by Orio is an overall information of the fastest run. The tool was extended to 
+			  This optimization permites better performance.
+
+			The timing information provided by Orio is an overall information of the fastest run. The module was extended to 
 			    create an extra folder (times) with the output of each implemenation and the time spent on each kernel. 
 			    From here it is easy to implement a bash or an expansion for Orio to have a more accurate measurment (future work).
 
@@ -40,7 +47,7 @@ Files:
 
 	Orio/orio/module/chill:
 
-		chill.py		| Module which take CHiLL annotaions from c file and call CUDA-CHiLL
+		chill.py		| Module that takes CHiLL annotaions from c file and call CUDA-CHiLL
 		README			| This file
 
 	Orio/testsuit/sandbox/chill/mm
@@ -63,8 +70,8 @@ Files:
 How to run:
 
 	This is a module that allows ORIO call CHiLL. Examples are located at 
-	Orio/testsuit/sandbox/chill. To test example run:  orcc -v file.c. This 
-	module will create three extra folders and three extra files:
+	Orio/testsuit/sandbox/chill. To run Orio with a file:  orcc -v file.c. \
+        This module will create three extra folders and three extra files:
 
 		- recipes:	  all recipes output will be located here
 		- outputs:	  outputs from recipies will be located here
@@ -95,17 +102,23 @@ How to write annotation:
 
 		-cuda(#,block={bx,by},thread={tx,ty})		Generate CUDA kernel with thread/block decomposition specified
 								# = integer representing the loop nest to be turned into CUDA
-								bx = string for CUDA blocks in X dimension
-								by = string for CUDA blocks in Y dimension
-								tx = string for CUDA threads in X dimension
-								ty = string for CUDA threads in Y dimension
+								bx = string for CUDA blocks in X dimension, or performance_param array
+								by = string for CUDA blocks in Y dimension, or performance_param array
+								tx = string for CUDA threads in X dimension, or performance_param array
+								ty = string for CUDA threads in Y dimension, or performance_param array
 	
 		-unroll(#,index,performace_param)		Unroll loop "index" at statement #
 								# = integer representing the loop nest or statement
 								index = loop index to be unrolled
 								performance_param = Variable from performance_params or exact amount (integer)
+
+		-fuse(statements)				Fuse the loops for the list of statements
+								statements = list of statements to be fused
+
+		-distribute(loop_level)				Distributes the loops at specified loop level
+								loop_level = integer representing the loop level
 		
-	Close the CHiLL annotations with  ") @*/" the add your code. After the code add "/*@ end CHiLL @*/".
+	Close the CHiLL annotations with  ") @*/", then add your code. After the code, add "/*@ end CHiLL @*/".
 	These are preliminary implementation for creating annotaiton related to CHiLL in a simpler manner. Make sure
 	to always declare the statements (stm) before using them. Check the examples to understand these annotations.
 	It is recommended to check tensor.c since it have multiple loop nests.
