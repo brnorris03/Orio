@@ -6,7 +6,7 @@ void axpy_5(int N, double *y,
 
 /*@ begin PerfTuning (
  def build {
-   arg build_command = 'gcc';
+   arg build_command = 'cc';
    #arg libs = '-lrt';  # Only needed on linux
  } 
  def performance_counter {
