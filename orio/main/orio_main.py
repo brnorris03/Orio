@@ -50,8 +50,8 @@ def start(argv, lang):
         retcode = os.system(cmd)
         if retcode != 0: sys.exit(1)
 
-    if not g.disable_orio: info('\n====== START ORIO ======')
-
+    if not g.disable_orio: always_print('\n====== START ORIO: %s ======' % timestamp(), end='')
+    final_output_file = None
     annotated_files = 0 # for multi-file tuning
     for srcfile, out_filename in g.src_filenames.items():
         annotations_found = False
@@ -131,6 +131,7 @@ def start(argv, lang):
                 except:
                     err('orio.main.main:  cannot open file for writing: %s' % out_filename)
                 info('----- finished writing the output file(s) -----')
+                final_output_file = out_filename
         # ----- end of "if not g.disable_orio:" -----
 
         # if orio was invoked as a compiler wrapper, perform the original command
@@ -154,7 +155,7 @@ def start(argv, lang):
                 os.system('mv %s %s' % (genobjfile,objfile))
     # ----- end of "for srcfile, out_filename in g.src_filenames.items():" -----
 
-    if not g.disable_orio: info('\n====== END ORIO ======')
+    if not g.disable_orio: always_print('\n====== END ORIO: %s [output: %s, log: %s] ======' % (timestamp(),final_output_file,g.logfile))
     # remove tuning logs for source files without any annotations
     if not g.disable_orio and annotated_files == 0: os.remove(g.logfile)
     sys.exit(retcode)
