@@ -93,13 +93,14 @@ class Randomsearch(orio.main.tuner.search.search.Search):
         #default code without transformation
         neigh_coords=[[0]*self.total_dims]
 
-        while len(uneval_coords) < self.init_samp:
+        while len(uneval_coords) < self.init_samp and len(uneval_coords) <= self.total_runs:
             coord = self.__getNextCoord(coord_records, neigh_coords, init)
             coord_key = str(coord)
 
             if not coord or len(coord) == 0:
                 break
 
+            # TODO: the valid point generation is extremely slow, reimplement
             if coord_key not in coords:
                 coords[coord_key]=coord
                 # if the given coordinate is out of the search space
@@ -126,7 +127,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
                 temp=[]
                 for k in sorted(perf_params):
                     temp.append(perf_params[k])
-                debug('sample-point:'+str(coord))
+                debug('sample-point:'+str(coord),obj=self,level=6)
                 uneval_coords.append(coord)
                 uneval_params.append(perf_params)
 

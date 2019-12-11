@@ -1,14 +1,14 @@
 #
-# This orio module does not perform any significant code transformations at all.
-# The purpose of this orio module is merely to provide a simple example to application developers
-# for how to extend Orio with a new program transformation orio.module.
+# This Orio module does not perform any significant code transformations at all.
+# The purpose of this Orio module is to simply preserve global declarations in the generated code without
+# embedding them in the main function (such embedding is not supported by some compilers).
 #
 
 import orio.module.module
 
 #-----------------------------------------
 
-class SimplyRewrite(orio.module.module.Module):
+class Preserve(orio.module.module.Module):
     '''A simple rewriting module.'''
 
     def __init__(self, perf_params, module_body_code, annot_body_code, line_no, indent_size, language='C', tinfo=None):
@@ -20,7 +20,7 @@ class SimplyRewrite(orio.module.module.Module):
     #---------------------------------------------------------------------
     
     def transform(self):
-        '''To simply rewrite the annotated code'''
+        '''Simply output the annotated code without changing it.'''
 
         # to create a comment containing information about the class attributes
         comment = '''

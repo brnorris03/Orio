@@ -71,7 +71,7 @@ SEQ_DEFAULT = r'''
 
 extern double getClock(); 
 
-int main(int argc, char *argv[]) {
+//int main(int argc, char *argv[]) { // part of declaration generation
   /*@ declarations @*/  
   /*@ prologue @*/
 
@@ -161,8 +161,8 @@ typedef struct {
   double tm;
 } TimingInfo;
 
-int main(int argc, char *argv[])
-{
+//int main(int argc, char *argv[]) { // part of declaration generation
+  /*@ declarations @*/
   int numprocs, myid, _i;
   TimingInfo mytimeinfo;
   TimingInfo *timevec;
@@ -189,7 +189,6 @@ int main(int argc, char *argv[])
 
   if (myid == 0) timevec = (TimingInfo*) malloc(numprocs * sizeof(TimingInfo));
 
-  /*@ declarations @*/
   /*@ prologue @*/
   
   switch (myid)

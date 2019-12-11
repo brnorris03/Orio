@@ -10,6 +10,7 @@ import orio.main.code_frag, orio.main.dyn_loader, orio.main.tuner.tuner
 
 # the name of the performance-tuning annotation
 PTUNE_NAME = 'PerfTuning'
+PRESERVE_NAME = 'Preserve'
 
 # the name of the module containing various code transformations
 TMOD_NAME = 'orio.module'
