@@ -176,7 +176,7 @@ class ThreadBlock(orio.main.tuner.search.search.Search):
         Return the next neighboring coordinate to be considered in the search space.
         Return None if all coordinates in the search space have been visited.
         
-        @return: the
+        @return: the coordinate -- a list of values, one per parameter
         '''
         next_coord = coord[:]
         for i in range(0, self.total_dims):
@@ -190,6 +190,6 @@ class ThreadBlock(orio.main.tuner.search.search.Search):
                 if i == self.total_dims - 1:
                     return None
 
-	print next_coord
+	    debug(msg="next coordinate " + str(next_coord),level=5)
         return next_coord
 
