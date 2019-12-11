@@ -36,7 +36,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
 
         # set all algorithm-specific arguments to their default values
         self.local_distance = 0
-        self.total_runs = 100
+        #self.total_runs = 100   # set in Search superclass
 
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
@@ -45,8 +45,10 @@ class Randomsearch(orio.main.tuner.search.search.Search):
         self.init_samp = 2*self.total_runs   # BN: used to be hard-coded to 10,000
         # complain if both the search time limit and the total number of search runs are undefined
         if self.time_limit <= 0 and self.total_runs <= 0:
-            err(('orio.main.tuner.search.randomsearch.randomsearch: %s search requires either (both) the search time limit or (and) the ' +
-                    'total number of search runs to be defined') % self.__class__.__name__)
+            err(('orio.main.tuner.search.randomsearch.randomsearch: %s search requires either (or both) ' +
+                 'of the search parameters time limit in seconds (time_limit) or/and the ' +
+                 'total number of search runs (total_runs) to be defined in the search {} section' +
+                 'of the tuning spec.') % self.__class__.__name__)
 
     def searchBestCoord(self, startCoord=None):
         '''
@@ -129,9 +131,9 @@ class Randomsearch(orio.main.tuner.search.search.Search):
                 uneval_params.append(perf_params)
 
 
-        print len(coords)
-        print len(uneval_coords)
-        print len(uneval_params)
+        info('Size of search space: ' + str(len(coords)))
+        info('Unevaluated coordinates: ' + str(len(uneval_coords)))
+        info('Unevaluated parameters: ' + str(len(uneval_params)))
 
         eval_coords = []
         eval_params = []
@@ -140,7 +142,8 @@ class Randomsearch(orio.main.tuner.search.search.Search):
 
         indices=random.sample(range(1,len(uneval_coords)),  self.total_dims)
         indices.insert(0,0)
-        print indices
+        debug(msg='Current indices: ' + str(indices), obj=self, level=2)
+        
 
         all_indices=set(range(len(uneval_coords)))
         init_indices=set(indices)
@@ -156,7 +159,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
             eval_coords.append(coord)
             eval_params.append(params)
 
-            print params
+            debug(msg='Parameter values: ' + str(params), obj=self, level=2)
             runs += 1
 
             perf_costs={}
@@ -216,8 +219,8 @@ class Randomsearch(orio.main.tuner.search.search.Search):
                 break
 
 
-        print best_perf_cost
-        print best_coord
+        info('Best performance = ' + str(best_perf_cost))
+        info('Best coordinate = ' + str(best_coord))
         end_time = time.time()
         search_time=start_time-end_time
         speedup=float(eval_cost[0])/float(best_perf_cost)
@@ -380,7 +383,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
 
         # check for algorithm-specific arguments
         for vname, rhs in self.search_opts.iteritems():
-            print vname, rhs
+            debug(msg=str(vname)+'=' +str(rhs), obj=self, level=3)
             # local search distance
             if vname == self.__LOCAL_DIST:
                 if not isinstance(rhs, int) or rhs < 0:

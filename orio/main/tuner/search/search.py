@@ -253,6 +253,7 @@ class Search:
         code_map = {}
         transformed_code_seq = []
         for coord in uneval_coords:
+            if not Globals().disable_orio: always_print('.',end='')
             coord_key = str(coord)
             
             perf_params = self.coordToPerfParams(coord)
