@@ -3,7 +3,7 @@
 # (c) 2010 UChicago Argonne, LLC
 # For copying information, see the file LICENSE
 
-import logging, os, sys, traceback, re
+import logging, os, sys, traceback, re, socket, datetime
 from matplotlib_logger import MatplotlibLogger
 from orio.main.tuner.stats import *
 
@@ -26,6 +26,7 @@ class Globals:
             self.metadata = {'loop_transformations':[]}
             self.counter = 0
 
+            # TODO -- these do not belong here, need to be in a module
             self.funcDec = ''           #Added by Axel Y. Rivera (UofU)
             self.funcName = ''            #Added by Axel Y. Rivera (UofU)
             self.input_params = {}      #Added by Axel Y. Rivera (UofU)
@@ -307,7 +308,15 @@ class TestException(Exception):
         s= str(self.message)
         if self.Errors: s += '\n' + str(self.Errors)
         return s
-       
+    
+"""
+Get consistent timestamp strings
+"""
+def timestamp():
+    hostname = socket.gethostname()
+    timestamp = hostname + datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    return timestamp
+
 """ 
 Various error-handling related miscellaneous
 """
@@ -326,8 +335,14 @@ def warn(msg='',end = '\n', pre='', post=''):
 
 def info(msg='', end='\n', pre='', post='', logging=True):
     if Globals().verbose:
-        sys.stdout.write(pre + msg + post + end)
+        sys.stdout.write('INFO: ' + pre + msg + post + end)
     
+    if Globals().logging:
+        Globals().loggers['TuningLog'].info(msg)
+
+def always_print(msg='', end='\n', pre='', post='', logging=True):
+    sys.stdout.write(pre + msg + post + end)
+    sys.stdout.flush()
     if Globals().logging:
         Globals().loggers['TuningLog'].info(msg)
 
