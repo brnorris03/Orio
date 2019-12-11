@@ -83,7 +83,7 @@ class CFGGraph(graph.Graph):
         f.write(buf)
         f.close()
         
-        print buf
+        debug(msg=buf,obj=self,level=4)
         return buf
         
 
