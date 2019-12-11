@@ -59,7 +59,7 @@ class Loop(Module):
         # Count operations visitor
         opsVisitor = astvisitors.CountingVisitor()
         opsVisitor.visit(transformed_stmts)
-        info(str(opsVisitor))
+        debug(str(opsVisitor),level=3)
         
         # CFG
         if True:
