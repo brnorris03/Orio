@@ -68,7 +68,7 @@ class PerfTestCodeGen(object):
          - declarations for the input variables
         '''
 
-        # generate the input variable declarations
+        # generate the input variable declarations inside main()
         decls = []
         for is_static, vtype, vname, vdims, rhs in input_decls:
 
@@ -312,15 +312,19 @@ class PerfTestCodeGen(object):
         # generate the macro definition codes for the input parameters
         iparam_code = self.iparam_code
 
+        global_code = ''
+        global_code += iparam_code + '\n'  # this has #defines that may be used in the mallocs (below)
         # generate the declaration code
         if self.decl_file:
-            decl_code = '#include "%s"\n' % self.decl_file
+            global_code += '#include "%s"\n' % self.decl_file
         else:
-            decl_code = self.decl_code + '\n'
-            decl_code += 'void %s() {\n%s\n}\n' % (self.malloc_func_name, self.malloc_code)
+            #decl_code = self.decl_code + '\n'
+            global_code += self.decl_code + '\n'
+            global_code += 'void %s() {\n%s\n}\n' % (self.malloc_func_name, self.malloc_code)
             #decl_code += 'void %s() {\n%s}\n'   % (self.dalloc_func_name, self.dalloc_code)
 
         # Declaration for default timing
+        decl_code = ''
         decl_code += 'double orio_t_start, orio_t_end, orio_t = (double)LONG_MAX;\n'
         if self.power:
             decl_code += '''
@@ -337,6 +341,7 @@ const char *__wattprof_conf_file = "1_conf.rnp";
         else:
             init_code = 'void %s() {\n%s\n}\n' % (self.init_func_name, self.init_code)
 
+        init_code += 'int main (int argc, char *argv[]) {\n'
         # Default timing code
         begin_inner_measure_code = 'orio_t_start = getClock();'
         end_inner_measure_code = '''
@@ -382,10 +387,9 @@ const char *__wattprof_conf_file = "1_conf.rnp";
       }''' % (self.validation_func_name, self.validation_func_name)
         
         # create code for the global definition section
-        global_code = ''
-        global_code += iparam_code + '\n'
-        global_code += decl_code + '\n'
+
         global_code += init_code + '\n'
+        global_code += decl_code + '\n'
         global_code += include_validation_code + '\n'
 
         # create code for the prologue section
