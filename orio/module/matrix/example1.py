@@ -17,9 +17,9 @@ except:
  
 # Errors are stored in the mparser.lex.errors list 
 if len(mparser.lex.errors) == 0:
-  print >>sys.stdout, 'Successfully parsed %s' % filename
+  sys.stdout.write('Successfully parsed %s' % filename)
 else:
-  print '*** Errors\n', ' '.join(mparser.lex.errors)
+  sys.stderr.write('*** Errors\n %s' % ' '.join(mparser.lex.errors)
 
     
 

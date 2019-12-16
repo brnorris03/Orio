@@ -127,7 +127,7 @@ class CmdParser:
                                        'c:dehko:p:rs:vx',
                                        ['pre-command=','debug','config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=', 
                                         'output-prefix=', 'rename-objects',  'spec=', 'stop-on-error', 'verbose', 'extern', 'validate', 'post-command=', 'meta'])
-        except Exception, e:
+        except Exception as e:
             sys.stderr.write('Orio command-line error: %s' % e)
             sys.stderr.write(USAGE_MSG + '\n')
             sys.exit(1)

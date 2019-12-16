@@ -251,14 +251,13 @@ class CUDACFG(orio.main.tuner.search.search.Search):
             #sys.exit()
             try:
                 perf_costs = self.getPerfCosts(coords)
-            except Exception, e:
+            except Exception as e:
                 perf_costs[str(coords[0])]=[self.MAXFLOAT]
                 info('FAILED: %s %s' % (e.__class__.__name__, e))
                 fruns +=1
             # compare to the best result
             pcost_items = perf_costs.items()
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
-            #print 'pcostitems', pcost_items
             for i, (coord_str, pcost) in enumerate(pcost_items):
                 if type(pcost) == tuple: (perf_cost,_) = pcost    # ignore transfer costs -- GPUs only
                 else: perf_cost = pcost
@@ -272,7 +271,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
                     except:
                         mean_perf_cost=perf_cost
                 else:
-                    print 'Perf cost', perf_cost
+                    debug('Perf cost %f' % perf_cost, obj=self)
                     mean_perf_cost = perf_cost
                     
                 transform_time=self.getTransformTime(coord_key)
@@ -398,9 +397,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         hcoord = self.__hashCoord(coord)
         for row in self.instmixdata[1:]:
             if not row: continue
-            #print coord, row[ind], hcoord, row[-2]
+            #debug("%s %d %s %s" % (str(coord), row[ind], str(hcoord), str(row[-2]))
             if not row or hcoord != row[-2]: continue
-            #debug("Time for this coord: %f" % float(row[-1]))
+            debug("Time for this coord: %f" % float(row[-1]))
             return float(row[-1])
-
-        

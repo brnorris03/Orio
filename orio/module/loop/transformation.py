@@ -93,7 +93,7 @@ class Transformation:
                     
                 try:
                     transformed_stmt = t.transform()
-                except Exception, e:
+                except Exception as e:
                     err(('orio.module.loop.transformation:%s: encountered an error during transformation of ' +
                             'statement: "%s"\n --> %s: %s') % (stmt.line_no, class_name,e.__class__.__name__, e), 0, False)
                     raise Exception, e

@@ -84,7 +84,10 @@ resultlimit = 40               # Size limit of results when running in debug mod
 
 pickle_protocol = 0            # Protocol to use when writing pickle files
 
-import re, types, sys, os.path
+import os.path
+import sys
+import types
+import orio.tool.ply.lex as lex
 
 # Compatibility function for python 2.6/3.0
 if sys.version_info[0] < 3:
@@ -99,14 +102,6 @@ try:
     MAXINT = sys.maxint
 except AttributeError:
     MAXINT = sys.maxsize
-
-# Python 2.x/3.0 compatibility.
-def load_ply_lex():
-    if sys.version_info[0] < 3:
-        import lex
-    else:
-        import ply.lex as lex
-    return lex
 
 # This object is a stand-in for a logging object created by the 
 # logging module.   PLY will use this by default to create things
@@ -877,7 +872,6 @@ class LRParser:
 
         # If no lexer was given, we will try to use the lex module
         if not lexer:
-            lex = load_ply_lex()
             lexer = lex.lexer
         
         # Set up the lexer and parser objects on pslice
@@ -2496,7 +2490,7 @@ class LRGeneratedTable(LRTable):
                                     st_action[a] = j
                                     st_actionp[a] = p
 
-            # Print the actions associated with each terminal
+            # Output the actions associated with each terminal
             _actprint = { }
             for a,p,m in actlist:
                 if a in st_action:
@@ -2504,7 +2498,7 @@ class LRGeneratedTable(LRTable):
                         log.info("    %-15s %s",a,m)
                         _actprint[(a,m)] = 1
             log.info("")
-            # Print the actions that were not used. (debugging)
+            # Output the actions that were not used. (debugging)
             not_used = 0
             for a,p,m in actlist:
                 if a in st_action:
@@ -3154,7 +3148,7 @@ def yacc(method='LALR', debug=yaccdebug, module=None, tabmodule=tab_module, star
             errorlog.warning("Token '%s' defined, but not used", term)
             debuglog.info("    %s", term)
 
-    # Print out all productions to the debug log
+    # Output all productions to the debug log
     if debug:
         debuglog.info("")
         debuglog.info("Grammar")

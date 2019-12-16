@@ -28,7 +28,7 @@ class Pack(SubModule):
             # evaluate the RHS expression
             try:
                 rhs = eval(str(rhs), perf_params)
-            except Exception, e:
+            except Exception as e:
                 g.err(__name__+': at line %s, failed to evaluate the argument expression: %s\n --> %s: %s'
                       % (line_no, rhs, e.__class__.__name__, e))
 

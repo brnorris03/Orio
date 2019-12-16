@@ -9,21 +9,21 @@ def printFloats(ls):
         if i: s+=', '
         s+='%2.3f' % f
     s+=']'
-    print s
+    print(s)
 
 def runExp(nthreadss, cc, src_file, flags, libs):
     compile_cmd = '%s %s %s %s' % (cc, flags, src_file, libs)
-    print '*************************************'
-    print compile_cmd
-    print '*************************************'
+    print('*************************************')
+    print(compile_cmd)
+    print('*************************************')
     os.system(compile_cmd)
 
     rtimes = []
     for nt in nthreadss:
         run_cmd = 'export OMP_NUM_THREADS=%s; ./a.out' % (nt)
-        print '*************************************'
-        print run_cmd
-        print '*************************************'
+        print('*************************************')
+        print(run_cmd)
+        print('*************************************')
         f = os.popen(run_cmd)
         output = f.read()
         f.close()
@@ -61,9 +61,9 @@ def myDiff(fname1, fname2):
                 n1=eval(n1)
                 n2=eval(n2)
             except:
-                print 'error: cannot evaluate'
-                print 'n1=%s' % n1
-                print 'n2=%s' % n2
+                print('error: cannot evaluate')
+                print('n1=%s' % n1)
+                print('n2=%s' % n2)
                 sys.exit(1)
             d=n1-n2
             if not (-1<d<1):
@@ -85,10 +85,10 @@ def checkCorrectness(optflag, arrtype):
     N=5000
     compile_cmd = (('gcc -DDYNAMIC -O0 -DREPS=1 -DN=%s -DTEST bicgkernel.matlab.c -lm') % N)
     run_cmd = 'export OMP_NUM_THREADS=1; ./a.out'
-    print '***********************'
-    print compile_cmd
-    print run_cmd
-    print '***********************'
+    print('***********************')
+    print(compile_cmd)
+    print(run_cmd)
+    print('***********************')
     os.system(compile_cmd)
     f = os.popen(run_cmd)
     output = f.read()
@@ -106,10 +106,10 @@ def checkCorrectness(optflag, arrtype):
         compile_cmd = (('icc %s %s -openmp -DREPS=1 -DN=%s -DTEST %s -lm') % 
                        (arrtype, optflag, N, fname))
         run_cmd = 'export OMP_NUM_THREADS=1; ./a.out'
-        print '***********************'
-        print compile_cmd
-        print run_cmd
-        print '***********************'
+        print('***********************')
+        print(compile_cmd)
+        print(run_cmd)
+        print('***********************')
         os.system(compile_cmd)
         f = os.popen(run_cmd)
         output = f.read()
@@ -117,21 +117,21 @@ def checkCorrectness(optflag, arrtype):
         f = open(('output_%s.out' % fname), 'w')
         f.write(output)
         f.close()
-        print '*************************************'
-        print '.... comparing results to the base'
-        print '*************************************'
+        print('*************************************')
+        print('.... comparing results to the base')
+        print('*************************************')
         is_correct, diffs, total_diffs, total_nums = myDiff('output_base', ('output_%s.out' % fname))
         if not is_correct:
             percent=(1.0*total_diffs)/total_nums
-            print 'error: -----------INCORRECT RESULTS-----------'
-            print '---------- total numbers=%s---------' % total_nums
-            print '---------- total different numbers=%s (%s)---------' % (total_diffs, percent)
-            print '----------- inaccuracy differences -----------'
+            print('error: -----------INCORRECT RESULTS-----------')
+            print('---------- total numbers=%s---------' % total_nums)
+            print('---------- total different numbers=%s (%s)---------' % (total_diffs, percent))
+            print('----------- inaccuracy differences -----------')
             for d in diffs:
-                print ' %s ' % d,
-            print '\n'
+                print(' %s ' % d, end=' ')
+            print('\n')
         else:
-            print '-------PASSED CORRECTNESS CHECKING--------'
+            print('-------PASSED CORRECTNESS CHECKING--------')
 
 # correctness checking
 OPTFLAG = '-O3'
@@ -187,28 +187,28 @@ if 1:
         mflopss_orio_dynamic.extend(countFlops(N,rtimes))
 
 
-    print '--- Parallel: seconds (static arrays) ---'
-    print 'matlab=',
+    print('--- Parallel: seconds (static arrays) ---')
+    print('matlab=', end=' ')
     printFloats(rtimes_matlab_static)
-    print 'orio=',
+    print('orio=', end=' ')
     printFloats(rtimes_orio_static)
 
-    print '--- Parallel: Mflops/sec (static arrays) ---'
-    print 'matlab=',
+    print('--- Parallel: Mflops/sec (static arrays) ---')
+    print('matlab=', end=' ')
     printFloats(mflopss_matlab_static)
-    print 'orio=',
+    print('orio=', end=' ')
     printFloats(mflopss_orio_static)
 
-    print '--- Parallel: seconds (dynamic arrays) ---'
-    print 'matlab=',
+    print('--- Parallel: seconds (dynamic arrays) ---')
+    print('matlab=', end=' ')
     printFloats(rtimes_matlab_dynamic)
-    print 'orio=',
+    print('orio=', end=' ')
     printFloats(rtimes_orio_dynamic)
 
-    print '--- Parallel: Mflops/sec (dynamic arrays) ---'
-    print 'matlab=',
+    print('--- Parallel: Mflops/sec (dynamic arrays) ---')
+    print('matlab=', end=' ')
     printFloats(mflopss_matlab_dynamic)
-    print 'orio=',
+    print('orio=', end=' ')
     printFloats(mflopss_orio_dynamic)
 
     
@@ -261,27 +261,27 @@ if 1:
         rtimes_orio_dynamic.append(rtimes[0])
         mflopss_orio_dynamic.append(p[0])
 
-    print '--- Sequential: seconds (static arrays) ---'
-    print 'matlab=',
+    print('--- Sequential: seconds (static arrays) ---')
+    print('matlab=', end=' ')
     printFloats(rtimes_matlab_static)
-    print 'orio=',
+    print('orio=', end=' ')
     printFloats(rtimes_orio_static)
 
-    print '--- Sequential: Mflops/sec (static arrays) ---'
-    print 'matlab=',
+    print('--- Sequential: Mflops/sec (static arrays) ---')
+    print('matlab=', end=' ')
     printFloats(mflopss_matlab_static)
-    print 'orio=',
+    print('orio=', end=' ')
     printFloats(mflopss_orio_static)
 
-    print '--- Sequential: seconds (dynamic arrays) ---'
-    print 'matlab=',
+    print('--- Sequential: seconds (dynamic arrays) ---')
+    print('matlab=', end=' ')
     printFloats(rtimes_matlab_dynamic)
-    print 'orio=',
+    print('orio=', end=' ')
     printFloats(rtimes_orio_dynamic)
 
-    print '--- Sequential: Mflops/sec (dynamic arrays) ---'
-    print 'matlab=',
+    print('--- Sequential: Mflops/sec (dynamic arrays) ---')
+    print('matlab=', end=' ')
     printFloats(mflopss_matlab_dynamic)
-    print 'orio=',
+    print('orio=', end=' ')
     printFloats(mflopss_orio_dynamic)
 

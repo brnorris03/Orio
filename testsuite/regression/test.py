@@ -61,9 +61,9 @@ class MultiColumnOutput:
             colLength=listLen/numCols
             if (listLen%numCols>0):
                 colLength+=1
-            for i in xrange(0,numCols):
+            for i in range(0,numCols):
                 columnInfos.append(self.ColumnInfo())
-            for i in xrange(0,listLen):
+            for i in range(0,listLen):
                 # determine the column:
                 colForThis=i/colLength
                 if columnInfos[colForThis].width<len(self.stringList[i])+self.ourColumnSeparator :
@@ -126,7 +126,7 @@ def runCmd(cmd):
 
 def verifyFile(aFile):
     if not (os.path.exists(aFile)):
-        raise ConfigError, 'file '+aFile+' NOT verified: doesn\'t exist'
+        raise ConfigError('file '+aFile+' NOT verified: doesn\'t exist')
 
 
 def queryFileCopy(queryStr):
@@ -144,11 +144,11 @@ def queryFileCopy(queryStr):
             raise ComparisonError("Batch mode assumes no difference or one has to accept all differences")		
         answer = ''
         if (globalOfferAcceptAsDefault):
-            answer = raw_input(' (y)/n: ')
+            answer = input(' (y)/n: ')
             if (answer != 'n'):
                 answer = 'y'
         else:
-            answer = raw_input(' y/(n): ')
+            answer = input(' y/(n): ')
             if (answer != 'y'):
                 answer = 'n'
         return answer
@@ -165,7 +165,7 @@ def refFileCopy(newFile,refFile):
         globalUpdatedReferenceFlag = True
         shutil.copy(newFile,refFile)
         cmd="svn add "+refFile
-        if runCmd(cmd): raise CommandError, cmd
+        if runCmd(cmd): raise CommandError(cmd)
         return 0
 
 
@@ -181,10 +181,10 @@ def fileCompare(newFile,ignoreString=None):
         cmd += newFile+' '+refFile
         hasDiff = runCmd(cmd+" > /dev/null")
         if (hasDiff == 512):
-            raise CommandError, "command "+cmd+" not successful"
+            raise CommandError("command "+cmd+" not successful")
         elif (hasDiff != 0):
             detailedDiffCmd = globalDiffCmd+' '+newFile+' '+refFile
-            if runCmd(detailedDiffCmd) not in [0,256]: raise CommandError, detailedDiffCmd
+            if runCmd(detailedDiffCmd) not in [0,256]: raise CommandError(detailedDiffCmd)
             sys.stdout.write('Transformation -- '+detailedDiffCmd+'\n')
             if (queryFileCopy('   accept/copy new '+newFile+' to '+refFile+'?') == 'n'):
                 sys.stdout.write('skipping change\n')
@@ -235,7 +235,7 @@ def populateExamplesList(args):
             MultiColumnOutput(numberedList(examples)).printIt()    
     	    done = False
     	    while not (done):
-                examplesInput = raw_input("enter one or more regular expressions here or '(all [%i | %i %i])': ").split()
+                examplesInput = input("enter one or more regular expressions here or '(all [%i | %i %i])': ").split()
                 if (len(examplesInput) == 0):			# no arguments
                     examples = allExamples
                     done = True
@@ -264,7 +264,7 @@ def populateExamplesList(args):
                 if (len(args) >= 3): # A range END is also given
                     rangeEnd = int(args[2])
             except ValueError:
-                raise CommandLineError, "\"all\" must be followed by zero, one, or two integers which specify the start and end range, e.g. 'all [%i | %i %i]'"
+                raise CommandLineError("\"all\" must be followed by zero, one, or two integers which specify the start and end range, e.g. 'all [%i | %i %i]'")
         else: # each argument is treated as a regex
             exampleRegexs = args
 
@@ -275,7 +275,7 @@ def populateExamplesList(args):
                 if (re.search(regex,ex,re.IGNORECASE)):
                     examples.append(ex)
         if (len(examples) == 0):
-            raise RuntimeError, "No examples match the given regular expressions"
+            raise RuntimeError("No examples match the given regular expressions")
     	exampleSet = set(examples)
     	examples = list(exampleSet)
     	examples.sort(key=str.lower)
@@ -311,11 +311,11 @@ def shouldRunTest(testFile) :
         if globalBatchMode or globalIgnoreFailingCases:
             sys.stdout.write("skipping test\n")
             return False
-        if globalOfferAcceptAsDefault and raw_input('run it anyway? (y)/n: ') != 'n' :
+        if globalOfferAcceptAsDefault and input('run it anyway? (y)/n: ') != 'n' :
             sys.stdout.flush()
             globalNewFailCount -= 1
             return True
-        elif raw_input('run it anyway? y/(n): ') == 'y' :
+        elif input('run it anyway? y/(n): ') == 'y' :
             sys.stdout.flush()
             globalNewFailCount -= 1
             return True
@@ -330,7 +330,7 @@ def runTest(exName,exNum,totalNum,compiler,optimizeFlag):
     import filecmp
     printSep("*","** testing %i of %i (%s)" % (exNum,totalNum,exName),sepLength)
     cmd="ln -sf "+os.path.join("src",exName) + " " + exName
-    if runCmd(cmd): raise CommandError, cmd
+    if runCmd(cmd): raise CommandError(cmd)
 
     # assume this script is in the main regression directory
     mydir = os.path.dirname(__file__)
@@ -364,7 +364,7 @@ def runTest(exName,exNum,totalNum,compiler,optimizeFlag):
 
     # perform transformation
     cmd=orcc+' '+verbose+originalSource
-    if runCmd(cmd): raise CommandError, cmd
+    if runCmd(cmd): raise CommandError(cmd)
     fileCompare(processedSource)
 
     # compile and run processed
@@ -429,7 +429,7 @@ def main():
     globalNewFailCount=0
 
     try:
-        if os.environ.has_key('BATCHMODE') or options.batchMode :
+        if 'BATCHMODE' in os.environ or options.batchMode :
             global globalBatchMode
             globalBatchMode=True
         if options.ignoreFailingCases :
@@ -463,48 +463,48 @@ def main():
         while (j < rangeEnd):
             try:
                 runTest(examples[j],j+1,len(examples), options.compiler, optimizeFlag)
-            except ConfigError, errMsg:
-                print "ERROR (environment configuration) in test %i of %i (%s): %s" % (j+1,len(examples),examples[j],errMsg)
+            except ConfigError as errMsg:
+                print("ERROR (environment configuration) in test %i of %i (%s): %s" % (j+1,len(examples),examples[j],errMsg))
                 globalNewFailCount+=1
-                if globalBatchMode or raw_input("Do you want to continue? (y)/n: ") == "n" :
+                if globalBatchMode or input("Do you want to continue? (y)/n: ") == "n" :
                     return -1
-            except MakeError, errMsg:
-                print "ERROR in test %i of %i (%s) while executing \"%s\"." % (j+1,len(examples),examples[j],errMsg)
+            except MakeError as errMsg:
+                print("ERROR in test %i of %i (%s) while executing \"%s\"." % (j+1,len(examples),examples[j],errMsg))
                 globalNewFailCount+=1
-                if globalBatchMode or raw_input("Do you want to continue? (y)/n: ") == "n" :
+                if globalBatchMode or input("Do you want to continue? (y)/n: ") == "n" :
                     return -1
-            except ComparisonError, errMsg:
-                print "ERROR in test %i of %i (%s): %s." % (j+1,len(examples),examples[j],errMsg)
+            except ComparisonError as errMsg:
+                print("ERROR in test %i of %i (%s): %s." % (j+1,len(examples),examples[j],errMsg))
                 globalNewFailCount+=1
-                if globalBatchMode or raw_input("Do you want to continue? (y)/n: ") == "n" :
+                if globalBatchMode or input("Do you want to continue? (y)/n: ") == "n" :
                     return -1
-            except CommandError, cmd:
-                print 'ERROR in test %i of %i (%s): CommandError while running "%s"' % (j+1,len(examples),examples[j],cmd)
+            except CommandError as cmd:
+                print('ERROR in test %i of %i (%s): CommandError while running "%s"' % (j+1,len(examples),examples[j],cmd))
                 globalNewFailCount+=1
-                if globalBatchMode or raw_input("Do you want to continue? (y)/n: ") == "n" :
+                if globalBatchMode or input("Do you want to continue? (y)/n: ") == "n" :
                     return -1
-            except RuntimeError, errMsg:
-                print "ERROR in test %i of %i (%s): %s." % (j+1,len(examples),examples[j],errMsg)
+            except RuntimeError as errMsg:
+                print("ERROR in test %i of %i (%s): %s." % (j+1,len(examples),examples[j],errMsg))
                 globalNewFailCount+=1
-                if globalBatchMode or raw_input("Do you want to continue? (y)/n: ") == "n" :
+                if globalBatchMode or input("Do you want to continue? (y)/n: ") == "n" :
                     return -1
             printSep("*","",sepLength)
             j += 1
 
-    except CommandError, cmd:
-    	print 'CommandError: error while running "'+str(cmd)+'"\n'
+    except CommandError as cmd:
+    	print('CommandError: error while running "'+str(cmd)+'"\n')
     	return -1
-    except ConfigError, errMsg:
-    	print "ERROR (environment configuration):",errMsg
+    except ConfigError as errMsg:
+    	print("ERROR (environment configuration):",errMsg)
     	return -1
-    except CommandLineError, errMsg:
-    	print "ERROR (command line arguments):",errMsg
+    except CommandLineError as errMsg:
+    	print("ERROR (command line arguments):",errMsg)
     	return -1
-    except RuntimeError, errMsg:
-    	print 'caught exception: ',errMsg
+    except RuntimeError as errMsg:
+    	print('caught exception: ',errMsg)
     	return -1
 
-    print "total: "+str(rangeEnd-rangeStart+1)+", ran  OK:"+str(globalOkCount)+", known errors:"+str(globalKnownFailCount)+", new errors:"+str(globalNewFailCount)
+    print("total: "+str(rangeEnd-rangeStart+1)+", ran  OK:"+str(globalOkCount)+", known errors:"+str(globalKnownFailCount)+", new errors:"+str(globalNewFailCount))
     return 0
 
 

@@ -109,7 +109,6 @@ if __name__ == '__main__':
         def __init__(self, basearg):
             self.__Delegate.__init__(self)
             self.basearg = basearg
-            print 'base'
 
         def __str__(self): return 'BASE'
 

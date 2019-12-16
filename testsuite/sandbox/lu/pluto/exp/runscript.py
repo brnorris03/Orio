@@ -5,17 +5,17 @@ import os, sys, re
 
 def runExp(nthreadss, cc, src_file, out_file, flags, libs):
     compile_cmd = '%s %s -o %s %s %s' % (cc, flags, out_file, src_file, libs)
-    print '*************************************'
-    print compile_cmd
-    print '*************************************'
+    print('*************************************')
+    print(compile_cmd)
+    print('*************************************')
     os.system(compile_cmd)
 
     rtimes = []
     for nt in nthreadss:
         run_cmd = 'export OMP_NUM_THREADS=%s; ./%s' % (nt, out_file)
-        print '*************************************'
-        print run_cmd
-        print '*************************************'
+        print('*************************************')
+        print(run_cmd)
+        print('*************************************')
         f = os.popen(run_cmd)
         output = f.read()
         f.close()
@@ -53,9 +53,9 @@ def myDiff(fname1, fname2):
                 n1=eval(n1)
                 n2=eval(n2)
             except:
-                print 'error: cannot evaluate'
-                print 'n1=%s' % n1
-                print 'n2=%s' % n2
+                print('error: cannot evaluate')
+                print('n1=%s' % n1)
+                print('n2=%s' % n2)
                 sys.exit(1)
             d=n1-n2
             if not (-1<d<1):
@@ -77,10 +77,10 @@ def checkCorrectness(optflag = '-O0'):
     N=512
     compile_cmd = 'icc -O0 -DREPS=1 -DN=%s -DTEST -o base_test lu.base.c -lm' % N
     run_cmd = 'export OMP_NUM_THREADS=1; ./base_test'
-    print '***********************'
-    print compile_cmd
-    print run_cmd
-    print '***********************'
+    print('***********************')
+    print(compile_cmd)
+    print(run_cmd)
+    print('***********************')
     os.system(compile_cmd)
     f = os.popen(run_cmd)
     output = f.read()
@@ -100,10 +100,10 @@ def checkCorrectness(optflag = '-O0'):
         compile_cmd = (('icc %s -openmp -DREPS=1 -DN=%s -DTEST -o opt_test %s -lm') % 
                        (optflag, N, fname))
         run_cmd = 'export OMP_NUM_THREADS=1; ./opt_test'
-        print '***********************'
-        print compile_cmd
-        print run_cmd
-        print '***********************'
+        print('***********************')
+        print(compile_cmd)
+        print(run_cmd)
+        print('***********************')
         os.system(compile_cmd)
         f = os.popen(run_cmd)
         output = f.read()
@@ -111,21 +111,21 @@ def checkCorrectness(optflag = '-O0'):
         f = open(('output_%s.out' % fname), 'w')
         f.write(output)
         f.close()
-        print '*************************************'
-        print '.... comparing results to the base'
-        print '*************************************'
+        print('*************************************')
+        print('.... comparing results to the base')
+        print('*************************************')
         is_correct, diffs, total_diffs, total_nums = myDiff('output_base', ('output_%s.out' % fname))
         if not is_correct:
             percent=(1.0*total_diffs)/total_nums
-            print 'error: -----------INCORRECT RESULTS-----------'
-            print '---------- total numbers=%s---------' % total_nums
-            print '---------- total different numbers=%s (%s)---------' % (total_diffs, percent)
-            print '----------- inaccuracy differences -----------'
+            print('error: -----------INCORRECT RESULTS-----------')
+            print('---------- total numbers=%s---------' % total_nums)
+            print('---------- total different numbers=%s (%s)---------' % (total_diffs, percent))
+            print('----------- inaccuracy differences -----------')
             for d in diffs:
-                print ' %s ' % d,
-            print '\n'
+                print(' %s ' % d, end=' ')
+            print('\n')
         else:
-            print '-------PASSED CORRECTNESS CHECKING--------'
+            print('-------PASSED CORRECTNESS CHECKING--------')
 
 # correctness checking
 OPTFLAG = '-O3'
@@ -154,9 +154,9 @@ if 0:
                          'lu.pluto_orio.par.c', 'orio_par', flags, '-lm')
     mflopss_orio = countFlops(N,rtimes_orio)
     
-    print mflopss_base
-    print mflopss_pluto
-    print mflopss_orio
+    print(mflopss_base)
+    print(mflopss_pluto)
+    print(mflopss_orio)
     
 # sequential case
 if 1:
@@ -189,8 +189,8 @@ if 1:
         p = countFlops(N,rtimes_orio_large)
         mflopss_orio_large.append(p[0])
         
-    print mflopss_base
-    print mflopss_pluto
-    print mflopss_orio_small
-    print mflopss_orio_large
+    print(mflopss_base)
+    print(mflopss_pluto)
+    print(mflopss_orio_small)
+    print(mflopss_orio_large)
     

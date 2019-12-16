@@ -185,20 +185,19 @@ if __name__ == '__main__':
     btolex = orio.tool.ply.lex.lex(debug=1,optimize=0) 
 
     for i in range(1, len(sys.argv)):
-        print >>sys.stderr, "[parse] About to parse %s" % sys.argv[i]
+        debug("[module.bto.parser] About to parse %s" % sys.argv[i])
         os.system('cat %s' % sys.argv[i])
         f = open(sys.argv[i],"r")
         s = f.read()
         f.close()
-        # print "Contents of %s: %s" % (sys.argv[i], s)
         if s == '' or s.isspace(): sys.exit(0)
         if not s.endswith('\n'): 
-            print 'WARNING: file does not end with newline.'
+            warn('orio.modules.bto.parser: file does not end with newline.')
             s += '\n'
 
         theresult = parser.parse(s, lexer=btolex, debug=0)
-        print >>sys.stderr, '[parser] Successfully parsed %s' % sys.argv[i]
+        debug('[module.bto.parser] Successfully parsed %s' % sys.argv[i])
 
-        print 'All variables and their types:'
+        debug('All variables and their types:')
         for key,val in vars.items():
-            print "%s : %s" % (key,val)
+            debug("%s : %s" % (key,val))

@@ -4,9 +4,9 @@ import os, sys, time, random, re
 
 def runExp(ename, flag, src_file, libs, numthreads):
 
-    print '-=-=-=-=-=-=-=-=-=-=-=-=-'
-    print ename
-    print '-=-=-=-=-=-=-=-=-=-=-=-=-'
+    print('-=-=-=-=-=-=-=-=-=-=-=-=-')
+    print(ename)
+    print('-=-=-=-=-=-=-=-=-=-=-=-=-')
 
     CC = 'bgxlc_r -O3 -qstrict -qarch=450d -qtune=450 -qhot' 
 
@@ -24,24 +24,24 @@ def runExp(ename, flag, src_file, libs, numthreads):
         # build the code
         build_cmd = ('%s %s -DN=%s -DREPS=%s -o %s%s %s %s' %
                      (CC, flag, n, reps, ename, i, src_file, libs))
-        print '********************************'
-        print build_cmd
-        print '********************************'
+        print('********************************')
+        print(build_cmd)
+        print('********************************')
         os.system(build_cmd)
         
         # submit a job
         batch_cmd = ('qsub -n 1 -t %s -q short --env "OMP_NUM_THREADS=%s" ./%s%s' %
                      (t, numthreads, ename, i))
-        print '********************************'
-        print batch_cmd
-        print '********************************'
+        print('********************************')
+        print(batch_cmd)
+        print('********************************')
         f = os.popen(batch_cmd)
         output = f.read()
         f.close()
             
         # get the job ID
         job_id = output.strip().split('\n')[-1]
-        print job_id
+        print(job_id)
 
         # insert job into the queue
         jobs_queue.append([job_id, reps, n, t])
@@ -51,7 +51,7 @@ def runExp(ename, flag, src_file, libs, numthreads):
         
         # wait till the job is done
         while 1:
-            print '.',
+            print('.', end=' ')
             time.sleep(10)
             status_cmd = 'qstat | grep %s | wc -l' % job_id
             f = os.popen(status_cmd)
@@ -59,7 +59,7 @@ def runExp(ename, flag, src_file, libs, numthreads):
             f.close()
             if status == '0':
                 break
-        print ''
+        print('')
 
     # iterate over each job stored in the queue
     for job_id, reps, n, t in jobs_queue:
@@ -82,9 +82,9 @@ def runExp(ename, flag, src_file, libs, numthreads):
         
         # remove all unnecessary files
         rm_cmd = 'rm %s.*' % job_id
-        print '********************************'
-        print rm_cmd
-        print '********************************'
+        print('********************************')
+        print(rm_cmd)
+        print('********************************')
         os.system(rm_cmd)
         
 

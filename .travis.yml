@@ -30,7 +30,9 @@ before_install:
 install:
 - python setup.py install
 
+before script: 
+- cd examples
+
 script:
 #- pytest $PACKAGENAME
-- cd examples 
 - orcc -v axpy5.c

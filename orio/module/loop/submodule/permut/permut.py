@@ -33,7 +33,7 @@ class Permut(orio.module.loop.submodule.submodule.SubModule):
             # evaluate the RHS expression
             try:
                 rhs = eval(rhs, perf_params)
-            except Exception, e:
+            except Exception as e:
                 err('orio.module.loop.submodule.permut.permut: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
                 
             # permutation sequence

@@ -3,7 +3,7 @@
 import sys, os
 
 if len(sys.argv) < 3:
-    print 'error: missing arguments (need 2 arguments)'
+    print('error: missing arguments (need 2 arguments)')
     sys.exit(1)
 
 f=open('template.begin.c') 

@@ -162,7 +162,7 @@ class BTOLexer:
         while 1:
             tok = self.lexer.token()
             if not tok: break
-            print tok
+            print(tok)
 
 
 if __name__ == "__main__":
@@ -171,16 +171,15 @@ if __name__ == "__main__":
     # Build the lexer 
     l = orio.tool.ply.lex.lex(debug=1,optimize=0) 
     for i in range(1, len(sys.argv)):
-        print "About to lex %s" % sys.argv[i]
+        print("About to lex %s" % sys.argv[i])
         f = open(sys.argv[i],"r")
         s = f.read()
         f.close()
-        # print "Contents of %s: %s" % (sys.argv[i], s)
         if s == '' or s.isspace(): sys.exit(0)
-        # Test the lexer; just print out all tokens founds
+        # Test the lexer; just output all tokens it found
         l.input(s)
         while 1:
             tok = l.token()
             if not tok: break
-            print tok
+            print(tok)
 

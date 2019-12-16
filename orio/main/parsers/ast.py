@@ -111,7 +111,6 @@ class AST(graph.Graph):
                 visited.append(v)
                 if reverse: 
                     elist = []
-                    #print str(v)
                     for e in v.in_e:
                         if e.action in actions: elist.extend(e.src_v)
                     if elist: unprocessed.extend(elist)

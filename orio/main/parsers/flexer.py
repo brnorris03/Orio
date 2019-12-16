@@ -538,8 +538,8 @@ class FLexer:
         while 1:
             tok = self.lexer.token()
             if not tok: break
-            debug(tok,level=5)
-        print 'subroutines:',self.subroutines
+            debug(tok,obj=self,level=5)
+        debug('subroutines:' + str(self.subroutines), obj=self)
     
     def determineFileFormat(self, filename):
         # Use the filename suffix to determine whether this is fixed form or free form (same as the Intel compiler):

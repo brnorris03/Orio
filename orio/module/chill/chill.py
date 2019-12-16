@@ -52,8 +52,10 @@ class CHiLL(orio.module.module.Module):
         self.input_params = Globals().getFuncInputParams()
         self.input_vars = Globals().getFuncInputVars()
 
-
-        #print "Informatio variables: \nperf_params: ",self.perf_params,"\nmodule_body_code: ",self.module_body_code,"\nline_no: ",self.line_no,"\nindent_size: ",self.indent_size
+        debug('\n'.join(["Information variables: \nperf_params: %s" % str(self.perf_params),
+                         "module_body_code: %s" % self.module_body_code,
+                         "line_no: %d" % self.line_no,
+                         "indent_size: %d" % self.indent_size]))
 
         defines = ''
 

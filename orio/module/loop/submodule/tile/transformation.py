@@ -59,7 +59,7 @@ class Transformation:
         # evaluate the stride expression
         try:
             stride_val = eval(str(stride_exp))
-        except Exception, e:
+        except Exception as e:
             err('orio.module.loop.submodule.tile.transformation:%s: failed to evaluate expression: "%s"\n --> %s: %s' %
                    (stride_exp.line_no, stride_exp,e.__class__.__name__, e.message))
         if not isinstance(stride_val, int) or stride_val <= 0:

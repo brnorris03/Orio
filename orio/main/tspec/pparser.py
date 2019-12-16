@@ -267,7 +267,7 @@ def p_dyst(p):
              | STATIC
              | empty
     '''
-    if p[1] <> None:
+    if p[1] is not None:
         p[0] = [(p[1], p.lineno(1))]
     else:
         p[0] = []
@@ -278,7 +278,7 @@ def p_mods(p):
     ''' mods : __DEVICE__
              | empty
     '''
-    if p[1] <> None:
+    if p[1] is not None:
         p[0] = [(p[1], p.lineno(1))]
     else:
         p[0] = []

@@ -5,10 +5,10 @@
 import sys, traceback
 from orio.main.util.globals import *
 
-from orio.module.module import Module
+from ..module import Module
 
-import codegen, parser, transformation, ast
-from orio.module.loop import astvisitors
+from . import codegen, parser, transformation, ast
+from . import astvisitors
 
 #-----------------------------------------
 
@@ -66,7 +66,7 @@ class Loop(Module):
             try:
                 from orio.module.loop.cfg import CFGGraph
                 cfg = CFGGraph(transformed_stmts)
-            except Exception, e:
+            except Exception as e:
                 err('[module.loop.loop] cannot construct CFG: ',e)
 
 

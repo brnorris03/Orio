@@ -77,7 +77,7 @@ class TransfInfoGen:
             # evaluate RHS expression
             try:
                 rhs_val = eval(rhs, perf_params)
-            except Exception, e:
+            except Exception as e:
                 err('orio.module.polysyn.transf_info: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no,e.__class__.__name__, e))
                 
             # tile sizes

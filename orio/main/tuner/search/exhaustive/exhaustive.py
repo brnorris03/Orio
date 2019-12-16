@@ -124,7 +124,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
                         if not cmd.strip(): cmd = '.'
                         with open(cmd + '/meta.json', 'w') as outfile:
                             json.dump(Globals().metadata, outfile)
-                    except Exception, e:
+                    except Exception as e:
                         err('orio.search.Exhaustive: failed to execute meta export: "%s"\n --> %s: %s' % (Globals().meta,e.__class__.__name__, e),doexit = False)
                 
                 if mean_perf_cost < best_perf_cost and perf_cost > 0.0:

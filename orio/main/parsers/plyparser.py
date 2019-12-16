@@ -250,13 +250,11 @@ def p_subprogram_declaration(p):
 def p_subroutine_declaration(p):
     'subroutine_declaration : subroutine_header optional_specification_part varref_list ENDSUBROUTINE optional_name'
     p[0] = subroutine.SubroutineDeclaration(p[1], p[3], p[4])
-    #print p[0]
 
 def p_function_declaration(p):
     'function_declaration : function_header optional_specification_part varref_list ENDFUNCTION optional_name'
     p[0] = subroutine.SubroutineDeclaration(p[1], p[3], p[4],function=True)
-    #print p[0]
-    
+
 def p_subprogram_definition_list(p):
     '''subprogram_definition_list : subprogram_definition
                                 | subprogram_definition_list subprogram_definition
@@ -274,8 +272,6 @@ def p_subroutine_definition(p):
     '''subroutine_definition : subroutine_header optional_specification_part varref_list ENDSUBROUTINE optional_name'''
     p[0] = subroutine.SubroutineDefinition(p[1], p[3], p[4])
 
-    #print p[0]
-    
 def p_subroutine_header(p):
     '''subroutine_header : subroutine_stmt LPAREN argument_list RPAREN
                         | subroutine_stmt 
@@ -355,7 +351,6 @@ def p_derived_type_spec(p):
 def p_function_definition(p):
     'function_definition : function_header optional_specification_part varref_list ENDFUNCTION optional_name'
     p[0] = subroutine.SubroutineDefinition(p[1], p[3], p[4],function=True)
-    #print p[0]
 
 def p_function_header(p):
     '''function_header : function_stmt LPAREN argument_list RPAREN
@@ -1520,10 +1515,10 @@ if __name__ == '__main__':
         #f = open(sys.argv[i],"r")
         s = f.read()
         f.close()
-        # print "Contents of %s: %s" % (sys.argv[i], s)
+        # print("Contents of %s: %s" % (sys.argv[i], s))
         if s == '' or s.isspace(): sys.exit(0)
         
-        #print 'Comments: \n', comments
+        #print('Comments: \n' +  comments)
         
         filename = sys.argv[i]
         lex.reset()

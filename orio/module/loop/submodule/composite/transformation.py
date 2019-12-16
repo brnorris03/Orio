@@ -448,7 +448,7 @@ class Transformation:
                 debug('applying tiling to loop_id=%s' % str(loop_id))
                 try:
                     tstmt = self.__tile(tstmt, tinfo)
-                except Exception, e:
+                except Exception as e:
                     err('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying tiling (tsize=%s)\n' + \
                          '--> %s: %s'\
                          % (str(self.stmt.line_no), str(tsize), e.__class__, e))
@@ -458,7 +458,7 @@ class Transformation:
             for seq in self.permuts:
                 debug('applying loop permutation/interchange')
                 tstmt = self.perm_smod.permute(seq, tstmt)
-        except Exception, e:
+        except Exception as e:
             err('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
                  'loop permutations: "%s"\npermutation annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.perm_smod.__class__, str(self.permuts), e.__class__, e))
@@ -471,7 +471,7 @@ class Transformation:
                     dimsizes = [1] * len(dimsizes)
                 debug('applying %s' % self.acop_smod.__class__.__name__)
                 tstmt = self.acop_smod.optimizeArrayCopy(aref, suffix, dtype, dimsizes, tstmt)
-        except Exception, e:
+        except Exception as e:
             err('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
                  'array copy: "%s"\narray copy annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.acop_smod.__class__, str(self.arrcopy), e.__class__, e))
@@ -482,7 +482,7 @@ class Transformation:
             if len(loops) > 0:
                 debug('applying register tiling')
                 tstmt = self.regt_smod.tileForRegs(loops, ufactors, tstmt)
-        except Exception, e:
+        except Exception as e:
             err('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
                  'register tiling: "%s"\nregtile annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.regt_smod.__class__, str(self.regtiles), e.__class__, e))
@@ -500,7 +500,7 @@ class Transformation:
             if len(tinfos) > 0:
                 debug('applying unroll/jam')
                 tstmt,_ = self.__unrollJam(tstmt, tinfos)
-        except Exception, e:
+        except Exception as e:
             err('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
                  'loop unrolling/jamming: "%s"\nunroll/jam annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.ujam_smod.__class__, str(self.ujams), e.__class__, e))
@@ -511,7 +511,7 @@ class Transformation:
             if do_scalarrep:
                 debug('applying scalar replacement')
                 tstmt = self.srep_smod.replaceScalars(dtype, prefix, tstmt)
-        except Exception, e:
+        except Exception as e:
             err('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
                  'scalar replacement: "%s"\nscalar replacement annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.srep_smod.__class__, str(self.scalarrep), e.__class__, e))
@@ -523,7 +523,7 @@ class Transformation:
             if do_boundrep:
                 debug('applying bounds replacement')
                 tstmt = self.brep_smod.replaceBounds(lprefix, uprefix, tstmt)
-        except Exception, e:
+        except Exception as e:
             err('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
                  'bound replacement: "%s"\nbounds annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.srep_smod.__class__, str(self.boundrep), e.__class__, e))
@@ -536,7 +536,7 @@ class Transformation:
                 if lid != None:
                     tinfo = (lid, pragmas)
                     tstmt = self.__insertPragmas(tstmt, tinfo)
-        except Exception, e:
+        except Exception as e:
             print "PRAGMAS"
             err('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
                  'pragma directives: "%s"\npragma annotation: %s\n --> %s: %s' \
@@ -549,7 +549,7 @@ class Transformation:
                 debug('applying openmp')
                 tinfo = (pragmas, )
                 tstmt = self.__insertOpenMPPragmas(tstmt, tinfo)
-        except Exception, e:
+        except Exception as e:
             err('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
                  'openmp directives: "%s"\nopenmp annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.srep_smod.__class__, str(self.openmp), e.__class__, e))
@@ -561,7 +561,7 @@ class Transformation:
                 debug('applying vectorization (inserting directives)')
                 tinfo = (pragmas, )
                 tstmt = self.__insertVectorPragmas(tstmt, tinfo)
-        except Exception, e:
+        except Exception as e:
             err('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
                  'vectorization: "%s"\nvector annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.srep_smod.__class__, str(self.vector), e.__class__, e))
@@ -574,7 +574,7 @@ class Transformation:
                 targs = {'threadCount':threadCount, 'cacheBlocks':cacheBlocks, 'pinHostMem':pinHost, 'streamCount':streamCount, 'domain':None, 'dataOnDevice':False, 'blockCount':5, 'unrollInner':0, 'preferL1Size':16}
                 tstmt = self.__cudify(tstmt, targs)
             
-        except Exception, e:
+        except Exception as e:
             err('orio.module.loop.submodule.composite.transformation:%s: encountered an error in applying ' +
                  'cuda: "%s"\ncuda annotation: %s\n --> %s: %s' \
                  % (self.stmt.line_no, self.cuda_smod.__class__, str(self.cuda), e.__class__, e))

@@ -28,7 +28,7 @@ class Node(object):
         pass
 
     def show(self, buf=sys.stdout, offset=0, attrnames=False, showcoord=False):
-        """ Pretty print the Node and all its attributes and
+        """ Pretty-print the Node and all its attributes and
             children (recursively) to a buffer.
             
             file:   

@@ -18,5 +18,5 @@ for s in sizes:
 	shutil.copyfile(basefile + '.c',srcfile)
 	# run the tests
 	cmd = 'ancc -v -s ' + fname + ' ' + srcfile + ' > axpy' + str(s) + '.bg.output.txt 2>&1 &'	
-	print cmd
+	print(cmd)
 	os.system(cmd)

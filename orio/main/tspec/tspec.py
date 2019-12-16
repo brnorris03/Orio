@@ -1,8 +1,10 @@
 #
 # TSpec (Tuning Specifier) class
-# 
+#
 
-import eval, pparser, tune_info
+import orio.main.tspec.eval as eval
+import orio.main.tspec.pparser as pparser
+import orio.main.tspec.tune_info as tune_info
 
 #-----------------------------------------------
 

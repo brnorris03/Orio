@@ -195,10 +195,10 @@ class CParser(PLYParser):
             
             Note: the declarator and modifier may be modified
         """
-        #~ print '****'
+        #~ print('****')
         #~ decl.show(offset=3)
         #~ modifier.show(offset=3)
-        #~ print '****'
+        #~ print('****')
         
         modifier_head = modifier
         modifier_tail = modifier
@@ -954,11 +954,6 @@ class CParser(PLYParser):
     def p_type_name(self, p):
         """ type_name   : specifier_qualifier_list abstract_declarator_opt 
         """
-        #~ print '=========='
-        #~ print p[1]
-        #~ print p[2]
-        #~ print p[2].children()
-        #~ print '=========='
         
         typename = c_ast.Typename(
             quals=p[1]['qual'], 

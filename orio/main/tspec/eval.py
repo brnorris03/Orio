@@ -2,26 +2,28 @@
 # The evaluator for the TSpec (Tuning Specifier) language
 #
 
-import StringIO, sys, tokenize
-import __builtin__, itertools, string
+import io, sys, tokenize
+import builtins as compat_builtin
+import itertools, string
 from orio.main.util.globals import *
 
-#--------------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------------
 
 class TSpecEvaluator:
-    '''The evaluator for the TSpec language'''
+    """The evaluator for the TSpec language"""
 
     def __init__(self):
-        '''To instantiate a TSpec evaluator'''
+        """To instantiate a TSpec evaluator"""
         pass
-    
-    #----------------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------------
 
     def __extractVars(self, code):
-        '''Return all variables that are present in the given code'''
+        """Return all variables that are present in the given code"""
 
         # tokenize the given expression code
-        gtoks = tokenize.generate_tokens(StringIO.StringIO(code).readline)
+        gtoks = tokenize.generate_tokens(io.StringIO(code).readline)
 
         # iterate over each token and replace any matching token with its corresponding value
         vnames = []
@@ -32,21 +34,21 @@ class TSpecEvaluator:
         # return all the found variable names
         return vnames
 
-    #----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
 
     def __substituteVars(self, code, env):
-        '''
+        """
         Expand any variables that exist in the given environment to their corresponding values
-        '''
+        """
 
         # tokenize the given expression code
-        gtoks = tokenize.generate_tokens(StringIO.StringIO(code).readline)
+        gtoks = tokenize.generate_tokens(io.StringIO(code).readline)
 
         # iterate over each token and replace any matching token with its corresponding value
         tokens = []
         for toknum, tokval, _, _, _ in gtoks:
             if toknum == tokenize.NAME and tokval in env:
-                ntoks = tokenize.generate_tokens(StringIO.StringIO(str(env[tokval])).readline)
+                ntoks = tokenize.generate_tokens(io.StringIO(str(env[tokval])).readline)
                 tokens.extend(ntoks)
             else:
                 tokens.append((toknum, tokval))
@@ -60,10 +62,10 @@ class TSpecEvaluator:
         # return the modified string
         return code
 
-    #----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
 
     def __evalArg(self, stmt, env, name_space):
-        '''To evaluate the given "let" statement'''
+        """To evaluate the given "let" statement"""
 
         # unpack the statement
         keyw, line_no, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
@@ -78,34 +80,43 @@ class TSpecEvaluator:
         # evaluate the RHS expression
         try:
             rhs_val = eval(rhs, env)
-        except Exception, e:
-            err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
+        except Exception as e:
+            err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (
+            rhs_line_no, e.__class__.__name__, e))
 
         # return the evaluated statement
         return (keyw, line_no, (id_name, id_line_no), (rhs_val, rhs_line_no))
 
-    #----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
 
     def __evalConstraint(self, stmt, env, name_space):
-        '''To evaluate the given "constraint" statement'''
+        """Evaluates the given "constraint" statement"""
 
         # unpack the statement
         keyw, line_no, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
-        
+
         # substitute all environment variables with their corresponding values
         rhs = self.__substituteVars(rhs, env)
 
         # return the evaluated statement
         return (keyw, line_no, (id_name, id_line_no), (rhs, rhs_line_no))
 
-    #----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
 
     def __evalDecl(self, stmt, env, name_space):
-        '''To evaluate the given "decl" statement'''
+        """
+        Evaluates the given decl statement.
+
+        @param stmt: the statement list,  keyw, line_no, (id_name, id_line_no), type_seq, dim_exp_seq, (rhs, rhs_line_no)
+        @param env: current environment with variable definitions
+        @param name_space: current namespace
+        @return: list containing the evaluated statement components, (
+            keyw, line_no, (id_name, id_line_no), type_seq, dim_exp_seq, (rhs, rhs_line_no))
+        """
 
         # unpack the statement
         keyw, line_no, (id_name, id_line_no), type_seq, dim_exp_seq, (rhs, rhs_line_no) = stmt
-        
+
         # check for types
         type_names = []
         for t, l in type_seq:
@@ -127,10 +138,10 @@ class TSpecEvaluator:
         # return the evaluated statement
         return (keyw, line_no, (id_name, id_line_no), type_seq, dim_exp_seq, (rhs, rhs_line_no))
 
-    #----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
 
     def __evalDef(self, stmt, env, name_space):
-        '''To evaluate the given "def" statement'''
+        """To evaluate the given "def" statement"""
 
         # copy the environment and name space
         env = env.copy()
@@ -138,17 +149,17 @@ class TSpecEvaluator:
 
         # unpack the statement
         keyw, line_no, (id_name, id_line_no), stmt_seq = stmt
-        
+
         # evaluate each statement in the definition statement body
         stmt_seq = self.__evaluate(stmt_seq, env, name_space)
-        
+
         # return the evaluated statement
         return (keyw, line_no, (id_name, id_line_no), stmt_seq)
 
-    #----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
 
     def __evalLet(self, stmt, env, name_space):
-        '''To evaluate the given "let" statement'''
+        """To evaluate the given "let" statement"""
 
         # unpack the statement
         keyw, line_no, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
@@ -163,8 +174,9 @@ class TSpecEvaluator:
         # evaluate the RHS expression
         try:
             rhs_val = eval(rhs, env)
-        except Exception, e:
-            err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
+        except Exception as e:
+            err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (
+            rhs_line_no, e.__class__.__name__, e))
 
         # update the environment
         env[id_name] = rhs_val
@@ -172,10 +184,37 @@ class TSpecEvaluator:
         # return the evaluated statement
         return (keyw, line_no, (id_name, id_line_no), (rhs_val, rhs_line_no))
 
-    #----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
+
+    def __evalRHS(self, rhs, is_range, env):
+        """
+        Evaluate and typecheck the right-hand side of an assignment.
+
+        @param rhs: right-hand-side string, valid types are range, list, and tuple
+        @param env: dictionary with currently defined variables
+        @return: list containing the evaluated right-hand-side values
+        """
+        try:
+            rhs_val = eval(rhs, env)
+        except Exception as e:
+            err('*** %s\n\t^-- orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> line %s: %s' % (
+                id_name + ' = ' + rhs, rhs_line_no, e.__class__.__name__, e))
+
+        # check the RHS value
+        if is_range:
+            rhs_val = list(rhs_val)
+        if not isinstance(rhs_val, list) and not isinstance(rhs_val, tuple):
+            err('*** %s\n\t^-- orio.main.tspec.eval: line %s: RHS must be a list/tuple' % (
+                id_name + ' = ' + rhs, rhs_line_no))
+        if len(rhs_val) == 0:
+            err('*** %s\n\t^-- orio.main.tspec.eval: line %s: RHS must not be an empty list' % (
+                id_name + ' = ' + rhs, rhs_line_no))
+        return rhs_val
+
+    # ----------------------------------------------------------------------------
 
     def __evalParam(self, stmt, env, name_space):
-        '''To evaluate the given "param" statement'''
+        """To evaluate the given "param" statement"""
 
         # unpack the statement
         keyw, line_no, (id_name, id_line_no), is_range, (rhs, rhs_line_no) = stmt
@@ -188,27 +227,17 @@ class TSpecEvaluator:
                 err('orio.main.tspec.eval: %s: invalid reference: "%s"' % (rhs_line_no, vname))
 
         # evaluate the RHS expression
-        try:
-            rhs_val = eval(rhs, env)
-        except Exception, e:
-            err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
+        rhs_val = self.__evalRHS(rhs, is_range, env)  # returns a list or tuple
+        etype = type(rhs_val[0])
+        for e in rhs_val:
+            if not isinstance(e, etype):
+                err('orio.main.tspec.eval: %s: RHS must be a list of equal-typed elements' % rhs_line_no)
 
-        # check the RHS value
-        if is_range:
-            if not isinstance(rhs_val, list) and not isinstance(rhs_val, tuple):
-                err('orio.main.tspec.eval: %s: RHS must be a list/tuple' % rhs_line_no)
-            if len(rhs_val) == 0:
-                err('orio.main.tspec.eval: %s: RHS must not be an empty list' % rhs_line_no)
-            etype = type(rhs_val[0])
-            for e in rhs_val:
-                if not isinstance(e, etype):
-                    err('orio.main.tspec.eval: %s: RHS must be a list of equal-typed elements' % rhs_line_no)
-        
         # return the evaluated statement
         return (keyw, line_no, (id_name, id_line_no), is_range, (rhs_val, rhs_line_no))
-        
+
     def __evalOption(self, stmt, env, name_space):
-        '''Evaluate the given "option" statement'''
+        """Evaluate the given "option" statement"""
         # Example:  
         # def cmdline_params {
         #    option '-a' = [0,1,2];
@@ -225,29 +254,19 @@ class TSpecEvaluator:
                 err('orio.main.tspec.eval: %s: invalid reference: "%s"' % (rhs_line_no, vname))
 
         # evaluate the RHS expression
-        try:
-            rhs_val = eval(rhs, env)
-        except Exception, e:
-            err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
+        rhs_val = self.__evalRHS(rhs, is_range, env)
+        etype = type(rhs_val[0])
+        for e in rhs_val:
+            if not isinstance(e, etype):
+                err('orio.main.tspec.eval: %s: RHS must be a list of equal-typed elements' % rhs_line_no)
 
-        # check the RHS value
-        if is_range:
-            if not isinstance(rhs_val, list) and not isinstance(rhs_val, tuple):
-                err('orio.main.tspec.eval: %s: RHS must be a list/tuple' % rhs_line_no)
-            if len(rhs_val) == 0:
-                err('orio.main.tspec.eval: %s: RHS must not be an empty list' % rhs_line_no)
-            etype = type(rhs_val[0])
-            for e in rhs_val:
-                if not isinstance(e, etype):
-                    err('orio.main.tspec.eval: %s: RHS must be a list of equal-typed elements' % rhs_line_no)
-        
         # return the evaluated statement
         return (keyw, line_no, (option_string, id_line_no), is_range, (rhs_val, rhs_line_no))
 
-    #----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
 
     def __evalSpec(self, stmt, env, name_space):
-        '''To evaluate the given "spec" statement'''
+        """To evaluate the given "spec" statement"""
 
         # copy the environment and name space
         env = env.copy()
@@ -262,12 +281,16 @@ class TSpecEvaluator:
         # return the evaluated statement
         return (keyw, line_no, (id_name, id_line_no), stmt_seq)
 
-    #----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
 
-    def __evaluate(self, stmt, env, name_space):
-        '''
-        To evaluate the given statement. Note that the given statement could be a statement sequence.
-        '''
+    def __evaluate(self, stmt: tuple, env: dict, name_space: dict) -> object:
+        """
+        Evaluate the given statement. Note that the given statement could be a statement sequence.
+
+        @param stmt: statement or statement sequence
+        @param env: environment dictionary
+        @param name_space: dictionary
+        """
 
         # in the case of a single statement
         if isinstance(stmt, tuple):
@@ -276,7 +299,6 @@ class TSpecEvaluator:
             keyw = stmt[0]
             line_no = stmt[1]
             (id_name, id_line_no) = stmt[2]
-                
 
             # check for any predefined name
             if id_name in name_space:
@@ -285,7 +307,7 @@ class TSpecEvaluator:
             # first update the name space before evaluation (if necessary)
             if keyw in ('def', 'spec'):
                 name_space[id_name] = keyw
-    
+
             # evaluate each statement
             if keyw == 'arg':
                 e = self.__evalArg(stmt, env, name_space)
@@ -311,7 +333,7 @@ class TSpecEvaluator:
 
             # return the evaluated statement
             return e
-            
+
         # in the case of a sequence of statements
         elif isinstance(stmt, list):
 
@@ -324,12 +346,12 @@ class TSpecEvaluator:
         # unexpected input
         else:
             err('orio.main.tspec.eval internal error:  unexpected type of TSpec statement')
-            
-    #----------------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------------
 
     def evaluate(self, stmt_seq):
-        '''To evaluate the given statement sequence'''
-        return self.__evaluate(stmt_seq, dict(__builtin__.__dict__.items() + itertools.__dict__.items() + string.__dict__.items()), {})
-
-
-
+        """Evaluate the given statement sequence"""
+        environment = dict(compat_builtin.__dict__)
+        environment.update(itertools.__dict__)
+        environment.update(string.__dict__)
+        return self.__evaluate(stmt_seq, environment, {})

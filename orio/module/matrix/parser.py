@@ -234,21 +234,21 @@ if __name__ == '__main__':
     matrixlexer.build()
 
     for i in range(1, len(sys.argv)):
-        print >>sys.stderr, "[parse] About to parse %s" % sys.argv[i]
+        debug("[parse] About to parse %s" % sys.argv[i], obj=matrixlexer)
         os.system('cat %s' % sys.argv[i])
         f = open(sys.argv[i],"r")
         s = f.read()
         f.close()
-        # print "Contents of %s: %s" % (sys.argv[i], s)
+        # debug("Contents of %s: %s" % (sys.argv[i], s))
         if s == '' or s.isspace(): sys.exit(0)
         if not s.endswith('\n'): 
-            print 'WARNING: file does not end with newline.'
+            warn('File does not end with newline.')
             s += '\n'
 
         theresult = parser.parse(s, lexer=matrixlexer.lexer, debug=1)
-        print >>sys.stderr, '[parser] Successfully parsed %s' % sys.argv[i]
+        debug('[parser] Successfully parsed %s' % sys.argv[i], obj = parser)
 
-        print 'All variables and their types:'
+        debug('All variables and their types:',obj=parser)
         for key,val in __matrix_language_vars.items():
-            print "%s : %s" % (key,val)
+            debug("%s : %s" % (key,val))
 

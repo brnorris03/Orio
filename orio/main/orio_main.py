@@ -4,6 +4,7 @@
 
 import os, sys
 from orio.main.util.globals import *
+from orio.main import cmd_line_opts, ann_parser, opt_driver
 
 #----------------------------------------------
 
@@ -34,7 +35,9 @@ def start(argv, lang):
         sys.exit(1)
 
     # import other required Python packages
-    import ann_parser, cmd_line_opts, opt_driver
+    import orio.main.ann_parser
+    import orio.main.cmd_line_opts
+    import orio.main.opt_driver
     
     # process the command line
     cmdline = cmd_line_opts.CmdParser().parse(argv)
@@ -80,7 +83,7 @@ def start(argv, lang):
                     f = open(g.spec_filename, 'r')
                     tspec_prog = f.read()
                     f.close()
-                except Exception, e:
+                except Exception as e:
                     err('orio.main.main: Exception %s. Cannot open file for reading: %s' % \
                         (e,g.spec_filename))
                 else:

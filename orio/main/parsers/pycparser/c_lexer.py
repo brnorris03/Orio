@@ -222,7 +222,6 @@ class CLexer(object):
         if m:
             t.lexer.begin('ppline')
             self.pp_line = self.pp_filename = None
-            #~ print "ppline starts on line %s" % t.lexer.lineno
         else:
             t.type = 'PPHASH'
             return t
@@ -236,7 +235,6 @@ class CLexer(object):
             self._error('filename before line number in #line', t)
         else:
             self.pp_filename = t.value.lstrip('"').rstrip('"')
-            #~ print "PP got filename: ", self.pp_filename
 
     @TOKEN(decimal_constant)
     def t_ppline_LINE_NUMBER(self, t):
@@ -440,7 +438,7 @@ if __name__ == "__main__":
         tok = clex.token()
         if not tok: break
             
-        #~ print type(tok)
+        #~ print(type(tok))
         printme([tok.value, tok.type, tok.lineno, clex.filename, tok.lexpos])
         
         

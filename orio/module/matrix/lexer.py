@@ -24,6 +24,8 @@ out
 
 import sys
 import orio.tool.ply.lex as plylex
+from orio.main.util.globals import *
+
 #------------------------------------------------
 
 __start_line_no = 1
@@ -185,7 +187,7 @@ class MatrixLexer:
         while True:
             tok = self.lexer.token()
             if not tok: break
-            print tok
+            debug(tok)
 
 
 if __name__ == "__main__":
@@ -195,12 +197,12 @@ if __name__ == "__main__":
     l = MatrixLexer(debug=1,optimize=0) 
     l.build()
     for i in range(1, len(sys.argv)):
-        print "About to lex %s" % sys.argv[i]
+        debug("About to lex %s" % sys.argv[i])
         f = open(sys.argv[i],"r")
         s = f.read()
         f.close()
-        # print "Contents of %s: %s" % (sys.argv[i], s)
+        #debug("Contents of %s: %s" % (sys.argv[i], s))
         if s == '' or s.isspace(): sys.exit(0)
-        # Test the lexer; just print out all tokens founds
+        # Test the lexer; just output out all tokens founds
         l.test(s)
 

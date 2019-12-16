@@ -3,6 +3,8 @@
 # Parse a BTO file
 
 from matrixparser import MParser
+from orio.main.util.globals import *
+
 import sys
 
 mparser = MParser(debug=0,printToStderr=False)
@@ -24,7 +26,7 @@ out
 theresult = None
 
 
-print program
+debug(program)
 try:
   theresult = mparser.processString(program) 
 except:
@@ -33,9 +35,9 @@ except:
  
 # Errors are stored in the mparser.lex.errors list 
 if theresult and len(mparser.lex.errors) == 0:
-  print >>sys.stdout, 'Successfully parsed program.'
+  debug('Successfully parsed program.')
 else:
-  print '*** Errors\n', ' '.join(mparser.lex.errors)
+  err(' '.join(mparser.lex.errors))
 
     
 

@@ -117,7 +117,7 @@ class Profiler:
             f = os.popen(gprof_cmd)
             profile_info = f.read()
             f.close()
-        except Exception, e:
+        except Exception as e:
             err('orio.module.polysyn.profiler:  failed to execute GProf: "%s"\n --> %s: %s' % (gprof_cmd,e.__class__.__name__, e))
 
         # delete unneeded files

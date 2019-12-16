@@ -5,17 +5,17 @@ import os, sys, re
 
 def runExp(nthreadss, cc, src_file, out_file, flags, libs):
     compile_cmd = '%s %s -o %s %s %s' % (cc, flags, out_file, src_file, libs)
-    print '*************************************'
-    print compile_cmd
-    print '*************************************'
+    print('*************************************')
+    print(compile_cmd)
+    print('*************************************')
     os.system(compile_cmd)
 
     rtimes = []
     for nt in nthreadss:
         run_cmd = 'export OMP_NUM_THREADS=%s; ./%s' % (nt, out_file)
-        print '*************************************'
-        print run_cmd
-        print '*************************************'
+        print('*************************************')
+        print(run_cmd)
+        print('*************************************')
         f = os.popen(run_cmd)
         output = f.read()
         f.close()
@@ -73,10 +73,10 @@ def checkCorrectness(optflag = '-O0'):
     compile_cmd = ('icc -O0 -DREPS=1 -DT=%s -DN=%s -DTEST -o base_test seidel.base.c -lm' % 
                    (T, N))
     run_cmd = 'export OMP_NUM_THREADS=1; ./base_test'
-    print '***********************'
-    print compile_cmd
-    print run_cmd
-    print '***********************'
+    print('***********************')
+    print(compile_cmd)
+    print(run_cmd)
+    print('***********************')
     os.system(compile_cmd)
     f = os.popen(run_cmd)
     output = f.read()
@@ -94,10 +94,10 @@ def checkCorrectness(optflag = '-O0'):
         compile_cmd = (('icc %s -openmp -DREPS=1 -DT=%s -DN=%s -DTEST ' +
                         '-o opt_test %s -lm') % (optflag, T, N, fname))
         run_cmd = 'export OMP_NUM_THREADS=1; ./opt_test'
-        print '***********************'
-        print compile_cmd
-        print run_cmd
-        print '***********************'
+        print('***********************')
+        print(compile_cmd)
+        print(run_cmd)
+        print('***********************')
         os.system(compile_cmd)
         f = os.popen(run_cmd)
         output = f.read()
@@ -105,21 +105,21 @@ def checkCorrectness(optflag = '-O0'):
         f = open(('output_%s.out' % fname), 'w')
         f.write(output)
         f.close()
-        print '*************************************'
-        print '.... comparing results to the base'
-        print '*************************************'
+        print('*************************************')
+        print('.... comparing results to the base')
+        print('*************************************')
         is_correct, diffs, total_diffs, total_nums = myDiff('output_base', ('output_%s.out' % fname))
         if not is_correct:
             percent=(1.0*total_diffs)/total_nums
-            print 'error: -----------INCORRECT RESULTS-----------'
-            print '---------- total numbers=%s---------' % total_nums
-            print '---------- total different numbers=%s (%s)---------' % (total_diffs, percent)
-            print '----------- inaccuracy differences -----------'
+            print('error: -----------INCORRECT RESULTS-----------')
+            print('---------- total numbers=%s---------' % total_nums)
+            print('---------- total different numbers=%s (%s)---------' % (total_diffs, percent))
+            print('----------- inaccuracy differences -----------')
             for d in diffs:
-                print ' %s ' % d,
-            print '\n'
+                print(' %s ' % d, end=' ')
+            print('\n')
         else:
-            print '-------PASSED CORRECTNESS CHECKING--------'
+            print('-------PASSED CORRECTNESS CHECKING--------')
 
 # correctness checking
 OPTFLAG = '-O3'
@@ -145,9 +145,9 @@ if 0:
                              'seidel.pluto_orio.seq_par.c', 'orio_par', flags, '-lm')
     mflopss_orio_par = countFlops(T,N,rtimes_orio_par)
     
-    print mflopss_base_par
-    print mflopss_pluto_par
-    print mflopss_orio_par
+    print(mflopss_base_par)
+    print(mflopss_pluto_par)
+    print(mflopss_orio_par)
     
 # sequential case
 if 1:
@@ -173,7 +173,7 @@ if 1:
         p = countFlops(T,N,rtimes_orio)
         mflopss_orio.append(p[0])
         
-    print mflopss_base
-    print mflopss_pluto
-    print mflopss_orio
+    print(mflopss_base)
+    print(mflopss_pluto)
+    print(mflopss_orio)
     

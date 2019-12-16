@@ -3,7 +3,7 @@
 #
 import sys, math, time
 from orio.main.util.globals import *
-
+from functools import reduce
 
 class Search:
     '''The search engine used to explore the search space '''
@@ -13,10 +13,11 @@ class Search:
     #----------------------------------------------------------
     
     def __init__(self, params):
-        '''To instantiate a search engine'''
+        """
+        Instantiates a search engine.
 
-        #print params
-        #print 'done'
+        @params: dictionary with search configuration parameters
+        """
 
         self.params=params
         debug('[Search] performance parameters: %s\n' % str(params), self)
@@ -44,13 +45,10 @@ class Search:
         if self.total_dims > 0:
             self.space_size = reduce(lambda x,y: x*y, self.dim_uplimits, 1)
 
-        #print self.dim_uplimits    
         #res='Space %d %d %1.3e' % (self.total_dims-num_bins,num_bins,self.space_size)        
         #info(res)
-        #sys.exit()		
+        #sys.exit(1)
 
-        #print str(params['ptdriver'].tinfo)
-        
         if 'use_parallel_search' in params.keys(): self.use_parallel_search = params['use_parallel_search']
         else: self.use_parallel_search = False
         if 'ptdriver' in params.keys(): self.num_procs = params['ptdriver'].tinfo.num_procs
@@ -194,7 +192,6 @@ class Search:
 
         # initialize the performance costs mapping
         perf_costs = {}
-        
 
         # filter out all invalid coordinates and previously evaluated coordinates
         uneval_coords = []
@@ -223,7 +220,7 @@ class Search:
             # test if the performance parameters are valid
             try:
                 is_valid = eval(self.constraint, perf_params, dict(self.input_params))
-            except Exception, e:
+            except Exception as e:
                 err('failed to evaluate the constraint expression: "%s"\n%s %s' % (self.constraint,e.__class__.__name__, e))
 
             # if invalid performance parameters
@@ -346,7 +343,7 @@ class Search:
         # test if the performance parameters are valid
         try:
             is_valid = eval(self.constraint, param_config)
-        except Exception, e:
+        except Exception as e:
             err('failed to evaluate the constraint expression: "%s"\n%s %s' % (self.constraint,e.__class__.__name__, e))
 
             
@@ -365,7 +362,6 @@ class Search:
         for i, p in enumerate(params):
             min_val=min(vals[i])
             max_val=max(vals[i])
-            #print p, min_val,max_val
             if param_config[p] < min_val or param_config[p] > max_val:
                 is_out=True
                 break

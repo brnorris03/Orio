@@ -19,7 +19,7 @@ else:
 sys.path.extend(dirs)
 
 if 'ORIO_DEBUG' in os.environ.keys():
-    print "DEBUG: system search path:", sys.path
+    sys.stdout.write("DEBUG: system search path: %s" % sys.path)
 
 
 # dispatch to Orio's main

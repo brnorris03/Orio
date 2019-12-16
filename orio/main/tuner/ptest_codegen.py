@@ -3,7 +3,8 @@
 #
 
 import random, re
-import skeleton_code 
+
+from orio.main.tuner import skeleton_code
 from orio.main.util.globals import *
 from orio.main.tuner.skeleton_code import SEQ_TIMER
 
@@ -103,7 +104,7 @@ class PerfTestCodeGen(object):
         max_dim = 0
         for _,_,_,vdims,_ in input_decls:
             max_dim = max(max_dim, len(vdims))
-        iter_vars = map(lambda x: 'i%s' % x, range(1, max_dim+1))
+        iter_vars = list(map(lambda x: 'i%s' % x, range(1, max_dim+1)))
 
         # generate code for the declaration of the iteration variables
         if len(iter_vars) == 0:
@@ -169,7 +170,7 @@ class PerfTestCodeGen(object):
         max_dim = 0
         for _,_,_,vdims,_ in input_decls:
             max_dim = max(max_dim, len(vdims))
-        iter_vars = map(lambda x: 'i%s' % x, range(1, max_dim+1))
+        iter_vars = list(map(lambda x: 'i%s' % x, range(1, max_dim+1)))
 
         # generate code for the declaration of the iteration variables
         if len(iter_vars) == 0:

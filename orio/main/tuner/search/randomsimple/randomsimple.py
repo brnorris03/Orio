@@ -49,7 +49,7 @@ class Randomsimple(orio.main.tuner.search.search.Search):
                     info( "Point %s gives a better perf: %s -- %s" % (coord, sum( perf_costs ), bestperfcost ) )
                     bestperfcost = sum( perf_costs )
                     bestcoord = coord
-            except Exception, e:
+            except Exception as e:
                 info('FAILED: %s %s' % (e.__class__.__name__, e))
             runs += 1
             if not self.have_z3:
@@ -65,7 +65,7 @@ class Randomsimple(orio.main.tuner.search.search.Search):
         perf_params = self.coordToPerfParams(coord)
         try:
             is_valid = eval(self.constraint, perf_params, dict(self.input_params))
-        except Exception, e:
+        except Exception as e:
             err('failed to evaluate the constraint expression: "%s"\n%s %s' % (self.constraint,e.__class__.__name__, e))
             return False
         return is_valid

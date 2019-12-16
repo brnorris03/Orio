@@ -120,7 +120,7 @@ class Extern(orio.main.tuner.search.search.Search):
 	    perf_costs={}
 	    try:
 	      perf_costs = self.getPerfCosts([coord])
-	    except Exception, e:
+	    except Exception as e:
 	      perf_costs[str(coords)]=[self.MAXFLOAT]
 	      info('FAILED: %s %s' % (e.__class__.__name__, e))
 	      fruns +=1

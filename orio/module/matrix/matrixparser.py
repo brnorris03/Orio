@@ -8,6 +8,7 @@ Created on Mar 8, 2012
 import os,sys
 from lexer import *
 from parser import *
+from orio.main.util.globals import *
 
 class MParser:
   ''' 
@@ -45,7 +46,7 @@ class MParser:
   def error(self, msg):
     self.errorlog.append(msg)
     if printToStderr:
-      print >>sys.stderr, msg
+      err(msg)
 
 
         
@@ -54,17 +55,17 @@ if __name__ == '__main__':
   mparser = MParser(debug=0,printToStderr=False)
   
   for i in range(1, len(sys.argv)):
-    print >>sys.stderr, "[parse] About to parse %s" % sys.argv[i]
+    debug("[parse] About to parse %s" % sys.argv[i], obj=mparser)
     os.system('cat %s' % sys.argv[i])
     theresult = mparser.processFile(sys.argv[i])
     if theresult and len(mparser.lex.errors)==0:
-      print >>sys.stdout, '[parser] Successfully parsed %s' % sys.argv[i]
+      debug('[parser] Successfully parsed %s' % sys.argv[i], obj=mparser)
     
-    print 'All variables and their types:'
+    debug('All variables and their types:', obj=mparser)
     for key,val in getVars().items():
-      print "%s : %s" % (key,val)
+      debug("%s : %s" % (key,val))
 
-    print '***Errors\n', mparser.lex.errors
+    debug('***Errors\n'+ str(mparser.lex.errors))
 
 
 

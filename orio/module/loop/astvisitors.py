@@ -218,7 +218,7 @@ class ExampleVisitor(ASTVisitor):
         
                 else:
                     self.display('[module.loop.astvisitors.ExampleVisitor] orio.module.loop.codegen internal error: unrecognized type of AST: %s' % node.__class__.__name__)
-            except Exception, e:
+            except Exception as e:
                 err("[module.loop.astvisitors.ExampleVisitor] Exception in node %s: %s" % (node.__class__.__name__,e))
             
         pass
@@ -354,7 +354,7 @@ class CountingVisitor(ASTVisitor):
         
                 else:
                     err('[CountingVisitor] orio.module.loop.astvisitors.CountingVisitor internal error: unrecognized type of AST: %s' % node.__class__.__name__)
-            except Exception, e:
+            except Exception as e:
                 err("[CountingVisitor] Exception in node %s: %s" % (node.__class__,e))
 
             

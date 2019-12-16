@@ -19,7 +19,7 @@ for root, dirs, files in os.walk(src_dir, topdown=True):
         dir_names = rel_dir.split(os.sep)
         py_packages.append('.'.join(['orio'] + dir_names[1:]))
 
-print py_packages
+print(py_packages)
 
 #-----------------------------------------------------------
 

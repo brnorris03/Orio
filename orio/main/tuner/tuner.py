@@ -2,10 +2,12 @@
 # The tuner class to initiate the empirical performance tuning process
 #
 
-import re, sys, os
 
-from orio.main.util.globals import *
-import orio.main.dyn_loader, orio.main.tspec.tspec, orio.main.tuner.ptest_codegen, orio.main.tuner.ptest_driver
+from . import ptest_codegen, ptest_driver
+from ...main.tspec import tspec
+from ..util.globals import *
+
+import importlib
 
 
 #--------------------------------------------------
@@ -29,8 +31,6 @@ class PerfTuner:
         '''To instantiate an empirical performance tuner object'''
 
         self.odriver = odriver
-        self.dloader = orio.main.dyn_loader.DynLoader()
-
         self.num_params=0
         self.num_configs=0
         self.num_bin=0
@@ -59,19 +59,19 @@ class PerfTuner:
         #timing_code = ''
         for prob_size in self.__getProblemSizes(tinfo.iparam_params, tinfo.iparam_constraints):
             if self.odriver.lang == 'c':
-                c = orio.main.tuner.ptest_codegen.PerfTestCodeGen(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
+                c = ptest_codegen.PerfTestCodeGen(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
                                                                   tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                   tinfo.random_seed, use_parallel_search, tinfo.validation_file)
             elif self.odriver.lang == 'cuda':
-                c = orio.main.tuner.ptest_codegen.PerfTestCodeGenCUDA(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
+                c = ptest_codegen.PerfTestCodeGenCUDA(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
                                                                   tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                   tinfo.random_seed, use_parallel_search)
             elif self.odriver.lang == 'opencl':
-                c = orio.main.tuner.ptest_codegen.PerfTestCodeGenCUDA(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
+                c = ptest_codegen.PerfTestCodeGenCUDA(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
                                                                   tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                   tinfo.random_seed, use_parallel_search)
             elif self.odriver.lang == 'fortran':
-                c = orio.main.tuner.ptest_codegen.PerfTestCodeGenFortran(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
+                c = ptest_codegen.PerfTestCodeGenFortran(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
                                                                          tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                          tinfo.random_seed, use_parallel_search)
             else:
@@ -80,7 +80,7 @@ class PerfTuner:
             ptcodegens.append(c)
 
         # create the performance-testing driver
-        ptdriver = orio.main.tuner.ptest_driver.PerfTestDriver(self.tinfo, use_parallel_search, 
+        ptdriver = ptest_driver.PerfTestDriver(self.tinfo, use_parallel_search,
                                                                self.odriver.lang, 
                                                                c.getTimerCode(use_parallel_search))
 
@@ -99,15 +99,24 @@ class PerfTuner:
 
         # dynamically load the search engine class and configure it
         
-        #print tinfo.search_algo
         if Globals().extern:
             tinfo.search_algo='Extern'
             info('Running in %s mode' % tinfo.search_algo)
             info('Using parameters %s' % Globals().config)
             
         class_name = tinfo.search_algo
+        # Search module naming convention: in orio.main.tuner.search
+        # Directory with same name as search class name, all lowercase, containing
+        # the module .py file with the same name (all lowercase), which contains
+        # the class, whose name is the search algorithm name used in the tuning spec
+        # For example, randomsearch/randomsearch.py defines the Randomsearch class, e.g.,
+        # randomsearch.randomsearch.Randomsearch
+
         mod_name = '.'.join([SEARCH_MOD_NAME, class_name.lower(), class_name.lower()])
-        search_class = self.dloader.loadClass(mod_name, class_name)
+
+        search_module = importlib.import_module(mod_name)
+        search_class_ = getattr(search_module, class_name)
+
 
         # convert the search time limit (from minutes to seconds) and get the total number of
         # search runs
@@ -127,31 +136,37 @@ class PerfTuner:
                 iparams.sort(lambda x,y: cmp(x[0],y[0]))
                 for pname, pvalue in iparams:
                     info(' %s = %s' % (pname, pvalue))
-            iparams = ptcodegen.input_params[:]
-            iparams.sort(lambda x,y: cmp(x[0],y[0]))
+            iparams = list(ptcodegen.input_params)
+            iparams.sort()
             for pname, pvalue in iparams:
                 Globals().metadata['size_' + pname] = pvalue
 
-            debug(ptcodegen.input_params[:])
+            debug(msg="Input parameters: " + str(iparams))
+
+            search_params = {'cfrags': cfrags,  # code versions
+                             'axis_names': axis_names,  # performance parameter names
+                             'axis_val_ranges': axis_val_ranges,  # performance parameter values
+                             'pparam_constraint': pparam_constraint,
+                             'search_time_limit': search_time_limit,
+                             'search_total_runs': search_total_runs,
+                             'search_resume': search_resume,
+                             'search_opts': search_opts,
+                             'ptcodegen': ptcodegen,
+                             'ptdriver': ptdriver,
+                             'odriver': self.odriver,
+                             'use_parallel_search': use_parallel_search,
+                             'input_params': iparams}
+
+            debug(msg="Search class %s, search params: %s" % (class_name,str(search_params)))
+
             # create the search engine
-            search_eng = search_class({'cfrags':cfrags,                     # code versions
-                                       'axis_names':axis_names,             # performance parameter names
-                                       'axis_val_ranges':axis_val_ranges,   # performance parameter values
-                                       'pparam_constraint':pparam_constraint,
-                                       'search_time_limit':search_time_limit, 
-                                       'search_total_runs':search_total_runs, 
-                                       'search_resume':search_resume,
-                                       'search_opts':search_opts,
-                                       'ptcodegen':ptcodegen, 
-                                       'ptdriver':ptdriver, 'odriver':self.odriver,
-                                       'use_parallel_search':use_parallel_search,
-                                       'input_params':ptcodegen.input_params[:]})
+            search_eng = search_class_(search_params)
 
             
             # search for the best performance parameters
             best_perf_params, best_perf_cost = search_eng.search()
 
-            # print the best performance parameters
+            # output the best performance parameters
             
             if Globals().verbose and not Globals().extern:
                 info('----- the obtained best performance parameters -----')
@@ -164,8 +179,6 @@ class PerfTuner:
             if Globals().extern:
                 best_perf_params=Globals().config
 
-            #print Globals().config    
-            
             cur_optimized_code_seq = self.odriver.optimizeCodeFrags(cfrags, best_perf_params)
 
             # check the optimized code sequence
@@ -232,14 +245,14 @@ class PerfTuner:
             except:
                 err('%s: cannot open file for reading: %s' % (self.__class__, spec_file_path))
 
-            tuning_spec_dict = orio.main.tspec.tspec.TSpec().parseProgram(tspec_code)
+            tuning_spec_dict = tspec.TSpec().parseProgram(tspec_code)
 
         # if the tuning specification is hardcoded into the given code
         elif code.lstrip().startswith('spec'):
-            tuning_spec_dict = orio.main.tspec.tspec.TSpec().parseProgram(code)
+            tuning_spec_dict = tspec.TSpec().parseProgram(code)
         else:
             # parse the specification code to get the tuning information
-            tuning_spec_dict = orio.main.tspec.tspec.TSpec().parseSpec(code, line_no)
+            tuning_spec_dict = tspec.TSpec().parseSpec(code, line_no)
 
         # return the tuning information
         return tuning_spec_dict
@@ -286,10 +299,12 @@ class PerfTuner:
 
         # exclude all invalid problem sizes
         n_prob_sizes = []
+
         for p in prob_sizes:
+            is_valid = False
             try:
                 is_valid = eval(iparam_constraint, dict(p))
-            except Exception, e:
+            except Exception as e:
                 err('orio.main.tuner.tuner:%s: failed to evaluate the input parameter constraint expression\n --> %s: %s' %  (iparam_constraint,e.__class__.__name__, e))
             if is_valid:
                 n_prob_sizes.append(p)
@@ -328,11 +343,9 @@ class PerfTuner:
 
         ptype=[]
         for vals in axis_val_ranges:
-            #print min(vals)
             self.num_configs=self.num_configs*len(vals)
             ptype.append('I')
             if len(vals)==2:
-                #print vals
                 if False in vals or True in vals:
                     self.num_bin=self.num_bin+1
                     ptype[len(ptype)-1]=('B')
