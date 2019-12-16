@@ -13,6 +13,10 @@ env:
     # package name for test invocation
     - PACKAGENAME="orio"
 
+branches:
+  only:
+    - master
+
 before_install:
 # Here we download miniconda and install the dependencies
 - export MINICONDA=$HOME/miniconda
