@@ -1,14 +1,11 @@
 spec unroll_vectorize {
  def build {
-   arg build_command = 'gcc';
+   arg build_command = 'clang -std=c99';
+   #arg build_command = 'gcc';
  } 
  def performance_counter {
    #arg method = 'bgp counter';
    arg repetitions = 5;
- }
- def power {
-   arg method = 'wattprof';
-   arg repetitions = 10;
  }
  def performance_params {  
    param UF[] = range(1,11);

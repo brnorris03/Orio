@@ -1,6 +1,7 @@
 /*@ begin PerfTuning (
  def build {
    arg build_command = 'gcc -O3';
+   #arg build_command = 'clang -std=c99';
    #arg libs = '-lrt';
  } 
  def performance_counter {

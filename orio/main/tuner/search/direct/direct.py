@@ -21,7 +21,7 @@ class Direct( orio.main.tuner.search.search.Search ):
         # We are in a hyperrectangle. Initialization: take the whole parameter space.
 
         rectangle = [ [ 0, self.dim_uplimits[i] ] for i in range( self.total_dims ) ]
-        print "initial rectangle", rectangle
+        print("initial rectangle", rectangle)
         fmin = float( 'inf' )
         rectangles = [ rectangle ]
         minpoint = self.dim_uplimits
@@ -80,8 +80,8 @@ class Direct( orio.main.tuner.search.search.Search ):
             cor3 = [ list( c ) for c in corners ]
             r3 = ( rec3, cor3 )
 
-            print "Dividing rectangle", rectangle, "into", rec1, "AND", rec2, "AND", rec3
-            print "With corners", cor1, "AND", cor2, "AND", cor3
+            print("Dividing rectangle", rectangle, "into", rec1, "AND", rec2, "AND", rec3)
+            print("With corners", cor1, "AND", cor2, "AND", cor3)
 
             # Select the potentially optimal rectangles
 
@@ -90,7 +90,7 @@ class Direct( orio.main.tuner.search.search.Search ):
             for rec, cor in r1, r2, r3:
                 
 
-                print "working in rectangle: ", rec, "corners", cor
+                print("working in rectangle: ", rec, "corners", cor)
 
                 # Take the center
                 center = self.__getCentroid( cor )
@@ -101,16 +101,16 @@ class Direct( orio.main.tuner.search.search.Search ):
                 dist = 0
                 for c in cor:
                     dist = max( dist, self.__distance( c, center ) )
-                print "fc", fc, "dist", dist
+                print("fc", fc, "dist", dist)
 
                 # Add it to the dictionnary
-                if rect_sizes.has_key( dist ):
+                if dist in rect_sizes:
                     rect_sizes[ dist ].append( ( cor, fc ) )
                 else:
                     rect_sizes[ dist ] = [ ( cor, fc ) ]
                     
                 s = sorted( rect_sizes.keys() )
-                if rect_sizes.has_key( dist ):
+                if dist in rect_sizes:
                     i = s.index( dist )
                 else:
                     for i in s:
@@ -118,14 +118,14 @@ class Direct( orio.main.tuner.search.search.Search ):
                             break
                     
                 # rectangles smaller than the current one
-                I1 = { k:v for k,v in rect_sizes.items() if k in s[:i]}
+                I1 = { k:v for k,v in list(rect_sizes.items()) if k in s[:i]}
                 # rectangles larger than the current one
-                if i < len( rect_sizes.keys() ):
-                    I2 = { k:v for k,v in rect_sizes.items() if k in s[i+1:]}
+                if i < len( list(rect_sizes.keys()) ):
+                    I2 = { k:v for k,v in list(rect_sizes.items()) if k in s[i+1:]}
                 else:
                     I2 = {}
                 # rectangles as big as than the current one
-                if rect_sizes.has_key( dist ):
+                if dist in rect_sizes:
                     I3 = rect_sizes[ dist ]
                 else:
                     I3 = []
@@ -179,7 +179,7 @@ class Direct( orio.main.tuner.search.search.Search ):
 
                 # If we are still here, the conditions are fulfilled. The rectangle is potentially optimal.
                 # Add it (it will be divided later).
-                print "potentially optimal rectangle found", rec
+                print("potentially optimal rectangle found", rec)
                 rectangles.append( rec )
 
                 # do we have the minimum?
