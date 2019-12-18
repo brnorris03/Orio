@@ -78,7 +78,7 @@ class OptDriver:
                          'be more than one') % cf.leader_ann.mod_name_line_no)
 
                 # iterate over all nested code fragments
-                nested_cfrags = cf.cfrags[:]
+                nested_cfrags = cf.cfrags.copy()
                 while len(nested_cfrags) > 0:
                     nested_cf = nested_cfrags.pop(0)
 
@@ -162,7 +162,8 @@ class OptDriver:
                 try:
                     mod_class = self.dloader.loadClass(mod_name, class_name)
                 except Exception as e:
-                    err('orio.main.opt_driver: %s: unable to load class %s.%s' % (cfrag.leader_ann.mod_name_line_no,mod_name,class_name))
+                    err('orio.main.opt_driver: %s: unable to load class %s.%s\n   --> %s: %s' % (cfrag.leader_ann.mod_name_line_no,
+                                                            mod_name, class_name, e.__class__.__name__, e))
                     
                 debug("about to instantiate transformation class: %s.%s" %(mod_name,class_name), self)
                 debug("perf_params=" + str(perf_params),self,level=6)
@@ -196,7 +197,7 @@ class OptDriver:
                 try:
                     optimized_code = transformation.transform()
                 except Exception as e:
-                    err('orio.main.opt_driver: encountered an error during transformation %s:\n %s' % (transformation,e)) 
+                    err('orio.main.opt_driver: encountered an error during transformation %s:\n %s' % (transformation,e))
 
                 
                 # create the optimized code sequence

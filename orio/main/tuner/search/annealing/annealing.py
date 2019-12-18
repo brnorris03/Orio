@@ -357,7 +357,7 @@ class Annealing(orio.main.tuner.search.search.Search):
         neigh_coord = None
         total_trials = 1000
         for trial in range(0, total_trials):
-            n_coord = coord[:]
+            n_coord = coord.copy()
             for i in range(0, self.total_dims):
                 ipoint = coord[i] + self.getRandomInt(-1,1)
                 if 0 <= ipoint < self.dim_uplimits[i]:

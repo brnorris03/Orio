@@ -160,7 +160,7 @@ class Transformation:
         elif isinstance(stmt, orio.module.loop.ast.ForStmt):
             t,l = self.__unrollJam(stmt.stmt, tinfos)
             stmt.stmt = t
-            unrolled_loop_infos = l[:]
+            unrolled_loop_infos = l.copy()
 
             for_loop_info = self.flib.extractForLoopInfo(stmt)
             index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info

@@ -244,7 +244,7 @@ class Transformation:
             intmd_aref = orio.module.loop.ast.ArrayRefExp(intmd_aref, sub_exp)
 
         # generate the copying loop: <for-loops> X_buffer[(i-LBi)/STi][...] = X_orig[...][...];
-        rev_loop_headers = loop_headers[:]
+        rev_loop_headers = loop_headers.copy()
         rev_loop_headers.reverse()
         copy_loop = orio.module.loop.ast.BinOpExp(intmd_aref.replicate(),
                                              aref.replicate(),
@@ -343,7 +343,7 @@ class Transformation:
             index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
 
             # update the outer loop index names
-            outer_lids = outer_lids[:] + [index_id.name]
+            outer_lids = outer_lids.copy() + [index_id.name]
 
             # if all the iteration variable names are subsumed by the outer loop index names
             if sets.Set(ivar_names) <= sets.Set(outer_lids):
@@ -402,10 +402,10 @@ class Transformation:
                                                     self.clib.containIdentName(stride_exp, i)),
                                          outer_lids)
                     nind_inames += ind_inames
-                    nloop_headers = loop_headers[:]
+                    nloop_headers = loop_headers.copy()
                     nloop_headers.insert(0, (index_id, lbound_exp, ubound_exp, stride_exp))
                     ipos = ivar_names.index(index_id.name)
-                    nbuf_dsizes = buf_dsizes[:]
+                    nbuf_dsizes = buf_dsizes.copy()
                     nbuf_dsizes.insert(0, dim_sizes[ipos])
                     nrinfo = (nrem_inames, nind_inames, nloop_headers, nbuf_dsizes)
                     return (stmt, False, None, nrinfo)

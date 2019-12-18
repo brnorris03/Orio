@@ -42,7 +42,7 @@ class Rewriter(object):
             elif n.ty.name == 'matrix':
               self.existMats = True
               #if isinstance(n.ty, QualIdentExp):
-              #  print n.ty.qual
+              #  debug("Matrix " + str(n.ty.qual), obj=self)
           return ParamDec(IdentExp(ty), n.name)
         else:
           return n

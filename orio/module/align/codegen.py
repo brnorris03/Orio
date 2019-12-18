@@ -52,7 +52,7 @@ class CodeGen_C(CodeGen):
         '''To Return the starting address location of the given variable (in C/C++)'''
 
         vname = var.vname
-        dims = var.dims[:]
+        dims = var.dims.copy()
         dims.remove(None)
         s = str(vname)
         if len(dims) > 0:

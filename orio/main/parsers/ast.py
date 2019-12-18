@@ -431,7 +431,7 @@ class TransformStmt(Stmt):
 
     def clone(self):
         '''Replicate this abstract syntax tree node'''
-        return TransformStmt(self.name, self.args[:], self.stmt.replicate(), self.line_no)
+        return TransformStmt(self.name, self.args.copy(), self.stmt.replicate(), self.line_no)
 
 
 

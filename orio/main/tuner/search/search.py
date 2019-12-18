@@ -484,7 +484,7 @@ class Search:
             cur_points = filter(lambda x: 0 <= x < iuplimit, cur_points)
             n_neigh_coords = []
             for ncoord in neigh_coords:
-                n_neigh_coords.extend([ncoord[:]+[p] for p in cur_points])
+                n_neigh_coords.extend([ncoord.copy()+[p] for p in cur_points])
             neigh_coords = n_neigh_coords
 
         # remove the current coordinate from the neighboring coordinates list

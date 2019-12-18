@@ -58,23 +58,23 @@ class Direct( orio.main.tuner.search.search.Search ):
             if 0 == int( round( longuest_len / 3 ) ):
                 break
         
-            rec1 = rectangle[:]
-            rec1[longuest_dim] = rectangle[longuest_dim][:]
+            rec1 = rectangle.copy()
+            rec1[longuest_dim] = rectangle[longuest_dim].copy()
             rec1[longuest_dim][1] = rectangle[longuest_dim][0] + int( round( longuest_len / 3 ) ) # DIRTY
             corners = list( itertools.product( *rec1, repeat=1 ))
             cor1 = [ list( c ) for c in corners ]
             r1 = ( rec1, cor1 )
 
-            rec2 = rectangle[:]
-            rec2[longuest_dim] = rectangle[longuest_dim][:]
+            rec2 = rectangle.copy()
+            rec2[longuest_dim] = rectangle[longuest_dim].copy()
             rec2[longuest_dim][0] = rectangle[longuest_dim][0] + int( round( longuest_len / 3 ) )
             rec2[longuest_dim][1] = rectangle[longuest_dim][0] + int( round( 2 * longuest_len / 3 ) )
             corners = list( itertools.product( *rec2, repeat=1 ))
             cor2 = [ list( c ) for c in corners ]
             r2 = ( rec2, cor2 )
 
-            rec3 = rectangle[:]
-            rec3[longuest_dim] = rectangle[longuest_dim][:]
+            rec3 = rectangle.copy()
+            rec3[longuest_dim] = rectangle[longuest_dim].copy()
             rec3[longuest_dim][0] = rectangle[longuest_dim][0] + int( round( 2 * longuest_len / 3 ) )
             corners = list( itertools.product( *rec3, repeat=1 ))
             cor3 = [ list( c ) for c in corners ]

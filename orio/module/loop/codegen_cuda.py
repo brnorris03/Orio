@@ -2,7 +2,7 @@
 # The code generator (i.e. unparser) for the AST classes for CUDA
 #
 
-import ast
+from orio.module.loop import ast
 import orio.main.util.globals as g
 from orio.module.loop.codegen import CodeGen_C
 

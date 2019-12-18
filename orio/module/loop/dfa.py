@@ -3,10 +3,7 @@ Created on April 30, 2015
 
 @author: norris
 '''
-import ast, sys, os, traceback
-from orio.main.util.globals import *
-from orio.tool.graphlib import graph
-from orio.module.loop import astvisitors
+
 
 class DFA:
     '''Abstract dataflow analysis'''

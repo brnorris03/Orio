@@ -178,7 +178,7 @@ class ThreadBlock(orio.main.tuner.search.search.Search):
         
         @return: the coordinate -- a list of values, one per parameter
         '''
-        next_coord = coord[:]
+        next_coord = coord.copy()
         for i in range(0, self.total_dims):
             ipoint = next_coord[i]
             iuplimit = self.dim_uplimits[i]

@@ -3,7 +3,8 @@ Created on Feb 26, 2015
 
 @author: norris
 '''
-import ast, sys, os, traceback
+import sys, os, traceback
+from orio.module.loop import ast
 from orio.main.util.globals import *
 
 import orio.module.loop.codegen

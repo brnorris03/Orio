@@ -30,16 +30,10 @@ class DynLoader:
         try:
             topmodule = importlib.import_module(mod_name)
         except Exception as e:
-            err('orio.main.dyn_loader: Failed to load module "%s"\n --> %s: %s' % (mod_name, e.__class__.__name__, e), doexit=True)
-        components = mod_name.split('.')
-        for c in components[1:]:
-            submod_name = getattr(topmodule, c)
-            # remember the currently loaded module
-            submodule = importlib.import_module(mod_name + '.' + submod_name)
-            self.__loaded_modules[key_name] = submodule
+            err('orio.main.dyn_loader: Failed to load module "%s"\n --> %s: %s' % (mod_name, e.__class__.__name__, e))
 
         # return the loaded module
-        return module
+        return topmodule
 
     # -------------------------------------------------
 
@@ -54,6 +48,7 @@ class DynLoader:
         # load the specified module dynamically
         module = self.__loadModule(mod_name)
 
+        debug('orio.main.dyn_loader: successfully loaded module %s' % module)
         # load the specified class from the loaded module
         try:
             mod_class = getattr(module, class_name)

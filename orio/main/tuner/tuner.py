@@ -132,8 +132,7 @@ class PerfTuner:
         for ptcodegen in ptcodegens:
             if Globals().verbose:
                 info('\n----- begin empirical tuning for problem size -----')
-                iparams = ptcodegen.input_params[:]
-                iparams.sort(lambda x,y: cmp(x[0],y[0]))
+                iparams = sorted(ptcodegen.input_params)   # sorted by key
                 for pname, pvalue in iparams:
                     info(' %s = %s' % (pname, pvalue))
             iparams = list(ptcodegen.input_params)
@@ -191,7 +190,7 @@ class PerfTuner:
             # insert comments into the optimized code to include information about 
             # the best performance parameters and the input problem sizes
             iproblem_code = ''
-            iparams = ptcodegen.input_params[:]
+            iparams = ptcodegen.input_params.copy()
             iparams.sort(lambda x,y: cmp(x[0],y[0]))
             for pname, pvalue in iparams:
                 if pname == '__builtins__':
@@ -216,7 +215,7 @@ class PerfTuner:
             optimized_code = info_code + optimized_code
 
             # store the optimized for this problem size
-            optimized_code_seq.append((optimized_code, ptcodegen.input_params[:], externals))
+            optimized_code_seq.append((optimized_code, ptcodegen.input_params.copy(), externals))
 
         # return the optimized code
         return optimized_code_seq

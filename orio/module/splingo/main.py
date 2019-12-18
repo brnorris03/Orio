@@ -21,7 +21,7 @@ if __name__ == "__main__":
   
   # pretty-print
   text = printer.Printer().pp(ast2, '')
-  print text
+  print(text)
   f = open(sys.argv[-1] + '.c', 'w')
   f.write(text)
   f.close()

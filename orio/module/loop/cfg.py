@@ -3,10 +3,10 @@ Created on April 26, 2015
 
 @author: norris
 '''
-import ast, sys, os, traceback
+import sys, os, traceback
 from orio.main.util.globals import *
 from orio.tool.graphlib import graph
-from orio.module.loop import astvisitors
+from orio.module.loop import ast, astvisitors
 
 class CFGVertex(graph.Vertex):
     '''A CFG vertex is a basic block.'''

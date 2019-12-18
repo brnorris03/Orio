@@ -242,8 +242,8 @@ class LRParser:
         self.errorok     = 1
 
     def restart(self):
-        del self.statestack[:]
-        del self.symstack[:]
+        self.statestack.clear()
+        self.symstack.clear()
         sym = YaccSymbol()
         sym.type = '$end'
         self.symstack.append(sym)
@@ -545,7 +545,7 @@ class LRParser:
                     errtoken = None
                     state = 0
                     # Nuke the pushback stack
-                    del lookaheadstack[:]
+                    lookaheadstack.clear()
                     continue
 
                 # case 2: the statestack has a couple of entries on it, but we're
@@ -818,7 +818,7 @@ class LRParser:
                     errtoken = None
                     state = 0
                     # Nuke the pushback stack
-                    del lookaheadstack[:]
+                    lookaheadstack.clear()
                     continue
 
                 # case 2: the statestack has a couple of entries on it, but we're
@@ -1072,7 +1072,7 @@ class LRParser:
                     errtoken = None
                     state = 0
                     # Nuke the pushback stack
-                    del lookaheadstack[:]
+                    lookaheadstack.clear()
                     continue
 
                 # case 2: the statestack has a couple of entries on it, but we're
@@ -1972,7 +1972,7 @@ class LRGeneratedTable(LRTable):
         self._add_count += 1
 
         # Add everything in I to J
-        J = I[:]
+        J = I.copy()
         didadd = 1
         while didadd:
             didadd = 0

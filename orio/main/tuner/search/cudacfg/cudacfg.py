@@ -138,7 +138,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
             tmp = tcindices
             ind = len(tmp)/2
             
-            #debug("kernel type %s, Occupancy %f, lmax_bloc_prev %s" % (kernel_type, occupancy, tmp), obj=self)
+            #debug("kernel type %s, Occupancy %f, lmax_bloc_prev %s" % (str(kernel_type), occupancy, str(tmp)), obj=self)
             if occupancy == 100.0:
                 if kernel_type == "MEM": tc = tmp[ind:]
                 else: tc = tmp[:max(ind,1)]

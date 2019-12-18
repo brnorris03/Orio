@@ -105,7 +105,7 @@ class CodeGen:
                         + self.generate(tnode.rhs, indent, extra_indent) + ')'
                 elif tnode.op_type == tnode.COMMA:
                     # TODO: We need to implement an AST canonicalization step for Fortran before generating the code.
-                    warn('Fortran code generator does not fully support the comma operator -- the generated code may not compile.')
+                    warn('[orio.main.parsers.fcodegen] Fortran code generator does not fully support the comma operator -- the generated code may not compile.')
                     s += self.generate(tnode.rhs, indent, extra_indent) 
                     s += '\n' + indent + self.generate(tnode.lhs, indent, extra_indent)
                     s +='\n! ORIO Warining: check code above and fix problems.'
