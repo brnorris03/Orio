@@ -617,14 +617,14 @@ if __name__ == '__main__':
     (f, g)]:
         G.add_e(UndirEdge(len(G.e), *ep))
 
-    print G
-    print 'DFS:', map(str, G.depth_first_search(a))
-    print 'BFS:', map(str, G.breadth_first_search(a))
-    print 'top sort:', map(str, G.topological_sort(a))
+    print(str(G))
+    print('DFS:' + str(list(map(str, G.depth_first_search(a)))))
+    print('BFS:' + str(list(map(str, G.breadth_first_search(a)))))
+    print('top sort:' + str(list(map(str, G.topological_sort(a)))))
 
     T = G.minimal_span_tree()
-    print T
-    print [(map(str, k), map(str, v)) for k, v in T.path_dict().items()]
+    print(str(T))
+    print(str([(list(map(str, k)), list(map(str, v))) for k, v in T.path_dict().items()])
     
     S = G.shortest_tree(a)
-    print S
+    print(str(S))
