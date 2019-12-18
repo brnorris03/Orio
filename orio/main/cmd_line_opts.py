@@ -39,9 +39,9 @@ Options:
   --meta                         export metadata as json
 
 environment variables: 
-  ORIO_FLAGS                     the string value is used to augment the list of Orio command-lin
+  ORIO_FLAGS                     the string value is used to augment the list of Orio command-line
                                  options
-  ORIO_DEBUG                     when set, print debugging information (orio.main.y for developer use)
+  ORIO_DEBUG                     when set, output debugging information (mainly for developer use)
                                  
 For more details, please refer to the documentation at https://trac.mcs.anl.gov/projects/performance/wiki/OrioUserGuide
 ''' % os.path.basename(sys.argv[0])

@@ -124,9 +124,6 @@ class CodeGen_C (CodeGen):
             elif tnode.op_type == tnode.COMMA:
                 s += ','
             elif tnode.op_type == tnode.EQ_ASGN:
-                #print "(((((( Binop: tnode.lhs.meta=%s, tnode.rhs.meta=%s ))))) " \
-                #    % (str(tnode.lhs.meta),str(tnode.rhs.meta))
-
                 s += '='
             else:
                 g.err('orio.module.loop.codegen internal error: unknown binary operator type: %s' % tnode.op_type)
@@ -341,7 +338,7 @@ class CodeGen_F(CodeGen):
                         + self.generate(tnode.rhs, indent, extra_indent) + ')'
                 elif tnode.op_type == tnode.COMMA:
                     # TODO: We need to implement an AST canonicalization step for Fortran before generating the code.
-                    print 'internal warning: Fortran code generator does not fully support the comma operator -- the generated code may not compile.'
+                    g.warn("[Loop module] Fortran code generator does not fully support the comma operator -- the generated code may not compile.")
                     s += self.generate(tnode.rhs, indent, extra_indent) 
                     s += '\n' + indent + self.generate(tnode.lhs, indent, extra_indent)
                     s +='\n! ORIO Warining: check code above and fix problems.'

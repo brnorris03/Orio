@@ -4,7 +4,7 @@
 #
 import sys, os
 import orio.tool.ply.lex, orio.tool.ply.yacc
-import orio.main.util.globals as g
+from orio.main.util.globals import *
 import orio.module.splingo.ast as ast
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ class SpLingoLexer:
     t.lexer.lineno += len(t.value)
   
   def t_error(self, t):
-    g.err('%s: illegal character (%s) at line %s' % (self.__class__, t.value[0], t.lexer.lineno))
+    err('%s: illegal character (%s) at line %s' % (self.__class__, t.value[0], t.lexer.lineno))
 
   def build(self, **kwargs):
     self.lexer = orio.tool.ply.lex.lex(module=self, **kwargs)
@@ -103,7 +103,7 @@ class SpLingoLexer:
     while 1:
       tok = self.lexer.token()
       if not tok: break
-      print tok
+      debug(tok,obj=self)
 
   def input(self, data):
       return self.lexer.input(data)
@@ -123,7 +123,6 @@ elixir = None
 def p_prog_a(p):
     '''prog : sid IN params OUT params '{' stmts '}' '''
     p[0] = ast.FunDec(p[1], ast.IdentExp('void'), [], p[3]+p[5], p[7])
-    #print codegen.CodeGen().generate(p[0], '', '  ')
 
 def p_prog_b(p):
     '''prog : sid IN params            '{' stmts '}'
@@ -312,7 +311,7 @@ def p_empty(p):
     p[0] = None
 
 def p_error(p):
-    g.err("orio.module.splingo.parser: error in input line #%s, at token-type '%s', token-value '%s'" % (p.lineno, p.type, p.value))
+    err("orio.module.splingo.parser: error in input line #%s, at token-type '%s', token-value '%s'" % (p.lineno, p.type, p.value))
 #----------------------------------------------------------------------------------------------------------------------
 
 
@@ -336,12 +335,11 @@ def parse(text):
 #----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
   for i in range(1, len(sys.argv)):
-    #print "About to lex %s" % sys.argv[i]
     f = open(sys.argv[i], "r")
     s = f.read()
     f.close()
-    #print "Contents of %s:\n%s" % (sys.argv[i], s)
-    # Test the lexer; just print out all tokens founds
+    debug("Contents of %s:\n%s" % (sys.argv[i], s))
+    # Test the lexer; just print out all tokens found
     #l.test(s)
 
     parse(s)

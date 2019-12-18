@@ -187,7 +187,7 @@ class AnnParser:
             skip = False
             # an unrecognized form of annotation
             if not self.__leader_ann_re.match(ann) and not self.__trailer_ann_re.match(ann):
-                warn('orio.main.ann_parser warning:%s: unrecognized form of annotation, skipping...' % ann_line_no)
+                g.warn('orio.main.ann_parser warning:%s: unrecognized form of annotation, skipping...' % ann_line_no)
                 skip = True
                     
             # update the code and line number
