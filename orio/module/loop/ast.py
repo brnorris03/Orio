@@ -36,7 +36,7 @@
 #   simplify the input language.
 #
 
-import codegen
+from orio.module.loop import codegen
 from orio.main.util.globals import Globals
 
 #-----------------------------------------------
@@ -441,7 +441,7 @@ class TransformStmt(Stmt):
 
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
-        return TransformStmt(self.name, self.args[:], self.stmt.replicate(), 
+        return TransformStmt(self.name, self.args.copy(), self.stmt.replicate(),
                              self.line_no, meta=self.meta)
 
 #-----------------------------------------------
@@ -468,7 +468,7 @@ class VarDecl(NewAST):
 
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
-        return VarDecl(self.type_name, self.var_names[:], 
+        return VarDecl(self.type_name, self.var_names.copy(),
                        self.line_no, meta=self.meta)
 
 class VarDeclInit(NewAST):
@@ -517,8 +517,8 @@ class FunDecl(NewAST):
 
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
-        return FunDecl(self.fun_name, self.return_type, self.modifiers[:], 
-                       self.params[:], self.body.replicate(), self.line_no,
+        return FunDecl(self.fun_name, self.return_type, self.modifiers.copy(),
+                       self.params.copy(), self.body.replicate(), self.line_no,
                        meta=self.meta)
 
 #-----------------------------------------------

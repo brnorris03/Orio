@@ -224,7 +224,7 @@ class Transformation:
 
             # unroll this statement based on the given sequence of unroll factors
             stmts = [stmt]
-            outer_unrolls_rev = outer_unrolls[:]
+            outer_unrolls_rev = outer_unrolls.copy()
             outer_unrolls_rev.reverse()
             for iname, ufactor, stride_exp in outer_unrolls_rev:
 
@@ -252,7 +252,7 @@ class Transformation:
         elif isinstance(stmt, orio.module.loop.ast.GotoStmt):
             # unroll this statement based on the given sequence of unroll factors
             stmts = [stmt]
-            outer_unrolls_rev = outer_unrolls[:]
+            outer_unrolls_rev = outer_unrolls.copy()
             outer_unrolls_rev.reverse()
             for iname, ufactor, stride_exp in outer_unrolls_rev:
 
@@ -391,9 +391,9 @@ class Transformation:
             outer_unrolls = n_outer_unrolls
             
             # get the original and extended free/outer unroll factors
-            orig_free_unrolls = free_unrolls[:]
+            orig_free_unrolls = free_unrolls.copy()
             ext_free_unrolls = free_unrolls
-            orig_outer_unrolls = outer_unrolls[:]
+            orig_outer_unrolls = outer_unrolls.copy()
             ext_outer_unrolls = outer_unrolls            
             if i_ufactor != 1:
                 intertile_iname = self.itvar_map[i_index_id.name]
@@ -466,7 +466,7 @@ class Transformation:
             else:
                 
                 # reverse the bound unroll factors
-                bound_unrolls_rev = bound_unrolls[:]
+                bound_unrolls_rev = bound_unrolls.copy()
                 bound_unrolls_rev.reverse()
 
                 # the new lower/upper bounds

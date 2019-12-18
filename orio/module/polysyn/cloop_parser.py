@@ -454,7 +454,7 @@ class CLoopParser:
                     head, body, tail = cl
                     _, _, head_l, loop_id = head
                     _, _, tail_l = tail
-                    n_outer_loop_nest = outer_loop_nest[:] + [(loop_id, head_l, tail_l, body)]
+                    n_outer_loop_nest = outer_loop_nest.copy() + [(loop_id, head_l, tail_l, body)]
                     if line_num == head_l or line_num == tail_l:
                         return n_outer_loop_nest
                     elif head_l < line_num < tail_l:
@@ -467,7 +467,7 @@ class CLoopParser:
                     if middle:
                         _, _, middle_l = middle
                     _, _, tail_l = tail
-                    n_outer_loop_nest = outer_loop_nest[:]
+                    n_outer_loop_nest = outer_loop_nest.copy()
                     if line_num == head_l or line_num == tail_l:
                         return n_outer_loop_nest
                     elif middle_l:
@@ -614,7 +614,7 @@ class CLoopParser:
 
         # find the scope of each for-loop and if statement
         original_clines = clines
-        clines = self.__createScopes(clines[:])
+        clines = self.__createScopes(clines.copy())
 
         # find all hotspot loop nests
         hotspot_lnests = []

@@ -299,7 +299,7 @@ class TransformStmt(Stmt):
 
     def clone(self):
         '''Replicate this abstract syntax tree node'''
-        return TransformStmt(self.name, self.args[:], self.stmt.replicate(), self.line_no)
+        return TransformStmt(self.name, self.args.copy(), self.stmt.replicate(), self.line_no)
 
 #-----------------------------------------------
 # New ASTNode
@@ -325,7 +325,7 @@ class VarDecl(NewAST):
 
     def clone(self):
         '''Replicate this abstract syntax tree node'''
-        return VarDecl(self.type_name, self.var_names[:], self.line_no)
+        return VarDecl(self.type_name, self.var_names.copy(), self.line_no)
 
 #-----------------------------------------------
 # Pragma Directive

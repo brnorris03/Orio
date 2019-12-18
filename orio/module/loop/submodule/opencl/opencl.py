@@ -249,7 +249,7 @@ class OpenCL(orio.module.loop.submodule.submodule.SubModule):
                 g.err('%s: %s: unrecognized transformation argument: "%s"' % (self.__class__, line_no, aname))
 
         if not errors == '':
-            raise Exception, ('%s: errors evaluating transformation args:\n%s' % (self.__class__, errors))
+            raise Exception('%s: errors evaluating transformation args:\n%s' % (self.__class__, errors))
 
         # return evaluated transformation arguments
         return {

@@ -2,7 +2,7 @@
 # The code generator (i.e. unparser) for the AST classes
 #
 
-import ast
+from orio.module.loop import ast
 import orio.main.util.globals as g
 
 #-------------------------------------------------
@@ -48,10 +48,11 @@ class CodeGen_C (CodeGen):
     #----------------------------------------------
 
     def generate(self, tnode, indent = '  ', extra_indent = '  '):
-        '''To generate code that corresponds to the given AST'''
+        '''Generate code that corresponds to the given AST'''
 
         s = ''
 
+        g.debug("Generating code for %s" % str(tnode), obj=self)
         if isinstance(tnode, ast.NumLitExp):
             s += str(tnode.val)
 
@@ -200,7 +201,7 @@ class CodeGen_C (CodeGen):
                 s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
 
         elif isinstance(tnode, ast.TransformStmt):
-            g.err('orio.module.loop.codegen internal error: a transformation statement is never generated as an output')
+            g.err('orio.module.loop.codegen internal error: a transformation statement is never generated as an output', obj=self)
 
         elif isinstance(tnode, ast.VarDecl):
             sv = indent + str(tnode.type_name) + ' '

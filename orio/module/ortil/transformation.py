@@ -97,9 +97,9 @@ class Transformation:
                lbody          
         '''
 
-        iter_names = iter_names[:]
+        iter_names = iter_names.copy()
         iter_names.reverse()
-        st_exps = st_exps[:]
+        st_exps = st_exps.copy()
         st_exps.reverse()
         loop = lbody
         for level in range(1, tile_level+1):
@@ -500,7 +500,7 @@ class Transformation:
                 elif contain_loop:
 
                     # add single-level tiled loop
-                    rev_inames = loop_inames[:]
+                    rev_inames = loop_inames.copy()
                     rev_inames.reverse()
                     l = ast.CompStmt(stmts)
                     for iname in rev_inames:
@@ -605,7 +605,7 @@ class Transformation:
 
         # to handle the given expression statement or if statement
         if isinstance(stmt, ast.ExpStmt) or isinstance(stmt, ast.IfStmt):
-            preceding_stmts = preceding_stmts[:]
+            preceding_stmts = preceding_stmts.copy()
             if preceding_stmts:
                 is_tiled, last_stmts = preceding_stmts.pop()
                 if is_tiled:
@@ -657,7 +657,7 @@ class Transformation:
             int_vars.extend(ivars)
             
             # initialize the resulting statements
-            res_stmts = preceding_stmts[:]
+            res_stmts = preceding_stmts.copy()
 
             # generate the prolog code
             if need_prolog:
@@ -934,7 +934,7 @@ class Transformation:
                     iter_names.pop(0)
                     if not iter_names:
                         if isinstance(cur_stmt.stmt, ast.CompStmt):
-                            stmts = cur_stmt.stmt.stmts[:]
+                            stmts = cur_stmt.stmt.stmts.copy()
                             contain_loop = False
                             while stmts:
                                 s = stmts.pop(0)
@@ -1038,7 +1038,7 @@ class SimpleLoops:
 
         # check if the given loop can be fused into one of the existing loops
         loops = self.loops
-        inames_seq = iter_names_seq[:]
+        inames_seq = iter_names_seq.copy()
         is_done = False
         while inames_seq:
             iname = inames_seq[0]

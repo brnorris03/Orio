@@ -487,7 +487,7 @@ def _form_master_re(relist,reflags,ldict,toknames):
 
         # Build the index to function map for the matching engine
         lexindexfunc = [ None ] * (max(lexre.groupindex.values())+1)
-        lexindexnames = lexindexfunc[:]
+        lexindexnames = lexindexfunc.copy()
 
         for f,i in lexre.groupindex.items():
             handle = ldict.get(f,None)

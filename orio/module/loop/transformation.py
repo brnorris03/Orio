@@ -2,7 +2,8 @@
 # The transformation that applies code transformation procedures
 #
 
-import ast, orio.main.dyn_loader
+from orio.module.loop import ast
+import orio.main.dyn_loader
 from orio.main.util.globals import *
 
 #-----------------------------------------
@@ -28,6 +29,7 @@ class Transformation:
     def transform(self, stmts):
         '''Apply code transformations on each statement in the given statement list'''
         Globals().metadata['loop_transformations'] = []
+        debug("In module.loop.transform.transform()", obj=self)
         # for s in stmts:
         #     Globals().metadata["loop_transformations"].append(s.name)
         return [self.__transformStmt(s) for s in stmts]
@@ -96,7 +98,7 @@ class Transformation:
                 except Exception as e:
                     err(('orio.module.loop.transformation:%s: encountered an error during transformation of ' +
                             'statement: "%s"\n --> %s: %s') % (stmt.line_no, class_name,e.__class__.__name__, e), 0, False)
-                    raise Exception, e
+                    raise Exception(e)
     
                 # return the transformed statement
                 return transformed_stmt
@@ -104,6 +106,6 @@ class Transformation:
             else:
                 err('orio.module.loop.transformation internal error: unknown statement type: %s' % stmt.__class__.__name__)
    
-        except Exception,e:
+        except Exception(e):
             err('orio.module.loop.transformation exception for statement %s' % stmt.__class__.name)
 

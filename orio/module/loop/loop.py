@@ -5,10 +5,9 @@
 import sys, traceback
 from orio.main.util.globals import *
 
-from ..module import Module
+from orio.module.module import Module
 
-from . import codegen, parser, transformation, ast
-from . import astvisitors
+from orio.module.loop import codegen, parser, transformation, ast, astvisitors
 
 #-----------------------------------------
 
@@ -29,7 +28,10 @@ class Loop(Module):
         '''To apply loop transformations on the annotated code'''
 
         # parse the code to get the AST
-        stmts = parser.getParser(self.line_no).parse(self.module_body_code)
+        debug("Begin module.loop.loop.Loop.transform()", obj=self)
+        theparser = parser.getParser(self.line_no)
+        stmts = theparser.parse(self.module_body_code)
+        debug("Successfully parsed the code starting at line %d:\n%s" % (self.line_no,str(stmts)), obj=self)
         if isinstance(stmts[0], ast.TransformStmt) and stmts[0].stmt is None:
             # transform the enclosed annot_body_code
             annotated_stmts = parser.getParser(self.line_no).parse(self.annot_body_code)
@@ -40,7 +42,9 @@ class Loop(Module):
             stmts[0].stmt = annotated_stmt
 
         # apply transformations
+        debug("Before Transformation constructor", obj=self)
         t = transformation.Transformation(self.perf_params, self.verbose, self.language, self.tinfo)
+        debug("About to transform the code", obj=self)
         transformed_stmts = t.transform(stmts)
         
         

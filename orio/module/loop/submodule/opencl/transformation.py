@@ -58,7 +58,7 @@ class Transformation(object):
         ivarLists = filter(lambda x: len(x[3])>0, tinfo.ivar_decls)
         ivarListLengths = set(reduce(lambda acc,item: acc+item[3], ivarLists, []))
         if len(ivarListLengths) > 1:
-          raise Exception, ('orio.module.loop.submodule.opencl.transformation: streaming for different-length arrays is not supported')
+          raise Exception('orio.module.loop.submodule.opencl.transformation: streaming for different-length arrays is not supported')
       
       # ---------------------------------------------------------------------
       # analysis results; initial values are at defaults
@@ -353,7 +353,7 @@ class Transformation(object):
         else:
           aidtinfo = filter(lambda x: x[2] == aid, self.tinfo.ivar_decls)
           if len(aidtinfo) == 0:
-            raise Exception, ('orio.module.loop.submodule.opencl.transformation: %s: unknown input variable argument: "%s"' % aid)
+            raise Exception('orio.module.loop.submodule.opencl.transformation: %s: unknown input variable argument: "%s"' % aid)
           else:
             aidtinfo = aidtinfo[0]
           aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
@@ -431,7 +431,7 @@ class Transformation(object):
         else:
           aidtinfo = filter(lambda x: x[2] == aid, self.tinfo.ivar_decls)
           if len(aidtinfo) == 0:
-            raise Exception, ('orio.module.loop.submodule.opencl.transformation: %s: unknown input variable argument: "%s"' % aid)
+            raise Exception('orio.module.loop.submodule.opencl.transformation: %s: unknown input variable argument: "%s"' % aid)
           else:
             aidtinfo = aidtinfo[0]
           aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
@@ -529,7 +529,7 @@ class Transformation(object):
             else:
               raidtinfo = filter(lambda x: x[2] == raid, self.tinfo.ivar_decls)
               if len(raidtinfo) == 0:
-                raise Exception, ('orio.module.loop.submodule.opencl.transformation: %s: unknown input variable argument: "%s"' % aid)
+                raise Exception('orio.module.loop.submodule.opencl.transformation: %s: unknown input variable argument: "%s"' % aid)
               else:
                 raidtinfo = raidtinfo[0]
               raidbytes = BinOpExp(IdentExp(raidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(raidtinfo[1])]), BinOpExp.MUL)
@@ -1268,10 +1268,10 @@ class Transformation(object):
 
           #warpSize = self.devProps['warpSize'] # minimum for compute capability 1.0 and up is 32
           #if tcount < warpSize:
-          #  raise Exception, ("%s: thread count of less than device warp size of %s is not recommended, detected %s."
+          #  raise Exception("%s: thread count of less than device warp size of %s is not recommended, detected %s."
           #        % (self.__class__, warpSize, tcount))
           #elif tcount % warpSize != 0:
-          #  raise Exception, ("%s: thread count that is not a multiple of device warp size of %s is not recommended, detected %s."
+          #  raise Exception("%s: thread count that is not a multiple of device warp size of %s is not recommended, detected %s."
           #        % (self.__class__, warpSize, tcount))
 
           if warpkern32 is None:

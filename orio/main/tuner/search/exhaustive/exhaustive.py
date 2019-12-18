@@ -196,7 +196,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         
         @return: the next coordinate
         '''
-        next_coord = coord[:]
+        next_coord = coord.copy()
         for i in range(0, self.total_dims):
             ipoint = next_coord[i]
             iuplimit = self.dim_uplimits[i]

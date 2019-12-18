@@ -176,7 +176,7 @@ class MacroExpander:
         macro_defs = self.__rewriteMacroDefs(macro_defs)
 
         # delete all relevant macro definitions
-        rev_macro_def_positions = macro_def_positions[:]
+        rev_macro_def_positions = macro_def_positions.copy()
         rev_macro_def_positions.reverse()
         for start_pos, end_pos in rev_macro_def_positions:
             pluto_code = pluto_code[:start_pos] + pluto_code[end_pos:]
@@ -189,8 +189,8 @@ class MacroExpander:
         macro_subs = [self.__substituteMacro(macro_defs_code, r) for r in macro_refs]
         
         # replace all macro references in the code with the substitutions
-        rev_macro_ref_positions = macro_ref_positions[:]
-        rev_macro_subs = macro_subs[:]
+        rev_macro_ref_positions = macro_ref_positions.copy()
+        rev_macro_subs = macro_subs.copy()
         rev_macro_ref_positions.reverse()
         rev_macro_subs.reverse()
         for sub, (start_pos, end_pos) in zip(rev_macro_subs, rev_macro_ref_positions):

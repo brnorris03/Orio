@@ -85,7 +85,7 @@ class SynTransformation:
 
         # update the loop nest and the loop permutation
         if len(permut) > len(loop_nest):
-            lpermut = permut[:]
+            lpermut = permut.copy()
             for i in range(0, len(lpermut)-len(loop_nest)):
                 lpermut.remove(i)
             min_i = min(lpermut)
