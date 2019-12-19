@@ -118,10 +118,10 @@ class MSimplex(orio.main.tuner.search.search.Search):
         simplex = self.__initSimplex()
 
         # get the performance cost of each coordinate in the simplex
-        perf_costs = map(self.getPerfCost, simplex)
+        perf_costs = list(map(self.getPerfCost, simplex))
         
         # if repetition is more than 1, ignore the first measurement, and average the other ones
-        perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), perf_costs)
+        perf_costs = list(map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), perf_costs))
         
         # flag to tell whether or not local min has reached
         self.localmin = False
@@ -235,9 +235,9 @@ class MSimplex(orio.main.tuner.search.search.Search):
             # reflection
             
             refl_coords = self.__getReflection(worst_coord, centroid)
-            refl_coords = map(self.__forceInBound, refl_coords)
-            refl_perf_costs = map(self.getPerfCost, refl_coords)
-            refl_perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), refl_perf_costs)              
+            refl_coords = list(map(self.__forceInBound, refl_coords))
+            refl_perf_costs = list(map(self.getPerfCost, refl_coords))
+            refl_perf_costs = list(map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), refl_perf_costs))
                 
             refl_perf_cost = min(refl_perf_costs)
             ipos = refl_perf_costs.index(refl_perf_cost)
@@ -259,9 +259,9 @@ class MSimplex(orio.main.tuner.search.search.Search):
                 
                 # expansion
                 exp_coords = self.__getExpansion(refl_coord, centroid)
-                exp_coords = map(self.__forceInBound, exp_coords)
-                exp_perf_costs = map(self.getPerfCost, exp_coords)
-                exp_perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), exp_perf_costs)      
+                exp_coords = list(map(self.__forceInBound, exp_coords))
+                exp_perf_costs = list(map(self.getPerfCost, exp_coords))
+                exp_perf_costs = list(map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), exp_perf_costs))
                     
                 exp_perf_cost = min(exp_perf_costs)
                 ipos = exp_perf_costs.index(exp_perf_cost)
@@ -284,9 +284,9 @@ class MSimplex(orio.main.tuner.search.search.Search):
                 # outer contraction
                 
                 cont_coords = self.__getContraction(refl_coord, centroid)
-                cont_coords = map(self.__forceInBound, cont_coords)
-                cont_perf_costs = map(self.getPerfCost, cont_coords)
-                cont_perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), cont_perf_costs)
+                cont_coords = list(map(self.__forceInBound, cont_coords))
+                cont_perf_costs = list(map(self.getPerfCost, cont_coords))
+                cont_perf_costs = list(map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), cont_perf_costs))
                     
                 cont_perf_cost = min(cont_perf_costs)
                 ipos = cont_perf_costs.index(cont_perf_cost)
@@ -316,9 +316,9 @@ class MSimplex(orio.main.tuner.search.search.Search):
                 # inner contraction
                 
                 cont_coords = self.__getContraction(worst_coord, centroid)
-                cont_coords = map(self.__forceInBound, cont_coords)
-                cont_perf_costs = map(self.getPerfCost, cont_coords)
-                cont_perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), cont_perf_costs)
+                cont_coords = list(map(self.__forceInBound, cont_coords))
+                cont_perf_costs = list(map(self.getPerfCost, cont_coords))
+                cont_perf_costs = list(map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), cont_perf_costs))
                     
                 cont_perf_cost = min(cont_perf_costs)
                 ipos = cont_perf_costs.index(cont_perf_cost)
@@ -351,17 +351,17 @@ class MSimplex(orio.main.tuner.search.search.Search):
                 # shrinkage
                 info('msimplex: starts shrinkage')
                 ssimplex = self.__getShrinkage(best_coord, simplex)
-                ssimplex = map(self.__forceInBound, ssimplex)
-                #ssimplex[1:] = map((lambda x,y: x if x!=y else self.__chooseNeighbor(simplex, x)), ssimplex[1:], simplex[1:])
-                ssimplex[1:] = map((lambda x,y: x if x!=y else self.__chooseRandomNeighbor(best_coord, simplex, x)), ssimplex[1:], simplex[1:])
+                ssimplex = list(map(self.__forceInBound, ssimplex))
+                #ssimplex[1:] = list(map((lambda x,y: x if x!=y else self.__chooseNeighbor(simplex, x)), ssimplex[1:], simplex[1:]))
+                ssimplex[1:] = list(map((lambda x,y: x if x!=y else self.__chooseRandomNeighbor(best_coord, simplex, x)), ssimplex[1:], simplex[1:]))
                 
                 # break out the loop if the search method has run long enough 
                 if self.breakFlag:
                     break
                 
                 simplex = ssimplex
-                perf_costs = map(self.getPerfCost, simplex)
-                perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), perf_costs)
+                perf_costs = list(map(self.getPerfCost, simplex))
+                perf_costs = list(map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), perf_costs))
                     
                 info('--> shrinkage on %s' % best_coord )
                     
@@ -502,26 +502,26 @@ class MSimplex(orio.main.tuner.search.search.Search):
     def __intersectCoords(self, coords1, coords2):
         '''return a list which is the intersection of coords1 and coords2, both lists of coordinates. A coordinate is a list of numbers
         this method is not used but just kept here for future reference'''
-        coords1 = map(lambda x: str(x), coords1)
-        coords2 = map(lambda x: str(x), coords2)
+        coords1 = list(map(lambda x: str(x), coords1))
+        coords2 = list(map(lambda x: str(x), coords2))
         coords1 = set(coords1)
         coords2 = set(coords2)
         inters = coords1.intersection(coords2)
         inters = list(inters)
-        inters = map(lambda x: eval(x), inters)
+        inters = list(map(lambda x: eval(x), inters))
         return inters
     
     
     def __removeCommonCoords(self, coords1, coords2):
         '''return a list which is coords1 with elements removed that are present in coords2
         this method is not used but just kept here for future reference'''
-        coords1 = map(lambda x: str(x), coords1)
-        coords2 = map(lambda x: str(x), coords2)
+        coords1 = list(map(lambda x: str(x), coords1))
+        coords2 = list(map(lambda x: str(x), coords2))
         coords1 = set(coords1)
         coords2 = set(coords2)
         result = coords1 - coords2
         result = list(result)
-        result = map(lambda x: eval(x), result)
+        result = list(map(lambda x: eval(x), result))
         return result
     
     def __initAvailableNeighbors(self, bestVertex, simplex):
@@ -573,7 +573,7 @@ class MSimplex(orio.main.tuner.search.search.Search):
             lb = -lb
             ub = self.search_distance
             
-            neighbor = map(lambda x: x+random.randrange(lb, ub+1), bestVertex)
+            neighbor = list(map(lambda x: x+random.randrange(lb, ub+1), bestVertex))
             if neighbor in self.used_neighbors:
                 continue
             
@@ -612,14 +612,14 @@ class MSimplex(orio.main.tuner.search.search.Search):
 
     def __forceInBound(self, coord):
         '''rounds coord and constrain it within the bound of search space, and return the new coord'''
-        coord = map(lambda x: int(round(x)), coord)
-        coord = map(lambda x: x if x>=0 else 0, coord)
-        coord = map(lambda x,y: x if x<y else y-1, coord, self.dim_uplimits)
+        coord = list(map(lambda x: int(round(x)), coord))
+        coord = list(map(lambda x: x if x>=0 else 0, coord))
+        coord = list(map(lambda x,y: x if x<y else y-1, coord, self.dim_uplimits))
         return coord
 
     def __dupCoord(self, simplex):
         '''check whether or not simplex has two coords that are identical'''
-        simplex = map(lambda x: tuple(x), simplex)
+        simplex = list(map(lambda x: tuple(x), simplex))
         result = len(simplex) != len(set(simplex))
         if result:
             info('simplex with dup coords: %s' % (simplex))

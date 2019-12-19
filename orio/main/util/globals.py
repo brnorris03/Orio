@@ -161,6 +161,10 @@ class Globals:
                 self.debug = False
                 self.loggers['TuningLog'].setLevel(logging.INFO)
 
+            # TEMPORARY for transition to py3
+            self.debug=True
+            self.debug_level=6
+
             # counters
             self.counter = 0
 
@@ -365,6 +369,7 @@ def debug(msg='', obj=None, end='\n', pre='', post='', logging=True, level=5):
         name = obj.__class__.__name__
     if Globals().debug and level <= Globals().debug_level:
         sys.stdout.write(pre + 'DEBUG[' + name + ']:' + str(msg) + post + end)
+        sys.stdout.flush()
         if logging:
             Globals().loggers['TuningLog'].debug(msg)
 

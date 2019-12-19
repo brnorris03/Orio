@@ -4,6 +4,7 @@ Created on April 30, 2015
 @author: norris
 '''
 
+import functools
 
 class DFA:
     '''Abstract dataflow analysis'''
@@ -47,7 +48,7 @@ class DFA:
      
                 ####
                 # compute the environment at the entry of this BB
-                new_IN = reduce(analysis.meet, map(OUT.get, cfg.pred(bb)), IN[bb])
+                new_IN = functools.reduce(analysis.meet, list(map(OUT.get, cfg.pred(bb))), IN[bb])
                 self.update(IN, bb, new_IN, todo_backward, cfg.pred(bb))
      
                 ####
@@ -60,7 +61,7 @@ class DFA:
      
                 ####
                 # compute the environment at the exit of this BB
-                new_OUT = reduce(analysis.meet, map(IN.get, cfg.succ(bb)), OUT[bb])
+                new_OUT = functools.reduce(analysis.meet, list(map(IN.get, cfg.succ(bb))), OUT[bb])
                 self.update(OUT, bb, new_OUT, todo_forward, cfg.succ(bb))
      
                 ####

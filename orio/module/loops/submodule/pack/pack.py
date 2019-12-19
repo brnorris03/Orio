@@ -1,6 +1,7 @@
 from orio.module.loops.submodule.submodule import SubModule
 import orio.module.loops.submodule.pack.transformation as transformation
 import orio.main.util.globals as g
+import functools
 
 #----------------------------------------------------------------------------------------------------------------------
 class Pack(SubModule):
@@ -63,7 +64,7 @@ class Pack(SubModule):
                 checked = [rhs]
             else:
                 if ((not isinstance(rhs, list) and not isinstance(rhs, tuple)) or
-                    not reduce(lambda x,y: x and y, map(lambda x: isinstance(x, str), rhs), True)):
+                    not functools.reduce(lambda x,y: x and y, list(map(lambda x: isinstance(x, str), rhs)), True)):
                     g.err(__name__+':%s: pragma directives must be a list/tuple of strings: %s'
                           % (line_no, rhs))
                 checked = rhs

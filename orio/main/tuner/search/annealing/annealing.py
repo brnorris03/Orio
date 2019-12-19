@@ -5,6 +5,7 @@
 import math, sys, time
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
+import functools
 
 #-----------------------------------------------------
 
@@ -316,7 +317,7 @@ class Annealing(orio.main.tuner.search.search.Search):
         best_perf_cost = perf_costs[0]
 
         # compute the average performance-cost difference
-        total_cost_diff = reduce(lambda x,y: x+y, map(lambda x: x-best_perf_cost, perf_costs), 0)
+        total_cost_diff = functools.reduce(lambda x,y: x+y, list(map(lambda x: x-best_perf_cost, perf_costs)), 0)
         avg_cost_diff = 0
         if total_cost_diff > 0:
             avg_cost_diff = total_cost_diff / (len(random_coords)-1)

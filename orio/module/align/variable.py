@@ -30,7 +30,7 @@ class Variable:
         s = ''
         s += str(self.vname)
         if len(self.dims) > 0:
-            s += '[' + ']['.join(map(str, self.dims)) + ']'
+            s += '[' + ']['.join(list(map(str, self.dims))) + ']'
         return s
     
     #------------------------------------------

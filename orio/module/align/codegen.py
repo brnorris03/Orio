@@ -56,7 +56,7 @@ class CodeGen_C(CodeGen):
         dims.remove(None)
         s = str(vname)
         if len(dims) > 0:
-            s += '[' + ']['.join(map(str, dims)) + ']'
+            s += '[' + ']['.join(list(map(str, dims))) + ']'
         return s
         
     #------------------------------------------------------
@@ -71,12 +71,12 @@ class CodeGen_C(CodeGen):
         # generate the disjoint pragma
         s = '\n'
         s += indent + '#pragma disjoint ('
-        s += ','.join(map(lambda v: '*' + self.__printAddress(v), self.vars))
+        s += ','.join(list(map(lambda v: '*' + self.__printAddress(v), self.vars)))
         s += ') \n'
 
         # generate the alignment test
         s += indent + 'if ((('
-        s += '|'.join(map(lambda v: '(int)(' + self.__printAddress(v) + ')', self.vars))
+        s += '|'.join(list(map(lambda v: '(int)(' + self.__printAddress(v) + ')', self.vars)))
         s += ') & 0xF) == 0) {\n'
 
         # generate a sequence of alignment intrinsics

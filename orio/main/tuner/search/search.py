@@ -422,15 +422,15 @@ class Search:
 
     def subCoords(self, coord1, coord2):
         '''coord1 - coord2'''
-        return map(lambda x,y: x-y, coord1, coord2)
+        return list(map(lambda x,y: x-y, coord1, coord2))
     
     def addCoords(self, coord1, coord2):
         '''coord1 + coord2'''
-        return map(lambda x,y: x+y, coord1, coord2)
+        return list(map(lambda x,y: x+y, coord1, coord2))
 
     def mulCoords(self, coef, coord):
         '''coef * coord'''
-        return map(lambda x: self.roundInt(1.0*coef*x), coord)
+        return list(map(lambda x: self.roundInt(1.0*coef*x), coord))
     
     #----------------------------------------------------------
 

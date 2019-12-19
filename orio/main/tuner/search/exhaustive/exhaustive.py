@@ -87,6 +87,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
         while True:
 
             # determine the performance cost of all chosen coordinates
+            debug("coords: " + str(coords), obj=self)
             perf_costs = self.getPerfCosts(coords)
                         
             # compare to the best result
@@ -94,7 +95,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
             pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
             for coord_str, (perf_cost,transfer_costs) in pcost_items:
                 coord_val = eval(coord_str)
-                #info('cost: %s' % (perf_cost))
+                debug('coord: %s, cost: %s' % (coord_str, str(perf_cost)), obj=self)
                 floatNums = [float(x) for x in perf_cost]
                 transferFloats = [float(x) for x in transfer_costs]
 
@@ -176,7 +177,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
     def __readAlgoArgs(self):
         '''To read all algorithm-specific arguments'''
         
-        for vname, rhs in self.search_opts.iteritems():
+        for vname, rhs in self.search_opts.items():
             if vname == 'start_coord':
                 if not isinstance(rhs,list):
                     err('%s argument "%s" must be a list of coordinate indices' % (self.__class__.__name__,'start_coord'))

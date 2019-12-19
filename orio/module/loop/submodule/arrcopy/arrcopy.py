@@ -3,8 +3,10 @@
 #
 
 import sys
-import orio.module.loop.submodule.submodule, transformation
+import orio.module.loop.submodule.submodule
+from orio.module.loop.submodule.arrcopy import transformation
 from orio.main.util.globals import *
+import functools
 
 #---------------------------------------------------------------------
 
@@ -109,8 +111,8 @@ class ArrCopy(orio.module.loop.submodule.submodule.SubModule):
         # evaluate the data type of the array elements
         rhs, line_no = dimsizes
         if ((not isinstance(rhs, list) and not isinstance(rhs, tuple)) or
-            not reduce(lambda x,y: x and y, map(lambda x: isinstance(x, int), rhs), True) or 
-            not reduce(lambda x,y: x and y, map(lambda x: x > 0, rhs), True)):
+            not functools.reduce(lambda x,y: x and y, list(map(lambda x: isinstance(x, int), rhs)), True) or
+            not functools.reduce(lambda x,y: x and y, list(map(lambda x: x > 0, rhs)), True)):
             err(('orio.module.loop.submodule.arrcopy.arrcopy:%s: ' + \
                  'array dimension sizes argument must be a list of positive ' +
                    'integers: %s') % (line_no, rhs))

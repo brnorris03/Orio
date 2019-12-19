@@ -6,6 +6,7 @@ import sets, sys
 import orio.module.loop.ast, orio.module.loop.ast_lib.common_lib, orio.module.loop.ast_lib.constant_folder
 import orio.module.loop.ast_lib.forloop_lib
 from orio.main.util.globals import *
+import functools
 
 #-----------------------------------------
 
@@ -42,7 +43,7 @@ class Transformation:
 
         # check if one of the array buffer dimension sizes is one (i.e. no tiling)
         aref, arr_name, ivar_names, dim_sizes, is_output = aref_info
-        one_one = reduce(lambda x,y: x or y, map(lambda x: x==1, dim_sizes), False)
+        one_one = functools.reduce(lambda x,y: x or y, list(map(lambda x: x==1, dim_sizes)), False)
         if one_one:
             decl = orio.module.loop.ast.VarDecl(self.dtype, [arr_name + self.suffix])
             if isinstance(self.stmt, orio.module.loop.ast.CompStmt):
@@ -227,7 +228,7 @@ class Transformation:
         # generate the declaration of the array buffer
         arr_dname = intmd_name
         if len(buf_dsizes) > 0:
-            arr_dname += '[' + ']['.join(map(str, buf_dsizes)) + ']'
+            arr_dname += '[' + ']['.join(list(map(str, buf_dsizes))) + ']'
         decl = orio.module.loop.ast.VarDecl(self.dtype, [arr_dname])
 
         # generate the reference to the array buffer: X_buffer[(i-LBi)/STi][...]

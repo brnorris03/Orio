@@ -2,7 +2,7 @@
 # Contain the transformation procedure
 #
 
-import sys
+import sys, functools
 from orio.main.util.globals import *
 import orio.module.loop.ast, orio.module.loop.ast_lib.constant_folder, orio.module.loop.ast_lib.forloop_lib
 import orio.main.util.globals as g
@@ -267,7 +267,7 @@ class Transformation:
             elif isinstance(tnode.lhs, orio.module.loop.ast.IdentExp):
                 var_names |= set([tnode.lhs.name])
             elif isinstance(tnode.lhs, orio.module.loop.ast.FunCallExp):
-                var_names = reduce(set.union, map(self.__extractFromBinOp, tnode.lhs.args), var_names)
+                var_names = functools.reduce(set.union, list(map(self.__extractFromBinOp, tnode.lhs.args)), var_names)
             elif isinstance(tnode.lhs, orio.module.loop.ast.NumLitExp):
                 pass
             else:
@@ -283,7 +283,7 @@ class Transformation:
             elif isinstance(tnode.rhs, orio.module.loop.ast.IdentExp):
                 var_names |= set([tnode.rhs.name])
             elif isinstance(tnode.rhs, orio.module.loop.ast.FunCallExp):
-                var_names = reduce(set.union, map(self.__extractFromBinOp, tnode.rhs.args), var_names)
+                var_names = functools.reduce(set.union, list(map(self.__extractFromBinOp, tnode.rhs.args)), var_names)
             elif isinstance(tnode.rhs, orio.module.loop.ast.NumLitExp):
                 pass
             else:

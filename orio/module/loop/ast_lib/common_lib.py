@@ -283,7 +283,7 @@ class CommonLib:
 
         elif isinstance(n, orio.module.loop.ast.FunCallExp):
             n.exp = self.rewriteNode(r, n.exp)
-            n.args = map(lambda x: self.rewriteNode(r, x), n.args)
+            n.args = list(map(lambda x: self.rewriteNode(r, x), n.args))
             return r(n)
         
         elif isinstance(n, orio.module.loop.ast.UnaryExp):
@@ -312,7 +312,7 @@ class CommonLib:
             return r(n)
         
         elif isinstance(n, orio.module.loop.ast.CompStmt):
-            n.stmts = map(lambda x: self.rewriteNode(r, x), n.stmts)
+            n.stmts = list(map(lambda x: self.rewriteNode(r, x), n.stmts))
             return r(n)
         
         elif isinstance(n, orio.module.loop.ast.IfStmt):

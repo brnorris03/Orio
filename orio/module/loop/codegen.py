@@ -68,7 +68,7 @@ class CodeGen_C (CodeGen):
 
         elif isinstance(tnode, ast.FunCallExp):
             s += self.generate(tnode.exp, indent, extra_indent) + '('
-            s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.args))
+            s += ','.join(list(map(lambda x: self.generate(x, indent, extra_indent), tnode.args)))
             s += ')'
 
         elif isinstance(tnode, ast.UnaryExp):
@@ -274,7 +274,7 @@ class CodeGen_F(CodeGen):
 
         elif isinstance(tnode, ast.FunCallExp):
             s += self.generate(tnode.exp, indent, extra_indent) + '('
-            s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.args))
+            s += ','.join(list(map(lambda x: self.generate(x, indent, extra_indent), tnode.args)))
             s += ')'
 
         elif isinstance(tnode, ast.UnaryExp):

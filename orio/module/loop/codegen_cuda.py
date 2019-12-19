@@ -36,7 +36,7 @@ class CodeGen_CUDA (CodeGen_C):
 
         elif isinstance(tnode, ast.FunCallExp):
             s += self.generate(tnode.exp, indent, extra_indent) + '('
-            s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.args))
+            s += ','.join(list(map(lambda x: self.generate(x, indent, extra_indent), tnode.args)))
             s += ')'
 
         elif isinstance(tnode, ast.UnaryExp):
@@ -198,7 +198,7 @@ class CodeGen_CUDA (CodeGen_C):
         elif isinstance(tnode, ast.VarDecl):
             s += indent + str(tnode.type_name) + ' '
             if isinstance(tnode.var_names[0], ast.IdentExp): 
-              s += ', '.join(map(self.generate, tnode.var_names))
+              s += ', '.join(list(map(self.generate, tnode.var_names)))
             else:
               s += ', '.join(tnode.var_names)
             s += ';\n'

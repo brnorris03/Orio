@@ -224,7 +224,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 		while True:
 			batch_size = min(self.batch_size, self.total_runs - len(eval_coords))
 
-			eval_cost = map(lambda x: min(x, 100), eval_cost)
+			eval_cost = list(map(lambda x: min(x, 100), eval_cost))
 			debug("Evaluation cost = %s" % str(eval_cost), obj=self)
 
 			X_train = pd.DataFrame(eval_params)

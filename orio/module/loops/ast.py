@@ -78,7 +78,7 @@ class NodeVisitor(object):
                 nkids += [self.rewriteTD(r, k)]
             nn.kids = nkids
         elif isinstance(nn, list):
-            nn = map(lambda e: self.rewriteTD(r, e), nn)
+            nn = list(map(lambda e: self.rewriteTD(r, e), nn))
         return nn
 
     def rewriteBU(self, r, n):

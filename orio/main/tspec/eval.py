@@ -64,6 +64,13 @@ class TSpecEvaluator:
 
     # ----------------------------------------------------------------------------
 
+    def __evalExpr(self, exp, env):
+        if exp.strip().startswith('map\('):
+            exp = 'list(' + exp + ')'
+        return eval(exp, env)
+
+    # ----------------------------------------------------------------------------
+
     def __evalArg(self, stmt, env, name_space):
         """To evaluate the given "let" statement"""
 
@@ -79,7 +86,7 @@ class TSpecEvaluator:
 
         # evaluate the RHS expression
         try:
-            rhs_val = eval(rhs, env)
+            rhs_val = self.__evalExpr(rhs, env)
         except Exception as e:
             err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (
             rhs_line_no, e.__class__.__name__, e))
@@ -173,7 +180,7 @@ class TSpecEvaluator:
 
         # evaluate the RHS expression
         try:
-            rhs_val = eval(rhs, env)
+            rhs_val = self.__evalExpr(rhs, env)
         except Exception as e:
             err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (
             rhs_line_no, e.__class__.__name__, e))
@@ -195,7 +202,7 @@ class TSpecEvaluator:
         @return: list containing the evaluated right-hand-side values
         """
         try:
-            rhs_val = eval(rhs, env)
+            rhs_val = self.__evalExpr(rhs, env)
         except Exception as e:
             err('*** %s\n\t^-- orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> line %s: %s' % (
                 id_name + ' = ' + rhs, rhs_line_no, e.__class__.__name__, e))

@@ -36,7 +36,7 @@ class CodeGen_OpenCL (CodeGen_C):
 
         elif isinstance(tnode, ast.FunCallExp):
             s += self.generate(tnode.exp, indent, extra_indent) + '('
-            s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.args))
+            s += ','.join(list(map(lambda x: self.generate(x, indent, extra_indent), tnode.args)))
             s += ')'
 
         elif isinstance(tnode, ast.UnaryExp):
@@ -200,7 +200,7 @@ class CodeGen_OpenCL (CodeGen_C):
         elif isinstance(tnode, ast.VarDecl):
             s += indent + str(tnode.type_name) + ' '
             if isinstance(tnode.var_names[0], ast.IdentExp): 
-                s += ', '.join(map(self.generate, tnode.var_names))
+                s += ', '.join(list(map(self.generate, tnode.var_names)))
             else:
                 s += ', '.join(tnode.var_names)
             s += ';\n'
@@ -222,7 +222,7 @@ class CodeGen_OpenCL (CodeGen_C):
             s += indent + ' '.join(tnode.modifiers) + ' '
             s += tnode.return_type + ' '
             s += tnode.name + '('
-            s += ', '.join(map(self.generate, tnode.params)) + ') '
+            s += ', '.join(list(map(self.generate, tnode.params))) + ') '
             s += self.generate(tnode.body, indent, extra_indent)
 
         elif isinstance(tnode, ast.Pragma):

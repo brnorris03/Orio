@@ -53,7 +53,7 @@ class ExampleVisitor(ASTVisitor):
                     
                 elif isinstance(node, ast.FunCallExp):
                     s = self._generate(node.exp) + '('
-                    s += ','.join(map(lambda x: self._generate(x), node.args))
+                    s += ','.join(list(map(lambda x: self._generate(x), node.args)))
                     s += ')'
                     self.display(node, s)
         
