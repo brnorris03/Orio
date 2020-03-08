@@ -21,13 +21,6 @@
 
     param U_I[] = range(1,31);
     param U_J[] = range(1,31);
-
-    
-    
-
-
-
-                              (T1_I if T1_I>1 else T2_I)*(T1_J if T1_J>1 else T2_J) <= 512*512));
   }
 
   def search
@@ -35,11 +28,10 @@
     arg algorithm = 'Randomsearch';
     arg total_runs = 10000;
   }
-  
-  let SIZE = 10000;
-  
+   
   def input_params
   {
+    let SIZE = 10000;
     param MSIZE = SIZE;
     param NSIZE = SIZE;
     param M = SIZE;
