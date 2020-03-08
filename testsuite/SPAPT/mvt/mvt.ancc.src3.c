@@ -45,11 +45,10 @@
     arg algorithm = 'Randomsearch';
     arg total_runs = 10000;
   }
-  
-  let SIZE = 10000;
-  
+   
   def input_params
   {
+    let SIZE = 10000;
     param MSIZE = SIZE;
     param NSIZE = SIZE;
     param M = SIZE;
