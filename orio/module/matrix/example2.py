@@ -2,22 +2,23 @@
 
 # Parse a BTO file
 
-from matrixparser import MParser
+from mparser import MParser
 import sys
 
-mparser = MParser(debug=0,printToStderr=False)
+mparser = MParser(yacc_debug=False,printToStderr=False)
 
 program = '''
 GEMVER
 in
-  A : column matrix, u1 : vector, u2 : vector, v1 : vector, v2 : vector,
+  A : matrix(column), u1 : vector(column), u2 : vector(column), 
+  v1 : vector(column), v2 : vector(column),
   a : scalar, b : scalar,
-  y : vector, z : vector
+  y : vector(column), z : vector(column)
 out
-  B : column matrix, x : vector, w : vector
+  B : matrix(column), x : vector(column), w : vector(column)
 {
   B = A + u1 * v1' + u2 * v2'
-  x = b * (B' * y) + z 
+  x = b * (B' * y) + z
   w = a * (B * x)
 }
 '''
@@ -32,10 +33,10 @@ except:
 
  
 # Errors are stored in the mparser.lex.errors list 
-if theresult and len(mparser.lex.errors) == 0:
-  print >>sys.stdout, 'Successfully parsed program.'
+if theresult and len(mparser.mlex.errors) == 0:
+  print('Successfully parsed program.')
 else:
-  print '*** Errors\n', ' '.join(mparser.lex.errors)
+  print ('*** Errors\n', ' '.join(mparser.mlex.errors))
 
     
 
