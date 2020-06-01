@@ -13,15 +13,15 @@
 # Insert '.' and '..' as first entries to the search path for modules.
 # Restricted environments like embeddable python do not include the
 # current working directory on startup.
-import sys
-sys.path[0:0] = ['.', '..']
+#import sys
+#sys.path[0:0] = ['.', '..']
 
 # Generate matrix_ast.py
 from _ast_gen import ASTCodeGenerator
 ast_gen = ASTCodeGenerator('_matrix_ast.cfg')
 ast_gen.generate(open('matrix_ast.py', 'w'))
 
-from mparser import MParser
+from orio.module.matrix.mparser import MParser
 
 # Generates the tables
 #

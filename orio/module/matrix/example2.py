@@ -27,7 +27,7 @@ theresult = None
 
 print program
 try:
-  theresult = mparser.processString(program) 
+  theresult = mparser._processString(program)
 except:
   pass
 

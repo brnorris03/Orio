@@ -4,14 +4,17 @@
 # _matrix_ast.cfg
 #
 # Do not modify it directly. Modify the configuration file and
-# run the generator again.
+# run the _ast_gen.py generator again.
 # ** ** *** ** **
 #
-# pycparser: c_ast.py
+# orio.modules.matrix: matrix_ast.py
 #
-# AST Node classes.
+# AST Node classes for the Matrix Orio language
 #
-# Eli Bendersky [https://eli.thegreenplace.net/]
+# Boyana Norris, May 2020 
+#
+# Based on C AST in pycparser by Eli Bendersky [https://eli.thegreenplace.net/]
+#
 # License: BSD
 #-----------------------------------------------------------------
 
@@ -207,6 +210,40 @@ class ArrayRef(Node):
 
     attr_names = ()
 
+class MatrixDecl(Node):
+    __slots__ = ('type', 'coord', '__weakref__')
+    def __init__(self, type, coord=None):
+        self.type = type
+        self.coord = coord
+
+    def children(self):
+        nodelist = []
+        if self.type is not None: nodelist.append(("type", self.type))
+        return tuple(nodelist)
+
+    def __iter__(self):
+        if self.type is not None:
+            yield self.type
+
+    attr_names = ()
+
+class VectorDecl(Node):
+    __slots__ = ('type', 'coord', '__weakref__')
+    def __init__(self, type, coord=None):
+        self.type = type
+        self.coord = coord
+
+    def children(self):
+        nodelist = []
+        if self.type is not None: nodelist.append(("type", self.type))
+        return tuple(nodelist)
+
+    def __iter__(self):
+        if self.type is not None:
+            yield self.type
+
+    attr_names = ()
+
 class Assignment(Node):
     __slots__ = ('op', 'lvalue', 'rvalue', 'coord', '__weakref__')
     def __init__(self, op, lvalue, rvalue, coord=None):
@@ -379,22 +416,19 @@ class Continue(Node):
     attr_names = ()
 
 class Decl(Node):
-    __slots__ = ('name', 'quals', 'storage', 'funcspec', 'type', 'init', 'bitsize', 'coord', '__weakref__')
-    def __init__(self, name, quals, storage, funcspec, type, init, bitsize, coord=None):
+    __slots__ = ('name', 'quals', 'storage', 'type', 'init', 'coord', '__weakref__')
+    def __init__(self, name, quals, storage, type, init, coord=None):
         self.name = name
         self.quals = quals
         self.storage = storage
-        self.funcspec = funcspec
         self.type = type
         self.init = init
-        self.bitsize = bitsize
         self.coord = coord
 
     def children(self):
         nodelist = []
         if self.type is not None: nodelist.append(("type", self.type))
         if self.init is not None: nodelist.append(("init", self.init))
-        if self.bitsize is not None: nodelist.append(("bitsize", self.bitsize))
         return tuple(nodelist)
 
     def __iter__(self):
@@ -402,10 +436,8 @@ class Decl(Node):
             yield self.type
         if self.init is not None:
             yield self.init
-        if self.bitsize is not None:
-            yield self.bitsize
 
-    attr_names = ('name', 'quals', 'storage', 'funcspec', )
+    attr_names = ('name', 'quals', 'storage', )
 
 class DeclList(Node):
     __slots__ = ('decls', 'coord', '__weakref__')
@@ -934,45 +966,6 @@ class TernaryOp(Node):
 
     attr_names = ()
 
-class TypeDecl(Node):
-    __slots__ = ('declname', 'quals', 'type', 'coord', '__weakref__')
-    def __init__(self, declname, quals, type, coord=None):
-        self.declname = declname
-        self.quals = quals
-        self.type = type
-        self.coord = coord
-
-    def children(self):
-        nodelist = []
-        if self.type is not None: nodelist.append(("type", self.type))
-        return tuple(nodelist)
-
-    def __iter__(self):
-        if self.type is not None:
-            yield self.type
-
-    attr_names = ('declname', 'quals', )
-
-class Typedef(Node):
-    __slots__ = ('name', 'quals', 'storage', 'type', 'coord', '__weakref__')
-    def __init__(self, name, quals, storage, type, coord=None):
-        self.name = name
-        self.quals = quals
-        self.storage = storage
-        self.type = type
-        self.coord = coord
-
-    def children(self):
-        nodelist = []
-        if self.type is not None: nodelist.append(("type", self.type))
-        return tuple(nodelist)
-
-    def __iter__(self):
-        if self.type is not None:
-            yield self.type
-
-    attr_names = ('name', 'quals', 'storage', )
-
 class Typename(Node):
     __slots__ = ('name', 'quals', 'type', 'coord', '__weakref__')
     def __init__(self, name, quals, type, coord=None):
@@ -1009,25 +1002,6 @@ class UnaryOp(Node):
             yield self.expr
 
     attr_names = ('op', )
-
-class Union(Node):
-    __slots__ = ('name', 'decls', 'coord', '__weakref__')
-    def __init__(self, name, decls, coord=None):
-        self.name = name
-        self.decls = decls
-        self.coord = coord
-
-    def children(self):
-        nodelist = []
-        for i, child in enumerate(self.decls or []):
-            nodelist.append(("decls[%d]" % i, child))
-        return tuple(nodelist)
-
-    def __iter__(self):
-        for child in (self.decls or []):
-            yield child
-
-    attr_names = ('name', )
 
 class While(Node):
     __slots__ = ('cond', 'stmt', 'coord', '__weakref__')

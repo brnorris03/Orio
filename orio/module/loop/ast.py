@@ -460,29 +460,43 @@ class NewAST(AST):
 
 class VarDecl(NewAST):
 
-    def __init__(self, type_name, var_names, line_no = '', meta={}):
+    def __init__(self, type_name, var_names, line_no = '', meta={}, qual=''):
         '''Create a variable declaration'''
         NewAST.__init__(self, line_no, meta)
         self.type_name = type_name
         self.var_names = var_names
+        self.qualifier = qual
+
 
     def replicate(self):
         '''Replicate this abstract syntax tree node'''
-        return VarDecl(self.type_name, self.var_names[:], 
-                       self.line_no, meta=self.meta)
+        return VarDecl(self.type_name, self.var_names[:],
+                       self.line_no, meta=self.meta, qual=self.qualifier)
 
 class VarDeclInit(NewAST):
 
-    def __init__(self, type_name, var_name, init_exp, line_no = '', meta={}):
+    def __init__(self, type_name, var_name, init_exp, line_no = '', meta={}, qual=''):
         '''Create an initializing variable declaration'''
         NewAST.__init__(self, line_no, meta)
         self.type_name = type_name
         self.var_name  = var_name
         self.init_exp  = init_exp
+        self.qualifier = qual
 
     def replicate(self):
-        return VarDeclInit(self.type_name, self.var_name, self.init_exp, 
-                           self.line_no, meta=self.meta)
+        return VarDeclInit(self.type_name, self.var_name, self.init_exp,
+                           self.line_no, meta=self.meta, qual=self.qualifier)
+
+
+class DeclStmt(NewAST):
+    def __init__(self):
+        self.decls = []
+
+    def append(self, decl):
+        self.decls.append(decl)
+
+    def vars(self):
+        return self.decls
 
 #-----------------------------------------------
 # Field Declaration

@@ -13,7 +13,8 @@ __start_line_no = 1
 #------------------------------------------------
 
 # reserved words
-reserved = ['IF', 'ELSE', 'FOR', 'TRANSFORM', 'NOT', 'AND', 'OR', 'GOTO']
+reserved = ['IF', 'ELSE', 'FOR', 'TRANSFORM', 'NOT', 'AND', 'OR', 'GOTO', 'CONST',
+            'REGISTER', 'VOLATILE']
 
 tokens = reserved + [
 
@@ -41,7 +42,7 @@ tokens = reserved + [
     ]
 
 # Comments
-t_LINECOMMENT    = r'[\#!][^\n\r]*|//[^\n\r]*'
+t_LINECOMMENT    = r'\#.*'
       
 # operators
 t_PLUS             = r'\+'
@@ -122,23 +123,20 @@ def t_error(t):
 
 # annotation
 def p_annotation(p):
-    'annotation : statement_list_opt'
+    'annotation : statement_list'
     p[0] = p[1]
     
 # statement-list
-def p_statement_list_opt_1(p):
-    'statement_list_opt :'
-    p[0] = []
-    
-def p_statement_list_opt_2(p):
-    'statement_list_opt : statement_list'
-    p[0] = p[1]
-    
 def p_statement_list_1(p):
+    'statement_list :'
+    p[0] = []
+
+    
+def p_statement_list_2(p):
     'statement_list : statement'
     p[0] = [p[1]]
     
-def p_statement_list_2(p):
+def p_statement_list_3(p):
     'statement_list : statement_list statement'
     p[1].append(p[2])
     p[0] = p[1]
@@ -153,6 +151,7 @@ def p_statement(p):
                  | iteration_statement
                  | transformation_statement
                  | line_comment
+                 | declaration
                  '''
     p[0] = p[1]
 
@@ -181,7 +180,54 @@ def p_line_comment(p):
 #    if p[1]: 
 #        p[0] = ast.Comment(p[1], line_no=str(p.lineno(1) + __start_line_no - 1))
 #    p[0] = None
-    
+
+def p_declaration_1(p):
+    'declaration : typename var_decl_list SEMI'
+    p[0] = ast.DeclStmt()  # list of declarations
+    for var in p[2]:
+        if len(var) == 1:
+            p[0].append(ast.VarDecl(type_name=p[1],var_names=var))
+        else:
+            p[0].append(ast.VarDeclInit(type_name=p[1],var_name=var[0],init_exp=var[1]))
+
+def p_declaration_2(p):
+    'declaration : qual typename var_decl_list SEMI'
+    p[0] = ast.DeclStmt()  # list of declarations
+    for var in p[3]:
+        if len(var) == 1:
+            p[0].append(ast.VarDecl(type_name=p[2],var_names=var,qual=p[1]))
+        else:
+            p[0].append(ast.VarDeclInit(type_name=p[2],var_name=var[0],init_exp=var[1],qual=p[1]))
+
+def p_typename(p):
+    'typename : ID'
+    p[0] = p[1]
+
+def p_qual(p):
+    """qual : CONST
+            | REGISTER
+            | VOLATILE
+    """
+    p[0] = p[1]
+
+def p_var_decl_list_1(p):
+    'var_decl_list : var_decl'
+    p[0] = [p[1]]
+
+def p_var_decl_list_2(p):
+    'var_decl_list : var_decl_list var_decl'
+    p[1].append(p[2])
+    p[0] = p[1]
+
+def p_var_decl_1(p):
+    'var_decl    : ID'
+    p[0] = [ast.IdentExp(p[1])]
+
+def p_var_decl_2(p):
+    'var_decl    : ID EQUALS expression'
+    p[0] = (ast.IdentExp(p[1]), p[3])
+
+
 # expression-statement:
 def p_expression_statement(p):
     'expression_statement : expression_opt SEMI'
@@ -193,7 +239,7 @@ def p_goto_statement(p):
 
 # compound-statement:
 def p_compound_statement(p):
-    'compound_statement : LBRACE statement_list_opt RBRACE'
+    'compound_statement : LBRACE statement_list RBRACE'
     p[0] = ast.CompStmt(p[2], line_no=str(p.lineno(1) + __start_line_no - 1))
     
 # selection-statement
@@ -263,12 +309,12 @@ def p_expression_2(p):
     p[0] = ast.BinOpExp(p[1], p[3], ast.BinOpExp.COMMA, line_no=str(p.lineno(1) + __start_line_no - 1))
 
 def p_expression_3(p):
-    'expression : ID ID'
+    'expression : typename ID'
     p[0] = ast.VarDecl(p[1], [p[2]], line_no=str(p.lineno(1) + __start_line_no - 1))
 
-def p_expression_4(p):
-    'expression : ID ID EQUALS expression'
-    p[0] = ast.VarDeclInit(p[1], ast.IdentExp(p[2]), p[4], line_no=str(p.lineno(1) + __start_line_no - 1))
+#def p_expression_4(p):
+#    'expression : ID ID EQUALS expression'
+#    p[0] = ast.VarDeclInit(p[1], ast.IdentExp(p[2]), p[4], line_no=str(p.lineno(1) + __start_line_no - 1))
 
 # assignment_expression:
 def p_assignment_expression_1(p):
@@ -698,3 +744,5 @@ def getParser(start_line_no):
     # return the parser
     return parser
     
+
+

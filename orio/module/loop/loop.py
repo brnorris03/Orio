@@ -32,7 +32,7 @@ class Loop(Module):
         stmts = parser.getParser(self.line_no).parse(self.module_body_code)
         if isinstance(stmts[0], ast.TransformStmt) and stmts[0].stmt is None:
             # transform the enclosed annot_body_code
-            annotated_stmts = parser.getParser(self.line_no).parse(self.annot_body_code)
+            annotated_stmts = parser.getParser(self.line_no).parse(self.annot_body_code,trac)
             if len(annotated_stmts) == 1:
                 annotated_stmt = annotated_stmts[0]
             else:
