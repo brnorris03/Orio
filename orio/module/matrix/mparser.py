@@ -113,6 +113,9 @@ class MParser(PLYParser):
         # Get the token map
         self.baseTypes = {}
 
+        # this is a simplistic symbol table, a dictionary with
+        #  keys: function names
+        #  values: dictionary of variable names and types (and intent for parameters)
         self.matrix_language_vars = {}
         self.matrix_language_scalar_name_re = re.compile(r'[a-n]\w*')
         self.matrix_language_typeinference = True
@@ -120,14 +123,14 @@ class MParser(PLYParser):
         # self.mlex.errors = matrixparser.errors
 
 
-    def processString(self, input=''):
+    def _processString(self, input=''):
         if input == '' or input.isspace():
             return None
         else:
             return self.parser.parse(input, lexer=self.mlex.lexer, debug=self.debug)
 
 
-    def processFile(self, inputfile=''):
+    def _processFile(self, inputfile=''):
         if not os.path.exists(inputfile):
             self.error(0, "Input file not found: %s" % inputfile)
             return None
@@ -141,9 +144,8 @@ class MParser(PLYParser):
 
     def error(self, msg):
         self.errorlog.append(msg)
-        if printToStderr:
+        if self.printToStderr:
            sys.stderr.write(msg+"\n")
-
 
 
     def _lex_error_func(self, msg, line, column):
@@ -164,12 +166,16 @@ class MParser(PLYParser):
         is_type = self._is_type_in_scope(name)
         return is_type
 
+    def _build_declarations(self,intent, param_list):
+        'param_list: a list of variable names'
+        pass
+
     #====================================================================
     # Parsing rules
 
     # input
     def p_translation_unit_or_empty(self, p):
-        """ translation_unit_or_empty   : prog
+        """ translation_unit_or_empty   : translation_unit
                             | empty
         """
         if p[1] is None:
@@ -213,29 +219,21 @@ class MParser(PLYParser):
 
     # In function definitions, the declarator can be followed by
     # a declaration list
-    def p_prog_1(self, p):
-        """prog : ID IN param_list INOUT param_list OUT param_list LBRACE stmt_list RBRACE"""
-        p[0] = p[1]
-        # TODO
-
-
-    def p_prog_2(self, p):
-        """prog : ID IN param_list INOUT param_list LBRACE stmt_list RBRACE
-                | ID INOUT param_list OUT param_list LBRACE stmt_list RBRACE
-                | ID IN param_list OUT param_list LBRACE stmt_list RBRACE
-        """
-        p[0] = p[1]
-        # TODO
-
+    # ID IN param_list INOUT param_list OUT param_list compound_stmt
     #
     def p_function_definition_1(self, p):
-        """ function_definition : ID declaration_list_opt compound_statement
+        """ function_definition : ID param_list_opt compound_statement
         """
+
+        # Create entry in symbol table (dictionary)
+        if not p[1] in self.matrix_language_vars.keys():
+            self.matrix_language_vars[p[1]] = {}
+
         # no declaration specifiers - 'int' becomes the default type
         spec = dict(
             qual=[],
             storage=[],
-            type=[m_ast.IdentifierType(['double'],
+            type=[m_ast.IdentifierType(['void'],
                                        coord=self._token_coord(p, 1))],
             function=[])
 
@@ -246,7 +244,7 @@ class MParser(PLYParser):
             body=p[3])
 
     def p_function_definition_2(self, p):
-        """ function_definition : declaration_specifiers id_declarator declaration_list_opt compound_statement
+        """ function_definition : type_specifier id_declarator param_list_opt compound_statement
         """
         spec = p[1]
 
@@ -256,12 +254,31 @@ class MParser(PLYParser):
             param_decls=p[3],
             body=p[4])
 
-
-
-    def p_prog_3(self, p):
-        """prog : stmt_list"""
+#    def p_function_definition_3(self, p):
+#        """ function_definition : compound_statement"""
         # Accept partial programs, do type inference
-        p[0] = p[1]
+#        p[0] = p[1]
+        # TODO
+
+    def p_param_list_opt(self, p):
+        """ declaration_list    : param_declaration
+                                | param_list_opt param_declaration
+                                | empty
+        """
+        if not p[1]:
+            p[0] = []
+        elif len(p) == 2:
+            p[0] = [p[1]]
+        else:
+            p[0] = p[1] + [p[2]]
+
+    def p_param_declaration(self, p):
+        """ param_declaration   : IN param_list
+                                | INOUT param_list
+                                | OUT param_list
+        """
+        intent = p[1]
+        self._build_declarations(intent=intent, param_list=p[2])
 
 
     def p_param_list(self, p):
@@ -279,8 +296,7 @@ class MParser(PLYParser):
         p[0] = (p[1], p[3])
         self.matrix_language_vars[p[1]] = p[3]
 
-
-    def p_type(self, p):
+    def p_type_specifier(self, p):
         """type : MATRIX LPAREN attrib_list RPAREN
                 | VECTOR LPAREN attrib_list RPAREN
                 | SCALAR
@@ -446,7 +462,7 @@ if __name__ == '__main__':
     for i in range(1, len(sys.argv)):
         sys.stderr.write("[parse] About to parse %s\n" % sys.argv[i])
         os.system('cat %s' % sys.argv[i])
-        theresult = mparser.processFile(sys.argv[i])
+        theresult = mparser._processFile(sys.argv[i])
         if theresult and len(mparser.lex.errors) == 0:
             sys.stderr.write('[parser] Successfully parsed %s\n' % sys.argv[i])
 

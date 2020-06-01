@@ -12,8 +12,8 @@ C_CPP = 1
 FORTRAN = 2
 CUDA = 3
 OPENCL = 4
+C_CPP_ANNOTATE = 5
 
-#----------------------------------------------
 
 def start(argv, lang):
     '''The orio.main.starting procedure'''
@@ -29,12 +29,14 @@ def start(argv, lang):
         language = 'cuda'
     elif lang == OPENCL:
         language = 'opencl'
+    elif lang == C_CPP_ANNOTATE:
+        language = 'c_annotate'
     else:
         sys.stderr.write('orio.main.main:  Language not supported at this time.')
         sys.exit(1)
 
     # import other required Python packages
-    import ann_parser, cmd_line_opts, opt_driver
+    import pragma_preprocessor, ann_parser, cmd_line_opts, opt_driver
     
     # process the command line
     cmdline = cmd_line_opts.CmdParser().parse(argv)
@@ -93,6 +95,11 @@ def start(argv, lang):
                 
             # parse the source code and return a sequence of code fragments
             info('\n----- begin parsing annotations -----')
+
+            # Search for pragma orio entries (currently only loops supported)
+            if pragma_preprocessor.PragmaPreprocessor.leaderPragmaRE().search(src_code):
+                src_code = pragma_preprocessor.PragmaPreprocessor().preprocess(src_code)
+
             # for efficiency (e.g., do as little as possible when there are no annotations):
             if ann_parser.AnnParser.leaderAnnRE().search(src_code): 
                 cfrags = ann_parser.AnnParser().parse(src_code)     # list of CodeFragment objects

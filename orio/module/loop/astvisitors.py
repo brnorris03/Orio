@@ -10,10 +10,9 @@ import orio.module.loop.codegen
 
 class ASTVisitor:
     ''' Standard visitor pattern abstract class'''
-    def __init__(self):        
+    def __init__(self):
+        self.verbose = False
         if 'LOOPAST_DEBUG' in os.environ.keys(): self.verbose = True
-        else: self.verbose = False
-        pass
     
     def __str__(self):
         return self.__class__.__name__
@@ -28,6 +27,7 @@ class ASTVisitor:
 
 class ExampleVisitor(ASTVisitor):
     def __init__(self):
+        ASTVisitor.__init__(self)
         self.cgen = orio.module.loop.codegen.CodeGen_C()
         
 
@@ -215,6 +215,9 @@ class ExampleVisitor(ASTVisitor):
                     
                 elif isinstance(node, ast.Container):
                     s = self._generate(node.ast)
+
+                elif isinstance(node, ast.DeclStmt):
+                    s = self._generate(node.ast)
         
                 else:
                     self.display('[module.loop.astvisitors.ExampleVisitor] orio.module.loop.codegen internal error: unrecognized type of AST: %s' % node.__class__.__name__)
@@ -351,7 +354,10 @@ class CountingVisitor(ASTVisitor):
                     
                 elif isinstance(node, ast.Container):
                     self.visit(node.ast)
-        
+
+                elif isinstance(node, ast.DeclStmt):
+                    for decl in node.decls:
+                        self.visit(decl)
                 else:
                     err('[CountingVisitor] orio.module.loop.astvisitors.CountingVisitor internal error: unrecognized type of AST: %s' % node.__class__.__name__)
             except Exception, e:

@@ -96,38 +96,38 @@ class CodeGen_C (CodeGen):
         elif isinstance(tnode, ast.BinOpExp):
             s += self.generate(tnode.lhs, indent, extra_indent)
             if tnode.op_type == tnode.MUL:
-                s += '*'
+                s += ' * '
             elif tnode.op_type == tnode.DIV:
-                s += '/'
+                s += ' / '
             elif tnode.op_type == tnode.MOD:
-                s += '%'
+                s += ' % '
             elif tnode.op_type == tnode.ADD:
-                s += '+'
+                s += ' + '
             elif tnode.op_type == tnode.SUB:
-                s += '-'
+                s += ' - '
             elif tnode.op_type == tnode.LT:
-                s += '<'
+                s += ' < '
             elif tnode.op_type == tnode.GT:
-                s += '>'
+                s += ' > '
             elif tnode.op_type == tnode.LE:
-                s += '<='
+                s += ' <= '
             elif tnode.op_type == tnode.GE:
-                s += '>='
+                s += ' >= '
             elif tnode.op_type == tnode.EQ:
-                s += '=='
+                s += ' == '
             elif tnode.op_type == tnode.NE:
-                s += '!='
+                s += ' != '
             elif tnode.op_type == tnode.LOR:
-                s += '||'
+                s += ' || '
             elif tnode.op_type == tnode.LAND:
-                s += '&&'
+                s += ' && '
             elif tnode.op_type == tnode.COMMA:
-                s += ','
+                s += ', '
             elif tnode.op_type == tnode.EQ_ASGN:
                 #print "(((((( Binop: tnode.lhs.meta=%s, tnode.rhs.meta=%s ))))) " \
                 #    % (str(tnode.lhs.meta),str(tnode.rhs.meta))
 
-                s += '='
+                s += ' = '
             else:
                 g.err('orio.module.loop.codegen internal error: unknown binary operator type: %s' % tnode.op_type)
             s += self.generate(tnode.rhs, indent, extra_indent)
@@ -186,6 +186,9 @@ class CodeGen_C (CodeGen):
             if tnode.getLabel(): s += tnode.getLabel() + ':'
             s += indent + 'for ('
             if tnode.init:
+                if isinstance(tnode.init, ast.BinOpExp):
+                    if tnode.init.lhs.name.startswith('_orio_'):  # Orio-generated variable
+                        s += 'int '
                 s += self.generate(tnode.init, indent, extra_indent)
             s += '; '
             if tnode.test:
@@ -206,7 +209,10 @@ class CodeGen_C (CodeGen):
             g.err('orio.module.loop.codegen internal error: a transformation statement is never generated as an output')
 
         elif isinstance(tnode, ast.VarDecl):
-            sv = indent + str(tnode.type_name) + ' '
+            qual=''
+            if tnode.qualifier.strip():
+                qual = str(tnode.qualifier) + ' '
+            sv = indent + qual + str(tnode.type_name) + ' '
             sv += ', '.join(tnode.var_names)
             sv += ';\n'
             if not sv in self.alldecls: 
@@ -214,7 +220,10 @@ class CodeGen_C (CodeGen):
                 self.alldecls.add(sv)
 
         elif isinstance(tnode, ast.VarDeclInit):
-            s += indent + str(tnode.type_name) + ' '
+            qual=''
+            if tnode.qualifier.strip():
+                qual = str(tnode.qualifier) + ' '
+            s += indent + qual + str(tnode.type_name) + ' '
             s += self.generate(tnode.var_name, indent, extra_indent)
             s += '=' + self.generate(tnode.init_exp, indent, extra_indent)
             s += ';\n'
@@ -225,9 +234,11 @@ class CodeGen_C (CodeGen):
         elif isinstance(tnode, ast.Container):
             s += self.generate(tnode.ast, indent, extra_indent)
 
+        elif isinstance(tnode, ast.DeclStmt):
+            for d in tnode.vars():
+                s += self.generate(d, indent, '')
         else:
-            g.err('orio.module.loop.codegen internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
-
+            g.err('orio.module.loop.codegen internal error: unrecognized type of AST: %s\n%s' % (tnode.__class__.__name__, str(tnode)))
         return s
 
 # ==============================================================================================

@@ -154,12 +154,13 @@ class Globals:
             self.stats = MatlabStats()
     
             # Enable debugging
-            self.debug_level = 5
+            self.debug_level = 3
             if 'ORIO_DEBUG' in os.environ.keys() and os.environ['ORIO_DEBUG'] == '1' or 'debug' in cmdline.keys(): 
                 self.debug = True
                 self.loggers['TuningLog'].setLevel(logging.DEBUG)
-                if 'ORIO_DEBUG_LEVEL' in os.environ.keys():
-                    self.debug_level = os.environ['ORIO_DEBUG_LEVEL']
+            elif 'ORIO_DEBUG_LEVEL' in os.environ.keys():
+                self.debug_level = int(os.environ['ORIO_DEBUG_LEVEL'])
+                self.debug = True
             else: 
                 self.debug = False
                 self.loggers['TuningLog'].setLevel(logging.INFO)
@@ -228,11 +229,13 @@ class Globals:
     def setFuncDec(self,src_code):
 
         src = filter(None,re.split('\n',src_code))
+        if len(src) < 1: return
         self.funcDec = src[0].replace('{',';')
     
         self.funcName = filter(None,re.split('\n|\(|\)| ',src[0]))[1]
     
         i = 1
+
         line = src[i]
         self.input_params = []
         self.input_vars = []
@@ -258,10 +261,12 @@ class Globals:
                         
                         
                     i+=1
+                    if i>=len(src): break
                     line = src[i]
     
     
             i+=1
+            if i >= len(src): break
             line = src[i]
 
     

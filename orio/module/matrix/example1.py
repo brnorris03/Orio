@@ -10,7 +10,7 @@ filename = 'example/vadd.m'
 theresult = None
 
 try:
-  theresult = mparser.processFile(filename) 
+  theresult = mparser._processFile(filename)
 except:
   pass
 
