@@ -36,3 +36,15 @@ template_string='''
   }            
 ) @*/
 '''
+
+default_params={
+    # build
+    'build_command':'gcc -g -O3',
+    'libs':'-lm -lrt',
+    # performance_counter
+    'reps':'5',
+    # performance_params
+    # search
+    # input_params
+    # input_vars
+}

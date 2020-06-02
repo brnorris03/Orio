@@ -7,6 +7,7 @@ import sys
 from orio.main.util.globals import *
 from orio.module.loop import parser, ast, codegen, astvisitors
 from .ann_gen import LoopAnnotationGenerator
+from .tuning_spec_template import template_string, default_params
 
 
 # ----------------------------------------
@@ -30,6 +31,7 @@ class PragmaPreprocessor:
     def __init__(self):
         self.codegen = codegen.CodeGen(language='C')
         self.annotation_counter = 0
+        self.tspec_params = default_params
 
     # ----------------------------------------
 
@@ -68,6 +70,7 @@ class PragmaPreprocessor:
             else:
                 err('Did not find expected #pragma orio loop end', doexit=True)
             debug('Found Orio pragma in position %d: %s. Loop:%s' % (pos, pragma_line, loop_code), self)
+            self.annotation_counter += 1
 
             # parse the loop
             line_no = code[:pos_end + 1].count('\n')
@@ -92,27 +95,27 @@ class PragmaPreprocessor:
             """
 
             # Process the AST to generate the annotation and the associated tuning spec
-            self._new_annotation()      # reset
             ann = self._generate_annotation(stmts[0],loop_info)
+
+            # Update tuning spec parameters
 
             print(ann)
             new_code[(pos, pos_end)] = ann
 
-        # return the sequence of code fragments
+        # Insert the annotation in the place of the #pragma orio begin loop
         annotated_code = ''
         prev = 0
         for (pos, pos_end), ann in sorted(new_code.items()):
             annotated_code += code[prev:pos] + ann
             prev = pos_end + 1
         annotated_code += code[prev:]
-
         annotated_code = annotated_code.replace('#pragma orio loop end', '/*@ end @*/')
         debug('Annotated code:\n{}'.format(annotated_code),self)
-        return annotated_code
 
-    def _new_annotation(self):
-        PragmaPreprocessor.loop_depth = 0
-        self.annotation_counter += 1
+        # Generate the tuning spec for this file
+        tuning_spec = self._generate_tuning_spec()
+        debug('Tuning spec:\n{}'.format(tuning_spec), self)
+        return annotated_code
 
     def _generate_annotation(self, stmt, loop_info):
         """ Generate an Orio annotation from the loop node stmt """
@@ -128,6 +131,14 @@ class PragmaPreprocessor:
                             + self.codegen.generate(stmt) \
                             + "\n@*/\n"
         return leader_annotation
+
+
+    def _generate_tuning_spec(sself) :
+        self.tuning_spec = template_string
+
+        for param, val in self.tspec_params.items():
+            self.tuning_spec += self.tuning_spec.replace('@%s@'%param, val)
+        return self.tuning_spec
 
 
 class LoopInfoVisitor(astvisitors.ASTVisitor):
@@ -222,5 +233,5 @@ class LoopInfoVisitor(astvisitors.ASTVisitor):
                     self.visit(decl)
             else:
                 err('internal error: unrecognized type of AST: %s' % node.__class__.__name__, self)
-        except Exception, e:
+        except Exception as e:
             err("Exception in node %s: %s" % (node.__class__, e), self)
