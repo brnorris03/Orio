@@ -226,7 +226,7 @@ class CodeGen_C (CodeGen):
             s += indent + qual + str(tnode.type_name) + ' '
             s += self.generate(tnode.var_name, indent, extra_indent)
             s += '=' + self.generate(tnode.init_exp, indent, extra_indent)
-            s += ';\n'
+            s += ';'
 
         elif isinstance(tnode, ast.Pragma):
             s += '#pragma ' + str(tnode.pstring) + '\n'
