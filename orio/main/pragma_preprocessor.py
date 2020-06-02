@@ -7,6 +7,7 @@ import sys
 from orio.main.util.globals import *
 from orio.module.loop import parser, ast, codegen, astvisitors
 from .ann_gen import LoopAnnotationGenerator
+from .tuning_spec_template import template_string, default_params, default_perf_params, default_input_type
 
 
 # ----------------------------------------
@@ -30,13 +31,14 @@ class PragmaPreprocessor:
     def __init__(self):
         self.codegen = codegen.CodeGen(language='C')
         self.annotation_counter = 0
+        self.tspec_params = default_params
+        self.indent = '    '
 
     # ----------------------------------------
 
+    @staticmethod
     def leaderPragmaRE():
         return PragmaPreprocessor.__leader_pragma_re
-
-    leaderPragmaRE = staticmethod(leaderPragmaRE)
 
     # ----------------------------------------
 
@@ -57,6 +59,7 @@ class PragmaPreprocessor:
         new_code = {}
 
         for m_begin in self.leaderPragmaRE().finditer(code):
+            loop_code=''
             pos = m_begin.start()
             pos_end = m_begin.end()
             pragma_line = m_begin.group()
@@ -68,6 +71,7 @@ class PragmaPreprocessor:
             else:
                 err('Did not find expected #pragma orio loop end', doexit=True)
             debug('Found Orio pragma in position %d: %s. Loop:%s' % (pos, pragma_line, loop_code), self)
+            self.annotation_counter += 1
 
             # parse the loop
             line_no = code[:pos_end + 1].count('\n')
@@ -92,34 +96,33 @@ class PragmaPreprocessor:
             """
 
             # Process the AST to generate the annotation and the associated tuning spec
-            self._new_annotation()      # reset
+            # This also updates the tuning parameters self.tspec_params
             ann = self._generate_annotation(stmts[0],loop_info)
-
-            print(ann)
             new_code[(pos, pos_end)] = ann
 
-        # return the sequence of code fragments
+
+        # Insert the annotation in the place of the #pragma orio begin loop
         annotated_code = ''
         prev = 0
         for (pos, pos_end), ann in sorted(new_code.items()):
             annotated_code += code[prev:pos] + ann
             prev = pos_end + 1
         annotated_code += code[prev:]
-
         annotated_code = annotated_code.replace('#pragma orio loop end', '/*@ end @*/')
-        debug('Annotated code:\n{}'.format(annotated_code),self)
-        return annotated_code
+        #debug('Annotated code:\n{}'.format(annotated_code),self)
 
-    def _new_annotation(self):
-        PragmaPreprocessor.loop_depth = 0
-        self.annotation_counter += 1
+        # Generate the tuning spec for this file
+        tuning_spec = self._generate_tuning_spec()
+        debug('Tuning spec:\n{}'.format(tuning_spec), self)
+        return annotated_code
 
     def _generate_annotation(self, stmt, loop_info):
         """ Generate an Orio annotation from the loop node stmt """
 
         if not isinstance(stmt, ast.ForStmt):
-            debug("Not a loop", self)
+            warn("Not a loop, cannot generate annotation", self)
             return ''
+
         loop_ann = LoopAnnotationGenerator(
             loop_counter=loop_info.maxnest,
             loop_vars=loop_info.loop_bounds.keys(),
@@ -127,8 +130,39 @@ class PragmaPreprocessor:
         leader_annotation = "\n/*@ begin Loop(\n %s\n" % loop_ann.getComposite() \
                             + self.codegen.generate(stmt) \
                             + "\n@*/\n"
+
+        self._update_params(loop_ann.get_perf_params())
         return leader_annotation
 
+    def _generate_tuning_spec(self) :
+        self.tuning_spec = template_string
+
+        print(self.tspec_params)
+
+        for section, val in self.tspec_params.items():
+            buf = ''
+            if section in ['performance_params','input_params','input_vars','constraints']:
+                print(repr(self.tspec_params[section].values()))
+                buf = ''.join(self.tspec_params[section].values())
+            elif section in ['build','performance_counter','search']:
+                for k,v in self.tspec_params[section].items():
+                    buf += self.indent + 'arg %s = %s\n' % (k,str(v))
+            else:
+                warn("Unknown tuning spec section \"%s\" encountered, this should never happen!" % section )
+
+            self.tuning_spec = self.tuning_spec.replace('@%s@'%section, buf)
+        return self.tuning_spec
+
+    def _update_params(self, perf_params):
+        """Update the self.tspec_params performance_parameter section with specific variables
+        and their default values (from the tuning_spec_template.py)
+
+        :param perf_params: dict(tiling=[],unroll=[],scalar_replacement=[],vector=[],openmp=[])
+        """
+        for vartype in perf_params.keys():
+            for var in perf_params[vartype]:
+                self.tspec_params['performance_params'][var] = \
+                    self.indent + 'param %s[] = %s\t#%s\n' % (var, repr(default_perf_params[vartype]), vartype)
 
 class LoopInfoVisitor(astvisitors.ASTVisitor):
     def __init__(self):
@@ -139,7 +173,7 @@ class LoopInfoVisitor(astvisitors.ASTVisitor):
         self.loop_bounds = {}
 
     def visit(self, node, params={}):
-        '''Invoke accept method for specified AST node'''
+        """Invoke accept method for specified AST node"""
         if not node: return
         if isinstance(node,list):
             for item in list:
@@ -222,5 +256,5 @@ class LoopInfoVisitor(astvisitors.ASTVisitor):
                     self.visit(decl)
             else:
                 err('internal error: unrecognized type of AST: %s' % node.__class__.__name__, self)
-        except Exception, e:
+        except Exception as e:
             err("Exception in node %s: %s" % (node.__class__, e), self)
