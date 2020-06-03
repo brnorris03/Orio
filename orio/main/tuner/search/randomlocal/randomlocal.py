@@ -8,7 +8,8 @@ import random
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
 
-#-----------------------------------------------------
+
+# -----------------------------------------------------
 
 class Randomlocal(orio.main.tuner.search.search.Search):
     '''
@@ -21,15 +22,15 @@ class Randomlocal(orio.main.tuner.search.search.Search):
     '''
 
     # algorithm-specific argument names
-    __LOCAL_DIST = 'local_distance'       # default: 0
-    
-    #--------------------------------------------------
-    
+    __LOCAL_DIST = 'local_distance'  # default: 0
+
+    # --------------------------------------------------
+
     def __init__(self, params):
         '''To instantiate a random search engine'''
 
         random.seed(1)
-        
+
         orio.main.tuner.search.search.Search.__init__(self, params)
 
         # set all algorithm-specific arguments to their default values
@@ -37,12 +38,13 @@ class Randomlocal(orio.main.tuner.search.search.Search):
 
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
-        
+
         # complain if both the search time limit and the total number of search runs are undefined
         if self.time_limit <= 0 and self.total_runs <= 0:
-            err(('orio.main.tuner.search.randomlocal.randomlocal: %s search requires either (both) the search time limit or (and) the ' +
-                    'total number of search runs to be defined') % self.__class__.__name__)
-     
+            err((
+                            'orio.main.tuner.search.randomlocal.randomlocal: %s search requires either (both) the search time limit or (and) the ' +
+                            'total number of search runs to be defined') % self.__class__.__name__)
+
     # Method required by the search interface
     def searchBestCoord(self, startCoord=None):
         '''
@@ -50,7 +52,7 @@ class Randomlocal(orio.main.tuner.search.search.Search):
         (i.e. minimum performance cost).
         '''
         # TODO: implement startCoord support
-        
+
         info('\n----- begin random search -----')
 
         # get the total number of coordinates to be tested at the same time
@@ -71,12 +73,12 @@ class Randomlocal(orio.main.tuner.search.search.Search):
 
         # record the number of runs
         runs = 0
-        sruns=0
-        fruns=0
+        sruns = 0
+        fruns = 0
         # start the timer
         start_time = time.time()
         init = True
-        coord_key=''
+        coord_key = ''
         # execute the randomized search method
         while True:
 
@@ -85,7 +87,7 @@ class Randomlocal(orio.main.tuner.search.search.Search):
             while len(coords) < coord_count:
                 coord = self.__getNextCoord(coord_records, neigh_coords, init)
                 coord_key = str(coord)
-                init=False
+                init = False
                 if coord:
                     coords.append(coord)
                 else:
@@ -96,38 +98,41 @@ class Randomlocal(orio.main.tuner.search.search.Search):
                 break
 
             # determine the performance cost of all chosen coordinates
-            #perf_costs = self.getPerfCosts(coords)
+            # perf_costs = self.getPerfCosts(coords)
 
-            perf_costs={}
+            perf_costs = {}
             transform_time = 0.0
             compile_time = 0.0
             # determine the performance cost of all chosen coordinates
-            #perf_costs = self.getPerfCosts(coords)
-            #sys.exit()
+            # perf_costs = self.getPerfCosts(coords)
+            # sys.exit()
             try:
                 perf_costs = self.getPerfCosts(coords)
             except Exception, e:
-                perf_costs[str(coords[0])]=[self.MAXFLOAT]
+                perf_costs[str(coords[0])] = [self.MAXFLOAT]
                 info('FAILED: %s %s' % (e.__class__.__name__, e))
-                fruns +=1
+                fruns += 1
             # compare to the best result
             pcost_items = perf_costs.items()
-            pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
+            pcost_items.sort(lambda x, y: cmp(eval(x[0]), eval(y[0])))
             for i, (coord_str, pcost) in enumerate(pcost_items):
-                if type(pcost) == tuple: (perf_cost,_) = pcost    # ignore transfer costs -- GPUs only
-                else: perf_cost = pcost
+                if type(pcost) == tuple:
+                    (perf_cost, _) = pcost  # ignore transfer costs -- GPUs only
+                else:
+                    perf_cost = pcost
                 coord_val = eval(coord_str)
-                #info('%s %s' % (coord_val,perf_cost))
+                # info('%s %s' % (coord_val,perf_cost))
                 perf_params = self.coordToPerfParams(coord_val)
+                mean_perf_cost = perf_cost
                 try:
                     floatNums = [float(x) for x in perf_cost]
-                    mean_perf_cost=sum(floatNums) / len(perf_cost)
+                    mean_perf_cost = sum(floatNums) / len(perf_cost)
                 except:
-                    mean_perf_cost=perf_cost
-                    
-                transform_time=self.getTransformTime(coord_key)
-                compile_time=self.getCompileTime(coord_key)    
-                #info('(run %s) coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs+i+1, coord_val, perf_params, transform_time, compile_time,perf_cost))
+                    pass
+
+                transform_time = self.getTransformTime(coord_key)
+                compile_time = self.getCompileTime(coord_key)
+                # info('(run %s) coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs+i+1, coord_val, perf_params, transform_time, compile_time,perf_cost))
                 if mean_perf_cost < best_perf_cost and mean_perf_cost > 0.0:
                     best_coord = coord_val
                     best_perf_cost = mean_perf_cost
@@ -138,50 +143,46 @@ class Randomlocal(orio.main.tuner.search.search.Search):
                 neigh_coords.extend(self.getNeighbors(best_coord, self.local_distance))
                 old_perf_cost = best_perf_cost
 
-            
-                           
-            # increment the number of runs    
-            runs += 1 #len(mean_perf_cost)
-
+            # increment the number of runs
+            runs += 1  # len(mean_perf_cost)
 
             if not math.isinf(mean_perf_cost):
-                sruns +=1
+                sruns += 1
                 pcosts = '[]'
-                if perf_cost and len(perf_cost)>1:
+                if perf_cost and len(perf_cost) > 1:
                     pcosts = '[' + ', '.join(["%2.4e" % x for x in perf_cost]) + ']'
                 msgstr1 = '(run %d) sruns: %d, fruns: %d, coordinate: %s, perf_params: %s, ' % \
-                      (runs+i, sruns, fruns, str(coord_val), str(perf_params))
-                msgstr2 =  'transform_time: %2.4e, compile_time: %2.4e, cost: %s' % \
-                      (transform_time, compile_time, pcosts) 
+                          (runs + i, sruns, fruns, str(coord_val), str(perf_params))
+                msgstr2 = 'transform_time: %2.4e, compile_time: %2.4e, cost: %s' % \
+                          (transform_time, compile_time, pcosts)
                 info(msgstr1 + msgstr2)
-            
-            
+
             # check if the time is up
             # info('%s' % self.time_limit)
-            if self.time_limit > 0 and (time.time()-start_time) > self.time_limit:
+            if self.time_limit > 0 and (time.time() - start_time) > self.time_limit:
                 break
 
             # check if the maximum limit of runs is reached
-            #if self.total_runs > 0 and runs >= self.total_runs:
-            if self.total_runs > 0 and sruns >= self.total_runs:    
+            # if self.total_runs > 0 and runs >= self.total_runs:
+            if self.total_runs > 0 and sruns >= self.total_runs:
                 break
 
         # compute the total search time
         search_time = time.time() - start_time
-        
+
         info('----- end random search -----')
         info('----- begin random search summary -----')
         info(' total completed runs: %s' % runs)
         info(' total successful runs: %s' % sruns)
         info(' total failed runs: %s' % fruns)
         info('----- end random search summary -----')
-        
+
         # return the best coordinate
         return best_coord, best_perf_cost, search_time, sruns
-   
-   # Private methods
-   #--------------------------------------------------
-    
+
+    # Private methods
+    # --------------------------------------------------
+
     def __readAlgoArgs(self):
         '''To read all algorithm-specific arguments'''
 
@@ -192,20 +193,20 @@ class Randomlocal(orio.main.tuner.search.search.Search):
             if vname == self.__LOCAL_DIST:
                 if not isinstance(rhs, int) or rhs < 0:
                     err('orio.main.tuner.search.randomlocal: %s argument "%s" must be a positive integer or zero'
-                           % (self.__class__.__name__, vname))
+                        % (self.__class__.__name__, vname))
                 self.local_distance = rhs
 
             # unrecognized algorithm-specific argument
             else:
                 err('orio.main.tuner.search.randomlocal: unrecognized %s algorithm-specific argument: "%s"' %
-                       (self.__class__.__name__, vname))
+                    (self.__class__.__name__, vname))
 
-    #--------------------------------------------------
+    # --------------------------------------------------
 
-    def __getNextCoord(self, coord_records, neigh_coords,init):
+    def __getNextCoord(self, coord_records, neigh_coords, init):
         '''Get the next coordinate to be empirically tested'''
 
-        #info('neighcoords: %s' % neigh_coords)
+        # info('neighcoords: %s' % neigh_coords)
         # check if all coordinates have been explored
         if len(coord_records) >= self.space_size:
             return None
@@ -217,20 +218,18 @@ class Randomlocal(orio.main.tuner.search.search.Search):
                 coord_records[str(coord)] = None
                 return coord
 
-        
         # randomly pick a coordinate that has never been explored before
         while init:
             coord = self.getInitCoord()
             if str(coord) not in coord_records:
                 coord_records[str(coord)] = None
                 return coord
-    
+
         # randomly pick a coordinate that has never been explored before
         while True:
             coord = self.getRandomCoord()
             if str(coord) not in coord_records:
                 coord_records[str(coord)] = None
                 return coord
-    
-    #--------------------------------------------------
-            
+
+    # --------------------------------------------------
