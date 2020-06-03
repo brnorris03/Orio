@@ -161,6 +161,7 @@ class Globals:
             elif 'ORIO_DEBUG_LEVEL' in os.environ.keys():
                 self.debug_level = int(os.environ['ORIO_DEBUG_LEVEL'])
                 self.debug = True
+                self.loggers['TuningLog'].setLevel(logging.DEBUG)
             else: 
                 self.debug = False
                 self.loggers['TuningLog'].setLevel(logging.INFO)

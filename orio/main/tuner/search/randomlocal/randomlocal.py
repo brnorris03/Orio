@@ -103,6 +103,7 @@ class Randomlocal(orio.main.tuner.search.search.Search):
             perf_costs = {}
             transform_time = 0.0
             compile_time = 0.0
+            mean_perf_cost = self.MAXFLOAT
             # determine the performance cost of all chosen coordinates
             # perf_costs = self.getPerfCosts(coords)
             # sys.exit()
@@ -123,7 +124,6 @@ class Randomlocal(orio.main.tuner.search.search.Search):
                 coord_val = eval(coord_str)
                 # info('%s %s' % (coord_val,perf_cost))
                 perf_params = self.coordToPerfParams(coord_val)
-                mean_perf_cost = perf_cost
                 try:
                     floatNums = [float(x) for x in perf_cost]
                     mean_perf_cost = sum(floatNums) / len(perf_cost)
