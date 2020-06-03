@@ -49,8 +49,9 @@ class CFGGraph(graph.Graph):
         graph.Graph.__init__(self, name)
         self.cfgVisitor = CFGVisitor(self)        
         self.cfgVisitor.visit(nodes)
-                
-        if True:
+
+        globals = Globals()
+        if globals.debug_level>4:
             self.display()   
         
         pass
