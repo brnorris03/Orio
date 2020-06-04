@@ -1,7 +1,7 @@
 
 int isValid() {
   
-  double actual = 2793016550086295.5; // or some other user-defined computation
+  double actual = 2793016550086296.5; // or some other user-defined computation
   double ex_sum = 0.0;
   double ey_sum = 0.0;
   double hz_sum = 0.0;
