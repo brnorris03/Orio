@@ -78,6 +78,8 @@ class Search:
         self.verbose = Globals().verbose
         self.perf_cost_records = {}
         self.transform_time={}
+        self.best_coord_info="None"
+
     #----------------------------------------------------------
 
     def searchBestCoord(self):
@@ -128,9 +130,11 @@ class Search:
                  'the search time limit might be too short, or the performance parameter ' +
                  'constraints might prune out the entire search space.')
         else:
+            self.best_coord_info = '%s=%s, cost=%e, transfer_time=%e, inputs=%s, search_space=%1.3e, search_time=%.2f, runs=%d' \
+                                   % (best_coord, self.coordToPerfParams(best_coord), best_perf, corr_transfer, str(self.input_params), \
+                                   self.space_size, search_time, runs)
             info('----- begin summary -----')
-            info(' best coordinate: %s=%s, cost=%e, transfer_time=%e, inputs=%s, search_time=%.2f, runs=%d' % \
-                 (best_coord, self.coordToPerfParams(best_coord), best_perf, corr_transfer, str(self.input_params), search_time, runs))
+            info(' best coordinate found %s' % self.best_coord_info)
             info('----- end summary -----')
 
                 

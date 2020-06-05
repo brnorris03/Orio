@@ -376,7 +376,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
         info(' total successful runs: %s' % sruns)
         info(' total failed runs: %s' % fruns)
         info(' speedup: %s' % speedup)
-        info(' fount at: %s' % num_eval_best)
+        info(' found at: %s' % num_eval_best)
         info('----- end ml search summary -----')
 	
 
