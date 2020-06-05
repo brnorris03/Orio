@@ -279,6 +279,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 	  #evaluate the batch
 	  for i in range(batch_size):
 	    coord=batch_coords[i]
+            coord_key = str(coord)
 	    params=batch_params[i]
 	    mean_perf_cost=[self.MAXFLOAT]
 	    runs += 1
@@ -306,8 +307,8 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 
 		
 	    batch_cost.append(mean_perf_cost)
-	    transform_time=self.getTransformTime()
-            compile_time=self.getCompileTime()
+	    transform_time=self.getTransformTime(coord_key)
+            compile_time=self.getCompileTime(coord_key)
             
             
             res_obj={}

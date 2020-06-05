@@ -282,7 +282,7 @@ class PerfTestDriver:
 	  self.compile_time[coord]=elapsed
     
         if status:
-            err('orio.main.tuner.ptest_driver:  failed to compile the testing code: "%s"' % cmd)
+            warn('orio.main.tuner.ptest_driver:  failed to compile the testing code: "%s", skipping test' % cmd)
 
         if self.tinfo.post_build_cmd:
             # Run the postbuild command
@@ -291,6 +291,7 @@ class PerfTestDriver:
             status = os.system(cmd)
             if status:
                 err('orio.main.tuner.ptest_driver:  failed to apply the post-build command: "%s"' % cmd)
+        return status
 
     #-----------------------------------------------------
 
@@ -478,7 +479,8 @@ class PerfTestDriver:
         self.__preprocess()
         
         # compile the testing code
-        self.__build(perf_params=perf_params,coord=coord)
+        if self.__build(perf_params=perf_params,coord=coord): 
+           return {}
 
         # execute the testing code to get performance costs
         perf_costs = self.__execute(perf_params)
