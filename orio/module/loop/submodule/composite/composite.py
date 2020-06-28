@@ -288,6 +288,9 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
                                         boundrep, pragma, openmp, vector, arrcopy, cuda, self.stmt)
         transformed_stmt = t.transform()
 
+        if not transformed_stmt.label:
+            transformed_stmt.label = 'loop_' + self.stmt.line_no
+
         # return the transformed statement
         return transformed_stmt
         

@@ -36,6 +36,7 @@ class Transformation:
         self.arrcopy = arrcopy
         self.cuda = cuda
         self.stmt = stmt
+        self.label = stmt.label
 
         self.counter = 1
         self.prefix = 'cbv_'

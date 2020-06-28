@@ -155,7 +155,10 @@ class CodeGen_C (CodeGen):
                 s += 'goto ' + tnode.target + ';\n'
                 
         elif isinstance(tnode, ast.CompStmt):
+            if tnode.label:
+                s += tnode.label + ':\n'
             s += indent + '{\n'
+
             self.alldecls = set([])
             for stmt in tnode.stmts:
                 s += self.generate(stmt, indent + extra_indent, extra_indent)

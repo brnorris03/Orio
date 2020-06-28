@@ -58,6 +58,7 @@ class Transformation:
                 return stmt
     
             elif isinstance(stmt, ast.ForStmt):
+                if not stmt.label: stmt.label = 'loop_' + str(stmt.line_no)
                 stmt.stmt = self.__transformStmt(stmt.stmt)
                 return stmt
     

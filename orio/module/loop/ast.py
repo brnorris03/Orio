@@ -303,7 +303,7 @@ class Stmt(AST):
     def __init__(self, line_no = '', label=None, meta={}):
         '''Create a statement'''
         AST.__init__(self, line_no, meta)
-        self.label = None
+        self.label = label
     
     def setLabel(self, label):
         self.label = label
@@ -403,7 +403,7 @@ class ForStmt(Stmt):
         if r_it:
             r_it = r_it.replicate()
         return ForStmt(r_in, r_t, r_it, self.stmt.replicate(), 
-                       self.line_no, self.label, meta=self.meta)
+                       self.line_no, label='loop_' + self.line_no, meta=self.meta)
 
 #-----------------------------------------------
 # Assignment
