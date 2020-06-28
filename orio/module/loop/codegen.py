@@ -183,12 +183,9 @@ class CodeGen_C (CodeGen):
                     s += self.generate(tnode.false_stmt, indent + extra_indent, extra_indent)
 
         elif isinstance(tnode, ast.ForStmt):
-            if tnode.getLabel(): s += tnode.getLabel() + ':'
+            if tnode.getLabel(): s += tnode.getLabel() + ': '
             s += indent + 'for ('
-            loop_id = str(tnode.line_no)
-            if not loop_id: loop_id = str(tnode.id)  # for a newly generated loop
             if tnode.init:
-                s += 'int _orio_loop_id=%s, ' % loop_id
                 if isinstance(tnode.init, ast.BinOpExp):
                     if tnode.init.lhs.name.startswith('_orio_'):  # Orio-generated variable
                         s += 'int '
