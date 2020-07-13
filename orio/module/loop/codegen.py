@@ -157,7 +157,12 @@ class CodeGen_C (CodeGen):
         elif isinstance(tnode, ast.CompStmt):
             if tnode.label:
                 s += tnode.label + ':\n'
-            s += indent + '{\n'
+            #s += indent + '{\n'
+            tmp = tnode.label
+            fake_scope_loop = 'for (int %s=0; %s < 1; %s++)' % (tmp, tmp, tmp)
+            s += indent + fake_scope_loop + ' {\n'
+
+
 
             self.alldecls = set([])
             for stmt in tnode.stmts:
@@ -186,7 +191,13 @@ class CodeGen_C (CodeGen):
                     s += self.generate(tnode.false_stmt, indent + extra_indent, extra_indent)
 
         elif isinstance(tnode, ast.ForStmt):
-            if tnode.getLabel(): s += tnode.getLabel() + ': '
+            if tnode.getLabel():
+                s += tnode.getLabel() + ': \n'
+                tmp = tnode.getLabel()
+                fake_scope_loop = 'for (int %s=0; %s < 1; %s++)'% (tmp,tmp,tmp)
+                s += indent +  fake_scope_loop + ' {\n'
+                old_indent = indent
+                indent += extra_indent
             s += indent + 'for ('
             if tnode.init:
                 if isinstance(tnode.init, ast.BinOpExp):
@@ -207,6 +218,11 @@ class CodeGen_C (CodeGen):
             else:
                 s += '\n'
                 s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
+
+            if tnode.getLabel():
+                s += indent + '} // ' + fake_scope_loop + '\n'
+                indent = old_indent
+
 
         elif isinstance(tnode, ast.TransformStmt):
             g.err('orio.module.loop.codegen internal error: a transformation statement is never generated as an output')

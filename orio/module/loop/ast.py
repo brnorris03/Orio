@@ -402,8 +402,8 @@ class ForStmt(Stmt):
             r_t = r_t.replicate()
         if r_it:
             r_it = r_it.replicate()
-        return ForStmt(r_in, r_t, r_it, self.stmt.replicate(), 
-                       self.line_no, label='loop_' + self.line_no, meta=self.meta)
+        return ForStmt(r_in, r_t, r_it, self.stmt.replicate(), #label='loop_' + self.line_no
+                       self.line_no, meta=self.meta)
 
 #-----------------------------------------------
 # Assignment

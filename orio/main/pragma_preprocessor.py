@@ -131,7 +131,7 @@ class PragmaPreprocessor:
                             + self.codegen.generate(stmt) \
                             + "\n@*/\n"
 
-        self._update_params(loop_ann.get_perf_params())
+        self._update_params(loop_ann.get_perf_params(),loop_info)
         return leader_annotation
 
     def _generate_tuning_spec(self) :
@@ -146,14 +146,14 @@ class PragmaPreprocessor:
                 buf = ''.join(self.tspec_params[section].values())
             elif section in ['build','performance_counter','search']:
                 for k,v in self.tspec_params[section].items():
-                    buf += self.indent + 'arg %s = %s\n' % (k,str(v))
+                    buf += self.indent + 'arg %s = %s;\n' % (k,str(v))
             else:
                 warn("Unknown tuning spec section \"%s\" encountered, this should never happen!" % section )
 
             self.tuning_spec = self.tuning_spec.replace('@%s@'%section, buf)
         return self.tuning_spec
 
-    def _update_params(self, perf_params):
+    def _update_params(self, perf_params, loop_info):
         """Update the self.tspec_params performance_parameter section with specific variables
         and their default values (from the tuning_spec_template.py)
 
@@ -162,7 +162,9 @@ class PragmaPreprocessor:
         for vartype in perf_params.keys():
             for var in perf_params[vartype]:
                 self.tspec_params['performance_params'][var] = \
-                    self.indent + 'param %s[] = %s\t#%s\n' % (var, repr(default_perf_params[vartype]), vartype)
+                    self.indent + 'param %s[] = %s;\t#%s\n' % (var, repr(default_perf_params[vartype]), vartype)
+
+        #loop_info.vars: set of input vars
 
 class LoopInfoVisitor(astvisitors.ASTVisitor):
     def __init__(self):

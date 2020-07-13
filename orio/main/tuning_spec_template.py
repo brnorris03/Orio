@@ -5,13 +5,12 @@ template_string='''
   #
   def build
   {
-    arg build_command = @build_command@;
-    arg libs = @libs@;
+@build@
   }
    
   def performance_counter         
   {
-    arg repetitions = @reps@;
+@performance_counter@
   }
   
   def performance_params

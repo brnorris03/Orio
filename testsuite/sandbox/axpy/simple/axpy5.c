@@ -29,7 +29,8 @@
    decl double a5 = random;
  }
  def search {
-   arg algorithm = 'Exhaustive';
+   arg algorithm = 'Randomlocal';
+   arg total_runs = 10;
  }
 ) 
 @*/

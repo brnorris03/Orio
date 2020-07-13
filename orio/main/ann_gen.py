@@ -4,7 +4,6 @@ class LoopAnnotationGenerator:
         self.tile_levels = tiling_levels
         self.loopvars = loop_vars
         self.new_loopvars = []
-        self.input_vars = []
         self.counter = loop_counter
         self.indent = ''
         self.perf_params = dict(tiling=[],unroll=[],scalar_replacement=[],vector=[],openmp=[])
