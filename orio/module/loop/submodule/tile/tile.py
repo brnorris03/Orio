@@ -92,7 +92,8 @@ class Tile(orio.module.loop.submodule.submodule.SubModule):
         t = transformation.Transformation(tsize, tindex, stmt)
         transformed_stmt = t.transform()
 
-        if not transformed_stmt.label:
+        debug(transformed_stmt.stmt)
+        if not transformed_stmt.label and self.stmt.label:
             transformed_stmt.label = 'loop_' + self.stmt.label
 
         # return the transformed statement

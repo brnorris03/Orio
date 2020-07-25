@@ -43,6 +43,8 @@ class CodeGen_C (CodeGen):
         '''To instantiate a code generator'''
         self.arrayref_level = 0
         self.alldecls = set([])
+        self.labels = []
+        self.final_code = False
         pass
 
     #----------------------------------------------
@@ -155,73 +157,97 @@ class CodeGen_C (CodeGen):
                 s += 'goto ' + tnode.target + ';\n'
                 
         elif isinstance(tnode, ast.CompStmt):
-            if tnode.label:
-                s += tnode.label + ':\n'
-            #s += indent + '{\n'
-            tmp = tnode.label
-            fake_scope_loop = 'for (int %s=0; %s < 1; %s++)' % (tmp, tmp, tmp)
-            s += indent + fake_scope_loop + ' {\n'
+            try:
+                tmp = tnode.getLabel()
+                fake_loop = False
+                if tmp and tmp not in self.labels:
+                    self.labels.append(tmp)
+                    fake_loop = True
+                    s += tmp + ': \n'
+                    fake_scope_loop = 'for (int %s=0; %s < 1; %s++)' % (tmp, tmp, tmp)
+                    s += indent + fake_scope_loop
+                    old_indent = indent
+                    indent += extra_indent
+                s += indent + '{\n'
+                if self.final_code:
+                    tmp = tnode.getLabel()
+                    fake_scope_loop = 'for (int %s=0; %s < 1; %s++)' % (tmp, tmp, tmp)
+                    s += indent + fake_scope_loop + ' {\n'
 
+                self.alldecls = set([])
+                for stmt in tnode.stmts:
+                    g.debug('generating code for stmt type: %s' % stmt.__class__, obj=self,level=7)
+                    s += self.generate(stmt, indent + extra_indent, extra_indent)
+                      g.debug('code so far:' + s, obj=self, level=7)
 
-
-            self.alldecls = set([])
-            for stmt in tnode.stmts:
-                s += self.generate(stmt, indent + extra_indent, extra_indent)
-            s += indent + '}\n'
+                s += indent + '}\n'
+                if fake_loop: indent = old_indent
+            except Exception, e:
+                g.err('orio.module.loop.codegen:%s: encountered an error in C code generation for CompStmt: %s %s' % (tnode.line_no, e.__class__, e), doexit=True)
 
         elif isinstance(tnode, ast.IfStmt):
-            if tnode.getLabel(): s += tnode.getLabel() + ':'
-            s += indent + 'if (' + self.generate(tnode.test, indent, extra_indent) + ') '
-            if isinstance(tnode.true_stmt, ast.CompStmt):
-                tstmt_s = self.generate(tnode.true_stmt, indent, extra_indent)
-                s += tstmt_s[tstmt_s.index('{'):]
-                if tnode.false_stmt:
-                    s = s[:-1] + ' else '
-            else:
-                s += '\n'
-                s += self.generate(tnode.true_stmt, indent + extra_indent, extra_indent)
-                if tnode.false_stmt:
-                    s += indent + 'else '
-            if tnode.false_stmt:
-                if isinstance(tnode.false_stmt, ast.CompStmt):
-                    tstmt_s = self.generate(tnode.false_stmt, indent, extra_indent)
+            try:
+                if tnode.getLabel(): s += tnode.getLabel() + ':'
+                s += indent + 'if (' + self.generate(tnode.test, indent, extra_indent) + ') '
+                if isinstance(tnode.true_stmt, ast.CompStmt):
+                    tstmt_s = self.generate(tnode.true_stmt, indent, extra_indent)
                     s += tstmt_s[tstmt_s.index('{'):]
+                    if tnode.false_stmt:
+                        s = s[:-1] + ' else '
                 else:
                     s += '\n'
-                    s += self.generate(tnode.false_stmt, indent + extra_indent, extra_indent)
+                    s += self.generate(tnode.true_stmt, indent + extra_indent, extra_indent)
+                    if tnode.false_stmt:
+                        s += indent + 'else '
+                if tnode.false_stmt:
+                    if isinstance(tnode.false_stmt, ast.CompStmt):
+                        tstmt_s = self.generate(tnode.false_stmt, indent, extra_indent)
+                        s += tstmt_s[tstmt_s.index('{'):]
+                    else:
+                        s += '\n'
+                        s += self.generate(tnode.false_stmt, indent + extra_indent, extra_indent)
+            except Exception, e:
+                g.err('orio.module.loop.codegen:%s: encountered an error in C code generation for IfStmt: %s %s ' % (tnode.line_no, e.__class__, e), doexit=True)
+
 
         elif isinstance(tnode, ast.ForStmt):
-            if tnode.getLabel():
-                s += tnode.getLabel() + ': \n'
+            try:
                 tmp = tnode.getLabel()
-                fake_scope_loop = 'for (int %s=0; %s < 1; %s++)'% (tmp,tmp,tmp)
-                s += indent +  fake_scope_loop + ' {\n'
-                old_indent = indent
-                indent += extra_indent
-            s += indent + 'for ('
-            if tnode.init:
-                if isinstance(tnode.init, ast.BinOpExp):
-                    if tnode.init.lhs.name.startswith('_orio_'):  # Orio-generated variable
-                        s += 'int '
-                s += self.generate(tnode.init, indent, extra_indent)
-            s += '; '
-            if tnode.test:
-                s += self.generate(tnode.test, indent, extra_indent)
-            s += '; '
-            if tnode.iter:
-                s += self.generate(tnode.iter, indent, extra_indent)
-            s += ') '
-            if isinstance(tnode.stmt, ast.CompStmt): 
-                stmt_s = self.generate(tnode.stmt, indent, extra_indent)
-                s += stmt_s[stmt_s.index('{'):]
-                self.alldecls = set([])
-            else:
-                s += '\n'
-                s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
+                fake_loop = False
+                if tmp and tmp not in self.labels:
+                    self.labels.append(tmp)
+                    fake_loop = True
+                    s += tmp + ': \n'
+                    fake_scope_loop = 'for (int %s=0; %s < 1; %s++)'% (tmp,tmp,tmp)
+                    s += indent +  fake_scope_loop + ' {\n'
+                    old_indent = indent
+                    indent += extra_indent
+                s += indent + 'for ('
+                if tnode.init:
+                    if isinstance(tnode.init, ast.BinOpExp):
+                        if tnode.init.lhs.name.startswith('_orio_'):  # Orio-generated variable
+                            s += 'int '
+                    s += self.generate(tnode.init, indent, extra_indent)
+                s += '; '
+                if tnode.test:
+                    s += self.generate(tnode.test, indent, extra_indent)
+                s += '; '
+                if tnode.iter:
+                    s += self.generate(tnode.iter, indent, extra_indent)
+                s += ') '
+                if isinstance(tnode.stmt, ast.CompStmt):
+                    stmt_s = self.generate(tnode.stmt, indent, extra_indent)
+                    s += stmt_s[stmt_s.index('{'):]
+                    self.alldecls = set([])
+                else:
+                    s += '\n'
+                    s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
 
-            if tnode.getLabel():
-                s += indent + '} // ' + fake_scope_loop + '\n'
-                indent = old_indent
+                if fake_loop and tmp:
+                    s += indent + '} // ' + fake_scope_loop + '\n'
+                    indent = old_indent
+            except Exception, e:
+                g.err('orio.module.loop.codegen:%s: encountered an error in C code generation: %s %s' % (tnode.line_no, e.__class__, e), doexit=True)
 
 
         elif isinstance(tnode, ast.TransformStmt):

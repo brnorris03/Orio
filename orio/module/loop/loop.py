@@ -43,13 +43,14 @@ class Loop(Module):
         t = transformation.Transformation(self.perf_params, self.verbose, self.language, self.tinfo)
         transformed_stmts = t.transform(stmts)
         
-        
+        debug("orio.module.loop.transform: after transformation, before code gen", obj=self)
         # generate code for the transformed ASTs
         indent = ' ' * self.indent_size
         extra_indent = '  '
         cgen = codegen.CodeGen(self.language)
         transformed_code = '\n'
         for s in transformed_stmts:
+            debug("orio.module.loop.transform: before generating code for %s" % str(s.__class__),obj=self)
             transformed_code += cgen.generate(s, indent, extra_indent)
             
         # Example on applying another visitor, e.g., for analysis
