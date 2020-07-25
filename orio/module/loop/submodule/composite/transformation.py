@@ -77,8 +77,6 @@ class Transformation:
 
             debug("Tiling ForStmt " + str(tinfo), obj=self)
             # recursively transform the loop body
-            # TODO: there is a bug here for nested tiling
-
             stmt.stmt = self.__tile(stmt.stmt, tinfo)
 
             # apply tiling if this is the loop to be tiled
