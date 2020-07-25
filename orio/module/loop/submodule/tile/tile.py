@@ -91,11 +91,14 @@ class Tile(orio.module.loop.submodule.submodule.SubModule):
         # perform the loop tiling transformation
         t = transformation.Transformation(tsize, tindex, stmt)
         transformed_stmt = t.transform()
-
-        if not transformed_stmt.label:
-            transformed_stmt.label = 'loop_' + self.stmt.label
+        try:
+            if not transformed_stmt.label and stmt.label:
+                transformed_stmt.label = stmt.label
+        except Exception,e:
+            err('orio.module.loop.submodule.tile.tile: error assigning label\n --> %s : %s' % (e.__class__.__name__, e.message))
 
         # return the transformed statement
+        debug("SUCCESS tile:", obj=self)
         return transformed_stmt
     
     #-----------------------------------------------------------------
