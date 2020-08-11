@@ -105,8 +105,8 @@ class UnrollJam(orio.module.loop.submodule.submodule.SubModule):
         # perform the unroll-and-jam transformation
         transformed_stmt = self.unrollAndJam(ufactor, True, self.stmt, parallelize)
 
-        if not transformed_stmt.label:
-            transformed_stmt.label = 'loop_' + self.stmt.label
+        if not transformed_stmt.meta.get('id') and self.stmt.meta.get('id'):
+            transformed_stmt.meta['id'] = 'loop_' + self.stmt.meta['id']
 
         # return the transformed statement
         return transformed_stmt

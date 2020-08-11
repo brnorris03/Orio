@@ -293,8 +293,8 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
             err('orio.module.loop.submodule.composite.composite.applyTransf : %s:%s' % (e.__class__.__name__, e.message))
 
         debug('SUCCESS: applyTransf on ' + self.stmt.__class__.__name__, obj=self)
-        if not transformed_stmt.label:
-            transformed_stmt.label = 'loop_' + self.stmt.line_no
+        if not transformed_stmt.meta.get('id'):
+            transformed_stmt.meta['id'] = 'loop_' + self.stmt.line_no
 
         # return the transformed statement
         return transformed_stmt

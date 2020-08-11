@@ -102,9 +102,6 @@ class ScalarReplace(orio.module.loop.submodule.submodule.SubModule):
         # perform the bound replacement transformation
         transformed_stmt = self.replaceScalars(dtype, prefix, self.stmt)
 
-        if self.stmt and self.stmt.label and not transformed_stmt.label:
-            transformed_stmt.label = 'loop_' + self.stmt.label
-
         # return the transformed statement
         return transformed_stmt
 

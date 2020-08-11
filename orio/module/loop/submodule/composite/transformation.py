@@ -437,8 +437,8 @@ class Transformation:
         tstmt = self.stmt.replicate()
 
         # Use a label with the original annotation line number to identify the loop
-        if not tstmt.label:
-            tstmt.label = 'loop_' + str(tstmt.line_no)
+        if not tstmt.meta.get('id') and tstmt.line_no:
+            tstmt.meta['id'] = 'loop_' + str(tstmt.line_no)
         # reset counter (for variable name generation)
         self.counter = 1
 

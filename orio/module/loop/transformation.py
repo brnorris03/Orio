@@ -48,6 +48,8 @@ class Transformation:
                 return stmt
     
             elif isinstance(stmt, ast.CompStmt):
+                if not stmt.meta.get('id'):
+                    stmt.meta['id'] = 'loop_' + str(stmt.line_no)
                 stmt.stmts = [self.__transformStmt(s) for s in stmt.stmts]
                 return stmt
     
@@ -58,7 +60,8 @@ class Transformation:
                 return stmt
     
             elif isinstance(stmt, ast.ForStmt):
-                if not stmt.label: stmt.label = 'loop_' + str(stmt.line_no)
+                if not stmt.parent or (stmt.parent and not stmt.parent.meta.get('id') and not stmt.meta.get('id')):
+                    stmt.meta['id'] = 'loop_' + str(stmt.line_no)
                 stmt.stmt = self.__transformStmt(stmt.stmt)
                 return stmt
     

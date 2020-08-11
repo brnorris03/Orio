@@ -43,7 +43,7 @@ class CodeGen_C (CodeGen):
         '''To instantiate a code generator'''
         self.arrayref_level = 0
         self.alldecls = set([])
-        self.labels = []
+        self.ids = []
         self.final_code = False
         pass
 
@@ -158,19 +158,20 @@ class CodeGen_C (CodeGen):
                 
         elif isinstance(tnode, ast.CompStmt):
             try:
-                tmp = tnode.getLabel()
+                tmp = tnode.meta.get('id')
                 fake_loop = False
-                if tmp and tmp not in self.labels:
-                    self.labels.append(tmp)
+                #if tmp and (not tmp in self.ids):
+                if tmp:
+                    #self.ids.append(tmp)
                     fake_loop = True
-                    s += tmp + ': \n'
+                    #s += tmp + ': \n'
                     fake_scope_loop = 'for (int %s=0; %s < 1; %s++)' % (tmp, tmp, tmp)
                     s += indent + fake_scope_loop
                     old_indent = indent
                     indent += extra_indent
                 s += indent + '{\n'
                 if self.final_code:
-                    tmp = tnode.getLabel()
+                    tmp = tnode.meta.get('id')
                     fake_scope_loop = 'for (int %s=0; %s < 1; %s++)' % (tmp, tmp, tmp)
                     s += indent + fake_scope_loop + ' {\n'
 
@@ -212,12 +213,12 @@ class CodeGen_C (CodeGen):
 
         elif isinstance(tnode, ast.ForStmt):
             try:
-                tmp = tnode.getLabel()
+                tmp = tnode.meta.get('id')
                 fake_loop = False
-                if tmp and tmp not in self.labels:
-                    self.labels.append(tmp)
+                if not tnode.parent and tmp: # and tmp not in self.ids:
+                    #self.ids.append(tmp)
                     fake_loop = True
-                    s += tmp + ': \n'
+                    #s += tmp + ': \n'
                     fake_scope_loop = 'for (int %s=0; %s < 1; %s++)'% (tmp,tmp,tmp)
                     s += indent +  fake_scope_loop + ' {\n'
                     old_indent = indent

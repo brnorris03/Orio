@@ -9,6 +9,7 @@ from orio.main.util.globals import *
 #------------------------------------------------
 
 __start_line_no = 1
+__line_no = 1
 
 #------------------------------------------------
 
@@ -110,16 +111,16 @@ t_SCONST_D   = r'\"([^\\\n]|(\\.))*?\"'
 # string literal (with single quotes)
 t_SCONST_S   = r'\'([^\\\n]|(\\.))*?\''
 
-# newlines
-def t_NEWLINE(t):
+def t_newline(t):
     r'\n+'
-    t.lineno += t.value.count('\n')
+    t.lexer.lineno += len(t.value)
     
 # syntactical error
 def t_error(t):
     err('orio.module.loop.parser: %s: syntactical error: "%s"' % ((t.lineno + __start_line_no - 1), t.value[0]))
     
 #------------------------------------------------
+
 
 # annotation
 def p_annotation(p):
@@ -736,6 +737,8 @@ def getParser(start_line_no):
     # set the starting line number
     global __start_line_no
     __start_line_no = start_line_no
+    global __line_no
+    __line_no = start_line_no
 
     # create the lexer and parser
     lexer = orio.tool.ply.lex.lex()
