@@ -355,6 +355,9 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
             err('orio.module.loop.submodule.composite.composite : error transforming "%s"\n --> %s:%s' % \
                     (self.stmt, e.__class__.__name__, e.message))
 
+        if not transformed_stmt.meta.get('id') and self.stmt.meta.get('id'):
+            transformed_stmt.meta['id'] = 'loop_' + self.stmt.meta['id']
+
         # return the transformed statement
         return transformed_stmt
 

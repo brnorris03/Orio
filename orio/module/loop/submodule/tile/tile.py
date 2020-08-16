@@ -91,6 +91,7 @@ class Tile(orio.module.loop.submodule.submodule.SubModule):
         # perform the loop tiling transformation
         t = transformation.Transformation(tsize, tindex, stmt)
         transformed_stmt = t.transform()
+
         try:
             if not transformed_stmt.label and stmt.label:
                 transformed_stmt.label = stmt.label
@@ -111,6 +112,9 @@ class Tile(orio.module.loop.submodule.submodule.SubModule):
 
         # perform the loop tiling transformation
         transformed_stmt = self.tile(tsize, tindex, self.stmt)
+
+        if not transformed_stmt.meta.get('id') and self.stmt.meta.get('id'):
+            transformed_stmt.meta['id'] = 'loop_' + self.stmt.meta['id']
 
         # return the transformed statement
         return transformed_stmt

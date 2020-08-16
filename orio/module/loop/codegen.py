@@ -215,7 +215,12 @@ class CodeGen_C (CodeGen):
             try:
                 tmp = tnode.meta.get('id')
                 fake_loop = False
-                if not tnode.parent and tmp: # and tmp not in self.ids:
+                parent_with_id = False
+                if tnode.parent:
+                    if isinstance(tnode.parent, ast.CompStmt) or isinstance(tnode.parent, ast.ForStmt):
+                        if tnode.parent.meta.get('id'):
+                            parent_with_id = True
+                if not parent_with_id and tmp: # and tmp not in self.ids:
                     #self.ids.append(tmp)
                     fake_loop = True
                     #s += tmp + ': \n'
