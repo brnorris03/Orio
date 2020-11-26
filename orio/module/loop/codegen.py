@@ -231,8 +231,8 @@ class CodeGen_C (CodeGen):
                 s += indent + 'for ('
                 if tnode.init:
                     if isinstance(tnode.init, ast.BinOpExp):
-                        if tnode.init.lhs.name.startswith('_orio_'):  # Orio-generated variable
-                            s += 'int '
+                        #if tnode.init.lhs.name.startswith('_orio_'):  # Orio-generated variable
+                        s += 'int '
                     s += self.generate(tnode.init, indent, extra_indent)
                 s += '; '
                 if tnode.test:
@@ -431,11 +431,11 @@ class CodeGen_F(CodeGen):
                 s += 'goto ' + tnode.target + '\n'
 
         elif isinstance(tnode, ast.CompStmt):
-            s += indent + '\n'
+            s += indent + '{\n'
             if tnode.getLabel(): s += tnode.getLabel() + ' '
             for stmt in tnode.stmts:
                 s += self.generate(stmt, indent + extra_indent, extra_indent)
-            s += indent + '\n'
+            s += indent + '}\n'
 
         elif isinstance(tnode, ast.IfStmt):
             if tnode.getLabel(): s += tnode.getLabel() + ' '

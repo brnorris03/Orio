@@ -387,13 +387,14 @@ class IfStmt(Stmt):
 
 class ForStmt(Stmt):
 
-    def __init__(self, init, test, itr, stmt, line_no = '', label=None, meta={}):
+    def __init__(self, init, test, itr, stmt, line_no = '', label=None, meta={}, parent=None):
         '''Create a for-loop statement'''
         Stmt.__init__(self, line_no, label, meta)
         self.init = init      # may be null
         self.test = test      # may be null
         self.iter = itr      # may be null
         self.stmt = stmt
+        self.parent = parent
         if not self.meta.get('id') and line_no: self.meta['id'] = 'loop_' + line_no
 
     def replicate(self):
@@ -408,7 +409,7 @@ class ForStmt(Stmt):
         if r_it:
             r_it = r_it.replicate()
         return ForStmt(r_in, r_t, r_it, self.stmt.replicate(), #label='loop_' + self.line_no
-                       self.line_no, meta=copy.deepcopy(self.meta))
+                       line_no=self.line_no, meta=copy.deepcopy(self.meta), parent=self.parent)
 
 #-----------------------------------------------
 # Assignment
