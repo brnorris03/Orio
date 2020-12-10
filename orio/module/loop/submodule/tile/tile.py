@@ -87,6 +87,8 @@ class Tile(orio.module.loop.submodule.submodule.SubModule):
 
     def tile(self, tsize, tindex, stmt):
         '''To apply loop tiling transformation'''
+
+        debug('orio.module.loop.submodule.tile.Tile: starting Tile')
         
         # perform the loop tiling transformation
         t = transformation.Transformation(tsize, tindex, stmt)
@@ -99,6 +101,7 @@ class Tile(orio.module.loop.submodule.submodule.SubModule):
             err('orio.module.loop.submodule.tile.tile: error assigning label\n --> %s : %s' % (e.__class__.__name__, e.message))
 
         # return the transformed statement
+        debug('orio.module.loop.submodule.tile.Tile: finishing Tile')
         debug("SUCCESS tile:", obj=self)
         return transformed_stmt
     

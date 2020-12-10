@@ -440,6 +440,7 @@ class Transformation:
         lbound_name = 'orio_lbound'+str(g.Globals().getcounter())
         lbound_name_exp = orio.module.loop.ast.IdentExp(lbound_name)
         lbound_init = orio.module.loop.ast.VarDeclInit('int', lbound_name_exp, new_lbound_exp)
+
         loop = self.flib.createForLoop(index_id, new_lbound_exp, new_ubound_exp,
                                             new_stride_exp, unrolled_loop_body, meta="main")
         

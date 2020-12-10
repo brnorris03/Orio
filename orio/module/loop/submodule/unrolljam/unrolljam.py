@@ -91,6 +91,9 @@ class UnrollJam(orio.module.loop.submodule.submodule.SubModule):
         t = transformation.Transformation(ufactor, do_jamming, stmt, parallelize)
         transformed_stmt = t.transform()
 
+        debug('orio.module.loop.submodule.unrolljam.UnrollJam: finishing unrollAndJam')
+        debug("SUCCESS unrollAndJam:", obj=self)
+
         # return the transformed statement
         return transformed_stmt
 
