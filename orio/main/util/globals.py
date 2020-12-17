@@ -179,12 +179,18 @@ class Globals:
                 self.validationMode = cmdline['validate']
             else:
                 self.validationMode = False
+
             self.executedOriginal = False
+
+            if 'marker-loops' in cmdline.keys():
+                self.marker_loops = True # generate fake loops for Meliora
+            else:
+                self.marker_loops = False
             
             # Temporary filename for various helper files (not source)
             self.tempfilename = 'temp'
             
-            pass
+            return
 
         def addLogger(self, thelogger):
             self.loggers.add(thelogger)
