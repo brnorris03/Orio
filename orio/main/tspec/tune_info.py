@@ -508,7 +508,7 @@ class TuningInfoGen:
             # evaluate search time limit
             elif id_name == TLIMIT:
                 if (not isinstance(rhs, int) and not isinstance(rhs, float)) or rhs <= 0:
-                    err('orio.main.tspec.tune_info: %s: search time limit must be a positive number' % rhs_line_no)
+                    err('orio.main.tspec.tune_info: %s: search time limit (seconds) must be a positive number' % rhs_line_no)
                     
                 search_time_limit = rhs
 
