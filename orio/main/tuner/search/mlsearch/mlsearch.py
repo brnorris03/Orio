@@ -49,7 +49,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 
         # complain if both the search time limit and the total number of search runs are undefined
         if self.time_limit <= 0 and self.total_runs <= 0:
-            err(('orio.main.tuner.search.mlsearch.mlsearch: %s search requires the search time limit (time_limit, seconds) and/or the ' +
+            err(('orio.main.tuner.search.mlsearch.mlsearch: %s search requires the ' +
                 'total number of search runs (total_runs) to be defined') % self.__class__.__name__)
 
     # Method required by the search interface
@@ -95,7 +95,9 @@ class Mlsearch(orio.main.tuner.search.search.Search):
         # default code without transformation
         neigh_coords = [[0] * self.total_dims]
 
-        while (len(uneval_coords) < self.init_samp) and not ((time.time()-start_time) > self.time_limit > 0):
+# FIXME BN: The time_limit unfortunately puts the search in an invalid state, so temporarily disabling
+#        while (len(uneval_coords) < self.init_samp) and not ((time.time()-start_time) > self.time_limit > 0):
+        while (len(uneval_coords) < self.init_samp):
             # print uneval_coords
             coord = self.__getNextCoord(coord_records, neigh_coords, init)
 
