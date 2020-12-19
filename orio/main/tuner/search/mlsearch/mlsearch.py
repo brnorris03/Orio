@@ -285,7 +285,6 @@ class Mlsearch(orio.main.tuner.search.search.Search):
                 coord_key = str(coord)
                 params = batch_params[i]
                 mean_perf_cost = [self.MAXFLOAT]
-                runs += 1
 
                 perf_costs = {}
                 try:
@@ -330,8 +329,10 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 
                 if not math.isinf(mean_perf_cost):
                     sruns += 1
-
                     # info('(run %s) sruns: %s, fruns: %s, coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs, sruns, fruns, coord, p, transform_time, compile_time,mean_perf_cost))
+
+                if self.total_runs > 0 and runs >= self.total_runs: break
+                runs += 1
 
             debug('# of predicted values:\n%s' % str(np.sort(pred)[:batch_size]),obj=self)
             debug('# of observed values=%s, successful runs=%d, total_runs=%d' % (str(batch_cost), sruns, self.total_runs), obj=self)
@@ -346,6 +347,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
             if self.time_limit > 0 and (time.time() - start_time) > self.time_limit:
                 break
             # check if the maximum limit of runs is reached
+            print('-------------------- runs=%d, total=%d' % (runs, self.total_runs))
             if self.total_runs > 0 and runs >= self.total_runs:
                 break
 
