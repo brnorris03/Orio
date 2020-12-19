@@ -142,9 +142,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
                 uneval_coords.append(coord)
                 uneval_params.append(perf_params)
 
-        print len(coords)
-        print len(uneval_coords)
-        print len(uneval_params)
+        debug("# of coordinates=%d, unevaluated coords=%d, unevaluated params=%d" % (len(coords), len(uneval_coords), len(uneval_params)), obj=self)
 
         eval_coords = []
         eval_params = []
@@ -154,7 +152,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
         indices = random.sample(range(1, len(uneval_coords)), self.total_dims)
         # indices=random.sample(range(1,len(uneval_coords)),  5)
         indices.insert(0, 0)
-        print indices
+        debug("Indices: %s" % str(indices), obj=self)
 
         for index in indices:
             coord = uneval_coords[index]
@@ -162,7 +160,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
             eval_coords.append(coord)
             eval_params.append(params)
 
-            print params
+            debug("Params: %s" % str(params), obj=self)
             runs += 1
 
             perf_costs = {}
@@ -221,11 +219,8 @@ class Mlsearch(orio.main.tuner.search.search.Search):
             uneval_coords.pop(index)
             uneval_params.pop(index)
 
-        if True:
-            print len(coords)
-            print len(uneval_coords)
-            print len(uneval_params)
-            print len(eval_coords)
+        debug("# of coordinates=%d, unevaluated coords=%d, unevaluated params=%d, evaluated coords=%d" % (
+            len(coords), len(uneval_coords), len(uneval_params), len(eval_coords)), obj=self)
 
         # sys.exit(0)
 
@@ -235,26 +230,39 @@ class Mlsearch(orio.main.tuner.search.search.Search):
         # regr = ensemble.BaggingRegressor(n_estimators=1000)
         regr = ensemble.ExtraTreesRegressor(n_estimators=1000, random_state=0)
         while True:
-            debug('+++++++++++++++++', obj=self)
             batch_size = min(self.batch_size, self.total_runs - len(eval_coords))
+            debug("+++++++ new iteration; batch size = %d" % batch_size, obj=self, level=6)
+            if len(uneval_params) == 0: break
 
             debug('Initial eval cost %s' % str(eval_cost), obj=self)
             eval_cost = map(lambda x: min(x, 100), eval_cost)
             debug('Eval cost %s' % str(eval_cost), obj=self)
 
-            # print eval_params
-            X_train = pd.DataFrame(eval_params)
-            Y_train = np.array(eval_cost)
+            X_train = pd.DataFrame(eval_params)   #.select_dtypes(include=[np.number,np.bool])
             X_test = pd.DataFrame(uneval_params)
+            X_all = pd.concat(objs=[X_train, X_test], axis=0)
+            X_preprocessed = pd.get_dummies(X_all)   # one-hot encoding
+            X_train_preprocessed = X_preprocessed[:len(eval_params)]
+            X_test_preprocessed = X_preprocessed[len(eval_params):]
+            # Some parameters, notably CFLAGS are strings; we could convert them to one-hot encoding.
+            #X_train = pd.concat([X_train, pd.get_dummies(X_train['CFLAGS'], prefix='CFLAGS')], axis=1)
+
+            #X_train["CFLAGS_cat"] = X_train["CFLAGS"].astype('category').cat.codes  # convert to categorical
+            #X_train.drop(['CFLAGS'], axis=1, inplace=True)  # drop original CFLAGS, no longer needed
+            debug("Train:\n%s" % str(X_train_preprocessed), obj=self, level=6)
+            debug("Test:\n%s" % str(X_test_preprocessed), obj=self, level=6)
+            Y_train = np.array(eval_cost)
+            #X_test = pd.DataFrame(uneval_params)  #.select_dtypes(include=[np.number,np.bool])
+            #X_test["CFLAGS_cat"] = X_test["CFLAGS"].astype('category').cat.codes  # convert to categorical
 
             # Train the model using the training sets
-            print X_train.shape
-            print Y_train.shape
-            print X_test.shape
+            debug("X train shape: %s" % str(X_train_preprocessed.shape), obj=self, level=6)
+            debug("Y train shape: %s" % str(Y_train.shape), obj=self, level=6)
+            debug("X test shape: %s" % str(X_test_preprocessed.shape), obj=self, level=6)
 
-            regr.fit(X_train, 1.0 / Y_train)
+            regr.fit(X_train_preprocessed, 1.0 / Y_train)
 
-            pred = 1.0 / regr.predict(X_test)
+            pred = 1.0 / regr.predict(X_test_preprocessed)
             indices = np.argsort(pred)[:batch_size]
 
             # prepare the batch
@@ -262,8 +270,8 @@ class Mlsearch(orio.main.tuner.search.search.Search):
             batch_params = []
             batch_cost = []
 
-            print len(uneval_coords)
-            print len(uneval_params)
+            debug("Number of unevaluated coordinates: %d" % len(uneval_coords), obj=self, level=6)
+            debug("Number of unevaluated parameters: %d" % len(uneval_params), obj=self, level=6)
             indices = sorted(indices, reverse=True)
             for index in indices:
                 coords = uneval_coords.pop(index)
@@ -272,7 +280,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
                 batch_params.append(params)
 
             # evaluate the batch
-            for i in range(batch_size):
+            for i in range(len(batch_coords)):     #range(batch_size):
                 coord = batch_coords[i]
                 coord_key = str(coord)
                 params = batch_params[i]
@@ -325,12 +333,8 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 
                     # info('(run %s) sruns: %s, fruns: %s, coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs, sruns, fruns, coord, p, transform_time, compile_time,mean_perf_cost))
 
-            print 'predicted values:'
-            print np.sort(pred)[:batch_size]
-            print 'observed values:'
-            print batch_cost
-            print sruns
-            print self.total_runs
+            debug('# of predicted values:\n%s' % str(np.sort(pred)[:batch_size]),obj=self)
+            debug('# of observed values=%s, successful runs=%d, total_runs=%d' % (str(batch_cost), sruns, self.total_runs), obj=self)
 
             # add to the training set
             eval_coords.extend(batch_coords)

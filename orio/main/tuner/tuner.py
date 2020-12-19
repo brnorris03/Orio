@@ -152,7 +152,6 @@ class PerfTuner:
             best_perf_params, best_perf_cost = search_eng.search()
 
             # print the best performance parameters
-            
             if Globals().verbose and not Globals().extern:
                 info('----- the obtained best performance parameters -----')
                 pparams = best_perf_params.items()

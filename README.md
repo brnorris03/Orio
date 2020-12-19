@@ -72,7 +72,7 @@ another with two transformations specified using a Composite annotation
 (`orcc -v axpy5a.c`). To see a list of options, `orcc -h`. To keep all intermediate code
 versions, use the `-k` option. You can also enable various levels of debugging 
 output by setting the ORIO_DEBUG_LEVEL to an integer value betwen 1 and 6, e.g., for 
-the most verbose output `export ORIO_DEBUG_LEVEL=6` and run orio with the `-v` 
+the most verbose output `export ORIO_DEBUG_LEVEL=6` and run Orio with the `-v` 
 command-line option. This is the recommended setting when submitting sample output for
 bug reports.
 
@@ -83,7 +83,7 @@ to obtain all prerequisites if needed.
 
 
 If Orio reports problems building the code, adjust the compiler settings in 
-the tuning spec included in the axpy5.c.
+the tuning spec included in the `axpy5.c` example.
 
 Authors and Contact Information
 =========================
