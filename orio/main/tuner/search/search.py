@@ -154,15 +154,17 @@ class Search:
     #----------------------------------------------------------
 
     def coordToPerfParams(self, coord):
-        '''To convert the given coordinate to the corresponding performance parameters'''
+        """
+        Convert coordinate to the corresponding performance parameters
+        :param coord The coordinate (integer array)
+        :return dictionary with parameter name-value pairs
+        """
 
         # get the performance parameters that correspond the given coordinate
         perf_params = {}
         for i in range(0, self.total_dims):
             ipoint = coord[i]
             perf_params[self.axis_names[i]] = self.axis_val_ranges[i][ipoint]
-
-        # return the obtained performance parameters
         return perf_params
 
     #----------------------------------------------------------

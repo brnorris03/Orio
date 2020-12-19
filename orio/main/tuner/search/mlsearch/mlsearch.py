@@ -347,7 +347,6 @@ class Mlsearch(orio.main.tuner.search.search.Search):
             if self.time_limit > 0 and (time.time() - start_time) > self.time_limit:
                 break
             # check if the maximum limit of runs is reached
-            print('-------------------- runs=%d, total=%d' % (runs, self.total_runs))
             if self.total_runs > 0 and runs >= self.total_runs:
                 break
 
