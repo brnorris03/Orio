@@ -323,6 +323,7 @@ class PerfTuner:
         self.num_params=len(axis_names)
         self.num_configs=1
         self.num_bin=0
+        self.num_categorical = 0
         self.num_int=self.num_params
 
         ptype=[]
@@ -330,13 +331,17 @@ class PerfTuner:
             #print min(vals)
             self.num_configs=self.num_configs*len(vals)
             ptype.append('I')
-            if len(vals)==2:
+            #if len(vals)==2:
                 #print vals
-                if False in vals or True in vals:
-                    self.num_bin=self.num_bin+1
-                    ptype[len(ptype)-1]=('B')
+            if False in vals or True in vals:
+                self.num_bin=self.num_bin+1
+                ptype[len(ptype)-1]=('B')
+                continue
+            if type(vals[0]) == str:
+                print(vals[0])
+                self.num_categorical = self.num_categorical+1
 
-        self.num_int=self.num_int-self.num_bin
+        self.num_int=self.num_int-self.num_bin-self.num_categorical
 
         min_vals=[min(v) for v in axis_val_ranges]
         #min_vals=[min(v)-min(v) for v in axis_val_ranges]
@@ -356,10 +361,11 @@ class PerfTuner:
         max_val_str=max_val_str.replace(',','')
         
 
-        info('Search_Space         = %1.3e' % self.num_configs)
-        info('Number_of_Parameters = %02d' % self.num_params)
-        info('Numeric_Parameters   = %02d' % self.num_int)
-        info('Binary_Parameters    = %02d' % self.num_bin)
+        info('Search_Space           = %1.3e' % self.num_configs)
+        info('Number_of_Parameters   = %02d' % self.num_params)
+        info('Numeric_Parameters     = %02d' % self.num_int)
+        info('Binary_Parameters      = %02d' % self.num_bin)
+        info('Categorical_Parameters = %02d' % self.num_categorical)
         
         sys.stderr.write('%s\n'% Globals().configfile)   
         
