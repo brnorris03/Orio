@@ -331,17 +331,15 @@ class PerfTuner:
             #print min(vals)
             self.num_configs=self.num_configs*len(vals)
             ptype.append('I')
-            #if len(vals)==2:
-                #print vals
-            if False in vals or True in vals:
+            if type(vals[0]) == bool:
                 self.num_bin=self.num_bin+1
                 ptype[len(ptype)-1]=('B')
-                continue
             if type(vals[0]) == str:
                 print(vals[0])
                 self.num_categorical = self.num_categorical+1
 
-        self.num_int=self.num_int-self.num_bin-self.num_categorical
+        self.num_int -= self.num_bin
+        self.num_int -= self.num_categorical
 
         min_vals=[min(v) for v in axis_val_ranges]
         #min_vals=[min(v)-min(v) for v in axis_val_ranges]
