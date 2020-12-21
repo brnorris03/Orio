@@ -67,7 +67,7 @@ class PerfTuner:
                                                                   tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                   tinfo.random_seed, use_parallel_search)
             elif self.odriver.lang == 'opencl':
-                c = orio.main.tuner.ptest_codegen.PerfTestCodeGenCUDA(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
+                c = orio.main.tuner.ptest_codegen.PerfTestCodeGenOpenCL(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
                                                                   tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                   tinfo.random_seed, use_parallel_search)
             elif self.odriver.lang == 'fortran':
