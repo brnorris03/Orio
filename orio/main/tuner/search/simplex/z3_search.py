@@ -125,7 +125,7 @@ class Z3search:
 
     # Add a forbidden point in the solver (and the optimizer)
     # Input: a dictionary of performance parameters.
-    def __addPoint( self, point ):
+    def addPoint( self, point ):
         # get the variables corresponding to the axis names
         for name in self.axis_names:
             locals()[name] = Globals.z3variables[name]
