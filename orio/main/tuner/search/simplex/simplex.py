@@ -10,14 +10,6 @@ import random, sys, time
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
 
-try:
-    import z3
-    _have_z3 = True
-    import z3_search
-    
-except Exception as e:
-    _have_z3 = False
-
 #-----------------------------------------------------
 
 class Simplex(orio.main.tuner.search.search.Search):
@@ -68,12 +60,6 @@ class Simplex(orio.main.tuner.search.search.Search):
         
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
-        if _have_z3:
-            self.have_z3 = True
-            self.z3solver = z3_search.Z3search( self.total_dims, self.axis_names, self.axis_val_ranges, self.dim_uplimits, self.params['ptdriver'].tinfo.pparam_constraints )
-        else:
-            self.have_z3 = False
-            self.z3solver = None
 
         # complain if both the search time limit and the total number of search runs are undefined
         if self.time_limit <= 0 and self.total_runs <= 0:
@@ -541,10 +527,7 @@ class Simplex(orio.main.tuner.search.search.Search):
             # randomly pick (N+1) vertices to form a simplex, where N is the number of dimensions
             simplex = []
             while True:
-                if self.have_z3:
-                    coord = self.z3solver.getRandomCoord_z3_distance()
-                else:
-                    coord = self.getRandomCoord()
+                coord = self.getRandomCoord()
                 if coord not in simplex:
                     simplex.append(coord)
                     if len(simplex) == self.__simplex_size:
