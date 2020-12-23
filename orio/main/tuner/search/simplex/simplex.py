@@ -202,10 +202,10 @@ class Simplex(orio.main.tuner.search.search.Search):
                 second_worst_perf_cost = perf_costs[len(perf_costs)-2]
 
                 # calculate centroid
-                centroid = self.getCentroid(simplex[:len(simplex)-1])
+                centroid = self.__getCentroid(simplex[:len(simplex)-1])
 
                 # reflection
-                refl_coords = self.getReflection(worst_coord, centroid)
+                refl_coords = self.__getReflection(worst_coord, centroid)
                 refl_perf_costs = map(self.getPerfCost, refl_coords)
                 refl_perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), refl_perf_costs)
                 
@@ -227,7 +227,7 @@ class Simplex(orio.main.tuner.search.search.Search):
                 elif refl_perf_cost < best_perf_cost:
 
                     # expansion
-                    exp_coords = self.getExpansion(refl_coord, centroid)
+                    exp_coords = self.__getExpansion(refl_coord, centroid)
                     exp_perf_costs = map(self.getPerfCost, exp_coords)
                     exp_perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), exp_perf_costs)
                     
@@ -249,7 +249,7 @@ class Simplex(orio.main.tuner.search.search.Search):
                 elif refl_perf_cost < worst_perf_cost:
 
                     # outer contraction
-                    cont_coords = self.getContraction(refl_coord, centroid)
+                    cont_coords = self.__getContraction(refl_coord, centroid)
                     cont_perf_costs = map(self.getPerfCost, cont_coords)
                     cont_perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), cont_perf_costs)
                     
@@ -267,7 +267,7 @@ class Simplex(orio.main.tuner.search.search.Search):
                 else:
                 
                     # inner contraction
-                    cont_coords = self.getContraction(worst_coord, centroid)
+                    cont_coords = self.__getContraction(worst_coord, centroid)
                     cont_perf_costs = map(self.getPerfCost, cont_coords)
                     cont_perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), cont_perf_costs)
                     
@@ -285,7 +285,7 @@ class Simplex(orio.main.tuner.search.search.Search):
                 if next_coord == None and next_perf_cost == None:
 
                     # shrinkage
-                    simplex = self.getShrinkage(best_coord, simplex)
+                    simplex = self.__getShrinkage(best_coord, simplex)
                     perf_costs = map(self.getPerfCost, simplex)
                     perf_costs = map(lambda x: x[0] if len(x)==1 else sum(x[1:])/(len(x)-1), perf_costs)
                     
@@ -560,7 +560,7 @@ class Simplex(orio.main.tuner.search.search.Search):
 
     # Get a centroid. If we are using z3, get a *feasible* centroid
     # Get the nearest feasible point to the center
-    def getCentroid(self, coords):
+    def __getCentroid(self, coords):
         # Get a centroid
         total_coords = len(coords)
         centroid = coords[0]
@@ -568,7 +568,7 @@ class Simplex(orio.main.tuner.search.search.Search):
             centroid = self.addCoords(centroid, c)
         centroid = self.mulCoords((1.0/total_coords), centroid)
 
-        if self.have_z3:
+        if self.use_z3:
             # Get the nearest feasible point
             point = self.z3solver.getNearestFeasible( centroid )
             return self.z3solver.perfParamTabToCoord( point ) 
@@ -577,44 +577,47 @@ class Simplex(orio.main.tuner.search.search.Search):
 
     #-----------------------------------------------------
     
-    def getReflection(self, coord, centroid):
+    def __getReflection(self, coord, centroid):
         '''Return a reflection coordinate'''
         sub_coord = self.subCoords(centroid, coord)
-        point =  map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
-                     self.refl_coefs)
-        if self.have_z3:
-            p = self.z3solver.getNearestFeasible( point[0] )
-            return [ self.z3solver.perfParamTabToCoord( p ) ]
-        else:
+        point = map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
+                    self.refl_coefs)
+        if self.use_z3:
+            # Get the nearest feasible point
+            return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( p ) ) for p in point ]
+       	else:
             return point
-    
-    def getExpansion(self, coord, centroid):
+
+    def __getExpansion(self, coord, centroid):
         '''Return an expansion coordinate'''
         sub_coord = self.subCoords(coord, centroid)
         point = map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
-                    self.exp_coefs)
-        if self.have_z3:
-            return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( point[0] ) )]
-        else:
+                   self.exp_coefs)
+        if self.use_z3:
+            # Get the nearest feasible point
+            return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( p ) ) for p in point ]
+       	else:
             return point
     
-    def getContraction(self, coord, centroid):
+    def __getContraction(self, coord, centroid):
         '''Return a contraction coordinate'''
         sub_coord = self.subCoords(coord, centroid)
         point = map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
-                    self.cont_coefs)
-        if self.have_z3:
-            return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( point[0] ) )]
-        else:
+                   self.cont_coefs)
+        if self.use_z3:
+            # Get the nearest feasible point
+            return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( p ) ) for p in point ]
+       	else:
             return point
 
-    def getShrinkage(self, coord, rest_coords):
+    def __getShrinkage(self, coord, rest_coords):
         '''Return a shrinkage simplex'''
         point = map(lambda x: self.addCoords(coord, self.mulCoords(self.shri_coef,
-                                                                   self.subCoords(x, coord))),
-                    rest_coords)
-        if self.have_z3:
+                                                                  self.subCoords(x, coord))),
+                   rest_coords)
+        if self.use_z3:
+            # Get the nearest feasible point
             return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( p ) ) for p in point ]
-        else:
+       	else:
             return point
-    
+

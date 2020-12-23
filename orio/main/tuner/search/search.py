@@ -4,7 +4,6 @@
 import sys, math, time
 from orio.main.util.globals import *
 
-
 class Search:
     '''The search engine used to explore the search space '''
 
@@ -74,12 +73,27 @@ class Search:
         self.input_params = params.get('input_params')
         
         self.timing_code = ''
-        
+
         self.verbose = Globals().verbose
         self.perf_cost_records = {}
         self.transform_time={}
         self.best_coord_info="None"
 
+        # TODO pass it as an option
+        #        if 'use_z3' in params.keys():
+        try:
+            import z3_search
+            _use_z3 = True
+        except Exception as e:
+            _use_z3 = False
+    
+        if _use_z3:
+            self.use_z3 = True
+            self.z3solver = z3_search.Z3search( self.total_dims, self.axis_names, self.axis_val_ranges, self.dim_uplimits, self.params['ptdriver'].tinfo.pparam_constraints, self )
+        else:
+            self.use_z3 = False
+            self.z3solver = None
+        
     #----------------------------------------------------------
 
     def searchBestCoord(self):
@@ -154,15 +168,25 @@ class Search:
     #----------------------------------------------------------
 
     def coordToPerfParams(self, coord):
-        '''To convert the given coordinate to the corresponding performance parameters'''
+        """
+        Convert coordinate to the corresponding performance parameters
+        :param coord The coordinate (integer array)
+        :return dictionary with parameter name-value pairs
+        """
 
         # get the performance parameters that correspond the given coordinate
         perf_params = {}
         for i in range(0, self.total_dims):
             ipoint = coord[i]
-            perf_params[self.axis_names[i]] = self.axis_val_ranges[i][ipoint]
+            # If the point is not in the definition domain, take the nearest feasible value
+            if ipoint < len( self.axis_val_ranges[i] ):
+                perf_params[self.axis_names[i]] = self.axis_val_ranges[i][ipoint]
+            else:
+                if ipoint > self.axis_val_ranges[-1]:
+                    perf_params[self.axis_names[i]] = self.axis_val_ranges[i][-1]
+                else:
+                    perf_params[self.axis_names[i]] = self.axis_val_ranges[i][0]
 
-        # return the obtained performance parameters
         return perf_params
 
     #----------------------------------------------------------
@@ -461,7 +485,11 @@ class Search:
             iuplimit = self.dim_uplimits[i]
             ipoint = self.getRandomInt(0, iuplimit-1)
             random_coord.append(ipoint)
-        return random_coord
+        if self.use_z3:
+            point = self.z3solver.getNearestFeasible( random_coord )
+            return self.z3solver.perfParamTabToCoord( point )
+        else:
+            return random_coord
                                                                      
 
     def getInitCoord(self):
@@ -472,9 +500,11 @@ class Search:
             #iuplimit = self.dim_uplimits[i]
             #ipoint = self.getRandomInt(0, iuplimit-1)
             random_coord.append(0)
-        return random_coord
-                                                                     
-
+        if self.use_z3:
+            point = self.z3solver.getNearestFeasible( random_coord )
+            return self.z3solver.perfParamTabToCoord( point )
+        else:
+            return random_coord
 
     #----------------------------------------------------------
 
