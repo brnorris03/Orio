@@ -7,8 +7,7 @@ This is a simple Orio autotuning example, which includes a custom performance te
 The following must be available/installed on your machine to test this example:
 
 * [Orio](https://github.com/brnorris03/Orio)
-
-* [Caliper](https://github.com/LLNL/Caliper)
+* [Caliper](https://github.com/LLNL/Caliper). The configuration here relies on having [PAPI](http://icl.utk.edu/papi/software/), as well and configuring Caliper with it, e.g., `cmake -DCMAKE_INTALL_PREFIX=$CALIPER_DIR -DWITH_PAPI=/usr/local ..`.
 * gcc
 
 # Running the example
