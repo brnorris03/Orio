@@ -61,7 +61,16 @@ The integer array represents the coordinate corresponding to the parameter value
 
 ```
 $ grep "0, 0, 0, 0, 0, 0, 0, 0, 0, 0" tuning_mm_tune.c_1876850.log  | grep perf_params
-(run 1) | {"compile_time": 0.0, "run": 1, "cost": [21.322, 22.8436, 18.7114, 19.4075, 18.0779], "coordinate": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "perf_params": {"T1_Ja": 1, "SCREP": false, "T1_J": 1, "T1_K": 1, "U_K": 1, "U_J": 1, "T1_Ka": 1, "OMP": true, "VEC": false, "CFLAGS": "-O3"}, "transform_time": 0.0}
+(run 1) | {"compile_time": 0.0, "run": 1, 
+	"cost": [21.322, 22.8436, 18.7114, 19.4075, 18.0779], 
+	"coordinate": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+	"perf_params": {"T1_Ja": 1, "SCREP": false, "T1_J": 1, "T1_K": 1, "U_K": 1, 
+	"U_J": 1, "T1_Ka": 1, "OMP": true, "VEC": false, "CFLAGS": "-O3"}, 
+	"transform_time": 0.0}
 ```
 
 where `tuning_mm_tune.c_1876850.log` is your current/most recent log produced by orcc.
+
+# Miscellaneous
+
+Use the `./cleanup.sh` script to remove all generated files before rerunning.
