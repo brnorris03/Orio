@@ -13,12 +13,12 @@ The following must be available/installed on your machine to test this example:
 
 # Running the example
 
-First, edit the `build` section of tuning spec `mm_tune.c` and make sure the build command and paths to the Caliper include and library paths are correct for your installation:
+First, edit the `build` section of tuning spec `mm_tune.c` and make sure the build command and paths to the Caliper include and library paths are correct for your installation. Alternatively, you can simply define the `CALIPER_DIR` environment variable to point to the top-level Caliper installation directory.
 
 ```
    def build {
-      arg build_command = 'gcc-9 -I$HOME/soft/caliper/include -g -fopenmp -mcmodel=large @CFLAGS';
-      arg libs = '-L$HOME/soft/caliper/lib -Wl,-rpath,$HOME/soft/caliper/lib -lcaliper';
+      arg build_command = 'gcc-9 -I$CALIPER_DIR/include -g -fopenmp -mcmodel=large @CFLAGS';
+      arg libs = '-L$CALIPER_DIR/lib -Wl,-rpath,$CALIPER_DIR/lib -lcaliper';
     } 
 ```
 
@@ -34,3 +34,35 @@ For more verbose output, use the `-v` option. In addition, for debugging, you ma
 
 Upon finishing, Orio will report the best parameters for each code size, and create a file `_mm_tune.c` containing the best-performing code versions for each problem size.
 
+It will also create a file called `caliper.log`, containing all the measurements, with separate sections for each code version. For example:
+
+```
+__orio_perftest1.exe: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+[
+{"event.begin#function":"main","papi.PAPI_DP_OPS":0},
+{"event.begin#loop":"reps_loop","path":"main","papi.PAPI_DP_OPS":0},
+{"path":"main/reps_loop","event.begin#iteration#reps_loop":0,"papi.PAPI_DP_OPS":2},
+{"path":"main/reps_loop","event.end#iteration#reps_loop":0,"iteration#reps_loop":0,"papi.PAPI_DP_OPS":268435456},
+{"event.begin#annotation":"validation","path":"main/reps_loop","papi.PAPI_DP_OPS":3},
+{"event.end#annotation":"validation","path":"main/reps_loop/validation","papi.PAPI_DP_OPS":0},
+{"path":"main/reps_loop","event.begin#iteration#reps_loop":1,"papi.PAPI_DP_OPS":2},
+{"path":"main/reps_loop","event.end#iteration#reps_loop":1,"iteration#reps_loop":1,"papi.PAPI_DP_OPS":268435456},
+{"path":"main/reps_loop","event.begin#iteration#reps_loop":2,"papi.PAPI_DP_OPS":5},
+{"path":"main/reps_loop","event.end#iteration#reps_loop":2,"iteration#reps_loop":2,"papi.PAPI_DP_OPS":268435456},
+{"path":"main/reps_loop","event.begin#iteration#reps_loop":3,"papi.PAPI_DP_OPS":5},
+{"path":"main/reps_loop","event.end#iteration#reps_loop":3,"iteration#reps_loop":3,"papi.PAPI_DP_OPS":268435456},
+{"path":"main/reps_loop","event.begin#iteration#reps_loop":4,"papi.PAPI_DP_OPS":5},
+{"path":"main/reps_loop","event.end#iteration#reps_loop":4,"iteration#reps_loop":4,"papi.PAPI_DP_OPS":268435456},
+{"event.end#loop":"reps_loop","path":"main/reps_loop","papi.PAPI_DP_OPS":3},
+{"event.end#function":"main","path":"main","papi.PAPI_DP_OPS":0}
+]
+```
+
+The integer array represents the coordinate corresponding to the parameter values tested in this example; the `tuning*.log` generated during the same run contains the mapping between these integer indices and actual values. You can quickly look them up with:
+
+```
+$ grep "0, 0, 0, 0, 0, 0, 0, 0, 0, 0" tuning_mm_tune.c_1876850.log  | grep perf_params
+(run 1) | {"compile_time": 0.0, "run": 1, "cost": [21.322, 22.8436, 18.7114, 19.4075, 18.0779], "coordinate": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "perf_params": {"T1_Ja": 1, "SCREP": false, "T1_J": 1, "T1_K": 1, "U_K": 1, "U_J": 1, "T1_Ka": 1, "OMP": true, "VEC": false, "CFLAGS": "-O3"}, "transform_time": 0.0}
+```
+
+where `tuning_mm_tune.c_1876850.log` is your current/most recent log produced by orcc.
