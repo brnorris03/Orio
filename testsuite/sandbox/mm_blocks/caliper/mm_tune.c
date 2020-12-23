@@ -1,3 +1,7 @@
+/* Prerequisites:
+ 1. Install Caliper
+ 2. Define CALIPER_DIR env. variable to point to your Caliper installation before running this example!
+ */
 
 //multiply matrices together
 //pre all matrices are initialized, c shouldn't have any important data in it
@@ -12,8 +16,9 @@ void multiply_matrix_t(double** restrict mat_a, int rows_a, int cols_a,
 
   /*@ begin PerfTuning (
     def build {
-      arg build_command = 'gcc-9 -g -fopenmp -mcmodel=large @CFLAGS -I$HOME/soft/caliper/include';
-      arg libs = '-L$HOME/soft/caliper/lib -Wl,-rpath,$HOME/soft/caliper/lib -lcaliper';
+      arg build_command = 'gcc-9 -g -fopenmp -mcmodel=large @CFLAGS -I$CALIPER_DIR/include';
+      arg libs = '-L$CALIPER_DIR/lib -Wl,-rpath,$CALIPER_DIR/lib -lcaliper';
+      arg postrun_command = "./postprocess.sh "; 
     } 
     def performance_counter {
       arg repetitions = 5;
@@ -48,7 +53,7 @@ void multiply_matrix_t(double** restrict mat_a, int rows_a, int cols_a,
       param cols_a[] = N;
       param cols_b[] = N;
 
-      #constraint square = ((rows_a == cols_a) and (rows_a == cols_b));
+      constraint square = ((rows_a == cols_a) and (rows_a == cols_b));
     }
     def input_vars {
       decl static double A[rows_a][cols_a] = random;
@@ -59,6 +64,10 @@ void multiply_matrix_t(double** restrict mat_a, int rows_a, int cols_a,
       arg algorithm = 'Mlsearch';
       arg total_runs = 20;
     }
+    def performance_test_code {
+      arg skeleton_code_file = 'caliper_skeleton.c';
+    }
+
   ) @*/
 
   int i, j, k;

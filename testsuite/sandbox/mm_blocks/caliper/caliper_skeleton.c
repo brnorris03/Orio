@@ -35,10 +35,7 @@ void print_help()
     cali_ConfigManager mgr;
     cali_ConfigManager_new(&mgr);
 
-    //   Use the "runtime-report" configuration by default to print a
-    // runtime summary for all annotated regions. Let users overwrite
-    // the default configuration with their own on the command line.
-    const char* configstr = "runtime-report";
+    const char* configstr = "none";
 
     if (argc > 1) {
         if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
