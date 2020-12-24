@@ -1,15 +1,22 @@
 from orio.main.util.globals import *
-#import orio.main.tuner.search.search
-import z3
+
+try:
+    import z3
+    Globals.have_z3 = True
+except Exception as e:
+    Globals.have_z3 = False
+    raise ImportError( "Could not load z3. Will not be using it." )
+#    raise ImportError()  # Silent
 
 class Z3search:
 
-    def __init__( self,  total_dims, axis_names, axis_val_ranges, dim_uplimits, constraints ):
+    def __init__( self,  total_dims, axis_names, axis_val_ranges, dim_uplimits, constraints, s ):
         self.axis_names = axis_names
         self.axis_val_ranges = axis_val_ranges
         self.constraints = constraints
         self.total_dims = total_dims
         self.dim_uplimits = dim_uplimits
+        self.search = s
 
         # Initialize the solver itself
         self.variables = []
@@ -192,7 +199,7 @@ class Z3search:
             locals()[i] = Globals.z3variables[i]
 
         # Convert into parameters
-        rpp = self.coordToPerfParams( coord )
+        rpp = self.search.coordToPerfParams( coord )
         for i, name in enumerate( self.axis_names ):
             if not self.z3IsNumeric( i ):
                 rpp[name] = Globals.z3types[name].index( rpp[name] )
@@ -270,23 +277,6 @@ class Z3search:
             res.append( value )
         return res
 
-    def coordToPerfParams(self, coord):
-        '''To convert the given coordinate to the corresponding performance parameters'''
-        # get the performance parameters that correspond the given coordinate
-        perf_params = {}
-        for i in range(0, self.total_dims):
-            ipoint = coord[i]
-            # If the point is not in the definition domain, take the nearest feasible value
-            if ipoint < len( self.axis_val_ranges[i] ):
-                perf_params[self.axis_names[i]] = self.axis_val_ranges[i][ipoint]
-            else:
-                if ipoint > self.axis_val_ranges[-1]:
-                    perf_params[self.axis_names[i]] = self.axis_val_ranges[i][-1]
-                else:
-                    perf_params[self.axis_names[i]] = self.axis_val_ranges[i][0]
-        # return the obtained performance parameters
-        return perf_params
-
     def perfParamToCoord( self, params ):
         coord = [None]*self.total_dims
         for i in range( self.total_dims ):
@@ -297,7 +287,7 @@ class Z3search:
         return coord
 
     def coordToTabOfPerfParams( self, coord ):
-        params = self.coordToPerfParams( coord )
+        params = self.search.coordToPerfParams( coord )
         perftab = []
         for i, name in enumerate( self.axis_names ):
             c = params[name]

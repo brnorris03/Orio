@@ -86,7 +86,7 @@ class Search:
             _use_z3 = True
         except Exception as e:
             _use_z3 = False
-    
+
         if _use_z3:
             self.use_z3 = True
             self.z3solver = z3_search.Z3search( self.total_dims, self.axis_names, self.axis_val_ranges, self.dim_uplimits, self.params['ptdriver'].tinfo.pparam_constraints, self )
@@ -487,6 +487,8 @@ class Search:
             random_coord.append(ipoint)
         if self.use_z3:
             point = self.z3solver.getNearestFeasible( random_coord )
+            if None == point:
+                return None
             return self.z3solver.perfParamTabToCoord( point )
         else:
             return random_coord
