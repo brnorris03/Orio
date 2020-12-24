@@ -128,7 +128,8 @@ class CmdParser:
                                        'c:dehko:p:rs:vx',
                                        ['pre-command=','debug','config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=', 
                                         'output-prefix=', 'rename-objects',  'spec=', 'stop-on-error', 'verbose', 'extern',
-                                        'validate', 'post-command=', 'meta', 'marker-loops'])
+                                        'validate', 'post-command=', 'meta', 'marker-loops',
+                                        'logdir='])
         except Exception, e:
             sys.stderr.write('Orio command-line error: %s' % e)
             sys.stderr.write(USAGE_MSG + '\n')
@@ -173,6 +174,8 @@ class CmdParser:
                 cmdline['stop-on-error'] = True
             elif opt in ('--marker-loops'):
                 cmdline['marker-loops'] = True  # generate fake loops for Meliora
+            elif opt in ('--logdir'):
+                cmdline['logdir'] = arg   # tuning logs directory
                 
         # check on the arguments
         if len(srcfiles) < 1:

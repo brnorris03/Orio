@@ -14,7 +14,7 @@ class Globals:
     Do not instantiate this class directly, rather use the Globals helper function,
     e.g., myglobals = Globals().
     '''
-    
+
     class __impl:
         """ Implementation of the singleton interface """
 
@@ -133,7 +133,11 @@ class Globals:
                 self.logfile = cmdline['logfile']
             else:
                 if not self.disable_orio:
-                    self.logfile = 'tuning_' + '_'.join(self.src_filenames.keys()) + '_' + str(os.getpid()) + '.log'
+                    # Remove paths from source filenames
+                    basenames = [os.path.basename(x) for x in self.src_filenames.keys()]
+                    self.logfile = 'tuning_' + '_'.join(basenames) + '_' + str(os.getpid()) + '.log'
+                    if 'logdir' in cmdline.keys():
+                        self.logfile = os.path.join(cmdline['logdir'],self.logfile)
                     thelogger.addHandler(logging.FileHandler(filename=self.logfile))
                     
             # Stopping on error
@@ -210,6 +214,10 @@ class Globals:
         if Globals.__single is None:
                 # Create instance
                 Globals.__single = Globals.__impl(cmdline)
+
+    @classmethod
+    def reset(cls):
+        cls.__single = None
         
     def __call__(self):
         return self
