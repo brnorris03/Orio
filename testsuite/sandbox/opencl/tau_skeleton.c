@@ -3,6 +3,7 @@
 #include <sys/time.h> 
 #include <TAU.h>
 
+#include <CL/opencl.hpp>
 
 #define ORIO_OPENCL 1
 
