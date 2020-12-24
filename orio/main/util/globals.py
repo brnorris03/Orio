@@ -14,7 +14,7 @@ class Globals:
     Do not instantiate this class directly, rather use the Globals helper function,
     e.g., myglobals = Globals().
     '''
-    
+
     class __impl:
         """ Implementation of the singleton interface """
 
@@ -133,7 +133,11 @@ class Globals:
                 self.logfile = cmdline['logfile']
             else:
                 if not self.disable_orio:
-                    self.logfile = 'tuning_' + '_'.join(self.src_filenames.keys()) + '_' + str(os.getpid()) + '.log'
+                    # Remove paths from source filenames
+                    basenames = [os.path.basename(x) for x in self.src_filenames.keys()]
+                    self.logfile = 'tuning_' + '_'.join(basenames) + '_' + str(os.getpid()) + '.log'
+                    if 'logdir' in cmdline.keys():
+                        self.logfile = os.path.join(cmdline['logdir'],self.logfile)
                     thelogger.addHandler(logging.FileHandler(filename=self.logfile))
                     
             # Stopping on error
@@ -154,12 +158,14 @@ class Globals:
             self.stats = MatlabStats()
     
             # Enable debugging
-            self.debug_level = 5
+            self.debug_level = 3
             if 'ORIO_DEBUG' in os.environ.keys() and os.environ['ORIO_DEBUG'] == '1' or 'debug' in cmdline.keys(): 
                 self.debug = True
                 self.loggers['TuningLog'].setLevel(logging.DEBUG)
-                if 'ORIO_DEBUG_LEVEL' in os.environ.keys():
-                    self.debug_level = os.environ['ORIO_DEBUG_LEVEL']
+            elif 'ORIO_DEBUG_LEVEL' in os.environ.keys():
+                self.debug_level = int(os.environ['ORIO_DEBUG_LEVEL'])
+                self.debug = True
+                self.loggers['TuningLog'].setLevel(logging.DEBUG)
             else: 
                 self.debug = False
                 self.loggers['TuningLog'].setLevel(logging.INFO)
@@ -177,12 +183,18 @@ class Globals:
                 self.validationMode = cmdline['validate']
             else:
                 self.validationMode = False
+
             self.executedOriginal = False
+
+            if 'marker-loops' in cmdline.keys():
+                self.marker_loops = True # generate fake loops for Meliora
+            else:
+                self.marker_loops = False
             
             # Temporary filename for various helper files (not source)
             self.tempfilename = 'temp'
             
-            pass
+            return
 
         def addLogger(self, thelogger):
             self.loggers.add(thelogger)
@@ -202,6 +214,10 @@ class Globals:
         if Globals.__single is None:
                 # Create instance
                 Globals.__single = Globals.__impl(cmdline)
+
+    @classmethod
+    def reset(cls):
+        cls.__single = None
         
     def __call__(self):
         return self
@@ -228,11 +244,13 @@ class Globals:
     def setFuncDec(self,src_code):
 
         src = filter(None,re.split('\n',src_code))
+        if len(src) < 1: return
         self.funcDec = src[0].replace('{',';')
     
         self.funcName = filter(None,re.split('\n|\(|\)| ',src[0]))[1]
     
         i = 1
+
         line = src[i]
         self.input_params = []
         self.input_vars = []
@@ -258,10 +276,12 @@ class Globals:
                         
                         
                     i+=1
+                    if i>=len(src): break
                     line = src[i]
     
     
             i+=1
+            if i >= len(src): break
             line = src[i]
 
     

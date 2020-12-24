@@ -43,6 +43,7 @@ class CodeGen_C (CodeGen):
         '''To instantiate a code generator'''
         self.arrayref_level = 0
         self.alldecls = set([])
+        self.ids = []
         pass
 
     #----------------------------------------------
@@ -96,38 +97,38 @@ class CodeGen_C (CodeGen):
         elif isinstance(tnode, ast.BinOpExp):
             s += self.generate(tnode.lhs, indent, extra_indent)
             if tnode.op_type == tnode.MUL:
-                s += '*'
+                s += ' * '
             elif tnode.op_type == tnode.DIV:
-                s += '/'
+                s += ' / '
             elif tnode.op_type == tnode.MOD:
-                s += '%'
+                s += ' % '
             elif tnode.op_type == tnode.ADD:
-                s += '+'
+                s += ' + '
             elif tnode.op_type == tnode.SUB:
-                s += '-'
+                s += ' - '
             elif tnode.op_type == tnode.LT:
-                s += '<'
+                s += ' < '
             elif tnode.op_type == tnode.GT:
-                s += '>'
+                s += ' > '
             elif tnode.op_type == tnode.LE:
-                s += '<='
+                s += ' <= '
             elif tnode.op_type == tnode.GE:
-                s += '>='
+                s += ' >= '
             elif tnode.op_type == tnode.EQ:
-                s += '=='
+                s += ' == '
             elif tnode.op_type == tnode.NE:
-                s += '!='
+                s += ' != '
             elif tnode.op_type == tnode.LOR:
-                s += '||'
+                s += ' || '
             elif tnode.op_type == tnode.LAND:
-                s += '&&'
+                s += ' && '
             elif tnode.op_type == tnode.COMMA:
-                s += ','
+                s += ', '
             elif tnode.op_type == tnode.EQ_ASGN:
                 #print "(((((( Binop: tnode.lhs.meta=%s, tnode.rhs.meta=%s ))))) " \
                 #    % (str(tnode.lhs.meta),str(tnode.rhs.meta))
 
-                s += '='
+                s += ' = '
             else:
                 g.err('orio.module.loop.codegen internal error: unknown binary operator type: %s' % tnode.op_type)
             s += self.generate(tnode.rhs, indent, extra_indent)
@@ -155,58 +156,109 @@ class CodeGen_C (CodeGen):
                 s += 'goto ' + tnode.target + ';\n'
                 
         elif isinstance(tnode, ast.CompStmt):
-            s += indent + '{\n'
-            self.alldecls = set([])
-            for stmt in tnode.stmts:
-                s += self.generate(stmt, indent + extra_indent, extra_indent)
-            s += indent + '}\n'
+            try:
+                tmp = tnode.meta.get('id')
+                fake_loop = False
+                #if tmp and (not tmp in self.ids):
+                if tmp and g.Globals().marker_loops:
+                    #self.ids.append(tmp)
+                    fake_loop = True
+                    #s += tmp + ': \n'
+                    fake_scope_loop = 'for (int %s=0; %s < 1; %s++)' % (tmp, tmp, tmp)
+                    s += indent + fake_scope_loop
+                    old_indent = indent
+                    indent += extra_indent
+                s += indent + '{\n'
+
+                self.alldecls = set([])
+                for stmt in tnode.stmts:
+                    g.debug('generating code for stmt type: %s' % stmt.__class__.__name__, obj=self,level=7)
+                    s += self.generate(stmt, indent + extra_indent, extra_indent)
+                    g.debug('code so far:' + s, obj=self, level=7)
+
+                s += indent + '}\n'
+                if fake_loop: indent = old_indent
+            except Exception, e:
+                g.err('orio.module.loop.codegen:%s: encountered an error in C code generation for CompStmt: %s %s' % (tnode.line_no, e.__class__, e))
 
         elif isinstance(tnode, ast.IfStmt):
-            if tnode.getLabel(): s += tnode.getLabel() + ':'
-            s += indent + 'if (' + self.generate(tnode.test, indent, extra_indent) + ') '
-            if isinstance(tnode.true_stmt, ast.CompStmt):
-                tstmt_s = self.generate(tnode.true_stmt, indent, extra_indent)
-                s += tstmt_s[tstmt_s.index('{'):]
-                if tnode.false_stmt:
-                    s = s[:-1] + ' else '
-            else:
-                s += '\n'
-                s += self.generate(tnode.true_stmt, indent + extra_indent, extra_indent)
-                if tnode.false_stmt:
-                    s += indent + 'else '
-            if tnode.false_stmt:
-                if isinstance(tnode.false_stmt, ast.CompStmt):
-                    tstmt_s = self.generate(tnode.false_stmt, indent, extra_indent)
+            try:
+                if tnode.getLabel(): s += tnode.getLabel() + ':'
+                s += indent + 'if (' + self.generate(tnode.test, indent, extra_indent) + ') '
+                if isinstance(tnode.true_stmt, ast.CompStmt):
+                    tstmt_s = self.generate(tnode.true_stmt, indent, extra_indent)
                     s += tstmt_s[tstmt_s.index('{'):]
+                    if tnode.false_stmt:
+                        s = s[:-1] + ' else '
                 else:
                     s += '\n'
-                    s += self.generate(tnode.false_stmt, indent + extra_indent, extra_indent)
+                    s += self.generate(tnode.true_stmt, indent + extra_indent, extra_indent)
+                    if tnode.false_stmt:
+                        s += indent + 'else '
+                if tnode.false_stmt:
+                    if isinstance(tnode.false_stmt, ast.CompStmt):
+                        tstmt_s = self.generate(tnode.false_stmt, indent, extra_indent)
+                        s += tstmt_s[tstmt_s.index('{'):]
+                    else:
+                        s += '\n'
+                        s += self.generate(tnode.false_stmt, indent + extra_indent, extra_indent)
+            except Exception, e:
+                g.err('orio.module.loop.codegen:%s: encountered an error in C code generation for IfStmt: %s %s ' % (tnode.line_no, e.__class__, e))
+
 
         elif isinstance(tnode, ast.ForStmt):
-            if tnode.getLabel(): s += tnode.getLabel() + ':'
-            s += indent + 'for ('
-            if tnode.init:
-                s += self.generate(tnode.init, indent, extra_indent)
-            s += '; '
-            if tnode.test:
-                s += self.generate(tnode.test, indent, extra_indent)
-            s += '; '
-            if tnode.iter:
-                s += self.generate(tnode.iter, indent, extra_indent)
-            s += ') '
-            if isinstance(tnode.stmt, ast.CompStmt): 
-                stmt_s = self.generate(tnode.stmt, indent, extra_indent)
-                s += stmt_s[stmt_s.index('{'):]
-                self.alldecls = set([])
-            else:
-                s += '\n'
-                s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
+            try:
+                tmp = tnode.meta.get('id')
+                fake_loop = False
+                parent_with_id = False
+                if tnode.parent:
+                    if isinstance(tnode.parent, ast.CompStmt) or isinstance(tnode.parent, ast.ForStmt):
+                        if tnode.parent.meta.get('id'):
+                            parent_with_id = True
+                if not parent_with_id and tmp and g.Globals().marker_loops: # and tmp not in self.ids:
+                    #self.ids.append(tmp)
+                    fake_loop = True
+                    #s += tmp + ': \n'
+                    fake_scope_loop = 'for (int %s=0; %s < 1; %s++)'% (tmp,tmp,tmp)
+                    s += indent +  fake_scope_loop + ' {\n'
+                    old_indent = indent
+                    indent += extra_indent
+                s += indent + 'for ('
+                if tnode.init:
+                    if isinstance(tnode.init, ast.BinOpExp):
+                        #if tnode.init.lhs.name.startswith('_orio_'):  # Orio-generated variable
+                        s += 'int '
+                    s += self.generate(tnode.init, indent, extra_indent)
+                s += '; '
+                if tnode.test:
+                    s += self.generate(tnode.test, indent, extra_indent)
+                s += '; '
+                if tnode.iter:
+                    s += self.generate(tnode.iter, indent, extra_indent)
+                s += ') '
+                if isinstance(tnode.stmt, ast.CompStmt):
+                    stmt_s = self.generate(tnode.stmt, indent, extra_indent)
+                    s += stmt_s[stmt_s.index('{'):]
+                    self.alldecls = set([])
+                else:
+                    s += '\n'
+                    s += self.generate(tnode.stmt, indent + extra_indent, extra_indent)
+
+                if fake_loop and tmp:
+                    s += indent + '} // ' + fake_scope_loop + '\n'
+                    indent = old_indent
+            except Exception, e:
+                g.err('orio.module.loop.codegen:%s: encountered an error in C code generation: %s %s' % (tnode.line_no, e.__class__, e))
+
 
         elif isinstance(tnode, ast.TransformStmt):
             g.err('orio.module.loop.codegen internal error: a transformation statement is never generated as an output')
 
         elif isinstance(tnode, ast.VarDecl):
-            sv = indent + str(tnode.type_name) + ' '
+            qual=''
+            if tnode.qualifier.strip():
+                qual = str(tnode.qualifier) + ' '
+            sv = indent + qual + str(tnode.type_name) + ' '
             sv += ', '.join(tnode.var_names)
             sv += ';\n'
             if not sv in self.alldecls: 
@@ -214,10 +266,13 @@ class CodeGen_C (CodeGen):
                 self.alldecls.add(sv)
 
         elif isinstance(tnode, ast.VarDeclInit):
-            s += indent + str(tnode.type_name) + ' '
+            qual=''
+            if tnode.qualifier.strip():
+                qual = str(tnode.qualifier) + ' '
+            s += indent + qual + str(tnode.type_name) + ' '
             s += self.generate(tnode.var_name, indent, extra_indent)
             s += '=' + self.generate(tnode.init_exp, indent, extra_indent)
-            s += ';\n'
+            s += ';'
 
         elif isinstance(tnode, ast.Pragma):
             s += '#pragma ' + str(tnode.pstring) + '\n'
@@ -225,9 +280,11 @@ class CodeGen_C (CodeGen):
         elif isinstance(tnode, ast.Container):
             s += self.generate(tnode.ast, indent, extra_indent)
 
+        elif isinstance(tnode, ast.DeclStmt):
+            for d in tnode.vars():
+                s += self.generate(d, indent, '')
         else:
-            g.err('orio.module.loop.codegen internal error: unrecognized type of AST: %s' % tnode.__class__.__name__)
-
+            g.err('orio.module.loop.codegen internal error: unrecognized type of AST: %s\n%s' % (tnode.__class__.__name__, str(tnode)))
         return s
 
 # ==============================================================================================
@@ -369,11 +426,11 @@ class CodeGen_F(CodeGen):
                 s += 'goto ' + tnode.target + '\n'
 
         elif isinstance(tnode, ast.CompStmt):
-            s += indent + '\n'
+            s += indent + '{\n'
             if tnode.getLabel(): s += tnode.getLabel() + ' '
             for stmt in tnode.stmts:
                 s += self.generate(stmt, indent + extra_indent, extra_indent)
-            s += indent + '\n'
+            s += indent + '}\n'
 
         elif isinstance(tnode, ast.IfStmt):
             if tnode.getLabel(): s += tnode.getLabel() + ' '

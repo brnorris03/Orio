@@ -1,7 +1,7 @@
 /*@ begin PerfTuning (  
   def build
   {
-  arg build_command = 'gcc -O3 -fopenmp -DDYNAMIC'; 
+  arg build_command = 'gcc-mp-10 -O3 -fopenmp -DDYNAMIC'; 
   arg libs = '-lm';
   }
   

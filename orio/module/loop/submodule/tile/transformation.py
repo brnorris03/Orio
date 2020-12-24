@@ -38,6 +38,8 @@ class Transformation:
         are applied.
         '''
 
+        debug("tile.Transformation starting",obj=self)
+
         # get rid of compound statement that contains only a single statement
         while isinstance(self.stmt, orio.module.loop.ast.CompStmt) and len(self.stmt.stmts) == 1:
             self.stmt = self.stmt.stmts[0]
@@ -48,13 +50,19 @@ class Transformation:
 
         # check the tile index name
         if self.tindex == index_id.name:
-            err(('orio.module.loop.submodule.tile.transformation:%s: the tile index name must be different from the new tiled ' +
+            err(('orio.module.loop.submodule.tile.transformation:%s: the tile index name must be different from the new tiled ' + \
                     'loop index name: "%s"') % (index_id.line_no, self.tindex))
         
         # when tile size = 1, no transformation will be applied
         if self.tsize == 1:
-            return self.flib.createForLoop(index_id, lbound_exp, ubound_exp,
-                                           stride_exp, loop_body)
+            debug("tile.Transformation returning tsize=1", obj=self)
+            try:
+                st = self.flib.createForLoop(index_id, lbound_exp, ubound_exp,
+                                            stride_exp, loop_body)
+            except Exception, e:
+                err("orio.module.loop.submodule.tile.transformation:%s: error creating for loop for tile size 1\n --> %s: %s" %
+                    (stride_exp.line_no, e.__class__.__name__, e.message))
+            return st
 
         # evaluate the stride expression
         try:
@@ -119,5 +127,6 @@ class Transformation:
                                                                            loop_body))
 
         # return the transformed statement
+        debug("tile.Transformation returning (final)",obj=self)
         return transformed_stmt
              

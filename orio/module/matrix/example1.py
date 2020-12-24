@@ -2,24 +2,24 @@
 
 # Parse a BTO file
 
-from matrixparser import MParser
+from mparser import MParser
 import sys
 
-mparser = MParser(debug=0,printToStderr=False)
-filename = 'test/vadd.m'
+mparser = MParser(yacc_debug=False, printToStderr=False)
+filename = 'example/vadd.m'
 theresult = None
 
 try:
-  theresult = mparser.processFile(filename) 
+  theresult = mparser._processFile(filename)
 except:
   pass
 
  
 # Errors are stored in the mparser.lex.errors list 
-if len(mparser.lex.errors) == 0:
-  print >>sys.stdout, 'Successfully parsed %s' % filename
+if len(mparser.mlex.errors) == 0:
+  print ('Successfully parsed %s' % filename)
 else:
-  print '*** Errors\n', ' '.join(mparser.lex.errors)
+  print ('*** Errors\n', ' '.join(mparser.mlex.errors))
 
     
 

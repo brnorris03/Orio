@@ -45,8 +45,8 @@ class Randomsearch(orio.main.tuner.search.search.Search):
         self.init_samp = 2*self.total_runs   # BN: used to be hard-coded to 10,000
         # complain if both the search time limit and the total number of search runs are undefined
         if self.time_limit <= 0 and self.total_runs <= 0:
-            err(('orio.main.tuner.search.randomsearch.randomsearch: %s search requires either (or both) ' +
-                 'of the search parameters time limit in seconds (time_limit) or/and the ' +
+            err(('orio.main.tuner.search.randomsearch.randomsearch: %s search requires  ' +
+                 'the search parameters time limit in seconds (time_limit) and/or the ' +
                  'total number of search runs (total_runs) to be defined in the search {} section' +
                  'of the tuning spec.') % self.__class__.__name__)
 
@@ -238,7 +238,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
         info(' total successful runs: %s' % sruns)
         info(' total failed runs: %s' % fruns)
         info(' speedup: %s' % speedup)
-        info(' fount at: %s' % num_eval_best)
+        info(' found at: %s' % num_eval_best)
         info('----- end random search summary -----')
 
 

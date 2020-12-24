@@ -67,7 +67,7 @@ class BoundReplace(orio.module.loop.submodule.submodule.SubModule):
                 rhs, line_no = prefix
                 if rhs != None and not isinstance(rhs, str):
                     err(('orio.module.loop.submodule.boundreplace.boundreplace:%s: the prefix name of the lower/upper bound must be ' +
-                            'a string: %s') % (line_no, rhs), doexit=True)
+                            'a string: %s') % (line_no, rhs))
                    
                 if i == 0:
                     lprefix = rhs

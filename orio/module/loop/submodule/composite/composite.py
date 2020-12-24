@@ -286,7 +286,15 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
         # perform the composite transformations
         t = transformation.Transformation(tiles, permuts, regtiles, ujams, scalarrep,
                                         boundrep, pragma, openmp, vector, arrcopy, cuda, self.stmt)
-        transformed_stmt = t.transform()
+
+        try:
+            transformed_stmt = t.transform()
+        except Exception,e:
+            err('orio.module.loop.submodule.composite.composite.applyTransf : %s:%s' % (e.__class__.__name__, e.message))
+
+        debug('SUCCESS: applyTransf on ' + self.stmt.__class__.__name__, obj=self)
+        if not transformed_stmt.meta.get('id'):
+            transformed_stmt.meta['id'] = 'loop_' + self.stmt.line_no
 
         # return the transformed statement
         return transformed_stmt
@@ -323,7 +331,7 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
             lids.extend(lid)
         else:
             err('orio.module.loop.submodule.composite.composite internal error: '+
-                'incorrect representation of the loop IDs', doexit=True)
+                'incorrect representation of the loop IDs')
         
         return lids
 
@@ -344,8 +352,11 @@ class Composite(orio.module.loop.submodule.submodule.SubModule):
             transformed_stmt = self.applyTransf(tiles, permuts, regtiles, ujams, scalarrep, boundrep,
                                                 pragma, openmp, vector, arrcopy, cuda, self.stmt)
         except Exception, e:
-            err('orio.module.loop.submodule.composite.composite : error transforming "%s"\n --> %s:%s' %
-                    (self.stmt, e.__class__, e))
+            err('orio.module.loop.submodule.composite.composite : error transforming "%s"\n --> %s:%s' % \
+                    (self.stmt, e.__class__.__name__, e.message))
+
+        if not transformed_stmt.meta.get('id') and self.stmt.meta.get('id'):
+            transformed_stmt.meta['id'] = 'loop_' + self.stmt.meta['id']
 
         # return the transformed statement
         return transformed_stmt

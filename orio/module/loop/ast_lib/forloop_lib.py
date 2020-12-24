@@ -168,6 +168,7 @@ class ForLoopLib:
         for_loop_info = (index_id, lbound_exp, ubound_exp, stride_exp, loop_body)
         
         # return the for-loop structure information
+        debug("forloop_lib: extractForLoopInfo returning", obj=self, level=6)
         return for_loop_info
 
     #-------------------------------------------------

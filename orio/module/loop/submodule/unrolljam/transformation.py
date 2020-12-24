@@ -224,6 +224,9 @@ class Transformation:
         elif isinstance(tnode, orio.module.loop.ast.Comment):
             return binOpExprs
 
+        elif isinstance(tnode, orio.module.loop.ast.Pragma):
+            return binOpExprs
+
         else:
             err('orio.module.loop.submodule.unrolljam.transformation.__analyzeForNewVars internal error: unexpected AST type: "%s"' % tnode.__class__.__name__)
             
@@ -362,10 +365,10 @@ class Transformation:
         for_loop_info = self.flib.extractForLoopInfo(self.stmt)
         index_id, lbound_exp, ubound_exp, stride_exp, loop_body = for_loop_info
 
-        if not index_id.name in self.localvars:
-            index_decl = ast.VarDecl('int', [index_id.name])
-            self.localvars.add(index_id.name)
-            debug('loop.unrolljam.transformation: generating var decl: %s %s'% (int, index_id.name),self)
+#        if not index_id.name in self.localvars:
+#            index_decl = ast.VarDecl('int', [index_id.name])
+#            self.localvars.add(index_id.name)
+#            debug('loop.unrolljam.transformation: generating var decl: %s %s'% (int, index_id.name),self)
         
         # when ufactor = 1, no transformation will be applied
         if self.ufactor == 1:
@@ -378,9 +381,9 @@ class Transformation:
                     omp_pragma = orio.module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
                 else:
                     omp_pragma = orio.module.loop.ast.Pragma('omp parallel for')
-                return ast.CompStmt([index_decl, omp_pragma, orig_loop])
+                return ast.CompStmt([omp_pragma, orig_loop])
             else:
-                return ast.CompStmt([index_decl, orig_loop])
+                return ast.CompStmt([orig_loop])
         
         # start generating the orio.main.unrolled loop
         # compute lower bound --> new_LB = LB
@@ -437,6 +440,7 @@ class Transformation:
         lbound_name = 'orio_lbound'+str(g.Globals().getcounter())
         lbound_name_exp = orio.module.loop.ast.IdentExp(lbound_name)
         lbound_init = orio.module.loop.ast.VarDeclInit('int', lbound_name_exp, new_lbound_exp)
+
         loop = self.flib.createForLoop(index_id, new_lbound_exp, new_ubound_exp,
                                             new_stride_exp, unrolled_loop_body, meta="main")
         
@@ -491,9 +495,9 @@ class Transformation:
                 omp_pragma = orio.module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
             else:
                 omp_pragma = orio.module.loop.ast.Pragma('omp parallel for')     
-            stmts = [index_decl, omp_pragma, loop, cleanup_loop]
+            stmts = [omp_pragma, loop, cleanup_loop]
         else:
-            stmts = [index_decl, loop, cleanup_loop]
+            stmts = [loop, cleanup_loop]
         transformed_stmt = orio.module.loop.ast.CompStmt(stmts)
 
         # return the transformed statement

@@ -254,6 +254,6 @@ class NodeVisitor(object):
 
 if __name__ == "__main__":
     import sys
-    ast_gen = ASTCodeGenerator('_c_ast.cfg')
-    ast_gen.generate(open('c_ast.py', 'w'))
+    ast_gen = ASTCodeGenerator('_matrix_ast.cfg')
+    ast_gen.generate(open('matrix_ast.py', 'w'))
 

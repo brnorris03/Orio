@@ -30,18 +30,22 @@ __start_line_no = 1
 
 #------------------------------------------------
 
-class MatrixLexer:
-    def __init__(self, debug=1, optimize=0, printToStderr=1):
+class MLexer:
+    def __init__(self, error_func, on_lbrace_func, on_rbrace_func,
+                 type_lookup_func, debug=1, optimize=0, printToStderr=1):
         self.currentline = ''
         self.debug = debug
         self.optimize = optimize
         self.printToStderr = printToStderr
         self.errors = []
+        #
+        self.error_func = error_func
+        self.on_lbrace_func = on_lbrace_func
+        self.on_rbrace_func = on_rbrace_func
+        self.type_lookup_func = type_lookup_func
+        self.filename = ''
         pass
-        
-    # reserved words
-    #reserved = ['COLUMN', 'COMPRESSED', 'COORDINATE', 'FOR', 'GENERAL', 'IN', 'INOUT', 'MATRIX', 
-    #           'OUT', 'ROW', 'SCALAR', 'VECTOR']
+
     
     # The ones that are actually currently in use
     reserved = ['COLUMN', 'FOR', 'IN', 'INOUT', 'MATRIX', 'FORMAT',
@@ -126,6 +130,14 @@ class MatrixLexer:
     reserved_map = {}
     for r in reserved:
         reserved_map[r.lower()] = r
+
+    def reset_lineno(self):
+        """ Resets the internal line number counter of the lexer.
+        """
+        self.lexer.lineno = 1
+
+    #==============================================================
+    # Token rules
     
     # identifiersa
     def t_ID(self,t):
@@ -192,7 +204,7 @@ if __name__ == "__main__":
     #lex.runmain(lexer)
     # Build the lexer and try it out
     # Build the lexer 
-    l = MatrixLexer(debug=1,optimize=0) 
+    l = MLexer(debug=1, optimize=0)
     l.build()
     for i in range(1, len(sys.argv)):
         print "About to lex %s" % sys.argv[i]

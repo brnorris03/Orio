@@ -104,6 +104,9 @@ class Permut(orio.module.loop.submodule.submodule.SubModule):
 
         # perform the loop permutation transformation
         transformed_stmt = self.permute(seq, self.stmt)
+
+        if not transformed_stmt.meta.get('id') and self.stmt.meta.get('id'):
+            transformed_stmt.meta['id'] = 'loop_' + self.stmt.meta['id']
         
         # return the transformed statement
         return transformed_stmt

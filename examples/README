@@ -8,7 +8,7 @@ orcc -v axpy5.c
 
 2. Example with a separate tuning spec file
 
-orcc -v -s axpy5.spec axpy4-nospec.c
+orcc -v -s axpy5.spec axpy5-nospec.c
 
 3. Example with embedded tuning specification containing a Composite annotation
 

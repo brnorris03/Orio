@@ -12,7 +12,8 @@ void VecAXPY(int n, double a, double *x, double *y) {
           param CL[] = ['-cl-fast-relaxed-math'];
         }
         def build {
-          arg build_command = 'gcc -O3 -I/opt/AMDAPP/include -I/home/users/nchaimov/werewolf/tau2/include -L/home/users/nchaimov/werewolf/tau2/x86_64/lib -lTAU -lOpenCL -DPROFILING_ON -DTAU_GNU -DTAU_DOT_H_LESS_HEADERS -fPIC -DTAU_SS_ALLOC_SUPPORT -DTAU_STRSIGNAL_OK';
+          arg build_command = '/usr/bin/c++ -O3 -g -I$OPENCL_DIR/include -isystem $OPENCL_DIR/external/OpenCL-Headers  -DPROFILING_ON -DTAU_GNU -DTAU_DOT_H_LESS_HEADERS -fPIC -DTAU_SS_ALLOC_SUPPORT -DTAU_STRSIGNAL_OK';
+	  arg libs = '-Wl,-rpath,$TAU_DIR -lTAU -Wl,-rpath,$OPENCL_LIBDIR -lOpenCL';
         }
         def input_params {
           param N[] = [1000000];

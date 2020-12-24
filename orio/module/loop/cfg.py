@@ -49,11 +49,7 @@ class CFGGraph(graph.Graph):
         graph.Graph.__init__(self, name)
         self.cfgVisitor = CFGVisitor(self)        
         self.cfgVisitor.visit(nodes)
-                
-        if True:
-            self.display()   
-        
-        pass
+
     
     def nodes(self):
         return self.v
