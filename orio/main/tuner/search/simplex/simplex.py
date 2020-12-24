@@ -63,8 +63,8 @@ class Simplex(orio.main.tuner.search.search.Search):
 
         # complain if both the search time limit and the total number of search runs are undefined
         if self.time_limit <= 0 and self.total_runs <= 0:
-            err(('orio.main.tuner.search.simplex.simplex:  %s search requires either (both) the search time limit or (and) the ' +
-                    'total number of search runs to be defined') % self.__class__.__name__)
+            err(('orio.main.tuner.search.simplex.simplex:  %s search requires the search time limit (time_limit, seconds) and/or the ' +
+                'total number of search runs (total_runs) to be defined') % self.__class__.__name__)
 
     #-----------------------------------------------------
     # Method required by the search interface

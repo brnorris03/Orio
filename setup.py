@@ -5,6 +5,7 @@
 #-----------------------------------------------------------
 
 import os
+import glob
 from distutils.core import setup
 
 #-----------------------------------------------------------
@@ -20,6 +21,8 @@ for root, dirs, files in os.walk(src_dir, topdown=True):
         py_packages.append('.'.join(['orio'] + dir_names[1:]))
 
 print py_packages
+
+examples = glob.glob("examples/*")
 
 #-----------------------------------------------------------
 
@@ -39,6 +42,7 @@ if False:
             n_py_packages.append(p)
     py_packages = n_py_packages
 
+
 #-----------------------------------------------------------
 
 # make a call to the setup function
@@ -52,7 +56,7 @@ setup(name = 'orio',
       url = 'https://trac.mcs.anl.gov/projects/performance/wiki/Orio',
       packages = py_packages,
       package_dir = {'orio' : 'orio'},
-      #package_data = {'orio' : ['tool/zestyparser/*']},
+      data_files = [('examples',examples)],
       scripts = ['orcc', 'orf', 'orcuda', 'orcl'])
 
 

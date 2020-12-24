@@ -44,7 +44,6 @@ class CodeGen_C (CodeGen):
         self.arrayref_level = 0
         self.alldecls = set([])
         self.ids = []
-        self.final_code = False
         pass
 
     #----------------------------------------------
@@ -161,7 +160,7 @@ class CodeGen_C (CodeGen):
                 tmp = tnode.meta.get('id')
                 fake_loop = False
                 #if tmp and (not tmp in self.ids):
-                if tmp:
+                if tmp and g.Globals().marker_loops:
                     #self.ids.append(tmp)
                     fake_loop = True
                     #s += tmp + ': \n'
@@ -170,10 +169,6 @@ class CodeGen_C (CodeGen):
                     old_indent = indent
                     indent += extra_indent
                 s += indent + '{\n'
-                if self.final_code:
-                    tmp = tnode.meta.get('id')
-                    fake_scope_loop = 'for (int %s=0; %s < 1; %s++)' % (tmp, tmp, tmp)
-                    s += indent + fake_scope_loop + ' {\n'
 
                 self.alldecls = set([])
                 for stmt in tnode.stmts:
@@ -220,7 +215,7 @@ class CodeGen_C (CodeGen):
                     if isinstance(tnode.parent, ast.CompStmt) or isinstance(tnode.parent, ast.ForStmt):
                         if tnode.parent.meta.get('id'):
                             parent_with_id = True
-                if not parent_with_id and tmp: # and tmp not in self.ids:
+                if not parent_with_id and tmp and g.Globals().marker_loops: # and tmp not in self.ids:
                     #self.ids.append(tmp)
                     fake_loop = True
                     #s += tmp + ': \n'
