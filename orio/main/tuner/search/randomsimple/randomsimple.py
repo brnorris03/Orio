@@ -14,8 +14,8 @@ class Randomsimple(orio.main.tuner.search.search.Search):
 
         self.__readAlgoArgs()
         if self.time_limit <= 0 and self.total_runs <= 0:
-            err(('orio.main.tuner.search.randomsimple.randomsimple: %s search requires either (both) the search time limit or (and) the ' +
-                    'total number of search runs to be defined') % self.__class__.__name__)
+            err(('orio.main.tuner.search.randomsimple.randomsimple: %s search requires the search time limit (time_limit, seconds) and/or the ' +
+                'total number of search runs (total_runs) to be defined') % self.__class__.__name__)
 
     def searchBestCoord(self, startCoord=None):
         

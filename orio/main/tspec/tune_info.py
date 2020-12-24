@@ -47,6 +47,7 @@ class TuningInfo:
         self.status_cmd = build_info.get('status_cmd')      # command for checking status of submitted batch
         self.num_procs = build_info.get('num_procs')        # the number of processes used to run the test driver
         self.timer_file = build_info.get('timer_file')      # user-specified implementation of the getClock() function
+        self.post_run_cmd = build_info.get('postrun_cmd')   # command to run after executing timing test (will be passed the executable name and coordinate string as an argument)
 
         # performance counter arguments
         self.pcount_method = pcount_method             # default: 'basic timer' --> in microseconds
@@ -108,6 +109,7 @@ class TuningInfo:
         s += ' pre-build command: %s \n' % self.pre_build_cmd
         s += ' build command: %s \n' % self.build_cmd
         s += ' post-build command: %s\n' % self.post_build_cmd
+        s += ' post-run command: %s\n' % self.post_run_cmd
         s += ' C compiler (CC): %s \n' % self.cc
         s += ' libraries to link: %s \n' % self.libs
         s += ' batch command: %s \n' % self.batch_cmd
@@ -199,6 +201,7 @@ class TuningInfoGen:
         PREBUILDCMD = 'prebuild_command'
         BUILDCMD = 'build_command'
         POSTBUILDCMD = 'postbuild_command'
+        POSTRUNCMD = 'postrun_command'
         LIBS = 'libs'               # TODO: remove (replaced by FLIBS, CLIBS, CXXLIBS)
         CC = 'CC'
         CXX = 'CXX'
@@ -218,6 +221,7 @@ class TuningInfoGen:
         prebuild_cmd = None
         build_cmd = None
         postbuild_cmd = None
+        postrun_cmd = None
         cc = 'gcc'          # default C compiler, needed for timer routine
         fc = 'gfortran'
         libs = ''
@@ -244,16 +248,16 @@ class TuningInfoGen:
             _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
             
             # unknown argument name
-            if id_name not in (BUILDCMD, BATCHCMD, STATUSCMD, NUMPROCS, LIBS, CC, TIMER_FILE):
+            if id_name not in (BUILDCMD, PREBUILDCMD, POSTBUILDCMD, POSTRUNCMD, BATCHCMD, STATUSCMD, NUMPROCS, LIBS, CC, TIMER_FILE):
                 err('orio.main.tspec.tune_info: %s: unknown build argument: "%s"' % (id_line_no, id_name))
 
             # evaluate the pre-build command
             if id_name == PREBUILDCMD:
                 if not isinstance(rhs, str):
-                    err('orio.main.tspec.tune_info: %s: post-build command in build section must be a string' % rhs_line_no)
-                    
-                postbuild_cmd = rhs             
-                                
+                    err(
+                        'orio.main.tspec.tune_info: %s: prebuild_command in build section must be a string' % rhs_line_no)
+
+                prebuild_cmd = rhs
 
             # evaluate the build command
             if id_name == BUILDCMD:
@@ -262,13 +266,19 @@ class TuningInfoGen:
                     
                 build_cmd = rhs
 
-            # evaluate the post-build command
+            # evaluate the pre-build command
             if id_name == POSTBUILDCMD:
                 if not isinstance(rhs, str):
-                    err('orio.main.tspec.tune_info: %s: post-build command in build section must be a string' % rhs_line_no)
-                    
-                postbuild_cmd = rhs             
-                
+                    err('orio.main.tspec.tune_info: %s: postbuild_command in build section must be a string' % rhs_line_no)
+
+                postbuild_cmd = rhs
+
+            if id_name == POSTRUNCMD:
+                if not isinstance(rhs, str):
+                    err('orio.main.tspec.tune_info: %s: postrun_command in build section must be a string' % rhs_line_no)
+
+                postrun_cmd = rhs
+
             # Need C compiler for timing routine (even when generating Fortran)
             elif id_name == CC:
                 if not isinstance(rhs, str): 
@@ -319,7 +329,7 @@ class TuningInfoGen:
                     
 
         # return all build information
-        return (prebuild_cmd, build_cmd, postbuild_cmd, batch_cmd, status_cmd, num_procs, libs, cc, fc, timer_file)
+        return (prebuild_cmd, build_cmd, postbuild_cmd, postrun_cmd, batch_cmd, status_cmd, num_procs, libs, cc, fc, timer_file)
 
     #-----------------------------------------------------------
 
@@ -508,7 +518,7 @@ class TuningInfoGen:
             # evaluate search time limit
             elif id_name == TLIMIT:
                 if (not isinstance(rhs, int) and not isinstance(rhs, float)) or rhs <= 0:
-                    err('orio.main.tspec.tune_info: %s: search time limit must be a positive number' % rhs_line_no)
+                    err('orio.main.tspec.tune_info: %s: search time limit (seconds) must be a positive number' % rhs_line_no)
                     
                 search_time_limit = rhs
 
@@ -942,7 +952,7 @@ class TuningInfoGen:
             
             # build definition
             if dname == BUILD:
-                (prebuild_cmd, build_cmd, postbuild_cmd, batch_cmd, status_cmd,
+                (prebuild_cmd, build_cmd, postbuild_cmd, postrun_cmd, batch_cmd, status_cmd,
                  num_procs, libs, cc, fc, timer_file) = self.__genBuildInfo(body_stmt_seq, line_no)
                 if build_cmd == None:
                     err('orio.main.tspec.tune_info: %s: missing build command in the build section' % line_no)
@@ -959,6 +969,7 @@ class TuningInfoGen:
                 build_info = {'prebuild_cmd':prebuild_cmd, 
                               'build_cmd':build_cmd, 
                               'postbuild_cmd':postbuild_cmd,
+                              'postrun_cmd':postrun_cmd,
                               'batch_cmd':batch_cmd,
                               'status_cmd':status_cmd,
                               'num_procs':num_procs, 

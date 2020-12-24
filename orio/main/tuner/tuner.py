@@ -67,7 +67,7 @@ class PerfTuner:
                                                                   tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                   tinfo.random_seed, use_parallel_search)
             elif self.odriver.lang == 'opencl':
-                c = orio.main.tuner.ptest_codegen.PerfTestCodeGenCUDA(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
+                c = orio.main.tuner.ptest_codegen.PerfTestCodeGenOpenCL(prob_size, tinfo.ivar_decls, tinfo.ivar_decl_file,
                                                                   tinfo.ivar_init_file, tinfo.ptest_skeleton_code_file, self.odriver.lang,
                                                                   tinfo.random_seed, use_parallel_search)
             elif self.odriver.lang == 'fortran':
@@ -152,7 +152,6 @@ class PerfTuner:
             best_perf_params, best_perf_cost = search_eng.search()
 
             # print the best performance parameters
-            
             if Globals().verbose and not Globals().extern:
                 info('----- the obtained best performance parameters -----')
                 pparams = best_perf_params.items()
@@ -308,22 +307,25 @@ class PerfTuner:
     def __buildCoordSystem(self, perf_params, cmdline_params):
         '''Return information about the coordinate systems that represent the search space'''
 
-        debug("BUILDING COORD SYSTEM")
+        debug("BUILDING COORD SYSTEM", obj=self,level=3)
 
         # get the axis names and axis value ranges
         axis_names = []
         axis_val_ranges = []
         for pname, prange in perf_params:
             axis_names.append(pname)
-            axis_val_ranges.append(self.__sort(prange))
+            # BN: why on earth would someone do this?????
+            # axis_val_ranges.append(self.__sort(prange))
+            axis_val_ranges.append(prange)
 
         for pname, prange in cmdline_params:
             axis_names.append('__cmdline_' + pname)
-            axis_val_ranges.append(self.__sort(prange))
+            axis_val_ranges.append(prange)
 
         self.num_params=len(axis_names)
         self.num_configs=1
         self.num_bin=0
+        self.num_categorical = 0
         self.num_int=self.num_params
 
         ptype=[]
@@ -331,78 +333,23 @@ class PerfTuner:
             #print min(vals)
             self.num_configs=self.num_configs*len(vals)
             ptype.append('I')
-            if len(vals)==2:
-                #print vals
-                if False in vals or True in vals:
-                    self.num_bin=self.num_bin+1
-                    ptype[len(ptype)-1]=('B')
+            if type(vals[0]) == bool:
+                self.num_bin=self.num_bin+1
+                ptype[len(ptype)-1]=('B')
+            if type(vals[0]) == str:
+                print(vals[0])
+                self.num_categorical = self.num_categorical+1
 
-        self.num_int=self.num_int-self.num_bin
+        self.num_int -= self.num_bin
+        self.num_int -= self.num_categorical
 
-        min_vals=[min(v) for v in axis_val_ranges]
-        #min_vals=[min(v)-min(v) for v in axis_val_ranges]
-        min_vals=[0 for v in min_vals]
-        min_val_str="%s" % min_vals
-        min_val_str=min_val_str.replace('False','0')
-        min_val_str=min_val_str.replace('[','')
-        min_val_str=min_val_str.replace(']','')
-        min_val_str=min_val_str.replace(',','')
+        info('Search_Space           = %1.3e' % self.num_configs)
+        info('Number_of_Parameters   = %02d' % self.num_params)
+        info('Numeric_Parameters     = %02d' % self.num_int)
+        info('Binary_Parameters      = %02d' % self.num_bin)
+        info('Categorical_Parameters = %02d' % self.num_categorical)
         
-
-        max_vals=[len(v)-1 for v in axis_val_ranges]
-        max_val_str="%s" % max_vals
-        max_val_str=max_val_str.replace('True','1')
-        max_val_str=max_val_str.replace('[','')
-        max_val_str=max_val_str.replace(']','')
-        max_val_str=max_val_str.replace(',','')
-        
-
-        info('Search_Space         = %1.3e' % self.num_configs)
-        info('Number_of_Parameters = %02d' % self.num_params)
-        info('Numeric_Parameters   = %02d' % self.num_int)
-        info('Binary_Parameters    = %02d' % self.num_bin)
-        
-        sys.stderr.write('%s\n'% Globals().configfile)   
-        
-#       Azamat on June 10, 2013: commenting this block out until further notice of its use, need a tighter if-condition
-#        if Globals().configfile=='':
-#            srcfilename=Globals().src_filenames.keys()[0]
-#            nomadfile=srcfilename+'.nomad'
-#            nomadfileobj=srcfilename+'.nomad.obj.exe'
-#            
-#            spec_string ="DIMENSION      %02d\n" % (self.num_params)
-#            spec_string+="BB_EXE         %s\n"% nomadfileobj 
-#            spec_string+="BB_INPUT_TYPE  ( %s )\n" % ' '.join(ptype)
-#            spec_string+="BB_OUTPUT_TYPE OBJ CNT_EVAL \n"
-#            spec_string+="X0             ( %s )\n" % min_val_str
-#            spec_string+="LOWER_BOUND    ( %s )\n" % min_val_str
-#            spec_string+="UPPER_BOUND    ( %s )\n" % max_val_str
-#            spec_string+="MAX_BB_EVAL    %s\n" % 1000
-#            spec_string+="DISPLAY_STATS  BBE OBJ EVAL\n"
-#            spec_string+="SEED    1\n" 
-#    
-#            f = open(nomadfile, 'w')
-#            f.write(spec_string)
-#            f.close()
-#
-#            scriptstr="#!/bin/bash\n"
-#            scriptstr=scriptstr+"orcc -x %s --configfile=$1\n" % srcfilename
-#        
-#            f = open(nomadfileobj, 'w')
-#            f.write(scriptstr)
-#            f.close()
-#            #system()
-#            os.system("chmod +x %s" % nomadfileobj)
+        sys.stderr.write('%s\n'% Globals().configfile)
 
         return (axis_names, axis_val_ranges)
-    
-    def __sort(self, prange):
-        # Remove duplications and then perform sorting
-        n_prange = []
-        for r in prange:
-            if r not in n_prange:
-                n_prange.append(r)
-        prange = n_prange
-        prange.sort()
-        return prange
 

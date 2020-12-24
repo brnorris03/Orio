@@ -3,14 +3,16 @@
 #include <sys/time.h> 
 #include <TAU.h>
 
+#include <CL/opencl.hpp>
 
 #define ORIO_OPENCL 1
 
 /*@ global @*/ 
 /*@ external @*/
 
-int main(int argc, char * argv[]) 
-{ 
+//int main(int argc, char * argv[]) { 
+  /*@ declarations @*/
+
   TAU_INIT(&argc, &argv)
   TAU_PROFILE_TIMER(orio_maintimer, "main()", "int (int, char **)", TAU_USER);
   TAU_PROFILE_START(orio_maintimer);
@@ -32,8 +34,10 @@ int main(int argc, char * argv[])
     TAU_PROFILER_START(orio_profiler);   
     /*@ tested code @*/
     TAU_PROFILER_STOP(orio_profiler);
+    if(orio_i==0) {
+      /*@ validation code @*/
+    }
   } 
-  
   double orio_inclusive[TAU_MAX_COUNTERS];
 #ifdef ORIO_OPENCL
   TAU_PROFILER_GET_INCLUSIVE_VALUES(execute_profiler, &orio_inclusive);
@@ -41,9 +45,6 @@ int main(int argc, char * argv[])
   TAU_PROFILER_GET_INCLUSIVE_VALUES(orio_profiler, &orio_inclusive);
 #endif
   printf("{'/*@ coordinate @*/' : %g}\n", orio_inclusive[0]);
-  if(orio_i==0) {
-    /*@ validation code @*/
-  }
    
   /*@ epilogue @*/ 
   TAU_PROFILE_STOP(orio_maintimer);

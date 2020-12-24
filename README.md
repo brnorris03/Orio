@@ -9,26 +9,28 @@ Installation
 ========
 
 The Orio installation follows the standard Python Module Distribution
-Utilities, or Disutils for short.
+Utilities, or Distutils for short.
 
 For users who want to quickly install Orio to the standard locations
 of third-party Python modules (requiring superuser privileges in a
-Unix system), the installation is straightforward as shown below.
+Unix system), the installation is straightforward as shown below. Note that 
+some modules may require certain packages (e.g., Mlsearch requires `pandas`), 
+so it's recommended that you use [Conda](http://docs.conda.io) or a similar Python 
+environment manager. 
 
 ```
   $ tar -xzf orio.tar.gz
   $ cd orio
-  $ python setup.py install
+  $ python setup.py install --prefix=$HOME/orio
 ```
 
-On a Unix platform, the above install command will normally put an
-orcc script in the /usr/bin location, and also create an orio module
-directory in the /usr/lib/python2.X/site-packages location. You can install
-Orio in a different location by specifying the --prefix option to the setup.py 
-script.
+On a Unix platform, the install command without the `--prefix` option requires superuser
+permissions and would install the Orio executables (orcc, orcu, orcl, etc.) in `/usr/local/bin` and 
+and python packages in `/usr/local/lib/python2.X`. At this point, there is no uninstall script,
+so removing the above two components manually is sufficient to uninstall Orio.
 
 To test whether Orio has been properly installed in your system, try
-to execute orcc command as given below as an example.
+to execute `orcc` command as given below as an example.
 
 ```
   $ orcc --help
@@ -44,17 +46,6 @@ to execute orcc command as given below as an example.
     -v, --verbose                  verbosely show details of the results of the running program
 ```
 
-In order to install Orio to an alternate location, users need to
-supply a base directory for the installation. For instance, the
-following command will install an orcc script under
-/home/username/bin, and also put an orio module under
-/home/username/lib/python/site-packages.
-
-```
-  $ tar -xvzf orio.tar.gz
-  $ cd orio
-  $ python setup.py install --prefix=/home/username
-```
 
 You can optionally include the installed orcc script location in the PATH
 shell variable. 
@@ -76,16 +67,23 @@ try some of the examples included in the testsuite subdirectory, e.g.:
 ```
 
 The same directory contains two more examples of Orio input -- one with a 
-separate tuning specification file (orcc -v -s axpy5.spec axpy5-nospec.c) and
+separate tuning specification file (`orcc -v -s axpy5.spec axpy5-nospec.c`) and
 another with two transformations specified using a Composite annotation
-(orcc -v axpy5a.c).
+(`orcc -v axpy5a.c`). To see a list of options, `orcc -h`. To keep all intermediate code
+versions, use the `-k` option. You can also enable various levels of debugging 
+output by setting the ORIO_DEBUG_LEVEL to an integer value betwen 1 and 6, e.g., for 
+the most verbose output `export ORIO_DEBUG_LEVEL=6` and run Orio with the `-v` 
+command-line option. This is the recommended setting when submitting sample output for
+bug reports.
 
 
-To use machine learning based search (Mlsearch), install numpy, panda, scikit-learn modules
+To use machine learning-based search (Mlsearch), install numpy, pandas, 
+and scikit-learn modules. Alternatively, if using conda, simply run `conda install pandas`
+to obtain all prerequisites if needed.
 
 
 If Orio reports problems building the code, adjust the compiler settings in 
-the tuning spec included in the axpy5.c.
+the tuning spec included in the `axpy5.c` example.
 
 Authors and Contact Information
 =========================
