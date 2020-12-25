@@ -19,7 +19,8 @@ Options:
                                  Orio-built code, e.g., tau_exec
   --post-command=<string>        Command string to run after each execution of Orio-built code,
                                  e.g., taudb_loadtrial
-  -d, --debug                    Enable debugging output
+  -d <level>, --debug=<level>    Enable debugging output [default off], level is an int between 
+                                 1 and 6 indicating the level of verbosity.
   -e, --erase-annot              remove annotations from the output
   -h, --help                     display this message
   -o <file>, --output=<file>     place the output in <file> (only valid when processing 
@@ -43,6 +44,8 @@ environment variables:
   ORIO_FLAGS                     the string value is used to augment the list of Orio command-lin
                                  options
   ORIO_DEBUG                     when set, print debugging information (orio.main.y for developer use)
+  ORIO_DEBUG_LEVEL               integer value between 1 and 6 indicating the level of debugging output
+                                 verbosity
                                  
 For more details, please refer to the documentation at https://trac.mcs.anl.gov/projects/performance/wiki/OrioUserGuide
 ''' % os.path.basename(sys.argv[0])
@@ -125,8 +128,8 @@ class CmdParser:
         # get all options
         try:
             opts, args = getopt.getopt(orioargv,
-                                       'c:dehko:p:rs:vx',
-                                       ['pre-command=','debug','config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=', 
+                                       'c:d:ehko:p:rs:vx',
+                                       ['pre-command=','debug=','config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=',
                                         'output-prefix=', 'rename-objects',  'spec=', 'stop-on-error', 'verbose', 'extern',
                                         'validate', 'post-command=', 'meta', 'marker-loops',
                                         'logdir='])
@@ -140,7 +143,7 @@ class CmdParser:
             if opt in ('-c', '--pre-command'):
                 cmdline['pre_cmd'] = arg
             elif opt in ('-d', '--debug'):
-                cmdline['debug'] = True
+                cmdline['debug'] = arg
             elif opt in ('--post-command'):
                 cmdline['post_cmd'] = arg
             elif opt in ('-e', '--erase-annot'):

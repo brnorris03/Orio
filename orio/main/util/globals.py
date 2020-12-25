@@ -157,19 +157,21 @@ class Globals:
             # TODO: specific class for stats recording (needs new cmdline opt)
             self.stats = MatlabStats()
     
-            # Enable debugging
-            self.debug_level = 3
-            if 'ORIO_DEBUG' in os.environ.keys() and os.environ['ORIO_DEBUG'] == '1' or 'debug' in cmdline.keys(): 
+            # Manage debugging output
+            self.debug = False
+            self.loggers['TuningLog'].setLevel(logging.INFO)
+            self.debug_level = 3   # default debug level (up to 6 accepted)
+            if 'ORIO_DEBUG' in os.environ.keys() and os.environ['ORIO_DEBUG'] == '1':
                 self.debug = True
                 self.loggers['TuningLog'].setLevel(logging.DEBUG)
-            elif 'ORIO_DEBUG_LEVEL' in os.environ.keys():
+            if 'ORIO_DEBUG_LEVEL' in os.environ.keys():
                 self.debug_level = int(os.environ['ORIO_DEBUG_LEVEL'])
                 self.debug = True
                 self.loggers['TuningLog'].setLevel(logging.DEBUG)
-            else: 
-                self.debug = False
-                self.loggers['TuningLog'].setLevel(logging.INFO)
-            
+            if 'debug' in cmdline.keys():
+                self.debug = True
+                self.debug_level = cmdline['debug']
+
             # counters
             self.counter = 0
             

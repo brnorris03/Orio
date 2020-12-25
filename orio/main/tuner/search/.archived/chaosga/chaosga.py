@@ -9,7 +9,6 @@ class ChaosGA(orio.main.tuner.search.search.Search):
 
         # Method required by the search interface
     def searchBestCoord(self, startCoord=None):
-        
         # TODO: implement startCoord support
         answer = evolve.newSolution("ga_test.txt", 
             self,
