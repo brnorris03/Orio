@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: orcc regression
+name: search
 
 # Controls when the action will run. 
 on:
@@ -38,5 +38,4 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest -v orio/tests
-        pytest -v orio/testsuite/regression/tests
+        pytest -v orio/main/tuner/search/tests
