@@ -1,7 +1,7 @@
 Orio
 ====
 
-Orio is an open-source extensible framework for the definition of domain-specific languages and generation of optimized code for multiple architecture targets, including support for empirical autotuning of the generated code.
+Orio is an open-source extensible framework for the definition of domain-specific languages and generation of optimized code for multiple architecture targets, including support for empirical autotuning of the generated code. Orio's implementation is primarily in Python and the bulk of its functionality is available without the need to install it or any prerequisites, other than Python and a C compiler.
 
 For more detailed documentation, refer to the Orio website, http://brnorris03.github.io/Orio/.
 
