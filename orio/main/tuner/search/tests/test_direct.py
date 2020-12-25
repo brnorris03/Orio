@@ -1,7 +1,6 @@
-import sys
-import os
-import glob
 import pytest
+import os
+import sys
 from os.path import abspath, dirname, join
 
 def run_orcc(example, search="Direct", extra_args="arg total_runs=10;"): 
