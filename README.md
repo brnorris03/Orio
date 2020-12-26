@@ -8,8 +8,11 @@ For more detailed documentation, refer to the Orio website, http://brnorris03.gi
 Installation
 ========
 
-The Orio installation follows the standard Python Module Distribution
-Utilities, or Distutils for short.
+The Orio installation follows the standard Python setuptools process. The simplest way 
+to install Orio is to run 
+
+```pip install orio
+```
 
 For users who want to quickly install Orio to the standard locations
 of third-party Python modules (requiring superuser privileges in a
@@ -21,11 +24,14 @@ environment manager.
 ```
   $ tar -xzf orio.tar.gz
   $ cd orio
-  $ python setup.py install --prefix=$HOME/orio
+  $ python setup.py install --prefix=$VALID_PYTHON_PATH
 ```
 
-On a Unix platform, the install command without the `--prefix` option requires superuser
-permissions and would install the Orio executables (orcc, orcu, orcl, etc.) in `/usr/local/bin` and 
+On a Unix platform, the install command without the `--prefix` option will install Orio in the 
+default python installation (system version or currently activated virtual environment). An alternetive
+approach is to install using the `--user` option, which does not modify the python installation. 
+Without any options, `python setup.py install` will typically require superuser permissions and 
+would install the Orio executables (orcc, orcu, orcl, etc.) in `/usr/local/bin` and 
 and python packages in `/usr/local/lib/python2.X`. At this point, there is no uninstall script,
 so removing the above two components manually is sufficient to uninstall Orio.
 

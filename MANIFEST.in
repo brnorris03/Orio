@@ -1,4 +1,0 @@
-#recursive-include doc *
-recursive-include testsuite *
-recursive-include src/tool *
-

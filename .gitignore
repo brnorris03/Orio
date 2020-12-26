@@ -1,5 +1,9 @@
 *.py[cod]
 
+# Orio-generated
+__orio_perftest*.exe
+tuning*.log
+
 # C extensions
 *.so
 
