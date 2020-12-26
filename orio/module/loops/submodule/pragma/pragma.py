@@ -1,6 +1,7 @@
 from orio.module.loops.submodule.submodule import SubModule
 import orio.module.loops.submodule.pragma.transformation as transformation
 import orio.main.util.globals as g
+from functools import reduce
 
 #----------------------------------------------------------------------------------------------------------------------
 class Pragma(SubModule):
@@ -26,7 +27,7 @@ class Pragma(SubModule):
             # evaluate the RHS expression
             try:
                 rhs = eval(str(rhs), perf_params)
-            except Exception, e:
+            except Exception as e:
                 g.err(__name__+': at line %s, failed to evaluate the argument expression: %s\n --> %s: %s'
                       % (line_no, rhs, e.__class__.__name__, e))
 
@@ -55,7 +56,7 @@ class Pragma(SubModule):
             pragmas = [rhs]
         else:
             if ((not isinstance(rhs, list) and not isinstance(rhs, tuple)) or
-                not reduce(lambda x,y: x and y, map(lambda x: isinstance(x, str), rhs), True)):
+                not reduce(lambda x,y: x and y, [isinstance(x, str) for x in rhs], True)):
                 g.err(__name__+':%s: pragma directives must be a list/tuple of strings: %s'
                       % (line_no, rhs))
             pragmas = rhs

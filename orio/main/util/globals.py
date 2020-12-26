@@ -4,7 +4,7 @@
 # For copying information, see the file LICENSE
 
 import logging, os, sys, traceback, re, socket, datetime
-from matplotlib_logger import MatplotlibLogger
+from .matplotlib_logger import MatplotlibLogger
 from orio.main.tuner.stats import *
 
 
@@ -32,36 +32,36 @@ class Globals:
             self.input_params = {}      #Added by Axel Y. Rivera (UofU)
             self.input_vars = {}    #added by Axel Y. Rivera (UofU)
 
-            if 'dry_run' in cmdline.keys():
+            if 'dry_run' in list(cmdline.keys()):
                 self.dry_run = cmdline['dry_run']
             else:
                 self.dry_run = False     # When True, don't execute anything, just print commands
             
-            if 'shell' in cmdline.keys():
+            if 'shell' in list(cmdline.keys()):
                 self.shell = cmdline['shell']
             else:
                 self.shell = '/bin/sh'   # Shell used by Orio 
-            if 'verbose' in cmdline.keys():
+            if 'verbose' in list(cmdline.keys()):
                 self.verbose = cmdline['verbose']
             else:
                 self.verbose = False
 
-            if 'meta' in cmdline.keys():
+            if 'meta' in list(cmdline.keys()):
                 self.meta = cmdline['meta']
             else:
                 self.meta = False
 
-            if 'extern' in cmdline.keys():
+            if 'extern' in list(cmdline.keys()):
                 self.extern = cmdline['extern']
             else:
                 self.extern = False
 
-            if 'config' in cmdline.keys():
+            if 'config' in list(cmdline.keys()):
                 self.config = cmdline['config']
             else:
                 self.config = ''
 
-            if 'configfile' in cmdline.keys():
+            if 'configfile' in list(cmdline.keys()):
                 self.configfile = cmdline['configfile']
                 #f = open(self.configfile, 'r')
                 #k=f.read()
@@ -73,75 +73,75 @@ class Globals:
 
                 
                 
-            if 'out_prefix' in cmdline.keys():
+            if 'out_prefix' in list(cmdline.keys()):
                 self.out_prefix = cmdline['out_prefix']
             else:
                 self.out_prefix = '_'         # prefix for output file name
                 
-            if 'src_filenames' in cmdline.keys():
+            if 'src_filenames' in list(cmdline.keys()):
                 self.src_filenames = cmdline['src_filenames']
             else:
                 self.src_filenames = {}       # dictionary; keys: input source files; vals: names of output files
-            if 'out_filename' in cmdline.keys():
+            if 'out_filename' in list(cmdline.keys()):
                 self.out_filename = cmdline['out_filename']
             else:
                 self.out_filename = None      # output file name
-            if 'spec_filename' in cmdline.keys():
+            if 'spec_filename' in list(cmdline.keys()):
                 self.spec_filename = cmdline['spec_filename']
             else:
                 self.spec_filename = None     # the name of the tuning specification file
-            if 'erase_annot' in cmdline.keys():
+            if 'erase_annot' in list(cmdline.keys()):
                 self.erase_annot = cmdline['erase_annot']
             else:
                 self.erase_annot = False      # do we need to remove annotations from the output?
-            if 'keep_temps' in cmdline.keys():
+            if 'keep_temps' in list(cmdline.keys()):
                 self.keep_temps = cmdline['keep_temps']
             else:
                 self.keep_temps = False       # keep intermediate generated files
-            if 'rename_objects' in cmdline.keys():
+            if 'rename_objects' in list(cmdline.keys()):
                 self.rename_objects = cmdline['rename_objects']
             else:
                 self.rename_objects = False   # rename compiler files to match original source name
-            if 'external_command' in cmdline.keys():
+            if 'external_command' in list(cmdline.keys()):
                 self.external_command = cmdline['external_command']
             else:
                 self.external_command = ''    # command line being wrapped (not processed, just passed along)
-            if 'disable_orio' in cmdline.keys():
+            if 'disable_orio' in list(cmdline.keys()):
                 self.disable_orio = cmdline['disable_orio']
             else:
                 self.disable_orio = False     # True when orio is wrapping something other than compilation, e.g., linking
-            if 'pre_cmd' in cmdline.keys():
+            if 'pre_cmd' in list(cmdline.keys()):
                 self.pre_cmd = cmdline['pre_cmd']
             else:
                 self.pre_cmd = ''             # Command string with which to prefix the execution of the Orio-built code
-            if 'post_cmd' in cmdline.keys():
+            if 'post_cmd' in list(cmdline.keys()):
                 self.post_cmd = cmdline['post_cmd']
             else:
                 self.post_cmd = None
     
             
             # Configure logging
-            if 'logging' in cmdline.keys():
+            if 'logging' in list(cmdline.keys()):
                 self.logging = cmdline['logging']
             else:
                 self.logging = True
-            if 'logger' in cmdline.keys():
+            if 'logger' in list(cmdline.keys()):
                 thelogger = logging.getLogger(cmdline['logger'])
             else:
                 thelogger = logging.getLogger("Orio")
-            if 'logfile' in cmdline.keys():
+            if 'logfile' in list(cmdline.keys()):
                 self.logfile = cmdline['logfile']
             else:
                 if not self.disable_orio:
                     # Remove paths from source filenames
-                    basenames = [os.path.basename(x) for x in self.src_filenames.keys()]
+                    basenames = [os.path.basename(x) for x in list(self.src_filenames.keys())]
                     self.logfile = 'tuning_' + '_'.join(basenames) + '_' + str(os.getpid()) + '.log'
-                    if 'logdir' in cmdline.keys():
+                    if 'logdir' in list(cmdline.keys()):
                         self.logfile = os.path.join(cmdline['logdir'],self.logfile)
                     thelogger.addHandler(logging.FileHandler(filename=self.logfile))
                     
             # Stopping on error
-            if 'stop-on-error' in cmdline.keys():
+            if 'stop-on-error' in list(cmdline.keys()):
                 self.stop_on_error = True
             else:
                 self.stop_on_error = False
@@ -161,14 +161,14 @@ class Globals:
             self.debug = False
             self.loggers['TuningLog'].setLevel(logging.INFO)
             self.debug_level = 3   # default debug level (up to 6 accepted)
-            if 'ORIO_DEBUG' in os.environ.keys() and os.environ['ORIO_DEBUG'] == '1':
+            if 'ORIO_DEBUG' in list(os.environ.keys()) and os.environ['ORIO_DEBUG'] == '1':
                 self.debug = True
                 self.loggers['TuningLog'].setLevel(logging.DEBUG)
-            if 'ORIO_DEBUG_LEVEL' in os.environ.keys():
+            if 'ORIO_DEBUG_LEVEL' in list(os.environ.keys()):
                 self.debug_level = int(os.environ['ORIO_DEBUG_LEVEL'])
                 self.debug = True
                 self.loggers['TuningLog'].setLevel(logging.DEBUG)
-            if 'debug' in cmdline.keys():
+            if 'debug' in list(cmdline.keys()):
                 self.debug = True
                 self.debug_level = cmdline['debug']
 
@@ -181,14 +181,14 @@ class Globals:
             self.cunit_declarations = [] 
             
             # Enable validation of transformed vs. original code execution results 
-            if 'validate' in cmdline.keys():
+            if 'validate' in list(cmdline.keys()):
                 self.validationMode = cmdline['validate']
             else:
                 self.validationMode = False
 
             self.executedOriginal = False
 
-            if 'marker-loops' in cmdline.keys():
+            if 'marker-loops' in list(cmdline.keys()):
                 self.marker_loops = True # generate fake loops for Meliora
             else:
                 self.marker_loops = False
@@ -245,11 +245,11 @@ class Globals:
 
     def setFuncDec(self,src_code):
 
-        src = filter(None,re.split('\n',src_code))
+        src = [_f for _f in re.split('\n',src_code) if _f]
         if len(src) < 1: return
         self.funcDec = src[0].replace('{',';')
     
-        self.funcName = filter(None,re.split('\n|\(|\)| ',src[0]))[1]
+        self.funcName = list(filter(None,re.split('\n|\(|\)| ',src[0])))[1]
     
         i = 1
 
@@ -261,7 +261,7 @@ class Globals:
                 i = i+1
                 line = src[i]
                 while ('}' not in line):
-                    inputs = filter(None,re.split('param| |\[|\]|=|;',line))
+                    inputs = [_f for _f in re.split('param| |\[|\]|=|;',line) if _f]
                     self.input_params.append(inputs)
                     i+=1
                     line=src[i]
@@ -270,10 +270,10 @@ class Globals:
                 i = i+ 1
                 line = src[i]
                 while ('}' not in line):
-                    inputs = filter(None,re.split(' |(=)',line))
+                    inputs = [_f for _f in re.split(' |(=)',line) if _f]
                     for j in range(len(inputs)):
                         if inputs[j] == '=':
-                            inputs2 = filter(None,re.split('\[|\]',inputs[j-1]))
+                            inputs2 = [_f for _f in re.split('\[|\]',inputs[j-1]) if _f]
                             self.input_vars.append(inputs2)
                         
                         

@@ -2,7 +2,7 @@
 
 # Parse a BTO file
 
-from mparser import MParser
+from .mparser import MParser
 import sys
 
 mparser = MParser(yacc_debug=False,printToStderr=False)
@@ -25,7 +25,7 @@ out
 theresult = None
 
 
-print program
+print(program)
 try:
   theresult = mparser._processString(program)
 except:
@@ -36,7 +36,7 @@ except:
 if theresult and len(mparser.mlex.errors) == 0:
   print('Successfully parsed program.')
 else:
-  print ('*** Errors\n', ' '.join(mparser.mlex.errors))
+  print(('*** Errors\n', ' '.join(mparser.mlex.errors)))
 
     
 

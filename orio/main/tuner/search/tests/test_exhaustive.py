@@ -12,7 +12,7 @@ def run_orcc(example, search="Exhaustive", extra_args=""):
         Globals.reset()
         import orio.main.orio_main
         cmd = ['orcc','-v','--stop-on-error','--logdir=orio/main/tuner/search/tests', code]
-        print(' '.join(cmd))
+        print((' '.join(cmd)))
         orio.main.orio_main.start(cmd, orio.main.orio_main.C_CPP)
         captured = capsys.readouterr()
     return exc.value.code

@@ -63,7 +63,7 @@ class Firefly(orio.main.tuner.search.search.Search):
             while True:
                 self.population.append(FireflyElement(self.min_bound, self.max_bound, i))
                 if self.move(i, np.random.standard_normal(self.problem_dim)):
-                    print("std_pr: |- Created firefly %d" % i)
+                    print(("std_pr: |- Created firefly %d" % i))
                     break
                 else:
                     self.population.pop()
@@ -135,12 +135,12 @@ class Firefly(orio.main.tuner.search.search.Search):
         best_coord = None
         while t < self.generations and not ((time.time()-start_time) > self.time_limit > 0):
             self.population.sort(key=operator.attrgetter('brightness'))
-            print('std_pr: Generation %s, best fitness %s' % (t, -self.population[-1].brightness))
+            print(('std_pr: Generation %s, best fitness %s' % (t, -self.population[-1].brightness)))
             if -self.population[-1].brightness < best_fitness:
                 best_fitness = -self.population[-1].brightness
                 best_coord = self.population[-1].position
             self.population.sort(key=operator.attrgetter('id'))
-            print("std_pr: " + str([f.brightness for f in self.population][:8]))
+            print(("std_pr: " + str([f.brightness for f in self.population][:8])))
             self.step()
             t += 1
         search_time = time.time() - start_time
@@ -154,7 +154,7 @@ class Firefly(orio.main.tuner.search.search.Search):
         self.alpha = self.alpha * self.alpha_decay
 
     def _get_algo_params(self):
-        for name, value in self.search_opts.iteritems():
+        for name, value in self.search_opts.items():
             if name == UNROLL_NAMES:
                 value = firefly_unroll_variables
                 items_list = value.split()

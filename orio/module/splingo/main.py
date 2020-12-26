@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 
 import sys
-import parser, printer, rewriter
+from . import parser, printer, rewriter
 
 #----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -21,7 +21,7 @@ if __name__ == "__main__":
   
   # pretty-print
   text = printer.Printer().pp(ast2, '')
-  print text
+  print(text)
   f = open(sys.argv[-1] + '.c', 'w')
   f.write(text)
   f.close()

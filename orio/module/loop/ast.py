@@ -35,8 +35,7 @@
 # - The NewAST is an AST used only in the output code generation. Such separation is needed to
 #   simplify the input language.
 #
-
-import codegen
+from orio.module.loop import codegen
 from orio.main.util.globals import Globals
 import copy
 
@@ -602,3 +601,6 @@ class CastExpr(NewAST):
                         meta=copy.deepcopy(self.meta))
 
 
+if __name__ == '__main__':
+    i = IdentExp('Hi')
+    print(i.name)

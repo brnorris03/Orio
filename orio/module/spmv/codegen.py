@@ -3,7 +3,7 @@
 #
 
 import re, sys
-import arg_info
+from . import arg_info
 from orio.main.util.globals import *
 
 #-------------------------------------------
@@ -83,7 +83,7 @@ class CodeGen:
         code += '  register int i=0;\n'
         code += '  while (i<=rlength-%s) {\n' % ainfo.out_unroll_factor
         if len(iarr_inits) > 0:
-            code += '    %s %s;\n' % (ainfo.data_type, ','.join(map(lambda x:'*'+x, iarr_inits)))
+            code += '    %s %s;\n' % (ainfo.data_type, ','.join(['*'+x for x in iarr_inits]))
         code += '    %s %s;\n' % (ainfo.data_type, ','.join(ovec_inits))
 
         # the inner orio.main.main loop
@@ -260,7 +260,7 @@ class CodeGen:
         code += '  register int i=0;\n'
         code += '  while (i<=rlength-%s) {\n' % ainfo.out_unroll_factor
         if len(iarr_inits) > 0:
-            code += '    %s %s;\n' % (ainfo.data_type, ','.join(map(lambda x:'*'+x, iarr_inits)))
+            code += '    %s %s;\n' % (ainfo.data_type, ','.join(['*'+x for x in iarr_inits]))
         code += '    v2df %s;\n' % ','.join([('*'+i) for i in viarr_inits])
         code += '    v2df %s;\n' % ','.join(vovec_inits)
 
@@ -449,7 +449,7 @@ class CodeGen:
         code += '  register int i=0;\n'
         code += '  while (i<=rlength-%s) {\n' % ainfo.out_unroll_factor
         if len(iarr_inits) > 0:
-            code += '    %s %s;\n' % (ainfo.data_type, ','.join(map(lambda x:'*'+x, iarr_inits)))
+            code += '    %s %s;\n' % (ainfo.data_type, ','.join(['*'+x for x in iarr_inits]))
         code += '    __m128d %s;\n' % ','.join(vovec_inits)
 
         # the inner orio.main.main loop
@@ -635,7 +635,7 @@ class CodeGen:
         code += '  register int i=0;\n'
         code += '  while (i<=rlength-%s) {\n' % ainfo.out_unroll_factor
         if len(iarr_inits) > 0:
-            code += '    %s %s;\n' % (ainfo.data_type, ','.join(map(lambda x:'*'+x, iarr_inits)))
+            code += '    %s %s;\n' % (ainfo.data_type, ','.join(['*'+x for x in iarr_inits]))
         code += '    double _Complex %s;\n' % ','.join(vovec_inits)
 
         # the inner orio.main.main loop

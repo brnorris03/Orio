@@ -125,7 +125,7 @@ class PragmaPreprocessor:
 
         loop_ann = LoopAnnotationGenerator(
             loop_counter=loop_info.maxnest,
-            loop_vars=loop_info.loop_bounds.keys(),
+            loop_vars=list(loop_info.loop_bounds.keys()),
             tiling_levels=min(loop_info.maxnest,2))
         leader_annotation = "\n/*@ begin Loop(\n %s\n" % loop_ann.getComposite() \
                             + self.codegen.generate(stmt) \
@@ -137,15 +137,15 @@ class PragmaPreprocessor:
     def _generate_tuning_spec(self) :
         self.tuning_spec = template_string
 
-        print(self.tspec_params)
+        print((self.tspec_params))
 
-        for section, val in self.tspec_params.items():
+        for section, val in list(self.tspec_params.items()):
             buf = ''
             if section in ['performance_params','input_params','input_vars','constraints']:
-                print(repr(self.tspec_params[section].values()))
-                buf = ''.join(self.tspec_params[section].values())
+                print((repr(list(self.tspec_params[section].values()))))
+                buf = ''.join(list(self.tspec_params[section].values()))
             elif section in ['build','performance_counter','search']:
-                for k,v in self.tspec_params[section].items():
+                for k,v in list(self.tspec_params[section].items()):
                     buf += self.indent + 'arg %s = %s;\n' % (k,str(v))
             else:
                 warn("Unknown tuning spec section \"%s\" encountered, this should never happen!" % section )
@@ -159,7 +159,7 @@ class PragmaPreprocessor:
 
         :param perf_params: dict(tiling=[],unroll=[],scalar_replacement=[],vector=[],openmp=[])
         """
-        for vartype in perf_params.keys():
+        for vartype in list(perf_params.keys()):
             for var in perf_params[vartype]:
                 self.tspec_params['performance_params'][var] = \
                     self.indent + 'param %s[] = %s;\t#%s\n' % (var, repr(default_perf_params[vartype]), vartype)
@@ -189,7 +189,7 @@ class LoopInfoVisitor(astvisitors.ASTVisitor):
 
             elif isinstance(node, ast.IdentExp):
                 if params.get('in') == 'loop_header':
-                    if not node.name in self.loop_bounds.keys():
+                    if not node.name in list(self.loop_bounds.keys()):
                         self.vars.add(node.name)
 
             elif isinstance(node, ast.ArrayRefExp):

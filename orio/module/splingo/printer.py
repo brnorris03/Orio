@@ -38,7 +38,7 @@ class Printer(object):
 
         elif isinstance(n, CallExp):
             s += self.pp(n.exp, indent) + '('
-            s += ','.join(map(lambda x: self.pp(x, indent), n.args))
+            s += ','.join([self.pp(x, indent) for x in n.args])
             s += ')'
 
         elif isinstance(n, UnaryExp):

@@ -3,7 +3,9 @@
 #
 
 import sys
-import ast, orio.tool.ply.lex, orio.tool.ply.yacc
+from orio.module.loop import ast
+import orio.tool.ply.lex
+import orio.tool.ply.yacc
 from orio.main.util.globals import *
 
 #------------------------------------------------

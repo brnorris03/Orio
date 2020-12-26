@@ -122,7 +122,7 @@ class CmdParser:
                 index += 1
 
         # check the ORIO_FLAGS env. variable for more options
-        if 'ORIO_FLAGS' in os.environ.keys():
+        if 'ORIO_FLAGS' in list(os.environ.keys()):
             orioargv.extend(os.environ['ORIO_FLAGS'].split())
 
         # get all options
@@ -133,7 +133,7 @@ class CmdParser:
                                         'output-prefix=', 'rename-objects',  'spec=', 'stop-on-error', 'verbose', 'extern',
                                         'validate', 'post-command=', 'meta', 'marker-loops',
                                         'logdir='])
-        except Exception, e:
+        except Exception as e:
             sys.stderr.write('Orio command-line error: %s' % e)
             sys.stderr.write(USAGE_MSG + '\n')
             sys.exit(1)
@@ -197,7 +197,7 @@ class CmdParser:
                 sys.stderr.write('orio.main.cmd_line_opts: cannot open source file for reading: %s' % src_filename)
                 sys.exit(1)
 
-        if 'spec_filename' in cmdline.keys(): spec_filename = cmdline['spec_filename']
+        if 'spec_filename' in list(cmdline.keys()): spec_filename = cmdline['spec_filename']
         else: spec_filename = None
         # check if the tuning specification file is readable
         if spec_filename:
@@ -209,12 +209,12 @@ class CmdParser:
                 sys.exit(1)
 
         # create the output filenames
-        if len(srcfiles.keys()) == 1 and 'out_filename' in cmdline.keys(): 
-            srcfiles[srcfiles.keys()[0]] = cmdline['out_filename']
+        if len(list(srcfiles.keys())) == 1 and 'out_filename' in list(cmdline.keys()): 
+            srcfiles[list(srcfiles.keys())[0]] = cmdline['out_filename']
         else:
-            for src_filename in srcfiles.keys():
+            for src_filename in list(srcfiles.keys()):
                 dirs, fname = os.path.split(src_filename)
-                if 'out_prefix' in cmdline.keys(): out_prefix=cmdline['out_prefix']
+                if 'out_prefix' in list(cmdline.keys()): out_prefix=cmdline['out_prefix']
                 else: out_prefix = '_'
                 srcfiles[src_filename] = os.path.join(dirs, out_prefix + fname)
 

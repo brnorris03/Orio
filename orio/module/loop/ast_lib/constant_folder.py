@@ -5,6 +5,7 @@
 import sys
 import orio.module.loop.ast
 from orio.main.util.globals import *
+from operator import itemgetter
 
 #-----------------------------------------
 
@@ -219,8 +220,8 @@ class ConstFolder:
                         non_num_nodes.append((sign, node))
 
                 # put a positive non-numeric node at the first element
-                non_num_nodes.sort(lambda x,y: -cmp(x[0],y[0]))
-                
+                #non_num_nodes.sort(lambda x,y: -cmp(x[0],y[0]))
+                non_num_nodes = sorted(non_num_nodes, key=itemgetter(0), reverse=True)
                 # build the numeric expression
                 num_exp = None
                 if num_val != 0:

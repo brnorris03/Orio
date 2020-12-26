@@ -5,7 +5,7 @@
 import os, ast
 import orio.module.loop.submodule.submodule
 import orio.main.util.globals as g
-import transformation
+from orio.module.loop.submodule.cuda import transformation
 
 #----------------------------------------------------------------------------------------------------------------------
 CUDA_DEVICE_QUERY_SKELET = r'''
@@ -130,7 +130,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
             # evaluate the RHS expression
             try:
                 rhs = eval(rhs, perf_params)
-            except Exception, e:
+            except Exception as e:
                 g.err('orio.module.loop.submodule.cuda.cuda: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
             
             if aname == THREADCOUNT:
@@ -198,7 +198,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
                 g.err('%s: %s: unrecognized transformation argument: "%s"' % (self.__class__, line_no, aname))
 
         if not errors == '':
-          raise Exception, ('%s: errors evaluating transformation args:\n%s' % (self.__class__, errors))
+          raise Exception('%s: errors evaluating transformation args:\n%s' % (self.__class__, errors))
 
         # return evaluated transformation arguments
         return {
@@ -280,7 +280,7 @@ class CUDA(orio.module.loop.submodule.submodule.SubModule):
         bcmd = 'nvcc'
       if bcmd.find('-arch') == -1:
         bcmd += ' -arch=sm_' + str(props['major']) + str(props['minor'])
-      if self.perf_params is not None and self.perf_params.has_key('CFLAGS') and bcmd.find('@CFLAGS') == -1:
+      if self.perf_params is not None and 'CFLAGS' in self.perf_params and bcmd.find('@CFLAGS') == -1:
         bcmd += ' @CFLAGS'
       if self.tinfo is not None:
         self.tinfo.build_cmd = bcmd

@@ -11,9 +11,9 @@ import orio.tool.ply.yacc
 import orio.module.matrix.mlexer as lexer
 from orio.main.util.globals import *
 
-from mlexer import *
+from .mlexer import *
 from . import matrix_ast as m_ast
-from plyparser import PLYParser
+from .plyparser import PLYParser
 from orio.tool.ply import yacc
 from orio.module.matrix.plyparser import PLYParser, Coord, ParseError, parameterized, template
 
@@ -226,7 +226,7 @@ class MParser(PLYParser):
         """
 
         # Create entry in symbol table (dictionary)
-        if not p[1] in self.matrix_language_vars.keys():
+        if not p[1] in list(self.matrix_language_vars.keys()):
             self.matrix_language_vars[p[1]] = {}
 
         # no declaration specifiers - 'int' becomes the default type
@@ -400,7 +400,7 @@ class MParser(PLYParser):
                 var = exp[0]
 
                 # Simple type inference in expressions
-                if self.matrix_language_typeinference and not var in self.matrix_language_vars.keys():
+                if self.matrix_language_typeinference and not var in list(self.matrix_language_vars.keys()):
                     if var[0].isupper():
                         type = 'matrix'
                         orientation = 'row'  # default
@@ -467,8 +467,8 @@ if __name__ == '__main__':
             sys.stderr.write('[parser] Successfully parsed %s\n' % sys.argv[i])
 
         print('All variables and their types:')
-        for key, val in mparser.getVars().items():
-            print("%s : %s" % (key, val))
+        for key, val in list(mparser.getVars().items()):
+            print(("%s : %s" % (key, val)))
 
         if mparser.mlex.errors:
             sys.err.write('***Errors\n', mparser.mlex.errors)

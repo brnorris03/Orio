@@ -2,7 +2,6 @@
 # Dynamic loader is used to dynamically load a Python module and a Python class
 #
 
-import sys, traceback, os
 from orio.main.util.globals import *
 
 #----------------------------------------------
@@ -31,7 +30,7 @@ class DynLoader:
             components = mod_name.split('.')
             for c in components[1:]:
                 module = getattr(module, c)
-        except Exception, e:
+        except Exception as e:
             err('orio.main.dyn_loader: failed to load module "%s"\n --> %s: %s' % (mod_name,e.__class__.__name__, e))
 
         # remember the currently loaded module

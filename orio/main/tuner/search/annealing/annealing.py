@@ -5,6 +5,8 @@
 import math, sys, time
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
+from functools import reduce
+from operator import itemgetter
 
 #-----------------------------------------------------
 
@@ -229,7 +231,7 @@ class Annealing(orio.main.tuner.search.search.Search):
         '''To read all algorithm-specific arguments'''
 
         # check for algorithm-specific arguments
-        for vname, rhs in self.search_opts.iteritems():
+        for vname, rhs in self.search_opts.items():
 
             # local search distance
             if vname == self.__LOCAL_DIST:
@@ -308,9 +310,8 @@ class Annealing(orio.main.tuner.search.search.Search):
                    'might prune out the entire search space.')
         
         # sort the random coordinates in an increasing order of performance costs
-        sorted_coords = zip(random_coords, perf_costs)
-        sorted_coords.sort(lambda x,y: cmp(x[1],y[1]))
-        random_coords, perf_costs = zip(*sorted_coords)
+        sorted_coords = sorted(list(zip(random_coords, perf_costs)),key=itemgetter(1))
+        random_coords, perf_costs = list(zip(*sorted_coords))
 
         # take the best coordinate
         best_coord = random_coords[0]
@@ -322,7 +323,7 @@ class Annealing(orio.main.tuner.search.search.Search):
         best_perf_cost = min(single_list_perf_costs)
 
         # compute the average performance-cost difference
-        total_cost_diff = reduce(lambda x,y: x+y, map(lambda x: x-best_perf_cost, single_list_perf_costs), 0)
+        total_cost_diff = reduce(lambda x,y: x+y, [x-best_perf_cost for x in single_list_perf_costs], 0)
         avg_cost_diff = 0
         if total_cost_diff > 0:
             avg_cost_diff = total_cost_diff / (len(random_coords)-1)
