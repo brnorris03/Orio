@@ -7,13 +7,20 @@
 import glob
 import setuptools
 
+#with open("README.md", "r", encoding="utf-8") as fh:
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
+
 setuptools.setup(name='orio',
-                 version='1.0.0',
+                 version='0.5.1',
                  description='ORIO -- An Annotation-Based Performance Tuning Tool',
                  author='Boyana Norris and Albert Hartono',
                  author_email='brnorris03@gmail.com',
                  maintainer='Boyana Norris',
                  maintainer_email='brnorris03@gmail.com',
+                 long_description=long_description,
+                 long_description_content_type="text/markdown",
                  url='https://github.com/brnorris03/Orio',
                  packages=setuptools.find_packages(exclude=['test*']),
                  package_dir={'orio': 'orio'},
