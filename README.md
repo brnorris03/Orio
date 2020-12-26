@@ -94,10 +94,7 @@ papers/P1392.pdf. A
 * Prasanna Balaprakash, Stefan M. Wild, Boyana Norris,
 SPAPT: Search Problems in Automatic Performance Tuning,
 Procedia Computer Science,
-Volume 9,
-2012,
-Pages 1959-1968,
-ISSN 1877-0509,
+Volume 9, 2012, Pages 1959-1968, ISSN 1877-0509,
 https://doi.org/10.1016/j.procs.2012.04.214.
 
 * N. Chaimov, B. Norris, and A. Malony. Toward multi-target autotuning for accelerators. Proceedings of
