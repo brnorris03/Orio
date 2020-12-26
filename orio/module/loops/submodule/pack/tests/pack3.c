@@ -3,7 +3,7 @@ void PackAligned(double* src, double* dest, const int stride, const int nelms, c
   /*@ begin PerfTuning (
         def performance_params {
           param PTRS[] = [('src')];
-          param CFLAGS[] = map(join, product(['-fprefetch-loop-arrays']));
+          param CFLAGS[] = ['-fprefetch-loop-arrays'];
         }
         def input_params {
           param nelms[] = range(2,3);

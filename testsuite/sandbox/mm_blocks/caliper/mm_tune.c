@@ -33,8 +33,8 @@ void multiply_matrix_t(double** restrict mat_a, int rows_a, int cols_a,
       param T1_Ka[] = [1,64,128,256,512,1024,2048];
 
 
-      param U_J[] = [1] + range(2,17,2);
-      param U_K[] = [1] + range(2,17,2);
+      param U_J[] = [1] + list(range(2,17,2));
+      param U_K[] = [1] + list(range(2,17,2));
 
       param SCREP[] = [False,True];
 

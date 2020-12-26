@@ -7,7 +7,7 @@ void VecMDot(int n, int nv, double *x, double *y, double *r) {
           param BC[]  = range(14,29,14);
           param UIF[] = range(1,3);
           param PL[]  = [16,48];
-          param CFLAGS[] = map(join, product(['', '-use_fast_math'], ['', '-Xptxas -dlcm=cg']));
+          param CFLAGS[] = ['', '-use_fast_math', '-Xptxas -dlcm=cg'];
         }
         def build {
           arg build_command = 'nvcc -arch=sm_20 @CFLAGS';

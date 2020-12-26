@@ -16,7 +16,7 @@ double ComputeDMicroscopicCrossSection(double tkin,
                        "vector nontemporal (xgi,wgi)",
                        "novector",
                        ""];
-        param CFLAGS[] = map(join, product(['', '-no-vec'], ['', '-xhost'], ['', '-restrict']));
+        param CFLAGS[] = ['-no-vec', '-xhost', '-restrict'];
       }
       def build {
         arg build_command = 'icc -lrt -O2 @CFLAGS';

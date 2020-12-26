@@ -9,7 +9,7 @@ void ATAX(double* A, double* x, double* y, int NX, int NY) {
           param UIF[] = range(1,6);
           param PL[]  = [16,48];
 	    param SC[]  = range(1,6);
-          param CFLAGS[] = map(join, product(['', '-use_fast_math']));
+          param CFLAGS[] =['','-use_fast_math'];
         }
         def input_params {
           param NX[] = [32];

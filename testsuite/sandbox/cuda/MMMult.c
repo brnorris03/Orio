@@ -6,7 +6,7 @@ void MatMatMult(double* A, double* B, double* C, int m, int n, int p) {
           param BC[]  = range(14,28,14);
           param UIF[] = range(1,3);
           param PL[]  = [16,48];
-          param CFLAGS[] = map(join, product(['', '-O3']));
+          param CFLAGS[] = ['-O3'];
         }
         def input_params {
           param M[] = [4,8,16,32];

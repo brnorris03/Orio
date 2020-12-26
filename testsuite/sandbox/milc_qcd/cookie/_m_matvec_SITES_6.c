@@ -9,10 +9,10 @@
           arg build_command = 'icc @CFLAGS';
         }
         def performance_params {
-          param U1[] = [1]+range(2,10);
-          param U2[] = [1]+range(2,10);
+          param U1[] = [1]+list(range(2,10));
+          param U2[] = [1]+list(range(2,10));
           param SREP[] = [False,True];
-          param CFLAGS[] = map(join, product(['-O0', '-O1', '-O2', '-O3']));
+          param CFLAGS[] = ['-O0', '-O1', '-O2', '-O3']);
         }
         def input_params {
           param SITES[] = [2,4,6,8,10,12,14,16];

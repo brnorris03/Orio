@@ -14,7 +14,7 @@ void mult_su3_mat_vec(double A[], double x[], double y[]) {
           param BC[]  = range(14,113,14);
           param UIF[] = range(1,6);
           param PL[]  = [16,48];
-          param CFLAGS[] = map(join, product(['-O0', '-O1', '-O2', '-O3']));
+          param CFLAGS[] = ['', '-O1', '-O2', '-O3'];
         }
         def input_params {
           param SITES[] = [2,4,6,8,10,12,14,16];
