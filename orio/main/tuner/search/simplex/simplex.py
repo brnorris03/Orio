@@ -571,7 +571,7 @@ class Simplex(orio.main.tuner.search.search.Search):
             # Get the nearest feasible point
             return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( p ) ) for p in point ]
        	else:
-            return point
+            return list(point)
 
     def __getExpansion(self, coord, centroid):
         '''Return an expansion coordinate'''
@@ -582,7 +582,7 @@ class Simplex(orio.main.tuner.search.search.Search):
             # Get the nearest feasible point
             return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( p ) ) for p in point ]
        	else:
-            return point
+            return list(point)
     
     def __getContraction(self, coord, centroid):
         '''Return a contraction coordinate'''
@@ -594,7 +594,7 @@ class Simplex(orio.main.tuner.search.search.Search):
             # Get the nearest feasible point
             return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( p ) ) for p in point ]
        	else:
-            return point
+            return list(point)
 
     def __getShrinkage(self, coord, rest_coords):
         '''Return a shrinkage simplex'''
@@ -605,5 +605,5 @@ class Simplex(orio.main.tuner.search.search.Search):
             # Get the nearest feasible point
             return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( p ) ) for p in point ]
        	else:
-            return point
+            return list(point)
 
