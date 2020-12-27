@@ -57,6 +57,8 @@ class Simplex(orio.main.tuner.search.search.Search):
         self.x0 = [0] * self.total_dims
         self.sim_size = max(self.dim_uplimits)
 
+#        _have_z3 = False
+        
         # read all algorithm-specific arguments
         self.__readAlgoArgs()
 
@@ -430,7 +432,8 @@ class Simplex(orio.main.tuner.search.search.Search):
                 err('man.tuner.search.simplex.simplex: unrecognized %s algorithm-specific argument: "%s"' %
                        (self.__class__.__name__, vname))
                 
-        
+    #-----------------------------------------------------
+
     #-----------------------------------------------------
 
     def __checkSearchSpace(self):
@@ -539,32 +542,68 @@ class Simplex(orio.main.tuner.search.search.Search):
             
     #-----------------------------------------------------
 
+    # Get a centroid. If we are using z3, get a *feasible* centroid
+    # Get the nearest feasible point to the center
     def __getCentroid(self, coords):
-        '''Return a centroid coordinate'''
+        # Get a centroid
         total_coords = len(coords)
         centroid = coords[0]
         for c in coords[1:]:
             centroid = self.addCoords(centroid, c)
         centroid = self.mulCoords((1.0/total_coords), centroid)
-        return centroid
 
+        if self.use_z3:
+            # Get the nearest feasible point
+            point = self.z3solver.getNearestFeasible( centroid )
+            return self.z3solver.perfParamTabToCoord( point ) 
+        else:
+            return centroid
+
+    #-----------------------------------------------------
+    
     def __getReflection(self, coord, centroid):
         '''Return a reflection coordinate'''
         sub_coord = self.subCoords(centroid, coord)
-        return [self.addCoords(centroid, self.mulCoords(x, sub_coord)) for x in self.refl_coefs]
-    
+
+        point = map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
+                    self.refl_coefs)
+        if self.use_z3:
+            # Get the nearest feasible point
+            return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( p ) ) for p in point ]
+       	else:
+            return list(point)
+
     def __getExpansion(self, coord, centroid):
         '''Return an expansion coordinate'''
         sub_coord = self.subCoords(coord, centroid)
-        return [self.addCoords(centroid, self.mulCoords(x, sub_coord)) for x in self.exp_coefs]
+        point = map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
+                   self.exp_coefs)
+        if self.use_z3:
+            # Get the nearest feasible point
+            return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( p ) ) for p in point ]
+       	else:
+            return list(point)
     
     def __getContraction(self, coord, centroid):
         '''Return a contraction coordinate'''
         sub_coord = self.subCoords(coord, centroid)
-        return [self.addCoords(centroid, self.mulCoords(x, sub_coord)) for x in self.cont_coefs]
+
+        point = map(lambda x: self.addCoords(centroid, self.mulCoords(x, sub_coord)),
+                   self.cont_coefs)
+        if self.use_z3:
+            # Get the nearest feasible point
+            return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( p ) ) for p in point ]
+       	else:
+            return list(point)
 
     def __getShrinkage(self, coord, rest_coords):
         '''Return a shrinkage simplex'''
-        return [self.addCoords(coord, self.mulCoords(self.shri_coef,
-                                                                  self.subCoords(x, coord))) for x in rest_coords]
-    
+        point = map(lambda x: self.addCoords(coord, self.mulCoords(self.shri_coef,
+                                                                  self.subCoords(x, coord))),
+                   rest_coords)
+        if self.use_z3:
+            # Get the nearest feasible point
+            return [ self.z3solver.perfParamTabToCoord( self.z3solver.getNearestFeasible( p ) ) for p in point ]
+       	else:
+            return list(point)
+

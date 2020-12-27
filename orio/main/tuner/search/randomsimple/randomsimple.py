@@ -14,7 +14,6 @@ class Randomsimple(orio.main.tuner.search.search.Search):
         orio.main.tuner.search.search.Search.__init__(self, params)
 
         self.__readAlgoArgs()
-        #        self.have_z3 = False
 
         if self.time_limit <= 0 and self.total_runs <= 0:
             err((
@@ -24,9 +23,10 @@ class Randomsimple(orio.main.tuner.search.search.Search):
     def searchBestCoord(self, startCoord=None):
 
         info('\n----- begin random search -----')
-        print("Total runs:", self.total_runs)
-        print("Time limit:", self.time_limit)
 
+        info( "Total runs: %d" % self.total_runs )
+        info( "Time limit: %d" % self.time_limit )
+        
         bestperfcost = self.MAXFLOAT
         bestcoord = None
         runs = 0
@@ -42,25 +42,28 @@ class Randomsimple(orio.main.tuner.search.search.Search):
             # get a random point
             coord = self.getRandomCoord()
 
-            # if not self.have_z3 and not self.checkValidity( coord ) or coord in visited:
-            if not self.checkValidity(coord) or coord in visited:
-                print("invalid point")
+            if coord == None:
+                debug( "No points left in the parameter space", obj=self, level=3 )
+                break
+            if not self.checkValidity( coord ) or coord in visited:
+                debug( "invalid point", obj=self, level=3 )
                 continue
             try:
-                print("coord:", coord, "run", runs)
-                perf_costs = self.getPerfCost(coord)
-                if bestperfcost > sum(perf_costs):
-                    info("Point %s gives a better perf: %s -- %s" % (coord, sum(perf_costs), bestperfcost))
-                    bestperfcost = sum(perf_costs)
+                debug( "coord: %s run %s" % (coord, runs ), obj=self, level=3 )
+                perf_costs = self.getPerfCost( coord )
+                if bestperfcost > sum( perf_costs ):
+                    info( "Point %s gives a better perf: %s -- %s" % (coord, sum( perf_costs ), bestperfcost ) )
+                    bestperfcost = sum( perf_costs )
                     bestcoord = coord
             except Exception as e:
                 info('FAILED: %s %s' % (e.__class__.__name__, e))
             runs += 1
-            # if not self.have_z3:
-            visited.append(coord)
-            # else:
-            #    point = self.coordToPerfParams( coord )
-            #    self.addPoint( point )
+
+            if not self.use_z3:
+                visited.append( coord )
+            else:
+                point = self.coordToPerfParams( coord )
+                self.z3solver.addPoint( point )
 
         search_time = time.time() - start_time
         return bestcoord, bestperfcost, search_time, runs
@@ -82,3 +85,4 @@ class Randomsimple(orio.main.tuner.search.search.Search):
             else:
                 err('orio.main.tuner.search.randomsimple: unrecognized %s algorithm-specific argument: "%s"' %
                     (self.__class__.__name__, vname))
+
