@@ -1,5 +1,5 @@
 from distutils.core import setup
-from setup_local import *
+from .setup_local import *
 
 setup(
 	py_modules=(m.__name__,),

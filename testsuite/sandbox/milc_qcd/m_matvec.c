@@ -13,8 +13,8 @@ void mult_su3_mat_vec(double A[], double x[], double y[]) {
           arg build_command = 'icc @CFLAGS';
         }
         def performance_params {
-          param U1[] = [1]+range(2,10);
-          param U2[] = [1]+range(2,10);
+          param U1[] = [1]+list(range(2,10));
+          param U2[] = [1]+list(range(2,10));
           param SREP[] = [False,True];
           param CFLAGS[] = map(join, product(['-O0', '-O1', '-O2', '-O3']));
         }

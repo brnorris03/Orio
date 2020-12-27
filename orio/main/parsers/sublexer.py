@@ -330,10 +330,10 @@ class SubroutineLexer:
         if self.nestedinterface == 0:
             self.ininterface = False
             t.lexer.begin('declarations')
-            print 'ENTERING DECLARATIONS MODE'
+            print('ENTERING DECLARATIONS MODE')
         else:
             self.nestedinterface -= 1
-        print 'END INTERFACE',t.lexer.lineno, t.value, self.nestedinterface
+        print('END INTERFACE',t.lexer.lineno, t.value, self.nestedinterface)
         return t
     
     def t_INITIAL_declarations_interface_IMPLICITNONE(self,t):
@@ -509,9 +509,9 @@ class SubroutineLexer:
             tok = self.lexer.token()
             if not tok: break
             debug(tok,level=5)
-        print 'subroutine bodies:'
+        print('subroutine bodies:')
         for i in self.subroutines:
-            print i
+            print(i)
         
     def setFileName(self, filename):
         self.filename = filename

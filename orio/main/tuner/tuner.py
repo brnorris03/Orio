@@ -123,12 +123,11 @@ class PerfTuner:
         for ptcodegen in ptcodegens:
             if Globals().verbose:
                 info('\n----- begin empirical tuning for problem size -----')
-                iparams = ptcodegen.input_params[:]
-                iparams.sort(lambda x,y: cmp(x[0],y[0]))
+                # Sort y variable name... not sure it's really necessary
+                iparams = sorted(ptcodegen.input_params[:])
                 for pname, pvalue in iparams:
                     info(' %s = %s' % (pname, pvalue))
-            iparams = ptcodegen.input_params[:]
-            iparams.sort(lambda x,y: cmp(x[0],y[0]))
+            iparams = sorted(ptcodegen.input_params[:])
             for pname, pvalue in iparams:
                 Globals().metadata['size_' + pname] = pvalue
 
@@ -154,8 +153,7 @@ class PerfTuner:
             # print the best performance parameters
             if Globals().verbose and not Globals().extern:
                 info('----- the obtained best performance parameters -----')
-                pparams = best_perf_params.items()
-                pparams.sort(lambda x,y: cmp(x[0],y[0]))
+                pparams = sorted(list(best_perf_params.items()))
                 for pname, pvalue in pparams:
                     info(' %s = %s' % (pname, pvalue))
         
@@ -177,15 +175,13 @@ class PerfTuner:
             # insert comments into the optimized code to include information about 
             # the best performance parameters and the input problem sizes
             iproblem_code = ''
-            iparams = ptcodegen.input_params[:]
-            iparams.sort(lambda x,y: cmp(x[0],y[0]))
+            iparams = sorted(ptcodegen.input_params[:])
             for pname, pvalue in iparams:
                 if pname == '__builtins__':
                     continue
                 iproblem_code += '  %s = %s \n' % (pname, pvalue)
             pparam_code = ''
-            pparams = best_perf_params.items()
-            pparams.sort(lambda x,y: cmp(x[0],y[0]))
+            pparams = sorted(list(best_perf_params.items()))
             for pname, pvalue in pparams:
                 if pname == '__builtins__':
                     continue
@@ -223,7 +219,7 @@ class PerfTuner:
             spec_name = match_obj.group(1)
             spec_file = spec_name+'.spec'
             try:
-                src_dir = '/'.join(Globals().src_filenames.keys()[0].split('/')[:-1])
+                src_dir = '/'.join(list(Globals().src_filenames.keys())[0].split('/')[:-1])
                 spec_file_path = os.getcwd() + '/' + src_dir + '/' + spec_file
                 f = open(spec_file_path, 'r')
                 tspec_code = f.read()
@@ -279,16 +275,16 @@ class PerfTuner:
 
         # compute all possible combinations of problem sizes
         prob_sizes = []
-        pnames, pvalss = zip(*iparam_params)
+        pnames, pvalss = list(zip(*iparam_params))
         for pvals in self.__listAllCombinations(pvalss):
-            prob_sizes.append(zip(pnames, pvals))
+            prob_sizes.append(list(zip(pnames, pvals)))
 
         # exclude all invalid problem sizes
         n_prob_sizes = []
         for p in prob_sizes:
             try:
                 is_valid = eval(iparam_constraint, dict(p))
-            except Exception, e:
+            except Exception as e:
                 err('orio.main.tuner.tuner:%s: failed to evaluate the input parameter constraint expression\n --> %s: %s' %  (iparam_constraint,e.__class__.__name__, e))
             if is_valid:
                 n_prob_sizes.append(p)
@@ -337,7 +333,7 @@ class PerfTuner:
                 self.num_bin=self.num_bin+1
                 ptype[len(ptype)-1]=('B')
             if type(vals[0]) == str:
-                print(vals[0])
+                print((vals[0]))
                 self.num_categorical = self.num_categorical+1
 
         self.num_int -= self.num_bin

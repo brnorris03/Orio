@@ -6,6 +6,7 @@ import random
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
 
+
 class Randomsimple(orio.main.tuner.search.search.Search):
     def __init__(self, params):
 
@@ -13,13 +14,16 @@ class Randomsimple(orio.main.tuner.search.search.Search):
         orio.main.tuner.search.search.Search.__init__(self, params)
 
         self.__readAlgoArgs()
+
         if self.time_limit <= 0 and self.total_runs <= 0:
-            err(('orio.main.tuner.search.randomsimple.randomsimple: %s search requires the search time limit (time_limit, seconds) and/or the ' +
-                'total number of search runs (total_runs) to be defined') % self.__class__.__name__)
+            err((
+                            'orio.main.tuner.search.randomsimple.randomsimple: %s search requires the search time limit (time_limit, seconds) and/or the ' +
+                            'total number of search runs (total_runs) to be defined') % self.__class__.__name__)
 
     def searchBestCoord(self, startCoord=None):
-        
+
         info('\n----- begin random search -----')
+
         info( "Total runs: %d" % self.total_runs )
         info( "Time limit: %d" % self.time_limit )
         
@@ -32,27 +36,29 @@ class Randomsimple(orio.main.tuner.search.search.Search):
         init = True
 
         visited = []
-        
-        while ( self.time_limit < 0 or ( time.time() - start_time ) < self.time_limit ) and ( self.total_runs < 0 or runs < self.total_runs ):
+
+        while (self.time_limit < 0 or (time.time() - start_time) < self.time_limit) and (
+                self.total_runs < 0 or runs < self.total_runs):
             # get a random point
             coord = self.getRandomCoord()
-            
-            if None == coord:
-                info( "no point left in the parameter space" )
+
+            if coord == None:
+                debug( "No points left in the parameter space", obj=self, level=3 )
                 break
             if not self.checkValidity( coord ) or coord in visited:
-                info( "invalid point" )
+                debug( "invalid point", obj=self, level=3 )
                 continue
             try:
-                info( "coord: %s run %s" % (coord, runs ) )
+                debug( "coord: %s run %s" % (coord, runs ), obj=self, level=3 )
                 perf_costs = self.getPerfCost( coord )
                 if bestperfcost > sum( perf_costs ):
                     info( "Point %s gives a better perf: %s -- %s" % (coord, sum( perf_costs ), bestperfcost ) )
                     bestperfcost = sum( perf_costs )
                     bestcoord = coord
-            except Exception, e:
+            except Exception as e:
                 info('FAILED: %s %s' % (e.__class__.__name__, e))
             runs += 1
+
             if not self.use_z3:
                 visited.append( coord )
             else:
@@ -62,17 +68,18 @@ class Randomsimple(orio.main.tuner.search.search.Search):
         search_time = time.time() - start_time
         return bestcoord, bestperfcost, search_time, runs
 
-    def checkValidity( self, coord ):
+    def checkValidity(self, coord):
         perf_params = self.coordToPerfParams(coord)
         try:
             is_valid = eval(self.constraint, perf_params, dict(self.input_params))
-        except Exception, e:
-            err('failed to evaluate the constraint expression: "%s"\n%s %s' % (self.constraint,e.__class__.__name__, e))
+        except Exception as e:
+            err('failed to evaluate the constraint expression: "%s"\n%s %s' % (
+            self.constraint, e.__class__.__name__, e))
             return False
         return is_valid
-    
+
     def __readAlgoArgs(self):
-        for vname, rhs in self.search_opts.iteritems():
+        for vname, rhs in self.search_opts.items():
             if vname == 'total_runs':
                 self.total_runs = rhs
             else:

@@ -2,7 +2,7 @@
 # TSpec (Tuning Specifier) class
 # 
 
-import eval, pparser, tune_info
+from . import eval, pparser, tune_info
 
 #-----------------------------------------------
 

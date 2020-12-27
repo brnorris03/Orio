@@ -57,7 +57,7 @@ class CodeGen_C(CodeGen):
 
         elif isinstance(tnode, ast.CallExp):
             s += self.generate(tnode.exp, indent, extra_indent) + '('
-            s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.args))
+            s += ','.join([self.generate(x, indent, extra_indent) for x in tnode.args])
             s += ')'
 
         elif isinstance(tnode, ast.CastExp):
@@ -229,7 +229,7 @@ class CodeGen_C(CodeGen):
             if not tnode.isnested:
                 s += indent
             s += ' '.join(tnode.type_name) + ' '
-            s += ', '.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.var_inits))
+            s += ', '.join([self.generate(x, indent, extra_indent) for x in tnode.var_inits])
             if not tnode.isnested:
                 s += ';\n'
 
@@ -239,7 +239,7 @@ class CodeGen_C(CodeGen):
         elif isinstance(tnode, ast.FunDec):
             s += indent + str(tnode.return_type) + ' ' + str(tnode.modifiers)
             s += tnode.name + '('
-            s += ', '.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.params))
+            s += ', '.join([self.generate(x, indent, extra_indent) for x in tnode.params])
             s += ')' + self.generate(tnode.body, indent, extra_indent)
 
         elif isinstance(tnode, ast.Pragma):

@@ -6,7 +6,7 @@ void add(int n, double *a, double *b, double *c) {
                        "vector aligned",
                        "vector unaligned",
                        ""];
-        param CFLAGS[] = map(join, product(['', '-mavx']));
+        param CFLAGS[] = ['-mavx'];
       }
       def build {
         arg build_command = 'gcc -lrt -O3 @CFLAGS';

@@ -5,7 +5,6 @@
 import sys
 from orio.main.util.globals import *
 import orio.module.loop.ast_lib.forloop_lib
-import orio.main.util.globals as g
 from orio.module.loop.ast import *
 
 #-----------------------------------------                                             

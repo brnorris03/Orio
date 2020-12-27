@@ -9,8 +9,8 @@
  }
 
  def performance_params {
-   param U1[] = [1]+range(2,10);
-   param U2[] = [1]+range(2,10);
+   param U1[] = [1]+list(range(2,10));
+   param U2[] = [1]+list(range(2,10));
    param OMP[] = [False];
    param SREP[] = [False,True];
    constraint par_loop = ((not OMP) or (OMP and U1==1));

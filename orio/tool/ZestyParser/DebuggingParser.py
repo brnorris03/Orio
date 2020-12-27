@@ -82,7 +82,7 @@ class DebuggingParser (Parser.ZestyParser):
         i = Parser.ZestyParser.iter(self, token, *args, **kwargs)
         while 1:
             self.dest.write('%sIterating\n' % ind)
-            yield i.next()
+            yield next(i)
         
         self.dest.write('%sDone iterating -- now at %i\n' % (ind, self.cursor))
 

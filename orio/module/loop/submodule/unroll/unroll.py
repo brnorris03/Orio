@@ -3,7 +3,8 @@
 #
 
 import sys
-import orio.module.loop.submodule.submodule, orio.module.loop.submodule.unrolljam.unrolljam
+import orio.module.loop.submodule.submodule
+import orio.module.loop.submodule.unrolljam.unrolljam
 
 #---------------------------------------------------------------------
 

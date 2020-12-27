@@ -4,6 +4,7 @@
 from orio.module.splingo.ast import *
 import orio.module.splingo.parser as parser
 import operator
+from functools import reduce
 
 #------------------------------------------------------------------------------
 def s2t(sym, s):
@@ -58,7 +59,7 @@ class Rewriter(object):
       if isAssign(n):
         def g(t1):
           '''Add indexing exprs to container refs'''
-          if isinstance(t1, IdentExp) and self.st.has_key(t1.name):
+          if isinstance(t1, IdentExp) and t1.name in self.st:
             ninfo = self.st[t1.name]
             if ninfo['srcty'] == 'vector':
               if self.existMats and t1.name == n.exp.lhs.name:
@@ -77,8 +78,8 @@ class Rewriter(object):
             return t1
         n1 = trav.rewriteBU(g, n)
 
-        dims = reduce(operator.concat, map(dict.keys,   self.st['itrs']), [])
-        itrs = reduce(operator.concat, map(dict.values, self.st['itrs']), [])
+        dims = reduce(operator.concat, list(map(dict.keys,   self.st['itrs'])), [])
+        itrs = reduce(operator.concat, list(map(dict.values, self.st['itrs'])), [])
         decl_itrs = s2t('stmt', 'int ' + ', '.join(itrs) + ';')
         
         if self.existMats:
@@ -108,8 +109,7 @@ class Rewriter(object):
                           ])
       elif isinstance(n, FunDec):
         # add container length parameters
-        lengths = map(lambda x: ParamDec(IdentExp('int'), IdentExp(x)),
-                      reduce(operator.concat, map(dict.keys, self.st['itrs']), []))
+        lengths = [ParamDec(IdentExp('int'), IdentExp(x)) for x in reduce(operator.concat, list(map(dict.keys, self.st['itrs'])), [])]
         n.params = lengths + n.params
 
         # peel off nested compound stmt in the body

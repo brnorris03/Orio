@@ -10,7 +10,7 @@ void add(int n, double *a, double *b, double *c) {
                        "vector nontemporal (a,b,c)",
                        "novector",
                        ""];
-        param CFLAGS[] = map(join, product(['', '-no-vec'], ['', '-xhost'], ['', '-restrict']));
+        param CFLAGS[] = ['-no-vec', '-xhost', '-restrict'];
       }
       def build {
         arg build_command = 'icc -O3 @CFLAGS';

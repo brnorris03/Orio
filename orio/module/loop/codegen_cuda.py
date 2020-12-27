@@ -2,7 +2,7 @@
 # The code generator (i.e. unparser) for the AST classes for CUDA
 #
 
-import ast
+from orio.module.loop import ast
 import orio.main.util.globals as g
 from orio.module.loop.codegen import CodeGen_C
 
@@ -36,7 +36,7 @@ class CodeGen_CUDA (CodeGen_C):
 
         elif isinstance(tnode, ast.FunCallExp):
             s += self.generate(tnode.exp, indent, extra_indent) + '('
-            s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.args))
+            s += ','.join([self.generate(x, indent, extra_indent) for x in tnode.args])
             s += ')'
 
         elif isinstance(tnode, ast.UnaryExp):

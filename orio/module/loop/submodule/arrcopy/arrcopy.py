@@ -3,8 +3,10 @@
 #
 
 import sys
-import orio.module.loop.submodule.submodule, transformation
+import orio.module.loop.submodule.submodule
+from orio.module.loop.submodule.arrcopy import transformation
 from orio.main.util.globals import *
+from functools import reduce
 
 #---------------------------------------------------------------------
 
@@ -39,7 +41,7 @@ class ArrCopy(orio.module.loop.submodule.submodule.SubModule):
             # evaluate the RHS expression
             try:
                 rhs = eval(rhs, perf_params)
-            except Exception, e:
+            except Exception as e:
                 err('orio.module.loop.submodule.arrcopy.arrcopy: %s: ' + \
                     'failed to evaluate the argument expression: %s\n --> %s: %s' % \
                     (str(line_no), str(rhs), str(e.__class__.__name__), str(e)) )
@@ -109,8 +111,8 @@ class ArrCopy(orio.module.loop.submodule.submodule.SubModule):
         # evaluate the data type of the array elements
         rhs, line_no = dimsizes
         if ((not isinstance(rhs, list) and not isinstance(rhs, tuple)) or
-            not reduce(lambda x,y: x and y, map(lambda x: isinstance(x, int), rhs), True) or 
-            not reduce(lambda x,y: x and y, map(lambda x: x > 0, rhs), True)):
+            not reduce(lambda x,y: x and y, [isinstance(x, int) for x in rhs], True) or 
+            not reduce(lambda x,y: x and y, [x > 0 for x in rhs], True)):
             err(('orio.module.loop.submodule.arrcopy.arrcopy:%s: ' + \
                  'array dimension sizes argument must be a list of positive ' +
                    'integers: %s') % (line_no, rhs))

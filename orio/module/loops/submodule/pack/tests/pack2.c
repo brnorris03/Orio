@@ -13,7 +13,7 @@ void PackAligned(double* src, double* dest, const int stride, const int nelms, c
           param PF_L2_CACHESZ[]   = range(2048,2049);
           param PF_MIN_INSN2PF[]  = range(7,8);
           param PF_MIN_INSN2MEM[] = range(4,5);
-          param CFLAGS[] = map(join, product(['','-O1','-O2','-O3']));
+          param CFLAGS[] = ['','-O1','-O2','-O3'];
         }
         def input_params {
           param nelms[]  = range(100,101);

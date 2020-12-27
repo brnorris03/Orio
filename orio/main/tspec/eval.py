@@ -2,8 +2,8 @@
 # The evaluator for the TSpec (Tuning Specifier) language
 #
 
-import StringIO, sys, tokenize
-import __builtin__, itertools, string
+import io, sys, tokenize
+import builtins, itertools, string
 from orio.main.util.globals import *
 
 #--------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ class TSpecEvaluator:
         '''Return all variables that are present in the given code'''
 
         # tokenize the given expression code
-        gtoks = tokenize.generate_tokens(StringIO.StringIO(code).readline)
+        gtoks = tokenize.generate_tokens(io.StringIO(code).readline)
 
         # iterate over each token and replace any matching token with its corresponding value
         vnames = []
@@ -40,13 +40,13 @@ class TSpecEvaluator:
         '''
 
         # tokenize the given expression code
-        gtoks = tokenize.generate_tokens(StringIO.StringIO(code).readline)
+        gtoks = tokenize.generate_tokens(io.StringIO(code).readline)
 
         # iterate over each token and replace any matching token with its corresponding value
         tokens = []
         for toknum, tokval, _, _, _ in gtoks:
             if toknum == tokenize.NAME and tokval in env:
-                ntoks = tokenize.generate_tokens(StringIO.StringIO(str(env[tokval])).readline)
+                ntoks = tokenize.generate_tokens(io.StringIO(str(env[tokval])).readline)
                 tokens.extend(ntoks)
             else:
                 tokens.append((toknum, tokval))
@@ -78,7 +78,7 @@ class TSpecEvaluator:
         # evaluate the RHS expression
         try:
             rhs_val = eval(rhs, env)
-        except Exception, e:
+        except Exception as e:
             err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
 
         # return the evaluated statement
@@ -163,7 +163,7 @@ class TSpecEvaluator:
         # evaluate the RHS expression
         try:
             rhs_val = eval(rhs, env)
-        except Exception, e:
+        except Exception as e:
             err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
 
         # update the environment
@@ -190,8 +190,10 @@ class TSpecEvaluator:
         # evaluate the RHS expression
         try:
             rhs_val = eval(rhs, env)
-        except Exception, e:
+        except Exception as e:
             err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
+
+        if isinstance(rhs_val, range): rhs_val = list(rhs_val)
 
         # check the RHS value
         if is_range:
@@ -227,7 +229,7 @@ class TSpecEvaluator:
         # evaluate the RHS expression
         try:
             rhs_val = eval(rhs, env)
-        except Exception, e:
+        except Exception as e:
             err('orio.main.tspec.eval: %s: failed to evaluate the RHS expression\n --> %s: %s' % (rhs_line_no, e.__class__.__name__, e))
 
         # check the RHS value
@@ -329,7 +331,7 @@ class TSpecEvaluator:
 
     def evaluate(self, stmt_seq):
         '''To evaluate the given statement sequence'''
-        return self.__evaluate(stmt_seq, dict(__builtin__.__dict__.items() + itertools.__dict__.items() + string.__dict__.items()), {})
+        return self.__evaluate(stmt_seq, dict(list(builtins.__dict__.items()) + list(itertools.__dict__.items()) + list(string.__dict__.items())), {})
 
 
 

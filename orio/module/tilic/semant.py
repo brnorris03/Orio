@@ -3,7 +3,7 @@
 #
 
 import sys
-import ast, ast_util
+from . import ast, ast_util
 from orio.main.util.globals import *
 
 #---------------------------------------------------------

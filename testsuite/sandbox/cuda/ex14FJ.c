@@ -5,7 +5,7 @@ void FormJacobian3D(double lambda, int m, int n, int p, double *x, double *dia) 
           param TC[] = range(32,1025,32);
           param BC[] = range(14,113,14);
           param PL[] = [16,48];
-          param CFLAGS[] = map(join, product(['', '-O1', '-O2', '-O3']));
+          param CFLAGS[] = ['', '-O1', '-O2', '-O3'];
         }
         def build {
           arg build_command = 'nvcc -arch=sm_20 @CFLAGS';

@@ -169,7 +169,7 @@ class Transformation:
                     to_seq.append(i[0])
             if skip:
                 continue
-            from_seq, lnest = zip(*filter(lambda x: x[0] in to_seq, zip(inames, nest)))
+            from_seq, lnest = list(zip(*[x for x in zip(inames, nest) if x[0] in to_seq]))
             from_seq = list(from_seq)
             lnest = list(lnest)
             self.__permuteLoops(lnest, from_seq, to_seq)

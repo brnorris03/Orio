@@ -118,7 +118,7 @@ class LoopsLexer:
         while 1:
             tok = self.lexer.token()
             if not tok: break
-            print tok
+            print(tok)
     
     def input(self, data):
         return self.lexer.input(data)
@@ -553,7 +553,7 @@ if __name__ == "__main__":
         #l.test(s)
         
         tree = parse(1, s)
-        print tree
-        print >>sys.stderr, '[parser] Successfully parsed %s' % sys.argv[i]
+        print(tree)
+        print('[parser] Successfully parsed %s' % sys.argv[i], file=sys.stderr)
 
 

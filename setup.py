@@ -1,62 +1,35 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 
 # A Python script used for installing the Orio tool
 
-#-----------------------------------------------------------
+# -----------------------------------------------------------
 
-import os
 import glob
-from distutils.core import setup
+import setuptools
 
-#-----------------------------------------------------------
-
-# to traverse the source code directory to get all python packages
-py_packages = []
-cur_dir = os.getcwd()
-src_dir = os.path.join(cur_dir, 'orio')
-for root, dirs, files in os.walk(src_dir, topdown=True):
-    if '__init__.py' in files:
-        rel_dir = root[len(cur_dir)+1:]
-        dir_names = rel_dir.split(os.sep)
-        py_packages.append('.'.join(['orio'] + dir_names[1:]))
-
-print py_packages
-
-examples = glob.glob("examples/*")
-
-#-----------------------------------------------------------
-
-# to remove certain packages not included in the source distribution
-if False:
-    removed_packages = ['orio.module.polysyn', 'orio.module.spmv', 
-                        'orio.module.align', 'orio.module.loop', 
-                        'orio.module.simplyrewrite', 'orio.module.pragma',
-                        'orio.module.pluto', ]
-    n_py_packages = []
-    for p in py_packages:
-        is_removed = False
-        for r in removed_packages:
-            if p.startswith(r):
-                is_removed = True
-        if not is_removed:
-            n_py_packages.append(p)
-    py_packages = n_py_packages
+#with open("README.md", "r", encoding="utf-8") as fh:
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 
-#-----------------------------------------------------------
-
-# make a call to the setup function
-setup(name = 'orio',
-      version = '0.2.2',
-      description = 'ORIO -- An Annotation-Based Performance Tuning Tool',
-      author = 'Boyana Norris and Albert Hartono',
-      author_email = 'norris@mcs.anl.gov',
-      maintainer = 'Boyana Norris',
-      maintainer_email = 'norris@mcs.anl.gov',
-      url = 'https://trac.mcs.anl.gov/projects/performance/wiki/Orio',
-      packages = py_packages,
-      package_dir = {'orio' : 'orio'},
-      data_files = [('examples',examples)],
-      scripts = ['orcc', 'orf', 'orcuda', 'orcl'])
-
-
+setuptools.setup(name='orio',
+                 version='0.6.0',
+                 description='ORIO -- An Annotation-Based Performance Tuning Tool',
+                 author='Boyana Norris and Albert Hartono',
+                 author_email='brnorris03@gmail.com',
+                 maintainer='Boyana Norris',
+                 maintainer_email='brnorris03@gmail.com',
+                 long_description=long_description,
+                 long_description_content_type="text/markdown",
+                 url='https://github.com/brnorris03/Orio',
+                 packages=setuptools.find_packages(exclude=['test*']),
+                 package_dir={'orio': 'orio'},
+                 data_files=[('examples', glob.glob("examples/*"))],
+                 scripts=['scripts/orcc', 'orf', 'orcuda', 'orcl'],
+                 classifiers=[
+                     "Programming Language :: Python :: 3",
+                     "License :: OSI Approved :: MIT License",
+                     "Operating System :: OS Independent",
+                 ],
+                 python_requires='>=3.6',
+                 )

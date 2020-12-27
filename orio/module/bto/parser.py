@@ -114,7 +114,7 @@ def p_expr_3(p):
         if len(exp)>1 and exp[1]:
             # Variable name is exp[0]
             var = exp[0]
-            if not var in vars.keys():
+            if not var in list(vars.keys()):
                 if var[0].isupper():
                     type = 'matrix'
                     orientation = 'row' # default
@@ -185,7 +185,7 @@ if __name__ == '__main__':
     btolex = orio.tool.ply.lex.lex(debug=1,optimize=0) 
 
     for i in range(1, len(sys.argv)):
-        print >>sys.stderr, "[parse] About to parse %s" % sys.argv[i]
+        print("[parse] About to parse %s" % sys.argv[i], file=sys.stderr)
         os.system('cat %s' % sys.argv[i])
         f = open(sys.argv[i],"r")
         s = f.read()
@@ -193,12 +193,12 @@ if __name__ == '__main__':
         # print "Contents of %s: %s" % (sys.argv[i], s)
         if s == '' or s.isspace(): sys.exit(0)
         if not s.endswith('\n'): 
-            print 'WARNING: file does not end with newline.'
+            print('WARNING: file does not end with newline.')
             s += '\n'
 
         theresult = parser.parse(s, lexer=btolex, debug=0)
-        print >>sys.stderr, '[parser] Successfully parsed %s' % sys.argv[i]
+        print('[parser] Successfully parsed %s' % sys.argv[i], file=sys.stderr)
 
-        print 'All variables and their types:'
-        for key,val in vars.items():
-            print "%s : %s" % (key,val)
+        print('All variables and their types:')
+        for key,val in list(vars.items()):
+            print("%s : %s" % (key,val))

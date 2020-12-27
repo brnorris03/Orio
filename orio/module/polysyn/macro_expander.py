@@ -7,6 +7,7 @@
 
 import os, re, sys
 from orio.main.util.globals import *
+from functools import reduce
 
 #---------------------------------------------------------
 
@@ -137,7 +138,7 @@ class MacroExpander:
         cmd  = 'gcc -E %s -o %s' % (src_fname, out_fname)
         try:
             os.system(cmd)
-        except Exception, e:
+        except Exception as e:
             err('orio.module.polysyn.macro_expander:  failed to execute the testing code: "%s"\n --> %s: %s' % (cmd,e.__class__.__name__, e))
 
         # read the output file

@@ -66,16 +66,16 @@ class NodeVisitor(object):
         nn = r(n)
         d = getattr(nn, '__dict__', False)
         if d:
-          for k in d.keys():
+          for k in list(d.keys()):
             d[k] = self.rewriteTD(r, d[k])
         elif isinstance(nn,list):
-          nn = map(lambda e: self.rewriteTD(r, e), nn)
+          nn = [self.rewriteTD(r, e) for e in nn]
         return nn
 
     def collectTD(self, f, n):
         acc = f(n)
         d = getattr(n, '__dict__', [])
-        for k in d.keys():
+        for k in list(d.keys()):
           acc += self.collectTD(f, d[k])
         return acc
 
@@ -83,11 +83,11 @@ class NodeVisitor(object):
         d = getattr(n, '__dict__', False)
         if d:
           dd = {}
-          for k in d.keys():
+          for k in list(d.keys()):
             dd[k] = self.rewriteBU(r, d[k])
           n.__dict__ = dd
         elif isinstance(n, list):
-            return map(lambda e: self.rewriteBU(r, e), n)
+            return [self.rewriteBU(r, e) for e in n]
         return r(n)
 #----------------------------------------------------------------------------------------------------------------------
 

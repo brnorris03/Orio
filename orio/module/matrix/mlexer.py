@@ -197,7 +197,7 @@ class MLexer:
         while True:
             tok = self.lexer.token()
             if not tok: break
-            print tok
+            print(tok)
 
 
 if __name__ == "__main__":
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     l = MLexer(debug=1, optimize=0)
     l.build()
     for i in range(1, len(sys.argv)):
-        print "About to lex %s" % sys.argv[i]
+        print("About to lex %s" % sys.argv[i])
         f = open(sys.argv[i],"r")
         s = f.read()
         f.close()

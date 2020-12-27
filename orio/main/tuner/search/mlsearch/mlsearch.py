@@ -125,7 +125,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 
                 try:
                     is_valid = eval(self.constraint, perf_params1, dict(self.input_params))
-                except Exception, e:
+                except Exception as e:
                     err('failed to evaluate the constraint expression: "%s"\n%s %s' % (
                     self.constraint, e.__class__.__name__, e))
                 # if invalid performance parameters
@@ -149,7 +149,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
         eval_cost = []
         num_eval_best = 0
 
-        indices = random.sample(range(1, len(uneval_coords)), self.total_dims)
+        indices = random.sample(list(range(1, len(uneval_coords))), self.total_dims)
         # indices=random.sample(range(1,len(uneval_coords)),  5)
         indices.insert(0, 0)
         debug("Indices: %s" % str(indices), obj=self)
@@ -166,14 +166,13 @@ class Mlsearch(orio.main.tuner.search.search.Search):
             perf_costs = {}
             try:
                 perf_costs = self.getPerfCosts([coord])
-            except Exception, e:
+            except Exception as e:
                 perf_costs[str(coords)] = [self.MAXFLOAT]
                 info('FAILED: %s %s' % (e.__class__.__name__, e))
                 fruns += 1
 
             # compare to the best result
-            pcost_items = perf_costs.items()
-            pcost_items.sort(lambda x, y: cmp(eval(x[0]), eval(y[0])))
+            pcost_items = sorted(list(perf_costs.items()))
             for i, (coord_str, pcost) in enumerate(pcost_items):
                 if type(pcost) == tuple:
                     (perf_cost, _) = pcost  # ignore transfer costs -- GPUs only
@@ -235,7 +234,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
             if len(uneval_params) == 0: break
 
             debug('Initial eval cost %s' % str(eval_cost), obj=self)
-            eval_cost = map(lambda x: min(x, 100), eval_cost)
+            eval_cost = [min(x, 100) for x in eval_cost]
             debug('Eval cost %s' % str(eval_cost), obj=self)
 
             X_train = pd.DataFrame(eval_params)   #.select_dtypes(include=[np.number,np.bool])
@@ -289,13 +288,12 @@ class Mlsearch(orio.main.tuner.search.search.Search):
                 perf_costs = {}
                 try:
                     perf_costs = self.getPerfCosts([coord])
-                except Exception, e:
+                except Exception as e:
                     perf_costs[str(coords)] = [self.MAXFLOAT]
                     info('FAILED: %s %s' % (e.__class__.__name__, e))
                     fruns += 1
 
-                pcost_items = perf_costs.items()
-                pcost_items.sort(lambda x, y: cmp(eval(x[0]), eval(y[0])))
+                pcost_items = sorted(list(perf_costs.items()))
                 for i, (coord_str, pcost) in enumerate(pcost_items):
                     if type(pcost) == tuple:
                         (perf_cost, _) = pcost  # ignore transfer costs -- GPUs only
@@ -354,9 +352,9 @@ class Mlsearch(orio.main.tuner.search.search.Search):
         best_coord = eval_coords[sort_ind[0]]
         best_perf_cost = eval_cost[sort_ind[0]]
 
-        print eval_params[sort_ind[0]]
-        print best_perf_cost
-        print best_coord
+        print(eval_params[sort_ind[0]])
+        print(best_perf_cost)
+        print(best_coord)
         end_time = time.time()
         search_time = start_time - end_time
         speedup = float(eval_cost[0]) / float(best_perf_cost)
@@ -383,7 +381,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
         '''To read all algorithm-specific arguments'''
 
         # check for algorithm-specific arguments
-        for vname, rhs in self.search_opts.iteritems():
+        for vname, rhs in self.search_opts.items():
 
             # local search distance
             if vname == self.__LOCAL_DIST:

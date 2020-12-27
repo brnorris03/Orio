@@ -2,7 +2,7 @@
 
 # Parse a BTO file
 
-from mparser import MParser
+from .mparser import MParser
 import sys
 
 mparser = MParser(yacc_debug=False, printToStderr=False)
@@ -17,9 +17,9 @@ except:
  
 # Errors are stored in the mparser.lex.errors list 
 if len(mparser.mlex.errors) == 0:
-  print ('Successfully parsed %s' % filename)
+  print(('Successfully parsed %s' % filename))
 else:
-  print ('*** Errors\n', ' '.join(mparser.mlex.errors))
+  print(('*** Errors\n', ' '.join(mparser.mlex.errors)))
 
     
 

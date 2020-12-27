@@ -466,8 +466,8 @@ class ASTEdge(graph.DirEdge):
         graph.DirEdge.__init__(self, name, v1, v2)
 
         if graph != None:
-            if v1.name not in graph.v.keys(): graph.add_v(v1)
-            if v2.name not in graph.v.keys(): graph.add_v(v2)
-            if self.name not in graph.e.keys(): graph.add_e(self)
+            if v1.name not in list(graph.v.keys()): graph.add_v(v1)
+            if v2.name not in list(graph.v.keys()): graph.add_v(v2)
+            if self.name not in list(graph.e.keys()): graph.add_e(self)
 
         pass

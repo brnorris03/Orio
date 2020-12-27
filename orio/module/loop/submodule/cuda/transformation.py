@@ -5,6 +5,7 @@
 import orio.module.loop.ast_lib.forloop_lib, orio.module.loop.ast_lib.common_lib
 import orio.main.util.globals as g
 from orio.module.loop.ast import *
+from functools import reduce
 
 #----------------------------------------------------------------------------------------------------------------------
 # globals to note 'only-once' events for efficiency
@@ -32,10 +33,10 @@ class Transformation(object):
       
       self.tinfo = tinfo
       if self.tinfo is not None and self.streamCount > 1:
-        ivarLists = filter(lambda x: len(x[3])>0, tinfo.ivar_decls)
+        ivarLists = [x for x in tinfo.ivar_decls if len(x[3])>0]
         ivarListLengths = set(reduce(lambda acc,item: acc+item[3], ivarLists, []))
         if len(ivarListLengths) > 1:
-          raise Exception, ('orio.module.loop.submodule.cuda.transformation: streaming for different-length arrays is not supported')
+          raise Exception(('orio.module.loop.submodule.cuda.transformation: streaming for different-length arrays is not supported'))
       
       # ---------------------------------------------------------------------
       # analysis results; initial values are at defaults
@@ -113,10 +114,10 @@ class Transformation(object):
         hostDecls = [ExpStmt(FunCallExp(IdentExp('cudaDeviceSynchronize'), []))]
       hostDecls += [
         Comment('declare variables'),
-        VarDecl('double', map(lambda x: '*'+x[1], self.model['idents']))
+        VarDecl('double', ['*'+x[1] for x in self.model['idents']])
       ]
       if len(intarrays)>0:
-        hostDecls += [VarDecl('int', map(lambda x: '*'+x[1], intarrays))]
+        hostDecls += [VarDecl('int', ['*'+x[1] for x in intarrays])]
       hostDecls += [
         VarDeclInit('int', self.cs['nthreads'], NumLitExp(self.threadCount, NumLitExp.INT))
       ]
@@ -227,9 +228,9 @@ class Transformation(object):
         if self.tinfo is None:
           aidbytes = self.cs['nbytes']
         else:
-          aidtinfo = filter(lambda x: x[2] == aid, self.tinfo.ivar_decls)
+          aidtinfo = [x for x in self.tinfo.ivar_decls if x[2] == aid]
           if len(aidtinfo) == 0:
-            raise Exception, ('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
+            raise Exception('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
           else:
             aidtinfo = aidtinfo[0]
           aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
@@ -289,9 +290,9 @@ class Transformation(object):
         if self.tinfo is None:
           aidbytes = FunCallExp(IdentExp('sizeof'), [IdentExp(aid)])
         else:
-          aidtinfo = filter(lambda x: x[2] == aid, self.tinfo.ivar_decls)
+          aidtinfo = [x for x in self.tinfo.ivar_decls if x[2] == aid]
           if len(aidtinfo) == 0:
-            raise Exception, ('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
+            raise Exception('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
           else:
             aidtinfo = aidtinfo[0]
           aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
@@ -350,7 +351,7 @@ class Transformation(object):
       d2hasyncs    = []
       d2hasyncsrem = []
       for var in self.model['lhss']:
-        res_scalar_ids = filter(lambda x: x == var, self.model['scalars'])
+        res_scalar_ids = [x for x in self.model['scalars'] if x == var]
         for rsid in res_scalar_ids:
           d2hcopys += [
             ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
@@ -359,7 +360,7 @@ class Transformation(object):
                                 self.cs['sizeofDbl'],
                                 IdentExp('cudaMemcpyDeviceToHost')
                                 ]))]
-        res_array_ids  = filter(lambda x: x[0] == var, self.model['arrays'])
+        res_array_ids  = [x for x in self.model['arrays'] if x[0] == var]
         for raid,draid in res_array_ids:
           if self.streamCount > 1:
             d2hasyncs += [
@@ -382,9 +383,9 @@ class Transformation(object):
             if self.tinfo is None:
               raidbytes = self.cs['nbytes']
             else:
-              raidtinfo = filter(lambda x: x[2] == raid, self.tinfo.ivar_decls)
+              raidtinfo = [x for x in self.tinfo.ivar_decls if x[2] == raid]
               if len(raidtinfo) == 0:
-                raise Exception, ('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
+                raise Exception('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
               else:
                 raidtinfo = raidtinfo[0]
               raidbytes = BinOpExp(IdentExp(raidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(raidtinfo[1])]), BinOpExp.MUL)
@@ -445,19 +446,19 @@ class Transformation(object):
         kernell_calls += [self.model['lbound']]
       if self.streamCount == 1:
         args = [self.model['inputsize']] + self.model['ubounds'] + self.model['intscalars'] \
-          + map(lambda x: IdentExp(x[1]), self.model['intarrays']) \
-          + map(lambda x: IdentExp(x), self.model['scalars']) \
-          + map(lambda x: IdentExp(x[1]), self.model['idents'])
+          + [IdentExp(x[1]) for x in self.model['intarrays']] \
+          + [IdentExp(x) for x in self.model['scalars']] \
+          + [IdentExp(x[1]) for x in self.model['idents']]
         kernell_call = ExpStmt(FunCallExp(IdentExp(self.state['dev_kernel_name']+'<<<dimGrid,dimBlock>>>'), args))# + self.state['domainArgs']))
         kernell_calls += [kernell_call]
       else:
-        args    = [self.cs['chunklen']] + self.model['ubounds'] + self.model['intscalars'] + map(lambda x: IdentExp(x[1]), self.model['intarrays'])
-        argsrem = [self.cs['chunkrem']] + self.model['ubounds'] + self.model['intscalars'] + map(lambda x: IdentExp(x[1]), self.model['intarrays'])
+        args    = [self.cs['chunklen']] + self.model['ubounds'] + self.model['intscalars'] + [IdentExp(x[1]) for x in self.model['intarrays']]
+        argsrem = [self.cs['chunkrem']] + self.model['ubounds'] + self.model['intscalars'] + [IdentExp(x[1]) for x in self.model['intarrays']]
         for arg in self.model['scalars']:
           args    += [IdentExp(arg)]
           argsrem += [IdentExp(arg)]
         # adjust array args using offsets
-        dev_array_idss = map(lambda x: x[1], self.model['arrays'])
+        dev_array_idss = [x[1] for x in self.model['arrays']]
         for _,arg in self.model['idents']:
           if arg in dev_array_idss:
             args    += [BinOpExp(IdentExp(arg), self.cs['soffset'], BinOpExp.ADD)]
@@ -597,7 +598,7 @@ class Transformation(object):
           return collectIntIds
         lhs_ids = loop_lib.collectNode(collectLhsIds, loop_body)
         rhs_ids = loop_lib.collectNode(collectRhsIds, loop_body)
-        lhs_ids = list(set(filter(lambda x: x not in indices, lhs_ids)))
+        lhs_ids = list(set([x for x in lhs_ids if x not in indices]))
 
         # collect all array and non-array idents in the loop body
         collectArrayIdents = lambda n: [n.exp.name] if (isinstance(n, ArrayRefExp) and isinstance(n.exp, IdentExp)) else []
@@ -635,15 +636,15 @@ class Transformation(object):
         #--------------------------------------------------------------------------------------------------------------
         # begin rewrite the loop body
         # create decls for ubound_exp id's, assuming all ids are int's
-        ubound_idss = map(lambda x: loop_lib.collectNode(collectIdents, x), [ubound_exp]+([ubound_exp2] if nestedLoop else []))
+        ubound_idss = [loop_lib.collectNode(collectIdents, x) for x in [ubound_exp]+([ubound_exp2] if nestedLoop else [])]
         ubound_ids = reduce(lambda acc,item: acc+item, ubound_idss, [])
         kernelParams = [FieldDecl('const int', x) for x in ubound_ids]
 
-        arraySubs = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectArraySubscripts, loop_body)))
+        arraySubs = set([x for x in loop_lib.collectNode(collectArraySubscripts, loop_body) if x not in (indices+ubound_ids)])
         inferredInts = list(arraySubs) + indices + ubound_ids
-        int_ids_pass2 = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body)))
+        int_ids_pass2 = set([x for x in loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body) if x not in (indices+ubound_ids)])
         #int_ids_pass2 = set(loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body))
-        ktempints += filter(lambda x: x in lhs_ids, list(arraySubs)) # kernel temporary integer vars
+        ktempints += [x for x in list(arraySubs) if x in lhs_ids] # kernel temporary integer vars
         kdeclints = int_ids_pass2.difference(ktempints) # kernel integer parameters
         intarrays = list(int_ids_pass2.intersection(array_ids))
         kdeclints = list(kdeclints.difference(intarrays))
@@ -661,12 +662,12 @@ class Transformation(object):
                 rrLhs = lambda n: IdentExp(tempIdent) if (isinstance(n, IdentExp) and n.name == var) else n
                 loop_body = loop_lib.rewriteNode(rrLhs, loop_body)
         else:
-          ktempdbls = filter(lambda x: x not in array_ids, list(lhs_ids))
-          ktempdbls = filter(lambda x: x not in ktempints, list(ktempdbls))
+          ktempdbls = [x for x in list(lhs_ids) if x not in array_ids]
+          ktempdbls = [x for x in list(ktempdbls) if x not in ktempints]
                   
         # collect all identifiers from the loop body
         loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
-        lbi = set(filter(lambda x: x not in (indices+ubound_ids+list(arraySubs)+list(int_ids_pass2)), loop_body_ids))
+        lbi = set([x for x in loop_body_ids if x not in (indices+ubound_ids+list(arraySubs)+list(int_ids_pass2))])
 
         if self.model['isReduction']:
             lbi = lbi.difference(set(lhs_ids))
@@ -676,13 +677,13 @@ class Transformation(object):
         idents = list(lbi)
         if self.model['isReduction']:
           idents += [lhs_ids[0]]
-        self.model['idents']  = map(lambda x: (x, dev+x), idents)
+        self.model['idents']  = [(x, dev+x) for x in idents]
         self.model['scalars'] = scalar_ids
-        self.model['arrays']  = map(lambda x: (x, dev+x), array_ids)
+        self.model['arrays']  = [(x, dev+x) for x in array_ids]
         self.model['inputsize'] = IdentExp(ubound_ids[0])
-        self.model['ubounds'] = map(lambda x: IdentExp(x), ubound_ids[1:])
-        self.model['intscalars'] = map(lambda x: IdentExp(x), kdeclints)
-        self.model['intarrays']  = map(lambda x: (x, dev+x), intarrays)
+        self.model['ubounds'] = [IdentExp(x) for x in ubound_ids[1:]]
+        self.model['intscalars'] = [IdentExp(x) for x in kdeclints]
+        self.model['intarrays']  = [(x, dev+x) for x in intarrays]
         
         # create parameter decls
         kernelParams += [FieldDecl('int', x) for x in self.model['intscalars']]
@@ -823,9 +824,9 @@ class Transformation(object):
             for temp in ktempdbls:
                 kernelStmts += [VarDeclInit('double', IdentExp(temp), self.cs['int0'])]
           else:
-            kernelStmts += [VarDecl('double', map(lambda x: IdentExp(x), ktempdbls))]
+            kernelStmts += [VarDecl('double', [IdentExp(x) for x in ktempdbls])]
         if len(ktempints) > 0:
-            kernelStmts += [VarDecl('int', map(lambda x: IdentExp(x), ktempints))]
+            kernelStmts += [VarDecl('int', [IdentExp(x) for x in ktempints])]
 
         #--------------------------------------------------
         if isinstance(loop_body3, ForStmt):
@@ -1025,10 +1026,10 @@ class Transformation(object):
 
           warpSize = self.devProps['warpSize'] # minimum for compute capability 1.0 and up is 32
           if tcount < warpSize:
-            raise Exception, ("%s: thread count of less than device warp size of %s is not recommended, detected %s."
+            raise Exception("%s: thread count of less than device warp size of %s is not recommended, detected %s."
                   % (self.__class__, warpSize, tcount))
           elif tcount % warpSize != 0:
-            raise Exception, ("%s: thread count that is not a multiple of device warp size of %s is not recommended, detected %s."
+            raise Exception("%s: thread count that is not a multiple of device warp size of %s is not recommended, detected %s."
                   % (self.__class__, warpSize, tcount))
 
           if warpkern32 is None:

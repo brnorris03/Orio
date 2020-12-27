@@ -3,7 +3,7 @@
 #
 
 import sys
-import ast, ast_util
+from . import ast, ast_util
 from orio.main.util.globals import *
 
 #-------------------------------------------------
@@ -273,8 +273,8 @@ class Transformation:
             id, lb_exp, ub_exp, st_exp, lbody = self.ast_util.getForLoopInfo(stmt)
 
             # see if the loop bound expressions are bound/free of outer loop iterators 
-            lb_inames = filter(lambda i: self.ast_util.containIdentName(lb_exp, i), outer_loop_inames)
-            ub_inames = filter(lambda i: self.ast_util.containIdentName(ub_exp, i), outer_loop_inames)
+            lb_inames = [i for i in outer_loop_inames if self.ast_util.containIdentName(lb_exp, i)]
+            ub_inames = [i for i in outer_loop_inames if self.ast_util.containIdentName(ub_exp, i)]
 
             # skip loops with bound expressions that are free of outer loop iterators
             if not lb_inames and not ub_inames:
@@ -376,8 +376,8 @@ class Transformation:
             id, lb_exp, ub_exp, st_exp, lbody = self.ast_util.getForLoopInfo(stmt)
 
             # see if the loop bound expressions are bound/free of outer loop iterators 
-            lb_inames = filter(lambda i: self.ast_util.containIdentName(lb_exp, i), outer_loop_inames)
-            ub_inames = filter(lambda i: self.ast_util.containIdentName(ub_exp, i), outer_loop_inames)
+            lb_inames = [i for i in outer_loop_inames if self.ast_util.containIdentName(lb_exp, i)]
+            ub_inames = [i for i in outer_loop_inames if self.ast_util.containIdentName(ub_exp, i)]
 
             # skip loops with bound expressions that are free of outer loop iterators
             if not lb_inames and not ub_inames:
@@ -453,7 +453,7 @@ class Transformation:
 
         # build a new loop information tabe for generating the loop-bound scanning code
         n_loop_info_table = {}
-        for iname, linfo in loop_info_table.items():
+        for iname, linfo in list(loop_info_table.items()):
             _,_,_,st_exp,_ = linfo
             n_loop_info_table[iname] = (self.__getTileSizeName(iname, tile_level),
                                         self.__getTileIterName(iname, tile_level), st_exp)

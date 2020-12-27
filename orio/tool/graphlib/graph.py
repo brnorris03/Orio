@@ -13,11 +13,8 @@ __version__ = '0.4.1'
 __author__ = 'Robert Dick and Kosta Gaitanis'
 __author_email__ = 'dickrp@ece.northwestern.edu and gaitanis@tele.ucl.ac.be'
 
-
-import copy, new, operator, struct
-import orio.tool.graphlib.delegate as delegate
-# For 2.3 compatibility (since set is builtin starting in 2.4)
-from sets import *
+import struct
+from orio.tool.graphlib import delegate
 
 # The following four lines borrowed from Gregory R. Warnes's fpconst
 # (until it's standard in Python distributions).
@@ -27,7 +24,7 @@ else:
     PosInf = struct.unpack('d', '\x00\x00\x00\x00\x00\x00\xf0\x7f')[0]
 
 
-class GraphError(StandardError):
+class GraphError(Exception):
     '''Exception for graph errors.'''
     pass
 
@@ -109,14 +106,14 @@ class Vertex:
 
     #@_roprop('Set of adjacent vertices.  Edge direction ignored.')
     def adjacent_v(self):
-        adj = Set([v for e in self.e for v in e.all_v])
+        adj = set([v for e in self.e for v in e.all_v])
         adj.remove(self)
         return adj
     adjacent_v = _roprop('Set of adjacent vertices.  Edge direction ignored.')(adjacent_v)
 
     #@_roprop('Set of vertices connected by incoming edges.')
     def in_v(self):
-        return Set([v for e in self.e for v in e.src_v if e.enters(self)])
+        return set([v for e in self.e for v in e.src_v if e.enters(self)])
     in_v = _roprop('Set of vertices connected by incoming edges.')(in_v)
     
     def in_v_names(self):
@@ -124,7 +121,7 @@ class Vertex:
     
     #@_roprop('Set of vertices connected by outgoing edges.')
     def out_v(self):
-        return Set([v for e in self.e for v in e.dest_v if e.leaves(self)])
+        return set([v for e in self.e for v in e.dest_v if e.leaves(self)])
     out_v = _roprop('Set of vertices connected by outgoing edges.')(out_v)
 
     #@_roprop('True if vertex has no outgoing edges.')
@@ -255,7 +252,7 @@ def DataWrapped(cls):
 
         def __str__(self):
             '''Append data to base's __str__.'''
-            return ' '.join(filter(None, (cls.__str__(self), str(self.data))))
+            return ' '.join([_f for _f in (cls.__str__(self), str(self.data)) if _f])
 
     __Wr.__name__ = 'Data%s' % cls.__name__.split('.')[-1]
     return __Wr
@@ -275,7 +272,7 @@ class VertexDict(dict, delegate.Delegate):
         self.graph = graph
 
     def __setitem__(self, key, val):
-        if self.has_key(key):
+        if key in self:
             raise KeyError('VertexDict already has (%s, %s).' % (key, val))
         self.__dict.__setitem__(self, key, val)
 
@@ -312,7 +309,7 @@ class EdgeDict(dict, delegate.Delegate):
 #================================================================================
 # Introduce an equivalent for the Python2.4 sorted builtin
 def bn_sorted(dict):
-    skeys = dict.keys()
+    skeys = list(dict.keys())
     skeys.sort()
     slist = []
     for k in skeys:
@@ -341,16 +338,16 @@ class Graph(delegate.Delegate):
         self.e.clear()
 
     #@_roprop('List of all vertices without incoming edges.')
-    def src_v(self): return [v for n, v in self.v.items() if v.is_src]
+    def src_v(self): return [v for n, v in list(self.v.items()) if v.is_src]
     src_v = _roprop('List of all vertices without incoming edges.')(src_v)
 
     #@_roprop('List of all vertices without outgoing edges.')
-    def sink_v(self): return [v for n, v in self.v.items() if v.is_sink]
+    def sink_v(self): return [v for n, v in list(self.v.items()) if v.is_sink]
     sink_v = _roprop('List of all vertices without outgoing edges.')(sink_v)
 
     #@_roprop(
     #    'List of all vertices with both incoming and outgoing edges.')
-    def intermed_v(self):    return [v for n, v in self.v.items() if v.is_intermed]
+    def intermed_v(self):    return [v for n, v in list(self.v.items()) if v.is_intermed]
     intermed_v = _roprop(
         'List of all vertices with both incoming and outgoing edges.')(intermed_v)
 
@@ -367,11 +364,11 @@ class Graph(delegate.Delegate):
         
     def connected_components(self):
         '''Return a list of lists.  Each holds transitively-connected vertices.'''
-        unchecked = Set(self.v.values())
+        unchecked = set(list(self.v.values()))
         groups = []
         while len(unchecked):
             vcon = self.depth_first_search(unchecked.pop())
-            unchecked -= Set(vcon)
+            unchecked -= set(vcon)
             groups.append(vcon)
         return groups
 
@@ -413,7 +410,7 @@ class Graph(delegate.Delegate):
         while unprocessed:
             v = unprocessed.pop(0)
             incoming_v = v.adjacent_v - v.out_v
-            if v not in visited and not (incoming_v - Set(visited)):
+            if v not in visited and not (incoming_v - set(visited)):
                 visited.append(v)
                 unprocessed.extend(v.out_v)
         return visited
@@ -430,9 +427,9 @@ class Graph(delegate.Delegate):
 
         def def_weight_func(e, v1, v2): return e.weight(v1, v2)
         weight_func = kargs.get('weight_func', def_weight_func)
-        targets = kargs.get('targets', self.v.values())
-        visited = Set([targets.pop()])
-        unvisited = Set(self.v.values()) - visited
+        targets = kargs.get('targets', list(self.v.values()))
+        visited = set([targets.pop()])
+        unvisited = set(list(self.v.values())) - visited
         mst = Tree()
 
         while targets:
@@ -473,10 +470,10 @@ class Graph(delegate.Delegate):
 
         def def_weight_func(e, v1, v2): return e.weight(v1, v2)
         weight_func = kargs.get('weight_func', def_weight_func)
-        targets = Set(kargs.get('targets', self.v.values()))
+        targets = set(kargs.get('targets', list(self.v.values())))
         path_tr = Tree()
         dist = {start:0.0}
-        unvisited = Set(self.v.values())
+        unvisited = set(list(self.v.values()))
         while targets:
 # Determine the closest vertex
             closest = min([(dist.get(v, PosInf), v) for v in unvisited])[1]
@@ -516,7 +513,7 @@ class Graph(delegate.Delegate):
         def def_weight_func(e, v1, v2): return e.weight(v1, v2)
         weight_func = weight_func or def_weight_func
         path = [start]
-        visited = Set([start])
+        visited = set([start])
         while path[-1] is not goal:
             adj_v = [SortStruct(weight_func(e, path[-1], v), dest=v)
                 for e in path[-1].out_e for v in e.dest_v if v not in visited]
@@ -540,8 +537,8 @@ class Graph(delegate.Delegate):
         'weight_func' is a function taking (edge, v1, v2) that returns a weight.
         Defaults to e.weight()'''
 
-        return dict([self.shortest_tree(v,
-            weight_func=weight_func).path_dict().items() for v in self.v.values()])
+        return dict([list(self.shortest_tree(v,
+            weight_func=weight_func).path_dict().items()) for v in list(self.v.values())])
 
 #================================================================================
 
@@ -617,14 +614,14 @@ if __name__ == '__main__':
     (f, g)]:
         G.add_e(UndirEdge(len(G.e), *ep))
 
-    print G
-    print 'DFS:', map(str, G.depth_first_search(a))
-    print 'BFS:', map(str, G.breadth_first_search(a))
-    print 'top sort:', map(str, G.topological_sort(a))
+    print(G)
+    print('DFS:', list(map(str, G.depth_first_search(a))))
+    print('BFS:', list(map(str, G.breadth_first_search(a))))
+    print('top sort:', list(map(str, G.topological_sort(a))))
 
     T = G.minimal_span_tree()
-    print T
-    print [(map(str, k), map(str, v)) for k, v in T.path_dict().items()]
+    print(T)
+    print([(list(map(str, k)), list(map(str, v))) for k, v in list(T.path_dict().items())])
     
     S = G.shortest_tree(a)
-    print S
+    print(S)

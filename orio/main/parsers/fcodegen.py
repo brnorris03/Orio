@@ -41,7 +41,7 @@ class CodeGen:
 
         elif isinstance(tnode, ast.FunCallExp):
             s += self.generate(tnode.exp, indent, extra_indent) + '('
-            s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.args))
+            s += ','.join([self.generate(x, indent, extra_indent) for x in tnode.args])
             s += ')'
 
         elif isinstance(tnode, ast.UnaryExp):
@@ -105,7 +105,7 @@ class CodeGen:
                         + self.generate(tnode.rhs, indent, extra_indent) + ')'
                 elif tnode.op_type == tnode.COMMA:
                     # TODO: We need to implement an AST canonicalization step for Fortran before generating the code.
-                    print 'internal warning: Fortran code generator does not fully support the comma operator -- the generated code may not compile.'
+                    print('internal warning: Fortran code generator does not fully support the comma operator -- the generated code may not compile.')
                     s += self.generate(tnode.rhs, indent, extra_indent) 
                     s += '\n' + indent + self.generate(tnode.lhs, indent, extra_indent)
                     s +='\n! ORIO Warining: check code above and fix problems.'
@@ -205,7 +205,7 @@ class CodeGen:
 
         elif isinstance(tnode, ast.VarDecl):
             
-            if tnode.type_name not in self.ftypes.keys():
+            if tnode.type_name not in list(self.ftypes.keys()):
                 err('orio.module.loop.codegen internal error: Cannot generate Fortran type for ' + tnode.type_name)
                 
             s += indent + str(self.ftypes[tnode.type_name]) + ' '

@@ -2,7 +2,7 @@
 # The class definitions for tuning information and its generator
 #
 
-import StringIO, sys, os, tokenize
+import io, sys, os, tokenize
 from orio.main.util.globals import *
 
 #--------------------------------------------------------------
@@ -178,7 +178,7 @@ class TuningInfoGen:
         '''Return all variables that are present in the given code'''
                 
         # tokenize the given expression code
-        gtoks = tokenize.generate_tokens(StringIO.StringIO(code).readline)
+        gtoks = tokenize.generate_tokens(io.StringIO(code).readline)
         
         # iterate over each token and replace any matching token with its corresponding value
         vnames = []

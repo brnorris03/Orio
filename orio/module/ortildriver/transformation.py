@@ -4,7 +4,7 @@
 
 import sys
 from orio.main.util.globals import *
-import ast, ast_util
+from . import ast, ast_util
 
 #-------------------------------------------------
 
@@ -417,7 +417,7 @@ class Transformation:
         self.__countArrRefs(tnode, count_table, aref_seq)
 
         # replace only array references that occur more than once
-        repl_arefs = filter(lambda x: count_table[str(x)] > 1, aref_seq)
+        repl_arefs = [x for x in aref_seq if count_table[str(x)] > 1]
 
         # generate new variable names for the more-than-once array references
         new_var_names = [('aref%s' % i) for i in range(1, len(repl_arefs)+1)]
@@ -580,7 +580,7 @@ class Transformation:
         '''To apply code optimizations on the given fully rectangularly tiled loop'''
         
         # create a table that maps each tile size variable to its corresponding unroll factors
-        unroll_factor_table = dict(zip(iter_names, iter_vals))
+        unroll_factor_table = dict(list(zip(iter_names, iter_vals)))
 
         # apply loop unrolling
         if self.unroll:

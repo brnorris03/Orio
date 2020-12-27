@@ -3,7 +3,8 @@
 #
 
 import sys
-import orio.module.loop.submodule.submodule, transformation
+import orio.module.loop.submodule.submodule
+from orio.module.loop.submodule.tile import transformation
 from orio.main.util.globals import *
 
 #---------------------------------------------------------------------
@@ -35,7 +36,7 @@ class Tile(orio.module.loop.submodule.submodule.SubModule):
             # evaluate the RHS expression
             try:
                 rhs = eval(rhs, perf_params)
-            except Exception, e:
+            except Exception as e:
                 err('orio.module.loop.submodule.tile.tile: %s: failed to evaluate the argument expression: %s\n --> %s: %s' 
                     % (line_no, rhs,e.__class__.__name__, e))
 
@@ -97,7 +98,7 @@ class Tile(orio.module.loop.submodule.submodule.SubModule):
         try:
             if not transformed_stmt.label and stmt.label:
                 transformed_stmt.label = stmt.label
-        except Exception,e:
+        except Exception as e:
             err('orio.module.loop.submodule.tile.tile: error assigning label\n --> %s : %s' % (e.__class__.__name__, e.message))
 
         # return the transformed statement

@@ -1,4 +1,4 @@
-import graph as m
+from . import graph as m
 
 classifiers=[
 	'Development Status :: 4 - Beta',

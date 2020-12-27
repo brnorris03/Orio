@@ -5,6 +5,8 @@
 import math, sys, time
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
+from functools import reduce
+from operator import itemgetter
 
 #-----------------------------------------------------
 
@@ -100,8 +102,8 @@ class Annealing(orio.main.tuner.search.search.Search):
             if coord == None:
                 break
 
-            # get the performance cost of the current initial coordinate
-            perf_cost = self.getPerfCost(coord)
+            # get the performance cost of the current initial coordinate (list of times)
+            perf_cost = self.__get_perf_cost_avg(self.getPerfCost(coord))
 
             # record the best coordinate and its best performance cost
             best_coord = coord
@@ -131,7 +133,7 @@ class Annealing(orio.main.tuner.search.search.Search):
                         break
 
                     # get the performance cost of the new coordinate
-                    new_perf_cost = self.getPerfCost(new_coord)
+                    new_perf_cost = self.__get_perf_cost_avg(self.getPerfCost(new_coord))
                     
                     # compare to the best result so far
                     if new_perf_cost < best_perf_cost and new_perf_cost > 0.0:
@@ -190,7 +192,8 @@ class Annealing(orio.main.tuner.search.search.Search):
             if self.time_limit <= 0 or (time.time()-start_time) <= self.time_limit:
                 
                 # perform a local search on the best annealing coordinate
-                best_coord, best_perf_cost = self.searchBestNeighbor(best_coord, self.local_distance)
+                best_coord, best_perf_cost_list = self.searchBestNeighbor(best_coord, self.local_distance)
+                best_perf_cost = self.__get_perf_cost_avg(best_perf_cost_list)
 
                 # if the neighboring coordinate has a better performance cost
                 if best_perf_cost < old_best_perf_cost:
@@ -228,7 +231,7 @@ class Annealing(orio.main.tuner.search.search.Search):
         '''To read all algorithm-specific arguments'''
 
         # check for algorithm-specific arguments
-        for vname, rhs in self.search_opts.iteritems():
+        for vname, rhs in self.search_opts.items():
 
             # local search distance
             if vname == self.__LOCAL_DIST:
@@ -307,16 +310,20 @@ class Annealing(orio.main.tuner.search.search.Search):
                    'might prune out the entire search space.')
         
         # sort the random coordinates in an increasing order of performance costs
-        sorted_coords = zip(random_coords, perf_costs)
-        sorted_coords.sort(lambda x,y: cmp(x[1],y[1]))
-        random_coords, perf_costs = zip(*sorted_coords)
+        sorted_coords = sorted(list(zip(random_coords, perf_costs)),key=itemgetter(1))
+        random_coords, perf_costs = list(zip(*sorted_coords))
 
         # take the best coordinate
         best_coord = random_coords[0]
-        best_perf_cost = perf_costs[0]
+
+        # perf_costs is a set of lists, create one combined list
+        single_list_perf_costs = []
+        for trial in perf_costs:
+            single_list_perf_costs.extend(trial)
+        best_perf_cost = min(single_list_perf_costs)
 
         # compute the average performance-cost difference
-        total_cost_diff = reduce(lambda x,y: x+y, map(lambda x: x-best_perf_cost, perf_costs), 0)
+        total_cost_diff = reduce(lambda x,y: x+y, [x-best_perf_cost for x in single_list_perf_costs], 0)
         avg_cost_diff = 0
         if total_cost_diff > 0:
             avg_cost_diff = total_cost_diff / (len(random_coords)-1)
@@ -365,3 +372,17 @@ class Annealing(orio.main.tuner.search.search.Search):
             if n_coord != coord:
                 return n_coord
         return neigh_coord 
+
+    def __get_perf_cost_avg(self, perf_cost_list):
+        """
+        Get the average performance cost of all but the first test run timings.
+        :param perf_cost_list: The list of performance costs, typically floating-point execution times
+        :return: The average performance cost (floating-point), e.g., time
+        """
+        if len(perf_cost_list) > 1:
+            # exclude the first trial because that's when validation (may) happen
+            perf_cost = reduce(lambda a, b: a + b, perf_cost_list[1:]) / (len(perf_cost_list)-1)
+        else:
+            perf_cost = perf_cost_list[0]
+
+        return perf_cost

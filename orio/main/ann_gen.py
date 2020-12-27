@@ -90,4 +90,4 @@ class LoopAnnotationGenerator:
 
 if __name__ == "__main__":
     a = LoopAnnotationGenerator(1,['i','j','k'],tiling_levels=2)
-    print a.getComposite('  ')
+    print(a.getComposite('  '))

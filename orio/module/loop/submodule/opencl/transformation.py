@@ -2,10 +2,13 @@
 # Contains the OpenCL transformation module
 #
 
-import orio.module.loop.ast_lib.forloop_lib, orio.module.loop.ast_lib.common_lib
-import orio.main.util.globals as g
-from orio.module.loop.ast import *
 import json
+from functools import reduce
+
+import orio.main.util.globals as g
+import orio.module.loop.ast_lib.common_lib
+import orio.module.loop.ast_lib.forloop_lib
+from orio.module.loop.ast import *
 
 INCLUDES = r'''
 #ifdef __APPLE__
@@ -23,7 +26,7 @@ warpkern64 = None
 
 #----------------------------------------------------------------------------------------------------------------------
 class Transformation(object):
-    '''Code transformation''' 
+    '''Code transformation'''
 
     # -----------------------------------------------------------------------------------------------------------------
     def __init__(self, stmt, devProps, targs, tinfo=None):
@@ -40,26 +43,26 @@ class Transformation(object):
       self.clFlags      = targs['clFlags']
       self.vecHint      = targs['vecHint']
       self.sizeHint     = targs['sizeHint']
-      
+
       self.threadCount  = self.workItemsPerGroup
       self.blockCount   = self.workGroups
       self.globalSize   = self.workGroups * self.workItemsPerGroup
       self.localSize    = self.workItemsPerGroup
-      
+
       platform_props = self.devProps[self.platform]
       device_props   = platform_props['devices'][self.device]
-      for pname, pval in platform_props.iteritems():
+      for pname, pval in platform_props.items():
           if pname != 'devices':
               g.Globals().metadata[pname] = pval
       g.Globals().metadata.update(device_props)
-       
+
       self.tinfo = tinfo
       if self.tinfo is not None and self.streamCount > 1:
-        ivarLists = filter(lambda x: len(x[3])>0, tinfo.ivar_decls)
+        ivarLists = [x for x in tinfo.ivar_decls if len(x[3])>0]
         ivarListLengths = set(reduce(lambda acc,item: acc+item[3], ivarLists, []))
         if len(ivarListLengths) > 1:
-          raise Exception, ('orio.module.loop.submodule.opencl.transformation: streaming for different-length arrays is not supported')
-      
+          raise Exception(('orio.module.loop.submodule.opencl.transformation: streaming for different-length arrays is not supported'))
+
       # ---------------------------------------------------------------------
       # analysis results; initial values are at defaults
       self.model = {
@@ -83,8 +86,8 @@ class Transformation(object):
         'dev_redkern_name': ''
       }
 
-      # frequently used constants      
-      self.cs = { 
+      # frequently used constants
+      self.cs = {
         'nthreads': IdentExp('nthreads'),
         'nstreams': IdentExp('nstreams'),
         'nbytes':   IdentExp('nbytes'),
@@ -102,25 +105,25 @@ class Transformation(object):
         'int3':     NumLitExp(3, NumLitExp.INT),
 
         'sizeofDbl': FunCallExp(IdentExp('sizeof'), [IdentExp('double')]),
-        
+
         'prefix': 'orcl_',
         'dev':    'dev_',
-        
+
         'q': IdentExp('orcl_command_queue'),
         'ctx': IdentExp('orcl_context'),
         'st': IdentExp('orcl_status'),
         'null': IdentExp('NULL'),
         'devs': IdentExp('orcl_devices'),
-        
+
         'false': IdentExp('CL_FALSE'),
         'true': IdentExp('CL_TRUE'),
         'globalSize': IdentExp('orcl_global_work_size'),
         'localSize': IdentExp('orcl_local_work_size'),
-        
-      }
-      
 
-      # transformation results/components 
+      }
+
+
+      # transformation results/components
       self.newstmts = {
         'openclInitialization':     [],
         'hostDecls':                [],
@@ -157,8 +160,8 @@ class Transformation(object):
         dev = IdentExp('orcl_devices')
         ctx = IdentExp('orcl_context')
         q = self.cs['q']
-        
-        
+
+
         init = []
         init += [Comment('initialize OpenCL'),
                  Comment('get number of platforms'),
@@ -185,11 +188,11 @@ class Transformation(object):
                  VarDecl('cl_device_id *', [dev]),
                  ExpStmt(BinOpExp(
                                   st,
-                                  FunCallExp(IdentExp('clGetDeviceIDs'), 
+                                  FunCallExp(IdentExp('clGetDeviceIDs'),
                                              [ArrayRefExp(pl, NumLitExp(self.platform, NumLitExp.INT)),
                                               IdentExp('CL_DEVICE_TYPE_ALL'),
                                               zero,
-                                              null, 
+                                              null,
                                               UnaryExp(nd, UnaryExp.ADDRESSOF)]),
                                   BinOpExp.EQ_ASGN)),
                  self.checkStatus('clGetDeviceIDs for number'),
@@ -200,11 +203,11 @@ class Transformation(object):
                                   BinOpExp.EQ_ASGN)),
                  ExpStmt(BinOpExp(
                                   st,
-                                  FunCallExp(IdentExp('clGetDeviceIDs'), 
+                                  FunCallExp(IdentExp('clGetDeviceIDs'),
                                              [ArrayRefExp(pl, NumLitExp(self.platform, NumLitExp.INT)),
                                               IdentExp('CL_DEVICE_TYPE_ALL'),
                                               nd,
-                                              dev, 
+                                              dev,
                                               null]),
                                   BinOpExp.EQ_ASGN)),
                  self.checkStatus('clGetDeviceIDs for devices'),
@@ -212,13 +215,13 @@ class Transformation(object):
                  VarDecl('cl_context', [ctx]),
                  ExpStmt(BinOpExp(
                                   ctx,
-                                  FunCallExp(IdentExp('clCreateContext'), 
+                                  FunCallExp(IdentExp('clCreateContext'),
                                              [null,
                                               nd,
                                               dev,
                                               null,
                                               null,
-                                              UnaryExp(st, UnaryExp.ADDRESSOF)                                
+                                              UnaryExp(st, UnaryExp.ADDRESSOF)
                                               ]),
                                   BinOpExp.EQ_ASGN)),
                  self.checkStatus('clCreateContext'),
@@ -226,17 +229,17 @@ class Transformation(object):
                  VarDecl('cl_command_queue', [q]),
                  ExpStmt(BinOpExp(
                                   q,
-                                  FunCallExp(IdentExp('clCreateCommandQueue'), 
+                                  FunCallExp(IdentExp('clCreateCommandQueue'),
                                              [ctx,
                                               ArrayRefExp(dev, NumLitExp(self.device, NumLitExp.INT)),
                                               IdentExp('CL_QUEUE_PROFILING_ENABLE'),
-                                              UnaryExp(st, UnaryExp.ADDRESSOF)                                
+                                              UnaryExp(st, UnaryExp.ADDRESSOF)
                                               ]),
                                   BinOpExp.EQ_ASGN)),
                  self.checkStatus('clCreateCommandQueue'),
-                 
+
                 ]
-        
+
         final = []
         final += [Comment('free OpenCL data structures'),
                   ExpStmt(FunCallExp(IdentExp('TAU_PROFILER_STOP'),[IdentExp('execute_profiler')])),
@@ -245,10 +248,10 @@ class Transformation(object):
                   ExpStmt(FunCallExp(IdentExp('free'), [dev])),
                   ExpStmt(FunCallExp(IdentExp('free'), [pl]))
                   ]
-        
+
         self.newstmts['openclInitialization'] += init
         self.newstmts['openclFinalization'] += final
-        
+
 
     # -----------------------------------------------------------------------------------------------------------------
     def createDVarDecls(self):
@@ -257,10 +260,10 @@ class Transformation(object):
       hostDecls = [ExpStmt(FunCallExp(IdentExp('clFinish'), [self.cs['q']]))]
       hostDecls += [
         Comment('declare variables'),
-        VarDecl('cl_mem', map(lambda x: x[1], self.model['idents']))
+        VarDecl('cl_mem', [x[1] for x in self.model['idents']])
       ]
       if len(intarrays)>0:
-        hostDecls += [VarDecl('cl_mem', map(lambda x: x[1], intarrays))]
+        hostDecls += [VarDecl('cl_mem', [x[1] for x in intarrays])]
       hostDecls += [
         VarDeclInit('int', self.cs['nthreads'], NumLitExp(self.threadCount, NumLitExp.INT))
       ]
@@ -274,7 +277,7 @@ class Transformation(object):
         deallocs += [ExpStmt(FunCallExp(IdentExp('clReleaseMemObject'), [IdentExp(dvar)]))]
       for _,dvar in self.model['intarrays']:
         deallocs += [ExpStmt(FunCallExp(IdentExp('clReleaseMemObject'), [IdentExp(dvar)]))]
-               
+
       self.newstmts['deallocs'] = deallocs
 
 
@@ -294,7 +297,7 @@ class Transformation(object):
       '''Create stream declarations'''
       # TODO: streams
       raise Exception("streams not yet implemented")
-# 
+#
 #       self.state['calc_offset'] = [
 #         ExpStmt(BinOpExp(self.cs['soffset'],
 #                          BinOpExp(self.cs['istream'], self.cs['chunklen'], BinOpExp.MUL),
@@ -305,7 +308,7 @@ class Transformation(object):
 #                          BinOpExp(self.cs['istream'], self.cs['blks4chunk'], BinOpExp.MUL),
 #                          BinOpExp.EQ_ASGN))
 #       ]
-# 
+#
 #       self.newstmts['streamAllocs'] = [
 #         Comment('create streams'),
 #         VarDecl('int', [self.cs['istream'], self.cs['soffset']] + ([self.cs['boffset']] if self.model['isReduction'] else [])),
@@ -318,7 +321,7 @@ class Transformation(object):
 #         VarDeclInit('int', self.cs['chunklen'], BinOpExp(self.model['inputsize'], self.cs['nstreams'], BinOpExp.DIV)),
 #         VarDeclInit('int', self.cs['chunkrem'], BinOpExp(self.model['inputsize'], self.cs['nstreams'], BinOpExp.MOD)),
 #       ]
-# 
+#
 #       # destroy streams
 #       deallocs = [
 #         ForStmt(BinOpExp(self.cs['istream'], self.cs['int0'], BinOpExp.EQ_ASGN),
@@ -331,11 +334,11 @@ class Transformation(object):
     # -----------------------------------------------------------------------------------------------------------------
     def createMallocs(self):
       '''Create device-side mallocs'''
-        
+
       readWrite = IdentExp('CL_MEM_READ_WRITE')
       copyHost  = IdentExp('CL_MEM_COPY_HOST_PTR')
       rwCopy    = BinOpExp(readWrite, copyHost, BinOpExp.BOR)
-        
+
       mallocs  = [
         Comment('allocate device memory'),
       ]
@@ -351,18 +354,18 @@ class Transformation(object):
         if self.tinfo is None:
           aidbytes = self.cs['nbytes']
         else:
-          aidtinfo = filter(lambda x: x[2] == aid, self.tinfo.ivar_decls)
+          aidtinfo = [x for x in self.tinfo.ivar_decls if x[2] == aid]
           if len(aidtinfo) == 0:
-            raise Exception, ('orio.module.loop.submodule.opencl.transformation: %s: unknown input variable argument: "%s"' % aid)
+            raise Exception('orio.module.loop.submodule.opencl.transformation: %s: unknown input variable argument: "%s"' % aid)
           else:
             aidtinfo = aidtinfo[0]
           aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
         mallocs += [
           ExpStmt(BinOpExp(IdentExp(daid),
                            FunCallExp(IdentExp('clCreateBuffer'),
-                                      [self.cs['ctx'], 
-                                       readWrite, 
-                                       aidbytes, 
+                                      [self.cs['ctx'],
+                                       readWrite,
+                                       aidbytes,
                                        self.cs['null'],
                                        UnaryExp(self.cs['st'], UnaryExp.ADDRESSOF),
                                        ]),
@@ -429,18 +432,18 @@ class Transformation(object):
         if self.tinfo is None:
           aidbytes = FunCallExp(IdentExp('sizeof'), [IdentExp(aid)])
         else:
-          aidtinfo = filter(lambda x: x[2] == aid, self.tinfo.ivar_decls)
+          aidtinfo = [x for x in self.tinfo.ivar_decls if x[2] == aid]
           if len(aidtinfo) == 0:
-            raise Exception, ('orio.module.loop.submodule.opencl.transformation: %s: unknown input variable argument: "%s"' % aid)
+            raise Exception('orio.module.loop.submodule.opencl.transformation: %s: unknown input variable argument: "%s"' % aid)
           else:
             aidtinfo = aidtinfo[0]
           aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
         mallocs += [
           ExpStmt(BinOpExp(IdentExp(daid),
                            FunCallExp(IdentExp('clCreateBuffer'),
-                                      [self.cs['ctx'], 
-                                       readWrite, 
-                                       aidbytes, 
+                                      [self.cs['ctx'],
+                                       readWrite,
+                                       aidbytes,
                                        self.cs['null'],
                                        UnaryExp(self.cs['st'], UnaryExp.ADDRESSOF),
                                        ]),
@@ -486,7 +489,7 @@ class Transformation(object):
       d2hasyncs    = []
       d2hasyncsrem = []
       for var in self.model['lhss']:
-        res_scalar_ids = filter(lambda x: x == var, self.model['scalars'])
+        res_scalar_ids = [x for x in self.model['scalars'] if x == var]
         for rsid in res_scalar_ids:
           d2hcopys += [
                         ExpStmt(BinOpExp(self.cs['st'], FunCallExp(IdentExp('clEnqueueReadBuffer'),
@@ -502,7 +505,7 @@ class Transformation(object):
                               ]), BinOpExp.EQ_ASGN)),
                       self.checkStatus('clEnqueueReadBuffer for ' + self.cs['dev'] + rsid)]
 
-        res_array_ids  = filter(lambda x: x[0] == var, self.model['arrays'])
+        res_array_ids  = [x for x in self.model['arrays'] if x[0] == var]
         for raid,draid in res_array_ids:
           if self.streamCount > 1:
               # TODO: streams
@@ -527,9 +530,9 @@ class Transformation(object):
             if self.tinfo is None:
               raidbytes = self.cs['nbytes']
             else:
-              raidtinfo = filter(lambda x: x[2] == raid, self.tinfo.ivar_decls)
+              raidtinfo = [x for x in self.tinfo.ivar_decls if x[2] == raid]
               if len(raidtinfo) == 0:
-                raise Exception, ('orio.module.loop.submodule.opencl.transformation: %s: unknown input variable argument: "%s"' % aid)
+                raise Exception('orio.module.loop.submodule.opencl.transformation: %s: unknown input variable argument: "%s"' % aid)
               else:
                 raidtinfo = raidtinfo[0]
               raidbytes = BinOpExp(IdentExp(raidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(raidtinfo[1])]), BinOpExp.MUL)
@@ -604,7 +607,7 @@ class Transformation(object):
                         VarDecl('cl_program', [prog]),
                         ExpStmt(BinOpExp(
                                   prog,
-                                  FunCallExp(IdentExp('clCreateProgramWithSource'), 
+                                  FunCallExp(IdentExp('clCreateProgramWithSource'),
                                              [self.cs['ctx'],
                                               self.cs['int1'],
                                               CastExpr('const char **', UnaryExp(IdentExp(self.state['dev_kernel_name'] + '_source'), UnaryExp.ADDRESSOF)),
@@ -614,7 +617,7 @@ class Transformation(object):
                         self.checkStatus('clCreateProgramWithSource for ' + self.state['dev_kernel_name'] + '_source'),
                         ExpStmt(BinOpExp(
                                   self.cs['st'],
-                                  FunCallExp(IdentExp('clBuildProgram'), 
+                                  FunCallExp(IdentExp('clBuildProgram'),
                                              [prog,
                                               self.cs['int1'],
                                               UnaryExp(ArrayRefExp(self.cs['devs'], NumLitExp(self.device, NumLitExp.INT)), UnaryExp.ADDRESSOF),
@@ -627,7 +630,7 @@ class Transformation(object):
                         VarDecl('cl_kernel', [kern]),
                         ExpStmt(BinOpExp(
                                   kern,
-                                  FunCallExp(IdentExp('clCreateKernel'), 
+                                  FunCallExp(IdentExp('clCreateKernel'),
                                              [prog,
                                               StringLitExp(self.state['dev_kernel_name']),
                                               UnaryExp(self.cs['st'], UnaryExp.ADDRESSOF),
@@ -636,30 +639,30 @@ class Transformation(object):
                         self.checkStatus('clCreateKernel for ' + self.state['dev_kernel_name']),
                         ExpStmt(FunCallExp(IdentExp('TAU_PROFILER_STOP'),[IdentExp('compile_profiler')])),
                         ]
-      
+
       kernel_calls += [Comment('invoke device kernel'),
                        ExpStmt(FunCallExp(IdentExp('TAU_PROFILER_START'),[IdentExp('execute_profiler')])),]
       if self.model['lbound'] is not None:
         kernel_calls += [self.model['lbound']]
-      if self.streamCount == 1:          
-        argnum = 0 
+      if self.streamCount == 1:
+        argnum = 0
         for arg in [self.model['inputsize']] + self.model['ubounds'] + self.model['intscalars']:
             kernel_calls += [ExpStmt(BinOpExp(
                       self.cs['st'],
-                      FunCallExp(IdentExp('clSetKernelArg'), 
+                      FunCallExp(IdentExp('clSetKernelArg'),
                                  [kern,
                                   NumLitExp(argnum, NumLitExp.INT),
                                   FunCallExp(IdentExp('sizeof'), [IdentExp('int')]),
                                   UnaryExp(arg, UnaryExp.ADDRESSOF),
                                   ]),
                       BinOpExp.EQ_ASGN)),
-                    self.checkStatus('clSetKernelArg for int scalar ' + arg.name + ' at pos ' + str(argnum)) 
+                    self.checkStatus('clSetKernelArg for int scalar ' + arg.name + ' at pos ' + str(argnum))
                   ]
             argnum += 1
-        for arg in map(lambda x: IdentExp(x[1]), self.model['intarrays']):
+        for arg in [IdentExp(x[1]) for x in self.model['intarrays']]:
             kernel_calls += [ExpStmt(BinOpExp(
                       self.cs['st'],
-                      FunCallExp(IdentExp('clSetKernelArg'), 
+                      FunCallExp(IdentExp('clSetKernelArg'),
                                  [kern,
                                   NumLitExp(argnum, NumLitExp.INT),
                                   FunCallExp(IdentExp('sizeof'), [IdentExp('cl_mem')]),
@@ -669,10 +672,10 @@ class Transformation(object):
                     self.checkStatus('clSetKernelArg for int array ' + arg.name + ' at pos ' + str(argnum))
                   ]
             argnum += 1
-        for arg in map(lambda x: IdentExp(x), self.model['scalars']):
+        for arg in [IdentExp(x) for x in self.model['scalars']]:
             kernel_calls += [ExpStmt(BinOpExp(
                       self.cs['st'],
-                      FunCallExp(IdentExp('clSetKernelArg'), 
+                      FunCallExp(IdentExp('clSetKernelArg'),
                                  [kern,
                                   NumLitExp(argnum, NumLitExp.INT),
                                   FunCallExp(IdentExp('sizeof'), [IdentExp('double')]),
@@ -682,10 +685,10 @@ class Transformation(object):
                     self.checkStatus('clSetKernelArg for double scalar ' + arg.name + ' at pos ' + str(argnum) )
                   ]
             argnum += 1
-        for arg in map(lambda x: IdentExp(x[1]), self.model['idents']):
+        for arg in [IdentExp(x[1]) for x in self.model['idents']]:
             kernel_calls += [ExpStmt(BinOpExp(
                       self.cs['st'],
-                      FunCallExp(IdentExp('clSetKernelArg'), 
+                      FunCallExp(IdentExp('clSetKernelArg'),
                                  [kern,
                                   NumLitExp(argnum, NumLitExp.INT),
                                   FunCallExp(IdentExp('sizeof'), [IdentExp('cl_mem')]),
@@ -698,7 +701,7 @@ class Transformation(object):
 
         kernel_call = ExpStmt(BinOpExp(
                       self.cs['st'],
-                      FunCallExp(IdentExp('clEnqueueNDRangeKernel'), 
+                      FunCallExp(IdentExp('clEnqueueNDRangeKernel'),
                                  [self.cs['q'],
                                   IdentExp(self.state['dev_kernel_name'] + "_kernelobj"),
                                   self.cs['int1'],
@@ -753,7 +756,7 @@ class Transformation(object):
 #                  CompStmt(self.state['calc_offset'] + boffsets + [kernel_callrem] +
 #                               ([ExpStmt(UnaryExp(self.cs['blks4chunks'], UnaryExp.POST_INC))] if self.model['isReduction'] else [])))
 #         ]
-      
+
       # -------------------------------------------------
       # for reductions, iteratively keep block-summing, until nothing more to sum: aka multi-staged reduction
       stageBlocks       = self.cs['prefix'] + 'blks'
@@ -776,7 +779,7 @@ class Transformation(object):
                            VarDecl('cl_kernel', [kern]),
                            ExpStmt(BinOpExp(
                                   kern,
-                                  FunCallExp(IdentExp('clCreateKernel'), 
+                                  FunCallExp(IdentExp('clCreateKernel'),
                                              [prog,
                                               StringLitExp(self.state['dev_redkern_name']),
                                               UnaryExp(self.cs['st'], UnaryExp.ADDRESSOF),
@@ -793,7 +796,7 @@ class Transformation(object):
                            BinOpExp.EQ_ASGN)),
           ExpStmt(BinOpExp(
                       self.cs['st'],
-                      FunCallExp(IdentExp('clSetKernelArg'), 
+                      FunCallExp(IdentExp('clSetKernelArg'),
                                  [kern,
                                   NumLitExp(self.cs['int0'], NumLitExp.INT),
                                   FunCallExp(IdentExp('sizeof'), [IdentExp('int')]),
@@ -803,7 +806,7 @@ class Transformation(object):
           self.checkStatus('clSetKernelArg for int scalar ' + sizeIdent.name + ' at pos 0 during reduction'),
           ExpStmt(BinOpExp(
                       self.cs['st'],
-                      FunCallExp(IdentExp('clSetKernelArg'), 
+                      FunCallExp(IdentExp('clSetKernelArg'),
                                  [kern,
                                   NumLitExp(self.cs['int1'], NumLitExp.INT),
                                   FunCallExp(IdentExp('sizeof'), [IdentExp('cl_mem')]),
@@ -813,7 +816,7 @@ class Transformation(object):
           self.checkStatus('clSetKernelArg for double array ' + self.cs['dev']+self.model['lhss'][0] + ' at pos 1 during reduction'),
           ExpStmt(BinOpExp(
                       self.cs['st'],
-                      FunCallExp(IdentExp('clEnqueueNDRangeKernel'), 
+                      FunCallExp(IdentExp('clEnqueueNDRangeKernel'),
                                  [self.cs['q'],
                                   IdentExp(self.state['dev_redkern_name'] + "_kernelobj"),
                                   self.cs['int1'],
@@ -841,7 +844,7 @@ class Transformation(object):
         # get rid of compound statement that contains only a single statement
         while isinstance(self.stmt.stmt, CompStmt) and len(self.stmt.stmt.stmts) == 1:
             self.stmt.stmt = self.stmt.stmt.stmts[0]
-        
+
         # extract for-loop structure
         index_id, lbound_exp, ubound_exp, _, loop_body = orio.module.loop.ast_lib.forloop_lib.ForLoopLib().extractForLoopInfo(self.stmt)
 
@@ -867,7 +870,7 @@ class Transformation(object):
         # analysis
         # collect all identifiers from the loop's upper bound expression
         collectIdents = lambda n: [n.name] if isinstance(n, IdentExp) else []
-        
+
         # collect all LHS identifiers within the loop body
         def collectLhsIds(n):
           if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN:
@@ -905,7 +908,7 @@ class Transformation(object):
           return collectIntIds
         lhs_ids = loop_lib.collectNode(collectLhsIds, loop_body)
         rhs_ids = loop_lib.collectNode(collectRhsIds, loop_body)
-        lhs_ids = list(set(filter(lambda x: x not in indices, lhs_ids)))
+        lhs_ids = list(set([x for x in lhs_ids if x not in indices]))
 
         # collect all array and non-array idents in the loop body
         collectArrayIdents = lambda n: [n.exp.name] if (isinstance(n, ArrayRefExp) and isinstance(n.exp, IdentExp)) else []
@@ -936,22 +939,22 @@ class Transformation(object):
               testOrigOutput += [ExpStmt(FunCallExp(IdentExp('fprintf'), [printFpIdent, StringLitExp("\'"+var+"\',%f"), IdentExp(var)]))]
           original.stmt = CompStmt(bodyStmts)
           testOrigOutput += [ExpStmt(FunCallExp(IdentExp('fclose'), [printFpIdent]))]
-      
+
           return CompStmt(testOrigOutput)
 
 
         #--------------------------------------------------------------------------------------------------------------
         # begin rewrite the loop body
         # create decls for ubound_exp id's, assuming all ids are int's
-        ubound_idss = map(lambda x: loop_lib.collectNode(collectIdents, x), [ubound_exp]+([ubound_exp2] if nestedLoop else []))
+        ubound_idss = [loop_lib.collectNode(collectIdents, x) for x in [ubound_exp]+([ubound_exp2] if nestedLoop else [])]
         ubound_ids = reduce(lambda acc,item: acc+item, ubound_idss, [])
         kernelParams = [FieldDecl('const int', x) for x in ubound_ids]
 
-        arraySubs = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectArraySubscripts, loop_body)))
+        arraySubs = set([x for x in loop_lib.collectNode(collectArraySubscripts, loop_body) if x not in (indices+ubound_ids)])
         inferredInts = list(arraySubs) + indices + ubound_ids
-        int_ids_pass2 = set(filter(lambda x: x not in (indices+ubound_ids), loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body)))
+        int_ids_pass2 = set([x for x in loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body) if x not in (indices+ubound_ids)])
         #int_ids_pass2 = set(loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body))
-        ktempints += filter(lambda x: x in lhs_ids, list(arraySubs)) # kernel temporary integer vars
+        ktempints += [x for x in list(arraySubs) if x in lhs_ids] # kernel temporary integer vars
         kdeclints = int_ids_pass2.difference(ktempints) # kernel integer parameters
         intarrays = list(int_ids_pass2.intersection(array_ids))
         kdeclints = list(kdeclints.difference(intarrays))
@@ -969,12 +972,12 @@ class Transformation(object):
                 rrLhs = lambda n: IdentExp(tempIdent) if (isinstance(n, IdentExp) and n.name == var) else n
                 loop_body = loop_lib.rewriteNode(rrLhs, loop_body)
         else:
-          ktempdbls = filter(lambda x: x not in array_ids, list(lhs_ids))
-          ktempdbls = filter(lambda x: x not in ktempints, list(ktempdbls))
-                  
+          ktempdbls = [x for x in list(lhs_ids) if x not in array_ids]
+          ktempdbls = [x for x in list(ktempdbls) if x not in ktempints]
+
         # collect all identifiers from the loop body
         loop_body_ids = loop_lib.collectNode(collectIdents, loop_body)
-        lbi = set(filter(lambda x: x not in (indices+ubound_ids+list(arraySubs)+list(int_ids_pass2)), loop_body_ids))
+        lbi = set([x for x in loop_body_ids if x not in (indices+ubound_ids+list(arraySubs)+list(int_ids_pass2))])
 
         if self.model['isReduction']:
             lbi = lbi.difference(set(lhs_ids))
@@ -984,14 +987,14 @@ class Transformation(object):
         idents = list(lbi)
         if self.model['isReduction']:
           idents += [lhs_ids[0]]
-        self.model['idents']  = map(lambda x: (x, dev+x), idents)
+        self.model['idents']  = [(x, dev+x) for x in idents]
         self.model['scalars'] = scalar_ids
-        self.model['arrays']  = map(lambda x: (x, dev+x), array_ids)
+        self.model['arrays']  = [(x, dev+x) for x in array_ids]
         self.model['inputsize'] = IdentExp(ubound_ids[0])
-        self.model['ubounds'] = map(lambda x: IdentExp(x), ubound_ids[1:])
-        self.model['intscalars'] = map(lambda x: IdentExp(x), kdeclints)
-        self.model['intarrays']  = map(lambda x: (x, dev+x), intarrays)
-        
+        self.model['ubounds'] = [IdentExp(x) for x in ubound_ids[1:]]
+        self.model['intscalars'] = [IdentExp(x) for x in kdeclints]
+        self.model['intarrays']  = [(x, dev+x) for x in intarrays]
+
         # create parameter decls
         kernelParams += [FieldDecl('int', x) for x in self.model['intscalars']]
         kernelParams += [FieldDecl('__global int*', x) for x in intarrays]
@@ -1040,7 +1043,7 @@ class Transformation(object):
                 ]
                 sharedVarExp = ArrayRefExp(IdentExp(sharedVar), threadIdx)
                 varExp       = ArrayRefExp(IdentExp(var), index_id)
-                
+
                 # cache reads
                 if var in rhs_array_ids:
                     cacheReads += [
@@ -1073,9 +1076,9 @@ class Transformation(object):
             for temp in ktempdbls:
                 kernelStmts += [VarDeclInit('double', IdentExp(temp), self.cs['int0'])]
           else:
-            kernelStmts += [VarDecl('double', map(lambda x: IdentExp(x), ktempdbls))]
+            kernelStmts += [VarDecl('double', [IdentExp(x) for x in ktempdbls])]
         if len(ktempints) > 0:
-            kernelStmts += [VarDecl('int', map(lambda x: IdentExp(x), ktempints))]
+            kernelStmts += [VarDecl('int', [IdentExp(x) for x in ktempints])]
 
         #--------------------------------------------------
         if isinstance(loop_body3, ForStmt):
@@ -1083,7 +1086,7 @@ class Transformation(object):
             loop_body3 = CompStmt([Pragma('unroll ' + str(self.unrollInner)), loop_body3])
           #else:
           #  loop_body3 = CompStmt([Pragma('unroll'), loop_body3])
-        
+
         #--------------------------------------------------
         # the rewritten loop body statement
         #kernelStmts += [
@@ -1219,7 +1222,7 @@ class Transformation(object):
                   reduceStmts += unrollWarpTemplate(32, offset)
                   offsets += [offset]
                   offset += 128
-                  
+
             if tcount >= 64:
               reduceStmts += unrollWarpTemplate(32, 0)
               if tcount > 64:
@@ -1230,7 +1233,7 @@ class Transformation(object):
                   offsets += [offset]
                   if tcount & 32:
                     offset += 64
-                  
+
             if tcount >= 32:
               if tcount == 32:
                 reduceStmts += unrollWarpTemplate(16, 0)
@@ -1254,7 +1257,7 @@ class Transformation(object):
             kernelStmts += reduceStmts
         # end reduction statements
         #--------------------------------------------------
-        
+
         #--------------------------------------------------
         # begin warp reduce
         global warpkern32
@@ -1264,7 +1267,7 @@ class Transformation(object):
         warpKern32Stmts = []
         warpKern64Stmts = []
         if self.model['isReduction']:
-          warpkernParams = [FieldDecl('int', tidIdent), FieldDecl('__local volatile double*', reductsIdent)] 
+          warpkernParams = [FieldDecl('int', tidIdent), FieldDecl('__local volatile double*', reductsIdent)]
 
           #warpSize = self.devProps['warpSize'] # minimum for compute capability 1.0 and up is 32
           #if tcount < warpSize:
@@ -1300,8 +1303,8 @@ class Transformation(object):
                                BinOpExp.ASGN_ADD)),
             ] + warpKern32Stmts
             warpkern64 = FunDecl(dev_warpkern64_name, 'void', [''], warpkernParams, CompStmt(warpKern64Stmts))
-            
-            
+
+
           #g.Globals().cunit_declarations += [orio.module.loop.codegen.CodeGen('opencl').generator.generate(warpkern32, '', '  ') + '\n']
           #g.Globals().cunit_declarations += [orio.module.loop.codegen.CodeGen('opencl').generator.generate(warpkern64, '', '  ') + '\n']
         # end warp reduce
@@ -1311,7 +1314,7 @@ class Transformation(object):
         # begin multi-stage reduction kernel
         if self.model['isReduction']:
           redkernParams = [FieldDecl('const int', size), FieldDecl('__global double*', reducts)]
-          
+
           tcount = self.threadCount
           redKernStmts += [VarDecl('__local double', [blkdata+'['+str(tcount)+']'])]
           #redKernStmts += [VarDecl('__shared__ double', [blkdata+'['+str(self.devProps['maxThreadsPerBlock'])+']'])]
@@ -1342,16 +1345,16 @@ class Transformation(object):
             kernelType += ' __attribute__((%s))' % (",".join(attributes))
         dev_kernel = FunDecl(dev_kernel_name, 'void', [kernelType], kernelParams, CompStmt(kernelStmts))
         self.state['dev_kernel_name'] = dev_kernel_name
-        
+
         dev_redkern = FunDecl(dev_redkern_name, 'void', [kernelType], redkernParams, CompStmt(redKernStmts))
         self.state['dev_redkern_name'] = dev_redkern_name
-        
+
         # after getting interprocedural AST, make this a sub to that AST
         # OpenCL code needs to be a string constant in the overall program
-        
+
         # Enable double-precision math
-        dev_kernel_string = '#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n' 
-        
+        dev_kernel_string = '#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n'
+
         # write reduction kernels
         if self.model['isReduction']:
           dev_kernel_string += orio.module.loop.codegen.CodeGen('opencl').generator.generate(warpkern32, '', '  ') + '\n'
@@ -1360,28 +1363,28 @@ class Transformation(object):
 
         # write generated kernel
         dev_kernel_string += orio.module.loop.codegen.CodeGen('opencl').generator.generate(dev_kernel, '', '  ')
-                  
+
         dev_kernel_escaped_string = json.dumps(dev_kernel_string).strip('"')
         dev_kernel_escaped_string = dev_kernel_escaped_string.replace('\\n', '\\\\n"\n"')
         dev_kernel_decl = VarDeclInit('const char*', IdentExp(dev_kernel_source_name), StringLitExp(dev_kernel_escaped_string))
         g.Globals().cunit_declarations += INCLUDES + orio.module.loop.codegen.CodeGen('opencl').generator.generate(dev_kernel_decl, '', '  ') + "\n"
-        
-        
-          
+
+
+
         # end generate the kernel
         #--------------------------------------------------------------------------------------------------------------
         #--------------------------------------------------------------------------------------------------------------
         #--------------------------------------------------------------------------------------------------------------
 
-        
+
         #--------------------------------------------------------------------------------------------------------------
         # begin marshal resources
         # initialize OpenCL
         self.initializeOpenCL()
-        
+
         # declare device variables    
         self.createDVarDecls()
-        
+
         # calculate device dimensions
         self.calcDims()
 
@@ -1391,13 +1394,13 @@ class Transformation(object):
 
         # malloc and memcpy
         self.createMallocs()
-        
+
         # kernel calls
         self.createKernelCalls()
         # end marshal resources
         #--------------------------------------------------------------------------------------------------------------
-        
-        
+
+
         #--------------------------------------------------------------------------------------------------------------
         # cuda timing calls
         #eventStartIdent = IdentExp('start')

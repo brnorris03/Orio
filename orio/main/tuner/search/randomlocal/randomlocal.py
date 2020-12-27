@@ -108,13 +108,12 @@ class Randomlocal(orio.main.tuner.search.search.Search):
             # sys.exit()
             try:
                 perf_costs = self.getPerfCosts(coords)
-            except Exception, e:
+            except Exception as e:
                 perf_costs[str(coords[0])] = [self.MAXFLOAT]
                 info('FAILED: %s %s' % (e.__class__.__name__, e))
                 fruns += 1
             # compare to the best result
-            pcost_items = perf_costs.items()
-            pcost_items.sort(lambda x, y: cmp(eval(x[0]), eval(y[0])))
+            pcost_items = sorted(list(perf_costs.items()))
             for i, (coord_str, pcost) in enumerate(pcost_items):
                 if type(pcost) == tuple:
                     (perf_cost, _) = pcost  # ignore transfer costs -- GPUs only
@@ -186,7 +185,7 @@ class Randomlocal(orio.main.tuner.search.search.Search):
         '''To read all algorithm-specific arguments'''
 
         # check for algorithm-specific arguments
-        for vname, rhs in self.search_opts.iteritems():
+        for vname, rhs in self.search_opts.items():
 
             # local search distance
             if vname == self.__LOCAL_DIST:

@@ -23,7 +23,7 @@
 #
 
 import sys
-import pprinter
+from . import pprinter
 
 #-----------------------------------------------
 # AST - Abstract Syntax Tree
