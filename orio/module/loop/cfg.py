@@ -3,7 +3,7 @@ Created on April 26, 2015
 
 @author: norris
 '''
-import ast, sys, os, traceback
+from orio.module.loop import ast
 from orio.main.util.globals import *
 from orio.tool.graphlib import graph
 from orio.module.loop import astvisitors
@@ -12,7 +12,7 @@ class CFGVertex(graph.Vertex):
     '''A CFG vertex is a basic block.'''
     def __init__(self, name, node=None):
         try: graph.Vertex.__init__(self, name)
-        except Exception,e: err("CFGVertex.__init__:" + str(e))
+        except Exception as e: err("CFGVertex.__init__:" + str(e))
         self.stmts = [node]    # basic block, starting with leader node
         pass
     
@@ -67,7 +67,7 @@ class CFGGraph(graph.Graph):
         
     def genDOT(self, fname=''):
         buf = 'digraph CFG {\n'
-        for n,vertex in self.v.items():
+        for n,vertex in list(self.v.items()):
             label = '[label="%s%s...",shape=box]' % (n,str(vertex.stmts[0]).split('\n')[0])
             buf += '\t%s %s;\n' % (n, label)
             for edge in vertex.out_e:

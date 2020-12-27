@@ -39,7 +39,7 @@ The L{Tokens} module contains a variety of predefined token classes (instances o
 '''
 
 import re, copy, types, warnings
-from Parser import NotMatched, ParseError
+from .Parser import NotMatched, ParseError
 
 __all__ = ('Placeholder', 'AbstractToken', 'TokenWrapper', 'RE', 'Raw', 'Token', 'RawToken', 'CompositeToken', 'TokenSequence', 'TakeToken', 'TokenSeries', 'EmptyToken', 'Default', 'Skip', 'Omit', 'Only', 'Defer', 'Lookahead', 'Negative', 'EOF', 'Whitespace', 'Const', 'Inf')
 
@@ -52,13 +52,13 @@ Inf = -1
 def count_args(callable):
     t = type(callable)
     if t is types.FunctionType:
-        return callable.func_code.co_argcount
-    elif t is types.ClassType:
-        return callable.__init__.im_func.func_code.co_argcount - 1
+        return callable.__code__.co_argcount
+    elif t is type:
+        return callable.__init__.__func__.__code__.co_argcount - 1
     elif t is types.InstanceType:
-        return callable.__call__.im_func.func_code.co_argcount - 1
+        return callable.__call__.__func__.__code__.co_argcount - 1
     elif t is types.MethodType:
-        return callable.im_func.func_code.co_argcount - 1
+        return callable.__func__.__code__.co_argcount - 1
     #assume it's some builtin that only takes the data itself as a parameter
     return 1
 

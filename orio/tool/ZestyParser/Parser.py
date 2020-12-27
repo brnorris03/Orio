@@ -71,7 +71,7 @@ def DebugNote(note):
     '''
     def func(parser, val, cursor):
         coord = parser.coord()
-        print '%s(%i, %i): %s' % (note, coord[0], coord[1], val)
+        print('%s(%i, %i): %s' % (note, coord[0], coord[1], val))
         return val
     return func
 
@@ -100,7 +100,7 @@ class ZestyParser:
     def __init__(self, data=None):
         '''Initializes the parser, optionally calling L{useData}'''
         if data: self.useData(data)
-        from Tokens import RE
+        from .Tokens import RE
         self.whitespace = RE('\s+')
 
     def useData(self, data):

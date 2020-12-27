@@ -2,10 +2,10 @@
 # Contain the transformation procedure
 #
 
-import sets, sys
 import orio.module.loop.ast, orio.module.loop.ast_lib.common_lib, orio.module.loop.ast_lib.constant_folder
 import orio.module.loop.ast_lib.forloop_lib
 from orio.main.util.globals import *
+from functools import reduce
 
 #-----------------------------------------
 
@@ -42,7 +42,7 @@ class Transformation:
 
         # check if one of the array buffer dimension sizes is one (i.e. no tiling)
         aref, arr_name, ivar_names, dim_sizes, is_output = aref_info
-        one_one = reduce(lambda x,y: x or y, map(lambda x: x==1, dim_sizes), False)
+        one_one = reduce(lambda x,y: x or y, [x==1 for x in dim_sizes], False)
         if one_one:
             decl = orio.module.loop.ast.VarDecl(self.dtype, [arr_name + self.suffix])
             if isinstance(self.stmt, orio.module.loop.ast.CompStmt):
@@ -346,18 +346,17 @@ class Transformation:
             outer_lids = outer_lids[:] + [index_id.name]
 
             # if all the iteration variable names are subsumed by the outer loop index names
-            if sets.Set(ivar_names) <= sets.Set(outer_lids):
+            if set(ivar_names) <= set(outer_lids):
 
                 # check if the loop body contains the array reference to be optimized
                 if not self.__containARef(stmt.stmt, False):
                     return (stmt, True, None, None)
 
                 # move to outside the loop
-                rem_inames = filter(lambda i: i != index_id.name, ivar_names)
-                ind_inames = filter(lambda i: (self.clib.containIdentName(lbound_exp, i) or
+                rem_inames = [i for i in ivar_names if i != index_id.name]
+                ind_inames = [i for i in outer_lids if (self.clib.containIdentName(lbound_exp, i) or
                                                self.clib.containIdentName(ubound_exp, i) or
-                                               self.clib.containIdentName(stride_exp, i)),
-                                    outer_lids)
+                                               self.clib.containIdentName(stride_exp, i))]
                 loop_headers = [(index_id, lbound_exp, ubound_exp, stride_exp)]
                 ipos = ivar_names.index(index_id.name)
                 buf_dsizes = [dim_sizes[ipos]]
@@ -396,11 +395,10 @@ class Transformation:
                 
                 # move to outside the loop
                 if index_id.name in rem_inames:
-                    nrem_inames = filter(lambda i: i != index_id.name, rem_inames)
-                    nind_inames = filter(lambda i: (self.clib.containIdentName(lbound_exp, i) or
+                    nrem_inames = [i for i in rem_inames if i != index_id.name]
+                    nind_inames = [i for i in outer_lids if (self.clib.containIdentName(lbound_exp, i) or
                                                     self.clib.containIdentName(ubound_exp, i) or
-                                                    self.clib.containIdentName(stride_exp, i)),
-                                         outer_lids)
+                                                    self.clib.containIdentName(stride_exp, i))]
                     nind_inames += ind_inames
                     nloop_headers = loop_headers[:]
                     nloop_headers.insert(0, (index_id, lbound_exp, ubound_exp, stride_exp))
@@ -457,7 +455,7 @@ class Transformation:
         all_lids = self.flib.getLoopIndexNames(self.stmt)
         ivar_names = []
         for e in dim_exps:
-            c_inames = filter(lambda i: self.clib.containIdentName(e, i), all_lids)
+            c_inames = [i for i in all_lids if self.clib.containIdentName(e, i)]
             if len(c_inames) != 1:
                 err(('orio.module.loop.submodule.arrcopy.transformation: each dimension expression of array reference %s must contain ' +
                         'exactly one iteration variable') % self.aref)

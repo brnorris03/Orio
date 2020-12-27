@@ -3,6 +3,7 @@
 #
 import sys, math, time
 from orio.main.util.globals import *
+from functools import reduce
 
 
 class Search:
@@ -22,20 +23,20 @@ class Search:
         debug('[Search] performance parameters: %s\n' % str(params), self)
 
         # the class variables that are essential to know when developing a new search engine subclass
-        if 'search_time_limit' in params.keys(): self.time_limit = params['search_time_limit']
+        if 'search_time_limit' in list(params.keys()): self.time_limit = params['search_time_limit']
         else: self.time_limit = -1
-        if 'search_total_runs' in params.keys(): self.total_runs = params['search_total_runs']
+        if 'search_total_runs' in list(params.keys()): self.total_runs = params['search_total_runs']
         else: self.total_runs = -1
-        if 'search_resume' in params.keys(): self.resume = params['search_resume']
+        if 'search_resume' in list(params.keys()): self.resume = params['search_resume']
         else: self.resume = False
-        if 'search_opts' in params.keys(): self.search_opts = params['search_opts']
+        if 'search_opts' in list(params.keys()): self.search_opts = params['search_opts']
         else: self.search_opts = {}
 
-        if 'axis_names' in params.keys(): 
+        if 'axis_names' in list(params.keys()): 
             self.total_dims = len(params['axis_names'])
         else: 
             err('the search space was not defined correctly, missing axis_names parameter')
-        if 'axis_val_ranges' in params.keys(): 
+        if 'axis_val_ranges' in list(params.keys()): 
             self.dim_uplimits = [len(r) for r in params['axis_val_ranges']]
         else: 
             err('the search space was not defined correctly, missing axis_val_ranges parameter')
@@ -51,25 +52,25 @@ class Search:
 
         #print str(params['ptdriver'].tinfo)
         
-        if 'use_parallel_search' in params.keys(): self.use_parallel_search = params['use_parallel_search']
+        if 'use_parallel_search' in list(params.keys()): self.use_parallel_search = params['use_parallel_search']
         else: self.use_parallel_search = False
-        if 'ptdriver' in params.keys(): self.num_procs = params['ptdriver'].tinfo.num_procs
+        if 'ptdriver' in list(params.keys()): self.num_procs = params['ptdriver'].tinfo.num_procs
         else: self.num_procs = 1
         
         # the class variables that may be ignored when developing a new search engine subclass
-        if 'cfrags' in params.keys(): self.cfrags = params['cfrags']
+        if 'cfrags' in list(params.keys()): self.cfrags = params['cfrags']
         else: self.cfrags = None
-        if 'axis_names' in params.keys(): self.axis_names = params['axis_names']
+        if 'axis_names' in list(params.keys()): self.axis_names = params['axis_names']
         else: self.axis_names = None
-        if 'axis_val_ranges' in params.keys(): self.axis_val_ranges = params['axis_val_ranges']
+        if 'axis_val_ranges' in list(params.keys()): self.axis_val_ranges = params['axis_val_ranges']
         else: self.axis_val_ranges = None
-        if 'pparam_constraint' in params.keys(): self.constraint = params['pparam_constraint']
+        if 'pparam_constraint' in list(params.keys()): self.constraint = params['pparam_constraint']
         else: self.constraint = 'None'
-        if 'ptcodegen' in params.keys(): self.ptcodegen = params['ptcodegen']
+        if 'ptcodegen' in list(params.keys()): self.ptcodegen = params['ptcodegen']
         else: self.ptcodegen = None
-        if 'ptdriver' in params.keys(): self.ptdriver = params['ptdriver']
+        if 'ptdriver' in list(params.keys()): self.ptdriver = params['ptdriver']
         else: self.ptdriver = None
-        if 'odriver' in params.keys(): self.odriver = params['odriver']
+        if 'odriver' in list(params.keys()): self.odriver = params['odriver']
         else: self.odriver = None
         self.input_params = params.get('input_params')
         
@@ -175,7 +176,7 @@ class Search:
         '''
 
         perf_costs = self.getPerfCosts([coord])
-        [(perf_cost,_),] = perf_costs.values()
+        [(perf_cost,_),] = list(perf_costs.values())
         return perf_cost
 
     def getTransformTime(self, key):
@@ -229,7 +230,7 @@ class Search:
             # test if the performance parameters are valid
             try:
                 is_valid = eval(self.constraint, perf_params, dict(self.input_params))
-            except Exception, e:
+            except Exception as e:
                 err('failed to evaluate the constraint expression: "%s"\n%s %s' % (self.constraint,e.__class__.__name__, e))
 
             # if invalid performance parameters
@@ -314,9 +315,9 @@ class Search:
             new_perf_costs = self.ptdriver.run(test_code, perf_params=perf_params,coord=coord_key)
         #new_perf_costs = self.getPerfCostConfig(coord_key,perf_params)
         # remember the performance cost of previously evaluated coordinate
-        self.perf_cost_records.update(new_perf_costs.items())
+        self.perf_cost_records.update(list(new_perf_costs.items()))
         # merge the newly obtained performance costs
-        perf_costs.update(new_perf_costs.items())
+        perf_costs.update(list(new_perf_costs.items()))
         # also take the compile time
         
 
@@ -352,7 +353,7 @@ class Search:
         # test if the performance parameters are valid
         try:
             is_valid = eval(self.constraint, param_config)
-        except Exception, e:
+        except Exception as e:
             err('failed to evaluate the constraint expression: "%s"\n%s %s' % (self.constraint,e.__class__.__name__, e))
 
             
@@ -404,7 +405,7 @@ class Search:
     
     def factorial(self, n):
         '''Return the factorial value of the given number'''
-        return reduce(lambda x,y: x*y, range(1, n+1), 1)
+        return reduce(lambda x,y: x*y, list(range(1, n+1)), 1)
 
     def roundInt(self, i):
         '''Proper rounding for integer'''
@@ -432,15 +433,15 @@ class Search:
 
     def subCoords(self, coord1, coord2):
         '''coord1 - coord2'''
-        return map(lambda x,y: x-y, coord1, coord2)
+        return list(map(lambda x,y: x-y, coord1, coord2))
     
     def addCoords(self, coord1, coord2):
         '''coord1 + coord2'''
-        return map(lambda x,y: x+y, coord1, coord2)
+        return list(map(lambda x,y: x+y, coord1, coord2))
 
     def mulCoords(self, coef, coord):
         '''coef * coord'''
-        return map(lambda x: self.roundInt(1.0*coef*x), coord)
+        return [self.roundInt(1.0*coef*x) for x in coord]
     
     #----------------------------------------------------------
 
@@ -484,14 +485,14 @@ class Search:
         '''Return all the neighboring coordinates (within the specified distance)'''
         
         # get all valid distances
-        distances = [0] + range(1,distance+1,1) + range(-1,-distance-1,-1)
+        distances = [0] + list(range(1,distance+1,1)) + list(range(-1,-distance-1,-1))
 
         # get all neighboring coordinates within the specified distance
         neigh_coords = [[]]
         for i in range(0, self.total_dims):
             iuplimit = self.dim_uplimits[i]
             cur_points = [coord[i]+d for d in distances]
-            cur_points = filter(lambda x: 0 <= x < iuplimit, cur_points)
+            cur_points = [x for x in cur_points if 0 <= x < iuplimit]
             n_neigh_coords = []
             for ncoord in neigh_coords:
                 n_neigh_coords.extend([ncoord[:]+[p] for p in cur_points])

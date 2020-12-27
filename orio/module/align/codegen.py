@@ -71,12 +71,12 @@ class CodeGen_C(CodeGen):
         # generate the disjoint pragma
         s = '\n'
         s += indent + '#pragma disjoint ('
-        s += ','.join(map(lambda v: '*' + self.__printAddress(v), self.vars))
+        s += ','.join(['*' + self.__printAddress(v) for v in self.vars])
         s += ') \n'
 
         # generate the alignment test
         s += indent + 'if ((('
-        s += '|'.join(map(lambda v: '(int)(' + self.__printAddress(v) + ')', self.vars))
+        s += '|'.join(['(int)(' + self.__printAddress(v) + ')' for v in self.vars])
         s += ') & 0xF) == 0) {\n'
 
         # generate a sequence of alignment intrinsics

@@ -36,7 +36,7 @@ def start(argv, lang):
         sys.exit(1)
 
     # import other required Python packages
-    import pragma_preprocessor, ann_parser, cmd_line_opts, opt_driver
+    from . import pragma_preprocessor, ann_parser, cmd_line_opts, opt_driver
     
     # process the command line
     cmdline = cmd_line_opts.CmdParser().parse(argv)
@@ -55,7 +55,7 @@ def start(argv, lang):
     if not g.disable_orio: always_print('\n====== START ORIO: %s ======' % timestamp(), end='')
     final_output_file = None
     annotated_files = 0 # for multi-file tuning
-    for srcfile, out_filename in g.src_filenames.items():
+    for srcfile, out_filename in list(g.src_filenames.items()):
         annotations_found = False
 
         debug('Processing %s,%s' % (srcfile,out_filename))
@@ -82,7 +82,7 @@ def start(argv, lang):
                     f = open(g.spec_filename, 'r')
                     tspec_prog = f.read()
                     f.close()
-                except Exception, e:
+                except Exception as e:
                     err('orio.main.main: Exception %s. Cannot open file for reading: %s' % \
                         (e,g.spec_filename))
                 else:

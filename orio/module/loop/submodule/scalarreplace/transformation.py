@@ -241,14 +241,14 @@ class Transformation:
             # filter out references that contain the current loop's index name, to form scalars
             scalars = []
             irefs_map = {}
-            for rkey, (freq, isoutput, exp) in refs_map.iteritems():
+            for rkey, (freq, isoutput, exp) in refs_map.items():
                 if self.clib.containIdentName(exp, iname):
                     if freq > 1:
                         scalars.append((isoutput, exp))
                 else:
                     irefs_map[rkey] = (freq, isoutput, exp)
             refs_map.clear()
-            refs_map.update(irefs_map.items())
+            refs_map.update(list(irefs_map.items()))
 
             # create prologue and epilogue (to declare, initialize, and update the scalars), and
             # the scalars mapping
@@ -292,7 +292,7 @@ class Transformation:
 
         # find all the reorio.main.ng scalars
         scalars = []
-        for rkey, (freq, isoutput, exp) in refs_map.iteritems():
+        for rkey, (freq, isoutput, exp) in refs_map.items():
             if freq > 1:
                 scalars.append((isoutput, exp))
 

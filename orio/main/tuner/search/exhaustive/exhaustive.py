@@ -90,8 +90,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
             perf_costs = self.getPerfCosts(coords)
                         
             # compare to the best result
-            pcost_items = perf_costs.items()
-            pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
+            pcost_items = sorted(list(perf_costs.items()))
             for coord_str, (perf_cost,transfer_costs) in pcost_items:
                 coord_val = eval(coord_str)
                 #info('cost: %s' % (perf_cost))
@@ -124,10 +123,10 @@ class Exhaustive(orio.main.tuner.search.search.Search):
                         if not cmd.strip(): cmd = '.'
                         with open(cmd + '/meta.json', 'w') as outfile:
                             json.dump(Globals().metadata, outfile)
-                    except Exception, e:
+                    except Exception as e:
                         err('orio.search.Exhaustive: failed to execute meta export: "%s"\n --> %s: %s' % (Globals().meta,e.__class__.__name__, e),doexit = False)
                 
-                if mean_perf_cost < best_perf_cost and perf_cost > 0.0:
+                if mean_perf_cost < best_perf_cost and min(perf_cost) > 0.0:
                     best_coord = coord_val
                     best_perf_cost = mean_perf_cost
                     corr_transfer  = mean_transfer
@@ -176,7 +175,7 @@ class Exhaustive(orio.main.tuner.search.search.Search):
     def __readAlgoArgs(self):
         '''To read all algorithm-specific arguments'''
         
-        for vname, rhs in self.search_opts.iteritems():
+        for vname, rhs in self.search_opts.items():
             if vname == 'start_coord':
                 if not isinstance(rhs,list):
                     err('%s argument "%s" must be a list of coordinate indices' % (self.__class__.__name__,'start_coord'))

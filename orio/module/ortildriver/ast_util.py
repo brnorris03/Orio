@@ -3,8 +3,9 @@
 #
 
 import sys
-import ast
+from . import ast
 from orio.main.util.globals import *
+from functools import reduce
 
 #-------------------------------------------------------------------
 

@@ -5,6 +5,7 @@
 import sys, traceback, os
 from orio.main.util.globals import *
 import orio.main.code_frag, orio.main.dyn_loader, orio.main.tuner.tuner
+from functools import reduce
 
 #----------------------------------------------------------------
 
@@ -161,7 +162,7 @@ class OptDriver:
                 debug('about to load module.class %s.%s corresponding to annotation %s' % (mod_name,class_name,class_name), self)
                 try:
                     mod_class = self.dloader.loadClass(mod_name, class_name)
-                except Exception, e:
+                except Exception as e:
                     err('orio.main.opt_driver: %s: unable to load class %s.%s' % (cfrag.leader_ann.mod_name_line_no,mod_name,class_name))
                     
                 debug("about to instantiate transformation class: %s.%s" %(mod_name,class_name), self)
@@ -187,7 +188,7 @@ class OptDriver:
                                                   cfrag.leader_ann.indent_size,
                                                   language=self.lang,
                                                   tinfo=self.ptuner.tinfo)
-                except Exception, e:
+                except Exception as e:
                     err('orio.main.opt_driver: %s: encountered an error when transforming annotation "%s"\n --> %s: %s' %
                            (cfrag.leader_ann.mod_name_line_no, cfrag.leader_ann.mod_name,e.__class__.__name__, e))
                     
@@ -195,7 +196,7 @@ class OptDriver:
                 
                 try:
                     optimized_code = transformation.transform()
-                except Exception, e:
+                except Exception as e:
                     err('orio.main.opt_driver: encountered an error during transformation %s:\n %s' % (transformation,e)) 
 
                 

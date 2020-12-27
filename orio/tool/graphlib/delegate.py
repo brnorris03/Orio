@@ -42,12 +42,10 @@ import os
 # By default, Python deprecation warnings are disabled, define the CCA_TOOLS_DEBUG env. variable to enable
 try:
     import warnings
-    if not ('BOCCA_DEBUG' in os.environ.keys() and os.environ['BOCCA_DEBUG'] == '1'): 
+    if not ('BOCCA_DEBUG' in list(os.environ.keys()) and os.environ['BOCCA_DEBUG'] == '1'): 
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 except:
     pass
-
-from sets import Set
 
 def should_call(obj, pos, supr):
     '''Returns bool.  Should 'self' delegate to 'super' at 'pos'?
@@ -62,7 +60,7 @@ def should_call(obj, pos, supr):
 class _no_delegation(object):
     '''All class's attributes are null callable's.'''
     
-    _to_base = Set(['__bases__', '__name__', '__mro__', '__module__'])
+    _to_base = set(['__bases__', '__name__', '__mro__', '__module__'])
 
     def __getattribute__(self, attr):
         if attr in _no_delegation._to_base:
@@ -74,8 +72,6 @@ class _no_delegation(object):
 no_delegation = _no_delegation()
 '''Whatever'''
 
-from sets import Set
-
 class _delegate_meta(type):
 
     '''Sets up delegation private variables.
@@ -86,7 +82,7 @@ class _delegate_meta(type):
 
     def __init__(cls, name, bases, dict):
         type.__init__(cls, name, bases, dict)
-        visited_supr = Set()
+        visited_supr = set()
         for sub in cls.__mro__[:-1]:
             subnm = sub.__name__.split('.')[-1]
             for supr in sub.__bases__:
@@ -99,9 +95,8 @@ class _delegate_meta(type):
                 setattr(cls, '_%s__%s' % (subnm, suprnm), deleg)
 
 
-class Delegate(object):
+class Delegate(object, metaclass=_delegate_meta):
     '''Inherit from Delegate to get delegation variables on class construction.'''
-    __metaclass__ = _delegate_meta
 
 
 if __name__ == '__main__':
@@ -109,7 +104,7 @@ if __name__ == '__main__':
         def __init__(self, basearg):
             self.__Delegate.__init__(self)
             self.basearg = basearg
-            print 'base'
+            print('base')
 
         def __str__(self): return 'BASE'
 
@@ -118,40 +113,40 @@ if __name__ == '__main__':
         def __init__(self, basearg, leftarg):
             self.__Base.__init__(self, basearg)
             self.leftarg = leftarg
-            print 'left'
+            print('left')
 
         def __str__(self):
-            return ' '.join(filter(None, (self.__Base.__str__(self), 'LEFT')))
+            return ' '.join([_f for _f in (self.__Base.__str__(self), 'LEFT') if _f])
 
 
     class Right(Base):
         def __init__(self, basearg):
             self.__Base.__init__(self, basearg)
-            print 'right'
+            print('right')
 
         def __str__(self):
-            return ' '.join(filter(None, (self.__Base.__str__(self), 'RIGHT')))
+            return ' '.join([_f for _f in (self.__Base.__str__(self), 'RIGHT') if _f])
 
 
     class Der(Left, Right):
         def __init__(self, basearg, leftarg):
             self.__Left.__init__(self, basearg, leftarg)
             self.__Right.__init__(self, basearg)
-            print 'der'
+            print('der')
 
         def __str__(self):
-            return ' '.join(filter(None, (self.__Left.__str__(self),
-                self.__Right.__str__(self), 'DER')))
+            return ' '.join([_f for _f in (self.__Left.__str__(self),
+                self.__Right.__str__(self), 'DER') if _f])
 
 
-    print 'should print base, left, right, der'
+    print('should print base, left, right, der')
     der = Der('basearg', 'leftarg')
 
-    print '\nshould print base, left'
+    print('\nshould print base, left')
     left = Left('basearg', 'leftarg')
     
-    print '\nshould print base right'
+    print('\nshould print base right')
     right = Right('basearg')
 
-    print '\nshould print BASE LEFT RIGHT DER'
-    print der
+    print('\nshould print BASE LEFT RIGHT DER')
+    print(der)

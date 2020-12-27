@@ -12,7 +12,7 @@
 
 # Generate c_ast.py
 #
-from _ast_gen import ASTCodeGenerator
+from ._ast_gen import ASTCodeGenerator
 ast_gen = ASTCodeGenerator('_c_ast.cfg')
 ast_gen.generate(open('c_ast.py', 'w'))
 
@@ -29,6 +29,6 @@ c_parser.CParser(
 
 # Load to compile into .pyc
 #
-import lextab
-import yacctab
-import c_ast
+from . import lextab
+from . import yacctab
+from . import c_ast

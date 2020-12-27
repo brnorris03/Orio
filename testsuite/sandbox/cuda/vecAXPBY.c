@@ -8,7 +8,7 @@ void VecAXPBY(int n, double a, double *x, double b, double *y) {
           param SC[] = range(1,3);
           param CB[] = [True, False];
           param PL[] = [16,48];
-          param CFLAGS[] = map(join, product(['', '-use_fast_math'], ['', '-Xptxas -dlcm=cg']));
+          param CFLAGS[] = ['', '-use_fast_math', '-Xptxas -dlcm=cg'];
         }
         def build {
           arg build_command = 'nvcc -arch=sm_20 @CFLAGS';

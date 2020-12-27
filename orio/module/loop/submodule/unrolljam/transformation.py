@@ -4,9 +4,11 @@
 
 import sys
 from orio.main.util.globals import *
-import orio.module.loop.ast, orio.module.loop.ast_lib.constant_folder, orio.module.loop.ast_lib.forloop_lib
+import orio.module.loop.ast
+import orio.module.loop.ast_lib.constant_folder
+import orio.module.loop.ast_lib.forloop_lib
 import orio.main.util.globals as g
-import orio.module.loop.ast as ast
+from functools import reduce
 
 #-----------------------------------------
 
@@ -130,7 +132,7 @@ class Transformation:
         binOpExprs = self.__analyzeForNewVars(tnode) #has the form set([ lfsName, (rhsName1, rhsName2, ...)]
         
         # there can only be one operation, and this operation has to be either addition or multiplication (they are both commutative and associative)
-        if len(self.newVarsOp) != 1 or (iter(self.newVarsOp).next() != orio.module.loop.ast.BinOpExp.ADD and iter(self.newVarsOp).next() != orio.module.loop.ast.BinOpExp.MUL):
+        if len(self.newVarsOp) != 1 or (next(iter(self.newVarsOp)) != orio.module.loop.ast.BinOpExp.ADD and next(iter(self.newVarsOp)) != orio.module.loop.ast.BinOpExp.MUL):
             #self.introNewVars = False
             return
         
@@ -270,7 +272,7 @@ class Transformation:
             elif isinstance(tnode.lhs, orio.module.loop.ast.IdentExp):
                 var_names |= set([tnode.lhs.name])
             elif isinstance(tnode.lhs, orio.module.loop.ast.FunCallExp):
-                var_names = reduce(set.union, map(self.__extractFromBinOp, tnode.lhs.args), var_names)
+                var_names = reduce(set.union, list(map(self.__extractFromBinOp, tnode.lhs.args)), var_names)
             elif isinstance(tnode.lhs, orio.module.loop.ast.NumLitExp):
                 pass
             else:
@@ -286,7 +288,7 @@ class Transformation:
             elif isinstance(tnode.rhs, orio.module.loop.ast.IdentExp):
                 var_names |= set([tnode.rhs.name])
             elif isinstance(tnode.rhs, orio.module.loop.ast.FunCallExp):
-                var_names = reduce(set.union, map(self.__extractFromBinOp, tnode.rhs.args), var_names)
+                var_names = reduce(set.union, list(map(self.__extractFromBinOp, tnode.rhs.args)), var_names)
             elif isinstance(tnode.rhs, orio.module.loop.ast.NumLitExp):
                 pass
             else:
@@ -381,9 +383,9 @@ class Transformation:
                     omp_pragma = orio.module.loop.ast.Pragma('omp parallel for private(%s)' % inames_str)
                 else:
                     omp_pragma = orio.module.loop.ast.Pragma('omp parallel for')
-                return ast.CompStmt([omp_pragma, orig_loop])
+                return orio.module.loop.ast.CompStmt([omp_pragma, orig_loop])
             else:
-                return ast.CompStmt([orig_loop])
+                return orio.module.loop.ast.CompStmt([orig_loop])
         
         # start generating the orio.main.unrolled loop
         # compute lower bound --> new_LB = LB

@@ -82,7 +82,7 @@ class Parser:
         # parse the tuning specifications
         try:
             assigns = p.scan(p_program)
-        except ParseError, e:
+        except ParseError as e:
             err('orio.module.polysyn.parser:  %s' % e)
 
         # return the assignment sequence

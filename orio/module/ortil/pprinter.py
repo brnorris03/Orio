@@ -4,7 +4,7 @@
 
 import sys
 from orio.main.util.globals import *
-import ast
+from . import ast
 
 #-------------------------------------------------
 
@@ -37,7 +37,7 @@ class PrettyPrinter:
 
         elif isinstance(tnode, ast.FunCallExp):
             s += self.pprint(tnode.exp, indent, extra_indent) + '('
-            s += ','.join(map(lambda x: self.pprint(x, indent, extra_indent), tnode.args))
+            s += ','.join([self.pprint(x, indent, extra_indent) for x in tnode.args])
             s += ')'
 
         elif isinstance(tnode, ast.UnaryExp):

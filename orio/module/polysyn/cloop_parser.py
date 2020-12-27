@@ -627,7 +627,7 @@ class CLoopParser:
         hotspot_lnests = hotspot_lnests[:min(len(hotspot_lnests), self.max_num_hotspots)]
 
         # remove empty hotspot loop nests
-        hotspot_lnests = filter(lambda x: len(x) > 0, hotspot_lnests) 
+        hotspot_lnests = [x for x in hotspot_lnests if len(x) > 0] 
 
         # check the hotspot loop nests
         if len(hotspot_lnests) == 0:

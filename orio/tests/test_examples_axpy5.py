@@ -13,7 +13,7 @@ def run_orcc(example):
         Globals.reset()
         import orio.main.orio_main
         cmd = ['orcc','-v','--stop-on-error','--logdir=orio/tests', code]
-        print(' '.join(cmd))
+        print((' '.join(cmd)))
         orio.main.orio_main.start(cmd, orio.main.orio_main.C_CPP)
         captured = capsys.readouterr()
         #logging.getLogger().info(captured)

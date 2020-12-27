@@ -2,10 +2,11 @@
 # Loop transformation submodule that implements OpenCL kernel generation
 #
 
-import os, ast
+import os
 import orio.module.loop.submodule.submodule
 import orio.main.util.globals as g
-import transformation
+from orio.module.loop import ast
+from orio.module.loop.submodule.opencl import transformation
 
 OPENCL_DEVICE_QUERY_SKELET = r'''
 #include <stdio.h>
@@ -209,7 +210,7 @@ class OpenCL(orio.module.loop.submodule.submodule.SubModule):
             # evaluate the RHS expression
             try:
                 rhs = eval(rhs, perf_params)
-            except Exception, e:
+            except Exception as e:
                 g.err('orio.module.loop.submodule.opencl.opencl: %s: failed to evaluate the argument expression: %s\n --> %s: %s' % (line_no, rhs,e.__class__.__name__, e))
 
             if aname == PLATFORM:
@@ -249,7 +250,7 @@ class OpenCL(orio.module.loop.submodule.submodule.SubModule):
                 g.err('%s: %s: unrecognized transformation argument: "%s"' % (self.__class__, line_no, aname))
 
         if not errors == '':
-            raise Exception, ('%s: errors evaluating transformation args:\n%s' % (self.__class__, errors))
+            raise Exception('%s: errors evaluating transformation args:\n%s' % (self.__class__, errors))
 
         # return evaluated transformation arguments
         return {

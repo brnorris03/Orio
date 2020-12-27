@@ -38,7 +38,7 @@ template_string='''
 
 default_perf_params= dict(
     tiling=[1,8,16,32],
-    unroll=[1]+range(2,17,2),
+    unroll=[1]+list(range(2,17,2)),
     scalar_replacement=[False],
     vector=[False,True],
     openmp=[True],

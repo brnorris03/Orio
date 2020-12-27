@@ -71,7 +71,7 @@ class CHiLL(orio.module.module.Module):
 
         stm = 0
 
-        for key, val in self.perf_params.items():
+        for key, val in list(self.perf_params.items()):
             if 'TX' in key:
                 stm +=1
 
@@ -100,7 +100,7 @@ class CHiLL(orio.module.module.Module):
 
             unrolls = []
 
-            codeInfo = filter(None,re.split('\n',code))
+            codeInfo = [_f for _f in re.split('\n',code) if _f]
 
             temp = []
             for line in codeInfo:
@@ -113,17 +113,17 @@ class CHiLL(orio.module.module.Module):
                     temp = []
 
             stamp = ''
-            for key,val in self.perf_params.items():
+            for key,val in list(self.perf_params.items()):
 
                 stamp += '_'+str(val)
 
 
-            annot = filter(None,re.split('\t|\n| ',self.module_body_code))
+            annot = [_f for _f in re.split('\t|\n| ',self.module_body_code) if _f]
             stm = 0
             dist = ''
             for line in annot:
 
-                lineInfo = filter(None,re.split('\(|\)',line))
+                lineInfo = [_f for _f in re.split('\(|\)',line) if _f]
 
                 if lineInfo[0] == 'cuda':
 
@@ -139,12 +139,12 @@ class CHiLL(orio.module.module.Module):
                     registers.append(line)
 
                 if lineInfo[0] == 'unroll':
-                    unrollInfo = filter(None,re.split(',|\"',lineInfo[1]))
+                    unrollInfo = [_f for _f in re.split(',|\"',lineInfo[1]) if _f]
                     unrollPos = unrollInfo[1]+'++'
                     stmPos = int(unrollInfo[0])
                     loopPos = 0
                     for l in range(len(loopsNumber[stmPos])):
-                        loopsInfo = filter(None,re.split(' |\(|\)|;',loopsNumber[stmPos][l]))
+                        loopsInfo = [_f for _f in re.split(' |\(|\)|;',loopsNumber[stmPos][l]) if _f]
                         if unrollPos == loopsInfo[3]:
 
                             loopPos = l
@@ -251,7 +251,7 @@ class CHiLL(orio.module.module.Module):
 
                 ###################Grab the mallocs, memcpy, etc###################
 
-                lineInfo = filter(None,re.split(' |(double|cudaMalloc|cudaMemcpy|dim|cudaFree|<<<|__global__|;)',line))
+                lineInfo = [_f for _f in re.split(' |(double|cudaMalloc|cudaMemcpy|dim|cudaFree|<<<|__global__|;)',line) if _f]
 
                 if 'void '+funcName+'(' in line:
                     lockHost = 1
@@ -313,9 +313,9 @@ class CHiLL(orio.module.module.Module):
                         stm+=1
                         stm2 = 0
 
-                    cpInfo = filter(None,re.split(',| |\(|\)',dCopy[i]))
+                    cpInfo = [_f for _f in re.split(',| |\(|\)',dCopy[i]) if _f]
 
-                    tempKern = filter(None,re.split('(>>>)',cudaKern[stm]))
+                    tempKern = [_f for _f in re.split('(>>>)',cudaKern[stm]) if _f]
 
                     if cpInfo[2] in pointers:
                         devPointer = pointers[cpInfo[2]]
@@ -337,8 +337,8 @@ class CHiLL(orio.module.module.Module):
 
 
                 if 'cudaMemcpyDeviceToHost' in dCopy[i]:
-                    cpInfo = filter(None,re.split(',| |\(|\)',dCopy[i]))
-                    tempKern = filter(None,re.split('(>>>)',cudaKern[stm]))
+                    cpInfo = [_f for _f in re.split(',| |\(|\)',dCopy[i]) if _f]
+                    tempKern = [_f for _f in re.split('(>>>)',cudaKern[stm]) if _f]
 
                     if cpInfo[1] in pointers:
                         devPointer = pointers[cpInfo[1]]
@@ -364,7 +364,7 @@ class CHiLL(orio.module.module.Module):
             dMalloc = list(set(dMalloc))
 
 
-            for key, vals in pointers.items():
+            for key, vals in list(pointers.items()):
 
                 newHost += '  double *' + vals + ';\n'
 
@@ -416,7 +416,7 @@ class CHiLL(orio.module.module.Module):
                 lock = 0
                 fors = []
 
-                lineInfo = filter(None,re.split('\n',cuda))
+                lineInfo = [_f for _f in re.split('\n',cuda) if _f]
                 StmLine = []
                 var = 1
 
@@ -430,9 +430,9 @@ class CHiLL(orio.module.module.Module):
                         newHost += info + '\n'
 
                 newHost += '  double newVar' + str(var) + ';\n'
-                regs = filter(None,re.split('\(|\)|registers|,|\"',registers[stm]))
+                regs = [_f for _f in re.split('\(|\)|registers|,|\"',registers[stm]) if _f]
 
-                copyReg = filter(None,re.split('=',StmLine[0]))
+                copyReg = [_f for _f in re.split('=',StmLine[0]) if _f]
                 copyReg[0] = copyReg[0].strip()
 
                 StmLine[0] = StmLine[0].replace(copyReg[0],'newVar' + str(var))

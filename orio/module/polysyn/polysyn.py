@@ -5,7 +5,7 @@
 import re, os, sys
 from orio.main.util.globals import *
 import cloop_parser, macro_expander, orio.module.module, parser, poly_transformation, profiler
-import syn_transformation, transf_info
+from . import syn_transformation, transf_info
 
 
 #-----------------------------------------

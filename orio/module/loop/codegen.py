@@ -2,7 +2,7 @@
 # The code generator (i.e. unparser) for the AST classes
 #
 
-import ast
+from orio.module.loop import ast
 import orio.main.util.globals as g
 
 #-------------------------------------------------
@@ -68,7 +68,7 @@ class CodeGen_C (CodeGen):
 
         elif isinstance(tnode, ast.FunCallExp):
             s += self.generate(tnode.exp, indent, extra_indent) + '('
-            s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.args))
+            s += ','.join([self.generate(x, indent, extra_indent) for x in tnode.args])
             s += ')'
 
         elif isinstance(tnode, ast.UnaryExp):
@@ -178,7 +178,7 @@ class CodeGen_C (CodeGen):
 
                 s += indent + '}\n'
                 if fake_loop: indent = old_indent
-            except Exception, e:
+            except Exception as e:
                 g.err('orio.module.loop.codegen:%s: encountered an error in C code generation for CompStmt: %s %s' % (tnode.line_no, e.__class__, e))
 
         elif isinstance(tnode, ast.IfStmt):
@@ -202,7 +202,7 @@ class CodeGen_C (CodeGen):
                     else:
                         s += '\n'
                         s += self.generate(tnode.false_stmt, indent + extra_indent, extra_indent)
-            except Exception, e:
+            except Exception as e:
                 g.err('orio.module.loop.codegen:%s: encountered an error in C code generation for IfStmt: %s %s ' % (tnode.line_no, e.__class__, e))
 
 
@@ -247,7 +247,7 @@ class CodeGen_C (CodeGen):
                 if fake_loop and tmp:
                     s += indent + '} // ' + fake_scope_loop + '\n'
                     indent = old_indent
-            except Exception, e:
+            except Exception as e:
                 g.err('orio.module.loop.codegen:%s: encountered an error in C code generation: %s %s' % (tnode.line_no, e.__class__, e))
 
 
@@ -333,7 +333,7 @@ class CodeGen_F(CodeGen):
 
         elif isinstance(tnode, ast.FunCallExp):
             s += self.generate(tnode.exp, indent, extra_indent) + '('
-            s += ','.join(map(lambda x: self.generate(x, indent, extra_indent), tnode.args))
+            s += ','.join([self.generate(x, indent, extra_indent) for x in tnode.args])
             s += ')'
 
         elif isinstance(tnode, ast.UnaryExp):
@@ -398,7 +398,7 @@ class CodeGen_F(CodeGen):
                         + self.generate(tnode.rhs, indent, extra_indent) + ')'
                 elif tnode.op_type == tnode.COMMA:
                     # TODO: We need to implement an AST canonicalization step for Fortran before generating the code.
-                    print 'internal warning: Fortran code generator does not fully support the comma operator -- the generated code may not compile.'
+                    print('internal warning: Fortran code generator does not fully support the comma operator -- the generated code may not compile.')
                     s += self.generate(tnode.rhs, indent, extra_indent) 
                     s += '\n' + indent + self.generate(tnode.lhs, indent, extra_indent)
                     s +='\n! ORIO Warining: check code above and fix problems.'
@@ -517,7 +517,7 @@ class CodeGen_F(CodeGen):
 
         elif isinstance(tnode, ast.VarDecl):
             
-            if tnode.type_name not in self.ftypes.keys():
+            if tnode.type_name not in list(self.ftypes.keys()):
                 g.err('orio.module.loop.codegen internal error: Cannot generate Fortran type for ' + tnode.type_name)
                 
             s += indent + str(self.ftypes[tnode.type_name]) + ' '

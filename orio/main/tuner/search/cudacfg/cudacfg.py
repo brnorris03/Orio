@@ -68,7 +68,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
             times.append(float(row[-1]))
             # TODO: this is only for debugging, will remove:
             if self.__hashCoord(row[ind]) == bcoord:
-                print("Best coordinate intensity: ", self.getIntensity(row), row)
+                print(("Best coordinate intensity: ", self.getIntensity(row), row))
             
         # Some sanity checks, will remove; Find best time
         info("Best known time: %f" % min(times))
@@ -124,7 +124,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         prev = initialCoord
         self.coords = []
         tc = []
-        tcindices = range(0,len(self.axis_val_ranges[0]))
+        tcindices = list(range(0,len(self.axis_val_ranges[0])))
         for row in self.instmixdata[1:]:
             tc = []
             bc = []
@@ -251,13 +251,12 @@ class CUDACFG(orio.main.tuner.search.search.Search):
             #sys.exit()
             try:
                 perf_costs = self.getPerfCosts(coords)
-            except Exception, e:
+            except Exception as e:
                 perf_costs[str(coords[0])]=[self.MAXFLOAT]
                 info('FAILED: %s %s' % (e.__class__.__name__, e))
                 fruns +=1
             # compare to the best result
-            pcost_items = perf_costs.items()
-            pcost_items.sort(lambda x,y: cmp(eval(x[0]),eval(y[0])))
+            pcost_items = sorted(list(map(lambda x: eval(x), list(perf_costs.items()))))
             #print 'pcostitems', pcost_items
             for i, (coord_str, pcost) in enumerate(pcost_items):
                 if type(pcost) == tuple: (perf_cost,_) = pcost    # ignore transfer costs -- GPUs only
@@ -272,7 +271,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
                     except:
                         mean_perf_cost=perf_cost
                 else:
-                    print 'Perf cost', perf_cost
+                    print('Perf cost', perf_cost)
                     mean_perf_cost = perf_cost
                     
                 transform_time=self.getTransformTime(coord_key)
@@ -336,7 +335,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         '''To read all algorithm-specific arguments'''
 
         # check for algorithm-specific arguments
-        for vname, rhs in self.search_opts.iteritems():
+        for vname, rhs in self.search_opts.items():
 
             # local search distance
             if vname == self.__LOCAL_DIST:

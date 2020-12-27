@@ -4,6 +4,7 @@
 
 import re, sys
 from orio.main.util.globals import *
+from functools import reduce
 
 #-----------------------------------------------------
 SEQ_TIMER = '''
@@ -664,7 +665,7 @@ class PerfTestSkeletonCode:
             
         # insert the sequential code
         else:
-            ((coord_key, (tcode, externals)),) = tested_code_map.items()
+            ((coord_key, (tcode, externals)),) = list(tested_code_map.items())
             # TODO: customizable timing code for parallel cases
             code = re.sub(self.__BEGIN_INNER_MEASURE_TAG, begin_inner_measure_code, code)
             code = re.sub(self.__END_INNER_MEASURE_TAG, re.sub(self.__COORD_TAG, coord_key, end_inner_measure_code), code)
@@ -799,7 +800,7 @@ class PerfTestSkeletonCodeFortran:
             
         # insert the sequential code
         else:
-            ((coord_key, tcode),) = tested_code_map.items()
+            ((coord_key, tcode),) = list(tested_code_map.items())
             code = re.sub(self.__COORD_TAG, coord_key, code)
             code = re.sub(self.__TCODE_TAG, tcode, code)
 

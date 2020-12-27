@@ -163,7 +163,7 @@ class ArgInfoGen:
                           ('number of threads', num_threads)):
             try:
                 rhs_val = eval(rhs, perf_params)
-            except Exception, e:
+            except Exception as e:
                 err('orio.module.spmv.arg_info: SpMV: failed to evaluate the RHS expression: %s\n --> %s: %s' % (rhs,e.__class__.__name__, e))
             if not isinstance(rhs_val, int) or rhs_val <= 0:
                 err('orio.module.spmv.arg_info: SpMV: %s must be a positive integer. got: %s' % (name, rhs_val))
@@ -176,7 +176,7 @@ class ArgInfoGen:
                           ('block structure', block_structure)):
             try:
                 rhs_val = eval(rhs, perf_params)
-            except Exception, e:
+            except Exception as e:
                 err('orio.module.spmv.arg_info: SpMV: failed to evaluate the RHS expression: %s\n --> %s: %s' % (rhs,e.__class__.__name__, e))
             if not isinstance(rhs_val, str):
                 err('orio.module.spmv.arg_info: SpMV: value of %s must be a string. got: %s' % (name, rhs_val))

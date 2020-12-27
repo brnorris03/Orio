@@ -17,7 +17,7 @@
 #sys.path[0:0] = ['.', '..']
 
 # Generate matrix_ast.py
-from _ast_gen import ASTCodeGenerator
+from ._ast_gen import ASTCodeGenerator
 ast_gen = ASTCodeGenerator('_matrix_ast.cfg')
 ast_gen.generate(open('matrix_ast.py', 'w'))
 

@@ -3,7 +3,7 @@
 #
 
 import random, re
-import skeleton_code 
+from . import skeleton_code 
 from orio.main.util.globals import *
 from orio.main.tuner.skeleton_code import SEQ_TIMER
 
@@ -103,7 +103,7 @@ class PerfTestCodeGen(object):
         max_dim = 0
         for _,_,_,vdims,_ in input_decls:
             max_dim = max(max_dim, len(vdims))
-        iter_vars = map(lambda x: 'i%s' % x, range(1, max_dim+1))
+        iter_vars = ['i%s' % x for x in range(1, max_dim+1)]
 
         # generate code for the declaration of the iteration variables
         if len(iter_vars) == 0:
@@ -169,7 +169,7 @@ class PerfTestCodeGen(object):
         max_dim = 0
         for _,_,_,vdims,_ in input_decls:
             max_dim = max(max_dim, len(vdims))
-        iter_vars = map(lambda x: 'i%s' % x, range(1, max_dim+1))
+        iter_vars = ['i%s' % x for x in range(1, max_dim+1)]
 
         # generate code for the declaration of the iteration variables
         if len(iter_vars) == 0:
@@ -398,7 +398,7 @@ const char *__wattprof_conf_file = "1_conf.rnp";
             prologue_code += ('%s();' % self.malloc_func_name) + '\n  '
         prologue_code += ('%s();' % self.init_func_name) + '\n'
         if Globals().language == 'opencl':
-            for (k, v) in Globals().metadata.iteritems():
+            for (k, v) in Globals().metadata.items():
                 prologue_code += 'TAU_METADATA("%s", "%s");\n' % (k, v)
                 
         if self.power: 
@@ -522,7 +522,7 @@ class PerfTestCodeGenFortran:
         max_dim = 0
         for _,_,_,vdims,_ in input_decls:
             max_dim = max(max_dim, len(vdims))
-        iter_vars = map(lambda x: 'i%s' % x, range(1, max_dim+1))        
+        iter_vars = ['i%s' % x for x in range(1, max_dim+1)]        
         # generate code for the declaration of the iteration variables
         if len(iter_vars) == 0:
             ivars_decl_code = ''
@@ -589,7 +589,7 @@ class PerfTestCodeGenFortran:
         max_dim = 0
         for _,_,_,vdims,_ in input_decls:
             max_dim = max(max_dim, len(vdims))
-        iter_vars = map(lambda x: 'i%s' % x, range(1, max_dim+1))
+        iter_vars = ['i%s' % x for x in range(1, max_dim+1)]
         
         # generate array value initializations
         inits = []

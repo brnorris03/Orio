@@ -26,7 +26,7 @@
 @contact: adam@atlas.st
 '''
 
-from Tokens import *
+from .Tokens import *
 import re, Tokens, Parser
 
 __all__ = ['_next_', '_this_', '_top_', '_sp_', 'UNARY', 'BINARY', 'LEFT', 'CENTER', 'RIGHT', 'oper', 'Float', 'Int', 'ExpressionHelper', 'QuoteHelper', 'EscapeHelper', 'FromOct', 'FromHex', 'PyEsc', 'SameChar', 'EscCh', 'IndentHelper', 'EncloseHelper']
@@ -52,7 +52,7 @@ def _funcmap(f):
 class Oper (TokenSequence): pass
 
 def oper(symbol, operation=None, ops=BINARY, pos=CENTER):
-    if isinstance(symbol, basestring):
+    if isinstance(symbol, str):
         symtok = Omit(Raw(symbol))
     else: symtok = symbol
     if ops == BINARY:
@@ -95,9 +95,9 @@ def QuoteHelper(esc='\\', quotes=('"', "'"), allowed='.', *a, **k):
             left, right = q[0], q[1]
         else:
             left = right = q[0]
-        if isinstance(left, basestring):
+        if isinstance(left, str):
             left = Raw(left)
-        if isinstance(right, basestring):
+        if isinstance(right, str):
             right = Raw(right) ^ True
         o = left + Only(RE(r'(?:%s%s|[^%s])*' % (re.escape(esc), allowed, re.escape(right.desc)), group=0)) + right
         r.append(o)
@@ -156,7 +156,7 @@ class IndentationLevel (AbstractToken):
 class IndentHelper (Tokens.SingleReplacing, AbstractToken):
     def __init__(self, desc, space='[ \t]*', tabwidth=8, skip=None, *a, **k):
         AbstractToken.__init__(self, desc, *a, **k)
-        if isinstance(space, basestring):
+        if isinstance(space, str):
             space = RE(space, group=0)
         self.space = space
         self.tabwidth = 8
@@ -196,9 +196,9 @@ class EncloseHelper (Tokens.SingleReplacing, AbstractToken):
         if not isinstance(pairs, list):
             pairs = [pairs]
         for start, end in pairs:
-            if isinstance(start, basestring):
+            if isinstance(start, str):
                 start = Raw(start)
-            if isinstance(end, basestring):
+            if isinstance(end, str):
                 end = Raw(end)
             self.ptoks.append((start, end ^ True))
     

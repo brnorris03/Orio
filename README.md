@@ -8,19 +8,24 @@ For more detailed documentation, refer to the Orio website, https://brnorris03.g
 
 ## Installation
 
-The Orio installation follows the standard Python setuptools process. The simplest way to install Orio is to run
+Orio is implemented in Python 3. Some search methods (e.g., Mlsearch) require the pandas and sklearn 
+packages.  The simplest way to install Orio is to run
 
 ```
 pip install orio
 ```
 
-For users who want to quickly install Orio to the standard locations of third-party Python modules (requiring superuser
-privileges in a Unix system), simply append the `--user` option to the pip install line. Note that some modules may
-require certain packages (e.g., Mlsearch requires `pandas`), so it's recommended that you
-use [Conda](http://docs.conda.io) or a similar Python environment manager.
+This will install the most recent release of Orio and the packages it
+uses in your current Python environment. You can also
+add the `--user` option if the above command requires superuser privileges.
 
-To test whether Orio has been properly installed in your system, try to execute `orcc` command as given below as an
-example. If you used the
+If you want to build Orio from a git clone, you can use `pip install -e .` in the top-level directory. 
+Note that you can simply run `orcc` (and the other top-level command-line scripts) directly from the git clone 
+without installing anything. Testing is provided through pydev, to run all available
+tests, run`pytest` or `pytest -v` in the top-level Orio directory. 
+
+To test whether Orio has been properly installed in your system, try to execute `orcc` 
+command as given below as an example. If you used the
 `--user` option, you can find `orcc` under your home directory, e.g., in `~/.local/bin` on Unix.
 
 ```
@@ -46,7 +51,7 @@ export PYTHONPATH=$PYTHONPATH:/home/username/lib/python/site-packages
 export PATH=$PATH:/home/username/bin
 ```
 
-After making sure that the orcc executable is in your path, you can try some of the examples included in the testsuite
+After making sure that the `orcc` executable is in your path, you can try some of the examples included in the testsuite
 subdirectory, e.g.:
 
 ```
@@ -82,3 +87,33 @@ Principal Authors:
 * Azamat Mametjanov, Argonne National Laboratory
 * Prasanna Balaprakash, Argonne National Laboratory
 * Nick Chaimov, University of Oregon
+
+### Publications
+
+* B. Norris, A. Hartono, and W. Gropp. Annotations for productivity and performance portability. Petascale Computing: Algorithms and Applications, pp. 443–462. Chapman & Hall / CRC Press, Taylor and
+Francis Group, Computational Science, 2007, http://www.mcs.anl.gov/uploads/cels/
+papers/P1392.pdf. 
+
+* Azamat Mametjanov, Daniel Lowell, Ching-Chen Ma, and Boyana Norris. 2012. Autotuning Stencil-Based Computations on GPUs. In Proceedings of the 2012 IEEE International Conference on Cluster Computing (CLUSTER '12). IEEE Computer Society, USA, 266–274. DOI:https://doi.org/10.1109/CLUSTER.2012.46
+
+* Prasanna Balaprakash, Stefan M. Wild, Boyana Norris,
+SPAPT: Search Problems in Automatic Performance Tuning,
+Procedia Computer Science,
+Volume 9, 2012, Pages 1959-1968, ISSN 1877-0509,
+https://doi.org/10.1016/j.procs.2012.04.214.
+
+* N. Chaimov, B. Norris, and A. Malony. Toward multi-target autotuning for accelerators. Proceedings of
+the 20th IEEE International Conference on Parallel and Distributed Systems, December 16-19, 2014,
+Hsinchu, Taiwan, 2014, http://ix.cs.uoregon.edu/~norris/icpads14.pdf.
+
+* Lim, Robert V., B. Norris and A. Malony. “Autotuning GPU Kernels via Static and Predictive Analysis.” 2017 46th International Conference on Parallel Processing (ICPP) (2017): 523-532. https://arxiv.org/pdf/1701.08547
+
+
+### Old websites
+
+* Orio's old webpage:
+  http://trac.mcs.anl.gov/projects/performance/wiki/Orio
+
+* Some hidden links:
+  http://trac.mcs.anl.gov/projects/performance/wiki/AnnPerformance  (Old results for tuning Pluto)
+

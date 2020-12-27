@@ -22,7 +22,7 @@ class AnnParser:
 
         try:
             val = eval(text, self.perf_params)
-        except Exception, e:
+        except Exception as e:
             err('orio.module.ortil.ann_parser: failed to evaluate expression: "%s"\n --> %s: %s' % (text,e.__class__.__name__, e))
         return val
 

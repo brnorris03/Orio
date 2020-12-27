@@ -5,6 +5,7 @@
 import sys
 import orio.module.loop.ast
 import orio.main.util.globals as g
+from functools import reduce
 
 #-----------------------------------------------------------
  
@@ -283,7 +284,7 @@ class CommonLib:
 
         elif isinstance(n, orio.module.loop.ast.FunCallExp):
             n.exp = self.rewriteNode(r, n.exp)
-            n.args = map(lambda x: self.rewriteNode(r, x), n.args)
+            n.args = [self.rewriteNode(r, x) for x in n.args]
             return r(n)
         
         elif isinstance(n, orio.module.loop.ast.UnaryExp):
@@ -312,7 +313,7 @@ class CommonLib:
             return r(n)
         
         elif isinstance(n, orio.module.loop.ast.CompStmt):
-            n.stmts = map(lambda x: self.rewriteNode(r, x), n.stmts)
+            n.stmts = [self.rewriteNode(r, x) for x in n.stmts]
             return r(n)
         
         elif isinstance(n, orio.module.loop.ast.IfStmt):

@@ -56,7 +56,7 @@ class AnnParser:
         debug("PARSING ANNOTATION " + str(code_seq))
         # convert the code sequence to a sequence of code fragments
         # cfrags is a list of orio.main.code_frag.AnnCodeRegion objects (code_frag.py)
-        cfrags = map(self.__convertToCodeFragment, code_seq)
+        cfrags = list(map(self.__convertToCodeFragment, code_seq))
 
         # return the sequence of code fragments
         return cfrags
@@ -250,7 +250,7 @@ class AnnParser:
                                                mname, mname_line_no, mcode, mcode_line_no)
 
             # apply recursions on the annotation's body code sequence
-            cfrags = map(self.__convertToCodeFragment, body_code_seq)
+            cfrags = list(map(self.__convertToCodeFragment, body_code_seq))
             
             # create a trailer-annotation code-fragment
             trailer_cfrag = orio.main.code_frag.TrailerAnn(trailer, trailer_line_no, trailer_indent_size)

@@ -10,7 +10,7 @@ class Transformation:
         self.stmt = stmt
 
         # remove all empty pragma strings
-        self.pragmas = filter(lambda x: x.strip(), self.pragmas)
+        self.pragmas = [x for x in self.pragmas if x.strip()]
 
 
     def transform(self):

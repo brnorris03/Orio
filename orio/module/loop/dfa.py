@@ -3,10 +3,11 @@ Created on April 30, 2015
 
 @author: norris
 '''
-import ast, sys, os, traceback
+from orio.module.loop import ast
 from orio.main.util.globals import *
 from orio.tool.graphlib import graph
 from orio.module.loop import astvisitors
+from functools import reduce
 
 class DFA:
     '''Abstract dataflow analysis'''
@@ -28,7 +29,7 @@ class DFA:
      
     def update(self, env, bb, newval, todo_set, todo_candidates):
         if newval != self.env.get(bb):
-            print '{0} has changed, adding {1}'.format(bb, todo_candidates)
+            print('{0} has changed, adding {1}'.format(bb, todo_candidates))
             env[bb] = newval
             todo_set |= todo_candidates
      
@@ -50,7 +51,7 @@ class DFA:
      
                 ####
                 # compute the environment at the entry of this BB
-                new_IN = reduce(analysis.meet, map(OUT.get, cfg.pred(bb)), IN[bb])
+                new_IN = reduce(analysis.meet, list(map(OUT.get, cfg.pred(bb))), IN[bb])
                 self.update(IN, bb, new_IN, todo_backward, cfg.pred(bb))
      
                 ####
@@ -63,7 +64,7 @@ class DFA:
      
                 ####
                 # compute the environment at the exit of this BB
-                new_OUT = reduce(analysis.meet, map(IN.get, cfg.succ(bb)), OUT[bb])
+                new_OUT = reduce(analysis.meet, list(map(IN.get, cfg.succ(bb))), OUT[bb])
                 self.update(OUT, bb, new_OUT, todo_forward, cfg.succ(bb))
      
                 ####
