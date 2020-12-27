@@ -99,7 +99,6 @@ class PerfTuner:
 
         # dynamically load the search engine class and configure it
         
-        #print tinfo.search_algo
         if Globals().extern:
             tinfo.search_algo='Extern'
             info('Running in %s mode' % tinfo.search_algo)
@@ -150,7 +149,7 @@ class PerfTuner:
             # search for the best performance parameters
             best_perf_params, best_perf_cost = search_eng.search()
 
-            # print the best performance parameters
+            # output the best performance parameters
             if Globals().verbose and not Globals().extern:
                 info('----- the obtained best performance parameters -----')
                 pparams = sorted(list(best_perf_params.items()))
@@ -161,7 +160,7 @@ class PerfTuner:
             if Globals().extern:
                 best_perf_params=Globals().config
 
-            #print Globals().config    
+            debug("[orio.main.tuner.tuner] Globals config: %s" % str(Globals().config), obj=self, level=6)
             
             cur_optimized_code_seq = self.odriver.optimizeCodeFrags(cfrags, best_perf_params)
 
@@ -326,14 +325,12 @@ class PerfTuner:
 
         ptype=[]
         for vals in axis_val_ranges:
-            #print min(vals)
             self.num_configs=self.num_configs*len(vals)
             ptype.append('I')
             if type(vals[0]) == bool:
                 self.num_bin=self.num_bin+1
                 ptype[len(ptype)-1]=('B')
             if type(vals[0]) == str:
-                print((vals[0]))
                 self.num_categorical = self.num_categorical+1
 
         self.num_int -= self.num_bin

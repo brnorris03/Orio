@@ -113,9 +113,7 @@ class Extern(orio.main.tuner.search.search.Search):
                         coord = eval(lstr)
                         break
                 f.close()
-                # print coord
                 perf_params = self.coordToPerfParams(coord)
-                # print perf_params
                 coord_key = str(coord)
 
             perf_costs = {}
@@ -139,8 +137,6 @@ class Extern(orio.main.tuner.search.search.Search):
                     mean_perf_cost = sum(floatNums) / len(perf_cost)
                 except:
                     mean_perf_cost = perf_costs
-
-            print(perf_costs)
 
             best_coord = coord
             best_perf_cost = mean_perf_cost

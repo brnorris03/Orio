@@ -4,6 +4,7 @@ import operator
 import time
 import itertools
 import orio.main.tuner.search.search
+from orio.main.util.globals import *
 
 
 UNROLL_NAMES = 'unroll_variables'  # unroll constraint (U1_I == 1 or U1_J == 1 or U1_K) and (U2_I == 1 or U2_J == 1)
@@ -58,12 +59,12 @@ class Firefly(orio.main.tuner.search.search.Search):
         return np.log(2) / (2 * avg/(self.population_size * (self.population_size - 1))) ** 2
 
     def get_population(self):
-        print("std_pr: Generating population...")
+        info("std_pr: Generating population...")
         for i in range(self.population_size):
             while True:
                 self.population.append(FireflyElement(self.min_bound, self.max_bound, i))
                 if self.move(i, np.random.standard_normal(self.problem_dim)):
-                    print(("std_pr: |- Created firefly %d" % i))
+                    info(("std_pr: |- Created firefly %d" % i))
                     break
                 else:
                     self.population.pop()
@@ -135,12 +136,12 @@ class Firefly(orio.main.tuner.search.search.Search):
         best_coord = None
         while t < self.generations and not ((time.time()-start_time) > self.time_limit > 0):
             self.population.sort(key=operator.attrgetter('brightness'))
-            print(('std_pr: Generation %s, best fitness %s' % (t, -self.population[-1].brightness)))
+            info(('std_pr: Generation %s, best fitness %s' % (t, -self.population[-1].brightness)))
             if -self.population[-1].brightness < best_fitness:
                 best_fitness = -self.population[-1].brightness
                 best_coord = self.population[-1].position
             self.population.sort(key=operator.attrgetter('id'))
-            print(("std_pr: " + str([f.brightness for f in self.population][:8])))
+            info(("std_pr: " + str([f.brightness for f in self.population][:8])))
             self.step()
             t += 1
         search_time = time.time() - start_time

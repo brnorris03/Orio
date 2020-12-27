@@ -1,6 +1,6 @@
 import orio.main.tuner.search.search
 from orio.main.util.globals import *
-import time, types
+import time
 
 import itertools
 import math
@@ -21,7 +21,7 @@ class Direct(orio.main.tuner.search.search.Search):
         # We are in a hyperrectangle. Initialization: take the whole parameter space.
 
         rectangle = [[0, self.dim_uplimits[i]] for i in range(self.total_dims)]
-        print("initial rectangle", rectangle)
+        info("initial rectangle %s" % str(rectangle))
         fmin = float('inf')
         rectangles = [rectangle]
         minpoint = self.dim_uplimits
@@ -79,8 +79,8 @@ class Direct(orio.main.tuner.search.search.Search):
             cor3 = [list(c) for c in corners]
             r3 = (rec3, cor3)
 
-            print("Dividing rectangle", rectangle, "into", rec1, "AND", rec2, "AND", rec3)
-            print("With corners", cor1, "AND", cor2, "AND", cor3)
+            info("Dividing rectangle " + str(rectangle) + " into " + str(rec1) + " AND " + str(rec2) + " AND " + str(rec3))
+            info("With corners " + str(cor1) + " AND " + str(cor2) + " AND " + str(cor3))
 
             # Select the potentially optimal rectangles
 
@@ -88,7 +88,7 @@ class Direct(orio.main.tuner.search.search.Search):
             fstar = (1 - self.epsilon) * fmin
             for rec, cor in r1, r2, r3:
 
-                print("working in rectangle: ", rec, "corners", cor)
+                info("working in rectangle: " + str(rec) + " corners " + str(cor))
 
                 # Take the center
                 center = self.__getCentroid(cor)
@@ -99,7 +99,7 @@ class Direct(orio.main.tuner.search.search.Search):
                 dist = 0
                 for c in cor:
                     dist = max(dist, self.__distance(c, center))
-                print("fc", fc, "dist", dist)
+                info("fc " + str(fc) + " dist " + str(dist))
 
                 # Add it to the dictionnary
                 if dist in rect_sizes:
@@ -177,7 +177,7 @@ class Direct(orio.main.tuner.search.search.Search):
 
                 # If we are still here, the conditions are fulfilled. The rectangle is potentially optimal.
                 # Add it (it will be divided later).
-                print("potentially optimal rectangle found", rec)
+                info("potentially optimal rectangle found: " + str(rec))
                 rectangles.append(rec)
 
                 # do we have the minimum?

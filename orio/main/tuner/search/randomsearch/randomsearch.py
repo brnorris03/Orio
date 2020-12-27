@@ -113,7 +113,6 @@ class Randomsearch(orio.main.tuner.search.search.Search):
                     continue
                 # test if the performance parameters are valid
                 perf_params = self.coordToPerfParams(coord)
-                #print perf_params
                 perf_params1=copy.copy(perf_params)
 
                 try:

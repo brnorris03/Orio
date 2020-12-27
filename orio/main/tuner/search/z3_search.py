@@ -107,10 +107,10 @@ class Z3search:
         if "or" in expr or "and" in expr:
             if "and" in expr:
                 operandsAND = expr.split( "and" )
-                return "z3.And(" + ", ".join( [ infixToPrefix( op ) if "or" in op or "and" in op else op  for op in operandsAND  ] ) + " ) "
+                return "z3.And(" + ", ".join( [self. infixToPrefix( op ) if "or" in op or "and" in op else op  for op in operandsAND  ] ) + " ) "
             elif "or" in expr:
                 operandsOR = expr.split( "or" )
-                return  "z3.Or(" + ", ".join( [ infixToPrefix( op ) if "or" in op or "and" in op else op for op in operandsOR  ] ) + " ) "
+                return  "z3.Or(" + ", ".join( [self. infixToPrefix( op ) if "or" in op or "and" in op else op for op in operandsOR  ] ) + " ) "
             else:
                 return expr
         else:

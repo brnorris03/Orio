@@ -13,10 +13,7 @@ class Search:
     #----------------------------------------------------------
     
     def __init__(self, params):
-        '''To instantiate a search engine'''
-
-        #print params
-        #print 'done'
+        '''Instantiate a search engine'''
 
         self.params=params
         debug('[Search] performance parameters: %s\n' % str(params), self)
@@ -43,13 +40,6 @@ class Search:
         self.space_size = 0
         if self.total_dims > 0:
             self.space_size = reduce(lambda x,y: x*y, self.dim_uplimits, 1)
-
-        #print self.dim_uplimits    
-        #res='Space %d %d %1.3e' % (self.total_dims-num_bins,num_bins,self.space_size)        
-        #info(res)
-        #sys.exit()		
-
-        #print str(params['ptdriver'].tinfo)
         
         if 'use_parallel_search' in list(params.keys()): self.use_parallel_search = params['use_parallel_search']
         else: self.use_parallel_search = False
@@ -396,7 +386,6 @@ class Search:
         for i, p in enumerate(params):
             min_val=min(vals[i])
             max_val=max(vals[i])
-            #print p, min_val,max_val
             if param_config[p] < min_val or param_config[p] > max_val:
                 is_out=True
                 break

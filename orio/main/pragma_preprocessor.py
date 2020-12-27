@@ -137,12 +137,12 @@ class PragmaPreprocessor:
     def _generate_tuning_spec(self) :
         self.tuning_spec = template_string
 
-        print((self.tspec_params))
+        info((self.tspec_params))
 
         for section, val in list(self.tspec_params.items()):
             buf = ''
             if section in ['performance_params','input_params','input_vars','constraints']:
-                print((repr(list(self.tspec_params[section].values()))))
+                info((repr(list(self.tspec_params[section].values()))))
                 buf = ''.join(list(self.tspec_params[section].values()))
             elif section in ['build','performance_counter','search']:
                 for k,v in list(self.tspec_params[section].items()):

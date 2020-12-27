@@ -4,6 +4,7 @@ import operator
 import time
 import itertools
 import orio.main.tuner.search.search
+from orio.main.util.globals import *
 
 
 def generate_position(min_bound, max_bound):
@@ -65,7 +66,7 @@ class Firefly(orio.main.tuner.search.search.Search):
             self.population[i].position = self.check_position(self.population[i].position)
             self.population[i].brightness = -sum(self.getPerfCost(list(self.population[i].position)))
         for t in range(self.generations):
-            print(('Generation %s, best fitness %s' % (t, -self.population[-1].brightness)))
+            info(('Generation %s, best fitness %s' % (t, -self.population[-1].brightness)))
             self.step()
         self.population.sort(key=operator.attrgetter('brightness'), reverse=True)
         search_time = time.time() - start_time
@@ -100,7 +101,6 @@ class Firefly(orio.main.tuner.search.search.Search):
                         lowerable_dims.append(i)
                 counter = 0
                 while counter < 50 and (not is_valid):
-                    print(counter)
                     n_change_up = np.random.choice(list(range(len(upperable_dims) + 1)))  # how many dims to up
                     n_change_low = np.random.choice(list(range(len(lowerable_dims) + 1))) # how many dims to low
                     n_change_either = np.random.choice(list(range(len(either_dims) + 1)))  # how many dims to up or low
@@ -120,8 +120,7 @@ class Firefly(orio.main.tuner.search.search.Search):
                 if counter == 50 and radius == 10 and not is_valid: # TODO use parameters here
                     # could not find a valid random point. Iterate until I find one.
 
-                    print(self.min_bound)
-                    print(self.max_bound)
+                    info("Min bound = %s; Max bound = %s" % (str(self.min_bound), str(self.max_bound)))
                     
                     # list all the possible coordinates
                     """ This is really really slow and memory expensive
@@ -157,7 +156,7 @@ class Firefly(orio.main.tuner.search.search.Search):
                         points.append( position )
                     """
                     found = False
-                    print("DELTA: ", delta)
+                    info("DELTA: ", delta)
                     # very unsure about whether we can shift the boundaries by delta
                     l = [ [ x for x in range( self.min_bound[i] - delta[i], self.max_bound[i] - delta[i] ) ] for i, v in enumerate( self.min_bound ) ]
                     for position in itertools.product(*l):
@@ -165,12 +164,12 @@ class Firefly(orio.main.tuner.search.search.Search):
                             perf_params = self.coordToPerfParams( list( position+delta ) )
                             is_valid = eval(self.constraint, perf_params, dict(self.input_params))
                             if is_valid:
-                                print("position ", position, " is valid")
+                                debug("[orio.main.tuner.search.firefly.firefly_old: position %s is valid" % str(position),obj=self, level=6)
                                 self.chosen.append( str( position+delta) )
                                 found = True
                                 break
                     if not found:
-                        print("Error: could not find any valid point in the parameter space")
+                        err("[orio.main.tuner.search.firefly: Error: could not find any valid point in the parameter space")
 
     def _modify_alpha(self):
         self.alpha = self.alpha * self.alpha_decay

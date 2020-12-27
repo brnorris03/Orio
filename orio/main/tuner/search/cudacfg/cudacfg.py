@@ -68,7 +68,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
             times.append(float(row[-1]))
             # TODO: this is only for debugging, will remove:
             if self.__hashCoord(row[ind]) == bcoord:
-                print(("Best coordinate intensity: ", self.getIntensity(row), row))
+                info(("Best coordinate intensity: ", self.getIntensity(row), row))
             
         # Some sanity checks, will remove; Find best time
         info("Best known time: %f" % min(times))
@@ -138,7 +138,8 @@ class CUDACFG(orio.main.tuner.search.search.Search):
             tmp = tcindices
             ind = len(tmp)/2
             
-            #print "kernel type, Occupancy, lmax_bloc_prev", kernel_type, occupancy, tmp
+            debug("[orio.main.tuner.search.cudacfg] kernel type, Occupancy, lmax_bloc_prev = (%s,%s,%s)" %
+                  (str(kernel_type), str(occupancy), str(tmp)),obj=self,level=4)
             if occupancy == 100.0:
                 if kernel_type == "MEM": tc = tmp[ind:]
                 else: tc = tmp[:max(ind,1)]
@@ -257,7 +258,6 @@ class CUDACFG(orio.main.tuner.search.search.Search):
                 fruns +=1
             # compare to the best result
             pcost_items = sorted(list(map(lambda x: eval(x), list(perf_costs.items()))))
-            #print 'pcostitems', pcost_items
             for i, (coord_str, pcost) in enumerate(pcost_items):
                 if type(pcost) == tuple: (perf_cost,_) = pcost    # ignore transfer costs -- GPUs only
                 else: perf_cost = pcost
@@ -271,7 +271,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
                     except:
                         mean_perf_cost=perf_cost
                 else:
-                    print('Perf cost', perf_cost)
+                    info('Perf cost', perf_cost)
                     mean_perf_cost = perf_cost
                     
                 transform_time=self.getTransformTime(coord_key)
@@ -397,9 +397,7 @@ class CUDACFG(orio.main.tuner.search.search.Search):
         hcoord = self.__hashCoord(coord)
         for row in self.instmixdata[1:]:
             if not row: continue
-            #print coord, row[ind], hcoord, row[-2]
             if not row or hcoord != row[-2]: continue
-            #debug("Time for this coord: %f" % float(row[-1]))
             return float(row[-1])
 
         

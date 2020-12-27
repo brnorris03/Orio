@@ -98,7 +98,6 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 # FIXME BN: The time_limit unfortunately puts the search in an invalid state, so temporarily disabling
 #        while (len(uneval_coords) < self.init_samp) and not ((time.time()-start_time) > self.time_limit > 0):
         while (len(uneval_coords) < self.init_samp):
-            # print uneval_coords
             coord = self.__getNextCoord(coord_records, neigh_coords, init)
 
             if coord is None:
@@ -129,9 +128,6 @@ class Mlsearch(orio.main.tuner.search.search.Search):
                     err('failed to evaluate the constraint expression: "%s"\n%s %s' % (
                     self.constraint, e.__class__.__name__, e))
                 # if invalid performance parameters
-
-                # print is_valid
-
                 if not is_valid:
                     continue
 
@@ -352,9 +348,9 @@ class Mlsearch(orio.main.tuner.search.search.Search):
         best_coord = eval_coords[sort_ind[0]]
         best_perf_cost = eval_cost[sort_ind[0]]
 
-        print(eval_params[sort_ind[0]])
-        print(best_perf_cost)
-        print(best_coord)
+        debug("eval_params: %s" % str(eval_params[sort_ind[0]]), obj=self, level=6)
+        debug("Best performance cost: %s" % str(best_perf_cost), obj=self, level=6)
+        debug("Best coordinate: %s" % str(best_coord), obj=self, level=6)
         end_time = time.time()
         search_time = start_time - end_time
         speedup = float(eval_cost[0]) / float(best_perf_cost)

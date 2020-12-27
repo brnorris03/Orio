@@ -2,6 +2,7 @@
 # A module to build a symbol table from a C source file.
 #
 from .parsers.pycparser import c_parser, c_ast, parse_file
+from orio.main.util.globals import *
 
 
 class STBuilder(c_ast.NodeVisitor):
@@ -10,10 +11,10 @@ class STBuilder(c_ast.NodeVisitor):
         self.st = {}
 
     def generic_visit(self, n):
-        print(('generic:', type(n)))
+        debug('[orio.main.st_builder: generic: %s' % str(type(n)), obj=self, level=6)
         for c in n.children():
             childst = self.visit(c)
-            print(('c_st:', childst))
+            debug('[orio.main.st_builder: c_st: %s' % str(childst), obj=self, level=6)
             self.st.update(childst)
 
     def visit_IdentifierType(self, n):
@@ -21,7 +22,7 @@ class STBuilder(c_ast.NodeVisitor):
         return ' '.join(n.names)
 
     def visit_Decl(self, n):
-        print(('visit_Decl: %s, %s' % (n.name, n.type)))
+        debug('[orio.main.st_builder: visit_Decl: %s, %s' % (n.name, n.type), obj=self, level=6)
         
         self._generate_type(n.type)
         
@@ -33,7 +34,7 @@ class STBuilder(c_ast.NodeVisitor):
         old_st = self.st.copy()
         self.st.update(decl)
         body = self.visit(n.body)
-        print(('local st:', body))
+        debug('[orio.main.st_builder: local st: %s' % str(body), obj=self, level=6)
         self.st = old_st
         return {n.decl.name: 'void'}
         

@@ -39,12 +39,12 @@ class Firefly(orio.main.tuner.search.search.Search):
         return eval(self.constraint, perf_params, dict(self.input_params))
 
     def get_population(self):
-        print("Generating population...")
+        info("Generating population...")
         for i in range(self.population_size):
             while True:
                 self.population.append(FireflyElement(self.min_bound, self.max_bound))
                 if self.move(i, np.random.standard_normal(self.problem_dim)):
-                    print(("|- Created firefly %d" % i))
+                    info(("|- Created firefly %d" % i))
                     break
                 else:
                     self.population.pop()
@@ -87,7 +87,7 @@ class Firefly(orio.main.tuner.search.search.Search):
         for i in range(self.population_size):
             self.population[i].brightness = -sum(self.getPerfCost(list(self.population[i].position)))
         for t in range(self.generations):
-            print(('Generation %s, best fitness %s' % (t, -self.population[-1].brightness)))
+            info(('Generation %s, best fitness %s' % (t, -self.population[-1].brightness)))
             self.step()
             self.population.sort(key=operator.attrgetter('brightness'))
         search_time = time.time() - start_time
