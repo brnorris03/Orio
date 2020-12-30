@@ -42,15 +42,6 @@ command as given below as an example. If you used the
     -v, --verbose                  verbosely show details of the results of the running program
 ```
 
-You can optionally include the installed orcc script location in the PATH shell variable. To do this for the above
-example, the following two lines can be added in the .bashrc configuration file (assuming the user uses Bash shell, of
-course).
-
-```
-export PYTHONPATH=$PYTHONPATH:/home/username/lib/python/site-packages
-export PATH=$PATH:/home/username/bin
-```
-
 After making sure that the `orcc` executable is in your path, you can try some of the examples included in the testsuite
 subdirectory, e.g.:
 
