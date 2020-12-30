@@ -5,22 +5,14 @@
 
 import os, sys, distutils.sysconfig
 
-# include the annotation tool in the Python's search path
-abs_path = os.path.realpath(sys.argv[0])
-cur_dir = os.path.dirname(abs_path)
-dirs=[]
-if os.path.basename(cur_dir) == 'bin':
-    # installed location
-    base_dir = os.path.join(os.path.dirname(cur_dir),'lib','python' + distutils.sysconfig.get_python_version(),'site-packages')
-    dirs = [base_dir, os.path.join(base_dir,'orio')]
-else:
-    # source tree (development) location
-    dirs = [os.path.join(cur_dir,'orio')]
-sys.path.extend(dirs)
+# include Orio's source directory in the Python's search path
+exe_dir = os.path.dirname(os.path.realpath(__file__))
+if not exe_dir.endswith('bin'):
+    # orcc and other top-level scripts are in scripts/ subdir of top-level dir
+    sys.path.insert(0, os.path.dirname(exe_dir))
 
-if 'ORIO_DEBUG' in os.environ.keys():
+if True or 'ORIO_DEBUG' in os.environ.keys():
     print("DEBUG: system search path:", sys.path)
-
 
 # dispatch to Orio's main
 import orio.main.orio_main
