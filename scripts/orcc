@@ -1,9 +1,9 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 #
 # orcc - Compile shell for Orio (C/C++ source code)
 #
 
-import os, sys, distutils.sysconfig
+import os, sys
 
 # include Orio's source directory in the Python's search path
 exe_dir = os.path.dirname(os.path.realpath(__file__))
@@ -11,8 +11,9 @@ if not exe_dir.endswith('bin'):
     # orcc and other top-level scripts are in scripts/ subdir of top-level dir
     sys.path.insert(0, os.path.dirname(exe_dir))
 
-if True or 'ORIO_DEBUG' in os.environ.keys():
+if 'ORIO_DEBUG' in os.environ.keys():
     print("DEBUG: system search path:", sys.path)
+
 
 # dispatch to Orio's main
 import orio.main.orio_main

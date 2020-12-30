@@ -13,7 +13,7 @@ with open("README.md", "r") as fh:
 
 
 setuptools.setup(name='orio',
-                 version='0.6.0',
+                 version='0.6.1',
                  description='ORIO -- An Annotation-Based Performance Tuning Tool',
                  author='Boyana Norris and Albert Hartono',
                  author_email='brnorris03@gmail.com',

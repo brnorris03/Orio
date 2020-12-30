@@ -3,10 +3,9 @@ Created on Feb 26, 2015
 
 @author: norris
 '''
-from orio.module.loop import ast
 from orio.main.util.globals import *
-
 import orio.module.loop.codegen
+from orio.module.loop import ast
 
 class ASTVisitor:
     ''' Standard visitor pattern abstract class'''
