@@ -14,7 +14,7 @@ from functools import reduce
 class Transformation:
     '''Code transformation implementation'''
 
-    __ivar_suffix = 't'
+    __ivar_suffix = '_rtile'
     __newlb_prefix = 'newlb_'
     __newub_prefix = 'newub_'
     __int_min = '-2147483648'
@@ -211,6 +211,7 @@ class Transformation:
                                             new_stride_exp, mloop_body)
 
         # generate the cleanup loop
+        loop.meta['declare_vars_outside'] = [mloop_index_id.name]
         cleanup_loop = self.flib.createForLoop(cloop_index_id, mloop_index_id, ubound_exp,
                                                stride_exp, loop_body)
         
