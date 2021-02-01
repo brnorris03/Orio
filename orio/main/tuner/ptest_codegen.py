@@ -70,7 +70,7 @@ class PerfTestCodeGen(object):
 
         # generate the input variable declarations inside main()
         decls = []
-        for is_static, vtype, vname, vdims, rhs in input_decls:
+        for is_static, is_managed, vtype, vname, vdims, rhs in input_decls:
 
             #TODO: handle structs (look for period in vname)
             if vtype == 'macro':
@@ -83,6 +83,10 @@ class PerfTestCodeGen(object):
                     if rhs.startswith('{'):
                       dim_code += '='+rhs
                     decls.append('%s %s%s;' % (vtype, vname, dim_code))
+                elif is_managed:
+                    # TODO  check language and change lines below to maanged memory allocation
+                    ptr_code = '*' * len(vdims)
+                    decls.append('%s %s%s;' % (vtype, ptr_code, vname))
                 else:
                     ptr_code = '*' * len(vdims)
                     decls.append('%s %s%s;' % (vtype, ptr_code, vname))
@@ -101,7 +105,7 @@ class PerfTestCodeGen(object):
 
         # generate iteration variables
         max_dim = 0
-        for _,_,_,vdims,_ in input_decls:
+        for _, _, _, _, vdims, _ in input_decls:
             max_dim = max(max_dim, len(vdims))
         iter_vars = ['i%s' % x for x in range(1, max_dim+1)]
 
@@ -113,7 +117,7 @@ class PerfTestCodeGen(object):
         
         # generate memory allocations for dynamic input arrays
         mallocs = []
-        for is_static, vtype, vname, vdims, rhs in input_decls:                 
+        for is_static, is_managed, vtype, vname, vdims, rhs in input_decls:
             
             if len(vdims) > 0 and not is_static:
                 for i in range(0, len(vdims)):
@@ -151,7 +155,7 @@ class PerfTestCodeGen(object):
     def __genDAllocs(self, input_decls):
 
         dalloc_code = ''
-        for is_static, _, vname, vdims, _ in input_decls:                 
+        for is_static, is_managed, _, vname, vdims, _ in input_decls:
           if len(vdims) > 0 and not is_static:
             dalloc_code += '  free('+vname+');'+r'\n';
         
@@ -167,7 +171,7 @@ class PerfTestCodeGen(object):
 
         # generate iteration variables
         max_dim = 0
-        for _,_,_,vdims,_ in input_decls:
+        for _, _, _, _, vdims, _ in input_decls:
             max_dim = max(max_dim, len(vdims))
         iter_vars = ['i%s' % x for x in range(1, max_dim+1)]
 
@@ -179,7 +183,7 @@ class PerfTestCodeGen(object):
         
         # generate array value initializations
         inits = []
-        for _, vtype, vname, vdims, rhs in input_decls:
+        for _, _, vtype, vname, vdims, rhs in input_decls:
 
             # skip if it does not have an initial value (i.e. RHS == None)
             if rhs == None or rhs.startswith('{'):
@@ -520,7 +524,7 @@ class PerfTestCodeGenFortran:
         
         # generate iteration variables
         max_dim = 0
-        for _,_,_,vdims,_ in input_decls:
+        for _, _, _, _,vdims,_ in input_decls:
             max_dim = max(max_dim, len(vdims))
         iter_vars = ['i%s' % x for x in range(1, max_dim+1)]        
         # generate code for the declaration of the iteration variables
@@ -529,7 +533,7 @@ class PerfTestCodeGenFortran:
         else:
             ivars_decl_code = 'integer :: %s' % ', '.join(iter_vars)
 
-        for is_static, vt, vname, vdims, rhs in input_decls:
+        for is_static, is_managed, vt, vname, vdims, rhs in input_decls:
             
             if vt in ['single','double']: vtype = 'real(%s)' % vt
             elif vt == 'int': vtype = 'integer'
@@ -562,7 +566,7 @@ class PerfTestCodeGenFortran:
         
         # generate memory allocations for dynamic input arrays
         mallocs = []
-        for is_static, vt, vname, vdims, rhs in input_decls:
+        for is_static, is_manged, vt, vname, vdims, rhs in input_decls:
 
             if len(vdims) > 0 and not is_static:
                 dim_code = '(%s)' % ')('.join(vdims)
@@ -587,13 +591,13 @@ class PerfTestCodeGenFortran:
 
         # generate iteration variables
         max_dim = 0
-        for _,_,_,vdims,_ in input_decls:
+        for _,_,_,_,vdims,_ in input_decls:
             max_dim = max(max_dim, len(vdims))
         iter_vars = ['i%s' % x for x in range(1, max_dim+1)]
         
         # generate array value initializations
         inits = []
-        for _, vt, vname, vdims, rhs in input_decls:
+        for _, _, vt, vname, vdims, rhs in input_decls:
 
             if vt in ['single','double']: vtype = 'real(%s)' % vt
             elif vt == 'int': vtype = 'integer'
