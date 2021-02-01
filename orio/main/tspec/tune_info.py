@@ -24,7 +24,7 @@ class TuningInfo:
         
         pcount_method, pcount_reps, random_seed, timing_array_size = pcount_info
         power_method, power_reps, random_seed, power_array_size = power_info
-        search_algo, search_time_limit, search_total_runs, search_resume, search_opts = search_info
+        search_algo, search_time_limit, search_total_runs, search_use_z3, search_resume, search_opts = search_info
         pparam_params, pparam_constraints = pparam_info
         cmdline_params, cmdline_constraints = cmdline_info
         iparam_params, iparam_constraints = iparam_info
@@ -64,6 +64,7 @@ class TuningInfo:
         self.search_algo = search_algo                 # default: 'Exhaustive'
         self.search_time_limit = search_time_limit     # default: -1
         self.search_total_runs = search_total_runs     # default: -1
+        self.search_use_z3 = search_use_z3             # default: False
         self.search_resume = search_resume             # default: False
         self.search_opts = search_opts                 # default: []
 
@@ -123,8 +124,9 @@ class TuningInfo:
         s += ' number of power measurements to store: %s \n ' % self.power_array_size
         s += ' timer routine file: %s \n' % self.timer_file
         s += ' search algorithm: %s \n' % self.search_algo
-        s += ' search time limit: %s \n' % self.search_time_limit
+        s += ' search time limit (seconds): %s \n' % self.search_time_limit
         s += ' search total runs: %s \n' % self.search_total_runs
+        s += ' search use z3 [True/False]: %s \n' % self.search_use_z3
         s += ' search resume [True/False]: %s\n' % self.search_resume
         s += ' search options: \n'
         for id_name, rhs in self.search_opts:
@@ -478,6 +480,7 @@ class TuningInfoGen:
         ALGO = 'algorithm'
         TLIMIT = 'time_limit'
         TRUNS = 'total_runs'
+        USE_Z3 = 'use_z3'
         RESUME = 'resume'
 
         # all expected search information
@@ -485,6 +488,7 @@ class TuningInfoGen:
         search_time_limit = None
         search_total_runs = None
         search_resume = False
+        search_use_z3 = False
         search_opts = []
         
         # iterate over each statement
@@ -504,7 +508,7 @@ class TuningInfoGen:
             _, _, (id_name, id_line_no), (rhs, rhs_line_no) = stmt
 
             # unknown argument name
-            if id_name not in (ALGO, TLIMIT, TRUNS, RESUME):
+            if id_name not in (ALGO, TLIMIT, TRUNS, RESUME, USE_Z3):
                 if search_algo == None or not id_name.startswith(search_algo.lower() + '_'):
                     err('orio.main.tspec.tune_info: %s: unknown search argument: "%s"' % (id_line_no, id_name))                    
 
@@ -528,7 +532,14 @@ class TuningInfoGen:
                     warn('orio.main.tspec.tune_info: %s: total number of search runs must be a positive number'  % rhs_line_no)
                     
                 search_total_runs = rhs 
-                         
+
+            # evaluate use_z3 argument
+            elif id_name == USE_Z3:
+                if not isinstance(rhs, bool):
+                    err('orio.main.tspec.tune_info: %s: search parameter uze_z3 must be either True or False.' % rhs_line_no)
+
+                search_use_z3 = rhs
+
             # evaluate all other algorithm-specific arguments
             elif search_algo != None and id_name.startswith(search_algo.lower() + '_'):
                 id_name_orig = id_name
@@ -548,7 +559,7 @@ class TuningInfoGen:
 
 
         # return all search information
-        return (search_algo, search_time_limit, search_total_runs, search_resume, search_opts)
+        return (search_algo, search_time_limit, search_total_runs, search_use_z3, search_resume, search_opts)
 
     #-----------------------------------------------------------
 
@@ -1006,7 +1017,7 @@ class TuningInfoGen:
             # search definition
             elif dname == SEARCH:
                 (search_algo, search_time_limit,
-                 search_total_runs, search_resume, 
+                 search_total_runs, search_use_z3, search_resume,
                  search_opts) = self.__genSearchInfo(body_stmt_seq, line_no)
                 default_s_algo, default_s_tlimit, default_s_truns, default_s_resume, _ = search_info
                 if search_algo == None:
@@ -1017,8 +1028,8 @@ class TuningInfoGen:
                     search_total_runs = default_s_truns
                 if search_resume == None: 
                     search_resume = False
-                search_info = (search_algo, search_time_limit, search_total_runs, search_resume, 
-                               search_opts)
+                search_info = (search_algo, search_time_limit, search_total_runs, search_use_z3,
+                               search_resume, search_opts)
             
             # performance parameters definition
             elif dname == PERF_PARAMS:

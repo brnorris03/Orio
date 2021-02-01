@@ -13,7 +13,7 @@ keywords = [
     'build', 'build_command', 'prebuild_command', 'postbuild_command', 'postrun_command', 'batch_command', 'status_command', 'num_procs', 'libs',
     'input_params', 'input_vars', 'static', 'dynamic', 'void', 'char', 'short', 'int', 'long', 'float', 'double', '__device__',
     'performance_params', 'performance_counter', 'power', 'cmdline_params', 'method', 'repetitions',
-    'search', 'time_limit', 'total_runs', 'resume', 'algorithm',
+    'search', 'time_limit', 'total_runs', 'use_z3', 'resume', 'algorithm',
     'init_file', 'decl_file',
     'exhaustive_start_coord',
     'msimplex_reflection_coef', 'msimplex_expansion_coef',
@@ -203,6 +203,7 @@ def p_arg_type(p):
                 | ALGORITHM
                 | TIME_LIMIT
                 | TOTAL_RUNS
+                | USE_Z3
                 | RESUME
                 | LIBS
                 | INIT_FILE

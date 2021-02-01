@@ -112,6 +112,7 @@ class PerfTuner:
         # search runs
         search_time_limit = 60 * tinfo.search_time_limit
         search_total_runs = tinfo.search_total_runs
+        search_use_z3 = tinfo.search_use_z3
         search_resume = tinfo.search_resume
 
         # get the search-algorithm-specific arguments

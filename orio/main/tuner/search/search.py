@@ -23,6 +23,8 @@ class Search:
         else: self.time_limit = -1
         if 'search_total_runs' in list(params.keys()): self.total_runs = params['search_total_runs']
         else: self.total_runs = -1
+        if 'search_use_z3' in list(params.keys()): self.use_z3 = params['search_use_z3']
+        else: self.use_z3 = False
         if 'search_resume' in list(params.keys()): self.resume = params['search_resume']
         else: self.resume = False
         if 'search_opts' in list(params.keys()): self.search_opts = params['search_opts']
