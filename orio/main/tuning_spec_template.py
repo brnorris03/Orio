@@ -60,5 +60,5 @@ default_params=dict(
 default_input_type = 'dynamic double'
 # default_input_type = 'static double'
 
-# Note supported
+# Not supported
 # parallelize = ['False', 'True'],  # with standalone unrolljam

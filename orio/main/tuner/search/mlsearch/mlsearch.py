@@ -1,5 +1,7 @@
 #
 # Implementation of the ml search algorithm
+# Primary author: Prasanna Balaprakash (pbalapra@mcs.anl.gov)
+# Bug fixes, updates: Boyana Norris (brnorris03@gmail.com)
 #
 
 import sys, time
@@ -160,6 +162,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
             runs += 1
 
             perf_costs = {}
+            perf_cost = self.MAXFLOAT
             try:
                 perf_costs = self.getPerfCosts([coord])
             except Exception as e:
