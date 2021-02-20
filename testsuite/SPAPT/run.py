@@ -7,10 +7,10 @@ kernels = ['adi', 'atax', 'bicgkernel', 'correlation', 'covariance', 'dgemv3', '
            'gemver', 'gesummv', 'hessian', 'jacobi', 'lu', 'mm', 'mvt', 'seidel',
            'stencil3d', 'tensor-contraction', 'trmm']
 
-search_methods = [('Randomsearch',10000), ('Randomlocal',10000), ('Randomsimple',10000)]
+search_methods = [('Randomsearch',1000), ('Randomlocal',1000), ('Randomsimple',1000)]
     #, 'Mlsearch', 'msimplex', 'simplex', 'firefly', 'direct']
 
-reps = {1 : 20, 2 : 10, 3 : 5, 4 : 20, 5 : 10, 6 : 5 }
+reps = {1 : 10, 2 : 7, 3 : 5, 4 : 10, 5 : 7, 6 : 5 }
 
 import os, sys, glob, socket, datetime, massedit
 
@@ -75,6 +75,9 @@ def run(dry_run=True):
                     # dispatch to Orio's main
                     import orio.main.orio_main
                     orio.main.orio_main.start(['orcc','-vk',input], orio.main.orio_main.C_CPP)
+                    archivedir = 'archive-%s' % input
+                    if not os.path.exists(archivedir): os.mkdir(archivedir)
+                    os.system('mv _* tuning*.log %s' % archivedir)
    
         print("========== Successfully ran all tests in SPAPT (%s) =========" % timestamp())
 
