@@ -27,11 +27,11 @@ def timestamp():
 def setup(version, reps, search, maxruns):
     filenames = glob.glob('*.src%d.c' % version)
     print(filenames)
-    massedit.edit_files(filenames, ["re.sub(r'arg repetitions = 35;', 'arg repetitions = %d;', line)" % reps])
-    massedit.edit_files(filenames, ["re.sub(r\"arg algorithm = 'Randomsearch';\", \"arg algorithm = '%s';\", line)" % search])
-    massedit.edit_files(filenames, ["re.sub(r'arg total_runs = 10000;', 'arg total_runs = %d;', line)" % maxruns])
+    massedit.edit_files(filenames, ["re.sub(r'arg repetitions = 35;', 'arg repetitions = %d;', line)" % reps], dry_run=False)
+    massedit.edit_files(filenames, ["re.sub(r\"arg algorithm = 'Randomsearch';\", \"arg algorithm = '%s';\", line)" % search], dry_run=False)
+    massedit.edit_files(filenames, ["re.sub(r'arg total_runs = 10000;', 'arg total_runs = %d;', line)" % maxruns], dry_run=False)
 
-def run():
+def run(dry_run=True):
     outdir = timestamp()
     spaptdir = os.path.abspath(os.getcwd())
     orcc = os.path.abspath(os.path.join(spaptdir.replace('testsuite/SPAPT',''),'orcc'))
@@ -64,13 +64,14 @@ def run():
             for variant in range(1,7):
                 setup(variant, reps[variant], search, maxruns) 
                 input = glob.glob('*.src%d.c' % variant)[0]
-                orio_cmd = orcc + ' -vzk ' + input
+                orio_cmd = orcc + ' -vk ' + input
                 print(orio_cmd)
-                #os.system(orio_cmd)
+                if not dry_run:
+                    os.system(orio_cmd)
    
         print("========== Successfully ran all tests in SPAPT (%s) =========" % timestamp())
 
 
 if __name__ == "__main__":
-    run()
-    
+    run(False)
+
