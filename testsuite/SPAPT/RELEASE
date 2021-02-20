@@ -1,10 +1,18 @@
 Search Problems in Automatic Performance Tuning (SPAPT)
 
 ===
+Version: 0.4
+Date: February 20, 2021
+
+* Updated for Orio 0.6.1
+* Bug fixes in: mvt 
+* Added run script
+
+===
 Version: 0.3
 Date: November 3, 2011
 
 ===
-Verion: 0.1
+Version: 0.1
 Date: April 18, 2011
 
