@@ -3,6 +3,10 @@
 # Usage: run.py [output_dir]
 # If output directory is specified, it's used, otherwise a timestamp-named directory is created
 
+
+gcc_arch = 'znver2'  # skylake-avx512
+icc_arch = 'skylake'
+
 kernels = ['adi', 'atax', 'bicgkernel', 'correlation', 'covariance', 'dgemv3', 'fdtd',
            'gemver', 'gesummv', 'hessian', 'jacobi', 'lu', 'mm', 'mvt', 'seidel',
            'stencil3d', 'tensor-contraction', 'trmm']
@@ -29,8 +33,8 @@ def timestamp():
 def setup(version, reps, search, maxruns):
     filenames = glob.glob('*.src%d.c' % version)
     print(filenames)
-    massedit.edit_files(filenames, ["re.sub(r'gcc ', 'gcc-10 -Ofast -mavx2 -m64 ', line)"], dry_run=False)
-    #massedit.edit_files(filenames, ["re.sub(r'gcc -O3 -fopenmp ','icc -O3 -mtune=skylake -xCORE-AVX512 -qopt-zmm-usage=high -qopenmp ', line)"], dry_run=False)
+    massedit.edit_files(filenames, ["re.sub(r'gcc ', 'gcc -Ofast -march=%s -mavx2 -m64 ', line)" % gcc_arch], dry_run=False)
+    #massedit.edit_files(filenames, ["re.sub(r'gcc -O3 -fopenmp ','icc -O3 -mtune=%s -xCORE-AVX512 -qopt-zmm-usage=high -qopenmp ' % icc_arch, line)"], dry_run=False)
     massedit.edit_files(filenames, ["re.sub(r'arg repetitions = 35;', 'arg repetitions = %d;', line)" % reps], dry_run=False)
     massedit.edit_files(filenames, ["re.sub(r\"arg algorithm = 'Randomsearch';\", \"arg algorithm = '%s';\", line)" % search], dry_run=False)
     massedit.edit_files(filenames, ["re.sub(r'arg total_runs = 10000;', 'arg total_runs = %d;', line)" % maxruns], dry_run=False)
