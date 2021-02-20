@@ -19,6 +19,8 @@ import os, sys, glob, socket, datetime, massedit
 top_dir = os.path.dirname(os.path.realpath(os.path.join('..','..',__file__,'orio')))
 sys.path.insert(0, os.path.dirname(top_dir))
 
+
+
 def timestamp():
     hostname = socket.gethostname()
     timestamp = hostname + '_' + datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
@@ -66,12 +68,15 @@ def run(dry_run=True):
                 input = glob.glob('*.src%d.c' % variant)[0]
                 orio_cmd = orcc + ' -vk ' + input
                 print(orio_cmd)
+                import orio.main.orio_main
                 if not dry_run:
-                    os.system(orio_cmd)
+                    # dispatch to Orio's main
+                    import orio.main.orio_main
+                    orio.main.orio_main.start(['orcc','-vk',input], orio.main.orio_main.C_CPP)
    
         print("========== Successfully ran all tests in SPAPT (%s) =========" % timestamp())
 
 
 if __name__ == "__main__":
-    run(False)
+    run(dry_run = False)
 
