@@ -56,7 +56,7 @@
     param NCONT = 1000;
     param M = 1000;
     param N = 1000;
-    param K = 500;
+    param K = 1000;
   }
   def input_vars
   { 
