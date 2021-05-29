@@ -956,7 +956,7 @@ class TuningInfoGen:
         build_info = {'build_cmd': 'gcc -O3', 'libs': ''}
         pcount_info = ('basic timer', 5, None, None)
         power_info = ('none', 5, None, None)
-        search_info = ('Exhaustive', -1, -1, False, [])
+        search_info = ('Exhaustive', -1, -1, False, False, [])
         pparam_info = ([], [])
         cmdline_info = ([], [])
         iparam_info = ([], [])
@@ -1045,7 +1045,7 @@ class TuningInfoGen:
                 (search_algo, search_time_limit,
                  search_total_runs, search_use_z3, search_resume,
                  search_opts) = self.__genSearchInfo(body_stmt_seq, line_no)
-                default_s_algo, default_s_tlimit, default_s_truns, default_s_resume, _ = search_info
+                default_s_algo, default_s_tlimit, default_s_truns, search_use_z3, default_s_resume, _ = search_info
                 if search_algo == None:
                     search_algo = default_s_algo
                 if search_time_limit == None:
