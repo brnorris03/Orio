@@ -19,7 +19,7 @@ void MatMatMult(double* A, double* B, double* C, int m, int n, int p) {
           decl static double C[M*P] = 0;
         }
         def build {
-          arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
+          arg build_command = 'nvcc -arch=sm_75 @CFLAGS';
         }
         def performance_counter {
           arg method = 'basic timer';

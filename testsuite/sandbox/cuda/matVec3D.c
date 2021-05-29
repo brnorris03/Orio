@@ -26,7 +26,7 @@ void MatMult_SeqDIA(double* A, double* x, double* y, int M, int N, int P, int NO
           decl static int offsets[NOS]        = {-M*N*DOF,-M*DOF,-DOF,0,DOF,M*DOF,M*N*DOF};
         }
         def build {
-          arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
+          arg build_command = 'nvcc -arch=sm_75 @CFLAGS';
         }
         def performance_counter {
           arg method = 'basic timer';

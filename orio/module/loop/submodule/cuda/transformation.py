@@ -33,8 +33,9 @@ class Transformation(object):
       
       self.tinfo = tinfo
       if self.tinfo is not None and self.streamCount > 1:
-        ivarLists = [x for x in tinfo.ivar_decls if len(x[3])>0]
-        ivarListLengths = set(reduce(lambda acc,item: acc+item[3], ivarLists, []))
+        # x is a tuple of the form (is_static, is_managed, dtype, id_name, ddims, rhs)
+        ivarLists = [x for x in tinfo.ivar_decls if len(x[4])>0]
+        ivarListLengths = list(set(reduce(lambda acc,item: acc+item[4], ivarLists, [])))
         if len(ivarListLengths) > 1:
           raise Exception(('orio.module.loop.submodule.cuda.transformation: streaming for different-length arrays is not supported'))
       
@@ -81,6 +82,7 @@ class Transformation(object):
         'int3':     NumLitExp(3, NumLitExp.INT),
 
         'sizeofDbl': FunCallExp(IdentExp('sizeof'), [IdentExp('double')]),
+        'sizeofFlt': FunCallExp(IdentExp('sizeof'), [IdentExp('float')]),
         
         'prefix': 'orcu_',
         'dev':    'dev_'
@@ -228,18 +230,20 @@ class Transformation(object):
         if self.tinfo is None:
           aidbytes = self.cs['nbytes']
         else:
-          aidtinfo = [x for x in self.tinfo.ivar_decls if x[2] == aid]
+          # x is a tuple of the form (is_static, is_managed, dtype, id_name, ddims, rhs)
+          aidtinfo = [x for x in self.tinfo.ivar_decls if x[3] == aid]
           if len(aidtinfo) == 0:
             raise Exception('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
           else:
             aidtinfo = aidtinfo[0]
-          aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
+          aidbytes = BinOpExp(IdentExp(aidtinfo[4][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[2])]), BinOpExp.MUL)
         mallocs += [
           ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
                              [UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF),
                               aidbytes
                               ]))
         ]
+    
         # memcopy rhs arrays device to host
         if aid in self.model['rhs_arrays']:
           if self.streamCount > 1:
@@ -290,12 +294,13 @@ class Transformation(object):
         if self.tinfo is None:
           aidbytes = FunCallExp(IdentExp('sizeof'), [IdentExp(aid)])
         else:
-          aidtinfo = [x for x in self.tinfo.ivar_decls if x[2] == aid]
+          # x is a tuple of the form (is_static, is_managed, dtype, id_name, ddims, rhs)
+          aidtinfo = [x for x in self.tinfo.ivar_decls if x[3] == aid]
           if len(aidtinfo) == 0:
             raise Exception('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
           else:
             aidtinfo = aidtinfo[0]
-          aidbytes = BinOpExp(IdentExp(aidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[1])]), BinOpExp.MUL)
+          aidbytes = BinOpExp(IdentExp(aidtinfo[4][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[2])]), BinOpExp.MUL)
         mallocs += [
           ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
                              [UnaryExp(IdentExp(daid), UnaryExp.ADDRESSOF),
@@ -383,12 +388,13 @@ class Transformation(object):
             if self.tinfo is None:
               raidbytes = self.cs['nbytes']
             else:
-              raidtinfo = [x for x in self.tinfo.ivar_decls if x[2] == raid]
+              # x is a tuple of the form (is_static, is_managed, dtype, id_name, ddims, rhs)
+              raidtinfo = [x for x in self.tinfo.ivar_decls if x[3] == raid]
               if len(raidtinfo) == 0:
                 raise Exception('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
               else:
                 raidtinfo = raidtinfo[0]
-              raidbytes = BinOpExp(IdentExp(raidtinfo[3][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(raidtinfo[1])]), BinOpExp.MUL)
+              raidbytes = BinOpExp(IdentExp(raidtinfo[4][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(raidtinfo[2])]), BinOpExp.MUL)
             d2hcopys += [
               ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
                                  [IdentExp(raid), IdentExp(draid),
@@ -603,8 +609,8 @@ class Transformation(object):
         # collect all array and non-array idents in the loop body
         collectArrayIdents = lambda n: [n.exp.name] if (isinstance(n, ArrayRefExp) and isinstance(n.exp, IdentExp)) else []
         array_ids = set(loop_lib.collectNode(collectArrayIdents, loop_body))
-        lhs_array_ids = list(set(lhs_ids).intersection(array_ids))
-        rhs_array_ids = list(set(rhs_ids).intersection(array_ids))
+        lhs_array_ids = set(lhs_ids).intersection(array_ids)
+        rhs_array_ids = set(rhs_ids).intersection(array_ids)
         self.model['isReduction'] = len(lhs_array_ids) == 0
         self.model['rhs_arrays'] = rhs_array_ids
         self.model['lhss'] = lhs_ids
@@ -637,17 +643,17 @@ class Transformation(object):
         # begin rewrite the loop body
         # create decls for ubound_exp id's, assuming all ids are int's
         ubound_idss = [loop_lib.collectNode(collectIdents, x) for x in [ubound_exp]+([ubound_exp2] if nestedLoop else [])]
-        ubound_ids = reduce(lambda acc,item: acc+item, ubound_idss, [])
+        ubound_ids = list(set(reduce(lambda acc,item: acc+item, ubound_idss, [])))
         kernelParams = [FieldDecl('const int', x) for x in ubound_ids]
 
-        arraySubs = set([x for x in loop_lib.collectNode(collectArraySubscripts, loop_body) if x not in (indices+ubound_ids)])
+        arraySubs = list(set([x for x in loop_lib.collectNode(collectArraySubscripts, loop_body) if x not in (indices+ubound_ids)]))
         inferredInts = list(arraySubs) + indices + ubound_ids
         int_ids_pass2 = set([x for x in loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body) if x not in (indices+ubound_ids)])
         #int_ids_pass2 = set(loop_lib.collectNode(collectIntIdsClosure(inferredInts), loop_body))
         ktempints += [x for x in list(arraySubs) if x in lhs_ids] # kernel temporary integer vars
         kdeclints = int_ids_pass2.difference(ktempints) # kernel integer parameters
-        intarrays = list(int_ids_pass2.intersection(array_ids))
-        kdeclints = list(kdeclints.difference(intarrays))
+        intarrays = list(set(int_ids_pass2.intersection(array_ids)))
+        kdeclints = list(set(kdeclints.difference(intarrays)))
         if str(lbound_exp) != '0':
           lbound_id = self.cs['prefix'] + 'var' + str(g.Globals().getcounter())
           self.model['lbound'] = VarDeclInit('int', IdentExp(lbound_id), lbound_exp)
@@ -786,7 +792,7 @@ class Transformation(object):
                 sharedVar = 'shared_' + var
                 kernelStmts += [
                     # __shared__ double shared_var[threadCount];
-                    VarDecl('__shared__ double', [sharedVar + '[' + str(self.threadCount) + ']'])
+                    VarDecl('__shared__ ' + idents[var][:-1], [sharedVar + '[' + str(self.threadCount) + ']'])
                 ]
                 sharedVarExp = ArrayRefExp(IdentExp(sharedVar), threadIdx)
                 varExp       = ArrayRefExp(IdentExp(var), index_id)

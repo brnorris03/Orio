@@ -31,6 +31,8 @@ Options:
                                  files to be the same as those that would result from compiling
                                  the original source code
   -s <file>, --spec=<file>       read tuning specifications from <file>
+  --search="searchalg;opt1=val1;..." Search algorithm and its options; overrides tuning spec search
+                                 section entries, e.g., --search="Mlsearch;total_runs=100"
   --stop-on-error                exit with an error code when first exception occurs
   -x, --external                 run orio in external mode
   --config=<p1:v1,p2:v2,..>      configurations for external mode
@@ -130,7 +132,8 @@ class CmdParser:
             opts, args = getopt.getopt(orioargv,
                                        'c:d:ehko:p:rs:vx',
                                        ['pre-command=','debug=','config=','configfile=', 'erase-annot', 'help', 'keep-temps',' output=',
-                                        'output-prefix=', 'rename-objects',  'spec=', 'stop-on-error', 'verbose', 'extern',
+                                        'output-prefix=', 'rename-objects',  'spec=', 'verbose', 'extern',
+                                        'stop-on-error', 'search=',
                                         'validate', 'post-command=', 'meta', 'marker-loops',
                                         'logdir='])
         except Exception as e:
@@ -161,6 +164,8 @@ class CmdParser:
                 cmdline['rename_objects'] = True
             elif opt in ('-s', '--spec'):
                 cmdline['spec_filename'] = arg
+            elif opt in('--search'):
+                cmdline['searcn'] = arg     # --search="searchalg;opt1=val1;..." 
             elif opt in ('-v', '--verbose'):
                 cmdline['verbose'] = True
             elif opt in ('-x','--extern'):

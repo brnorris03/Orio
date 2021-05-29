@@ -502,10 +502,20 @@ class TuningInfoGen:
         search_use_z3 = False
         search_opts = []
 
+        cmdline_params = Globals().cmdline.get('search')
+        if cmdline_params:
+            parts = cmdline_params.split(';')
+            smtt_seq = [(None, None, (ALGO,0), (parts[0],0))]
+            for p in parts[1:]:
+                if p.find('=') < 0:
+                    err('orio.main.tspec.tune_info: --search command-line argument contains an invalid option: %s' % p)
+                lhs,rhs=p.strip().split('=')
+                stmt_seq.append((None, None, (lhs,0), (rhs,0)))
+             
         # iterate over each statement
         for stmt in stmt_seq:
 
-            # get the statement keyword and its line number
+            # get the tuning spec statement keyword and its line number
             keyw = stmt[0]
             line_no = stmt[1]
 
