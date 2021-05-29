@@ -757,7 +757,6 @@ class Transformation(object):
           kernelParams += domainParams
         #--------------------------------------------------------------------------------------------------------------
 
-
         #--------------------------------------------------------------------------------------------------------------
         #--------------------------------------------------------------------------------------------------------------
         #--------------------------------------------------------------------------------------------------------------
@@ -1128,15 +1127,17 @@ class Transformation(object):
         # if streaming, divide vectors into chunks and asynchronously overlap copy-copy and copy-exec ops
         if self.streamCount > 1:
           self.createStreamDecls()
+        g.debug('orio.module.loop.submodule.cuda.CUDA: after createVarDels() and createStreamDecls() calls')
 
         # malloc and memcpy
         self.createMallocs()
+        g.debug('orio.module.loop.submodule.cuda.CUDA: after createMallocs() call')
         
         # kernel calls
         self.createKernelCalls()
+        g.debug('orio.module.loop.submodule.cuda.CUDA: after createKernelCalls() call')
         # end marshal resources
         #--------------------------------------------------------------------------------------------------------------
-        
         
         #--------------------------------------------------------------------------------------------------------------
         # cuda timing calls
