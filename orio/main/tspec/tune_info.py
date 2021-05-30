@@ -485,7 +485,7 @@ class TuningInfoGen:
     # -----------------------------------------------------------
 
     def __genSearchInfo(self, stmt_seq, def_line_no):
-        '''To generate information about the search technique used to explore the search space'''
+        """Generate information about the search technique used to explore the search space"""
 
         # all expected argument names
         ALGO = 'algorithm'
@@ -503,14 +503,14 @@ class TuningInfoGen:
         search_opts = []
 
         cmdline_params = Globals().cmdline.get('search')
-        if cmdline_params:
+        if cmdline_params:  # Handle the command-line --search option
             parts = cmdline_params.split(';')
-            smtt_seq = [(None, None, (ALGO,0), (parts[0],0))]
+            stmt_seq = [('arg', 0, (ALGO,0), (parts[0],0))]
             for p in parts[1:]:
                 if p.find('=') < 0:
                     err('orio.main.tspec.tune_info: --search command-line argument contains an invalid option: %s' % p)
                 lhs,rhs=p.strip().split('=')
-                stmt_seq.append((None, None, (lhs,0), (rhs,0)))
+                stmt_seq.append(('arg', 0, (lhs,0), (eval(rhs),0)))
              
         # iterate over each statement
         for stmt in stmt_seq:

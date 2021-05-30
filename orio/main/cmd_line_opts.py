@@ -165,7 +165,7 @@ class CmdParser:
             elif opt in ('-s', '--spec'):
                 cmdline['spec_filename'] = arg
             elif opt in('--search'):
-                cmdline['searcn'] = arg     # --search="searchalg;opt1=val1;..." 
+                cmdline['search'] = arg     # --search="searchalg;opt1=val1;..." 
             elif opt in ('-v', '--verbose'):
                 cmdline['verbose'] = True
             elif opt in ('-x','--extern'):
