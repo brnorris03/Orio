@@ -37,7 +37,7 @@ class Transformation(object):
         ivarLists = [x for x in tinfo.ivar_decls if len(x[4])>0]
         ivarListLengths = list(set(reduce(lambda acc,item: acc+item[4], ivarLists, [])))
         if len(ivarListLengths) > 1:
-          raise Exception(('orio.module.loop.submodule.cuda.transformation: streaming for different-length arrays is not supported'))
+           raise(('orio.module.loop.submodule.cuda.transformation: streaming for different-length arrays is not supported'))
       
       # ---------------------------------------------------------------------
       # analysis results; initial values are at defaults
@@ -561,7 +561,6 @@ class Transformation(object):
 
         # abbreviations
         loop_lib = orio.module.loop.ast_lib.common_lib.CommonLib()
-
         #--------------------------------------------------------------------------------------------------------------
         # analysis
         # collect all identifiers from the loop's upper bound expression
@@ -792,7 +791,7 @@ class Transformation(object):
                 sharedVar = 'shared_' + var
                 kernelStmts += [
                     # __shared__ double shared_var[threadCount];
-                    VarDecl('__shared__ ' + idents[var][:-1], [sharedVar + '[' + str(self.threadCount) + ']'])
+                    VarDecl('__shared__ double ', [sharedVar + '[' + str(self.threadCount) + ']'])
                 ]
                 sharedVarExp = ArrayRefExp(IdentExp(sharedVar), threadIdx)
                 varExp       = ArrayRefExp(IdentExp(var), index_id)

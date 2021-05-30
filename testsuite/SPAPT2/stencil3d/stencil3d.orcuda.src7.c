@@ -8,7 +8,7 @@
   }
   
   def search {
-    arg algorithm = 'Randomsearch';
+    arg algorithm = 'Randomlocal';
     arg total_runs = 10000;
   }
 
@@ -19,7 +19,7 @@
     param cache_blocks[] = [False, True];		
     param preferred_L1_cache[]  = [16,32,48];
     param stream_count[] = range(1,31);
-    param CFLAGS[] = ['-O0','-O3','-use_fast_math'];
+    param CFLAGS[] = ['-O3','-use_fast_math'];
   }
 
   def input_params {

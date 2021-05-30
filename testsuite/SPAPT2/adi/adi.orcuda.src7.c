@@ -6,8 +6,8 @@ void adi(double* X, double* A, double* B) {
         param inner_loop_unroll_fact[] = range(1, 33);
 	param cache_blocks[] = [False, True];
         param preferred_L1_cache[]  = [16,32,48];
-        param stream_count[] = range(1,31);
-        param CFLAGS[] = ['-O0','-O3','-use_fast_math'];
+        param stream_count[] = range(1,33);
+        param CFLAGS[] = ['-O3','-use_fast_math'];
     }
     def build {
       arg build_command = 'nvcc -arch=sm_75 @CFLAGS';
@@ -18,7 +18,7 @@ void adi(double* X, double* A, double* B) {
     }
 
     def search {
-        arg algorithm = 'Randomsearch';
+        arg algorithm = 'Randomlocal';
         arg total_runs = 10000;
     }
 

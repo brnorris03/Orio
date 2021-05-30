@@ -149,8 +149,8 @@ class Randomlocal(orio.main.tuner.search.search.Search):
                 pcosts = '[]'
                 if perf_cost and len(perf_cost) > 1:
                     pcosts = '[' + ', '.join(["%2.4e" % x for x in perf_cost]) + ']'
-                msgstr1 = '(run %d) sruns: %d, fruns: %d, coordinate: %s, perf_params: %s, ' % \
-                          (runs + i, sruns, fruns, str(coord_val), str(perf_params))
+                msgstr1 = '(run %d) | %s | sruns: %d, fruns: %d, coordinate: %s, perf_params: %s, ' % \
+                          (runs + i, str(datetime.datetime.now()), sruns, fruns, str(coord_val), str(perf_params))
                 msgstr2 = 'transform_time: %2.4e, compile_time: %2.4e, cost: %s' % \
                           (transform_time, compile_time, pcosts)
                 info(msgstr1 + msgstr2)

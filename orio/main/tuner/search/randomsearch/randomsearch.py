@@ -194,7 +194,8 @@ class Randomsearch(orio.main.tuner.search.search.Search):
             res_obj['transform_time']=transform_time
             res_obj['compile_time']=compile_time
             res_obj['cost']=perf_cost
-            info('(run %s) | '%runs+json.dumps(res_obj))
+            info('(run %s) | %s | ' % (runs,datetime.datetime.now()) + json.dumps(res_obj))
+
             #info('run %s | coordinate: %s | perf_params: %s | transform_time: %s | compile_time: %s | cost: %s' % (runs, coord, params, transform_time, compile_time,perf_cost))
 
             eval_cost.append(mean_perf_cost)
@@ -347,7 +348,7 @@ class Randomsearch(orio.main.tuner.search.search.Search):
 
             if not math.isinf(mean_perf_cost):
                 sruns +=1
-                info('(run %s) sruns: %s, fruns: %s, coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs+i, sruns, fruns, coord_val, perf_params, transform_time, compile_time,perf_cost))
+                info('(run %s) | %s | sruns: %s, fruns: %s, coordinate: %s, perf_params: %s, transform_time: %s, compile_time: %s, cost: %s' % (runs+i, str(datetime.datetime.now()), sruns, fruns, coord_val, perf_params, transform_time, compile_time,perf_cost))
 
 
             # check if the time is up
