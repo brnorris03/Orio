@@ -1,8 +1,8 @@
 /*@ begin PerfTuning (        
-  def build {    
+  def build {
     arg build_command = 'nvcc -arch=sm_75 @CFLAGS';
   }
-   
+
   def performance_counter {
     arg repetitions = 3;
   }
@@ -20,43 +20,56 @@
     arg algorithm = 'Randomlocal';
     arg total_runs = 10000;
   }
-   
+  
   def input_params {
-    let SIZE = 10000;
-    param MSIZE = SIZE;
-    param NSIZE = SIZE;
-    param M = SIZE;
-    param N = SIZE;
-  }
+    param SIZE = 10000;
+    param N = 2000;
+  }            
 
-  def input_vars {
-    decl int m = M;
+  def input_vars
+  { 
     decl int n = N;
-    decl static double a[M*N] = random;
-    decl static double y_1[N] = random;
-    decl static double y_2[M] = random;
-    decl static double x1[M] = 0;
-    decl static double x2[N] = 0;
-  }
+    decl static double X0[N*N] = random;
+    decl static double X1[N*N] = random;
+    decl static double X2[N*N] = random;
+    decl static double Y[N*N] = 0;
+    decl static double u0[N] = random;
+    decl static double u1[N] = random;
+    decl static double u2[N] = random;
+    decl double a0 = 32.12;
+    decl double a1 = 3322.12;
+    decl double a2 = 1.123;
+    decl double b00 = 1321.9;
+    decl double b01 = 21.55;
+    decl double b02 = 10.3;
+    decl double b11 = 1210.313;
+    decl double b12 = 9.373;
+    decl double b22 = 1992.31221;
+  }            
+
 ) @*/
 
 #define max(x,y)    ((x) > (y)? (x) : (y))
 #define min(x,y)    ((x) < (y)? (x) : (y))
 
 /*@ begin Loop(
-
   transform CUDA(threadCount=thread_count,
                  blockCount=block_count,
                  cacheBlocks=cache_blocks,
                  preferL1Size=preferred_L1_cache,
                  unrollInner=inner_loop_unroll_fact)
-  for (i=0;i<=m-1;i++)
-    for (j=0;j<=n-1;j++) { 
-      x1[i]=x1[i] + a[i*n+j] * y_1[j]; 
-      x2[j]=x2[j] + a[i*n+j] * y_2[i]; 
-    } 
-) @*/
+  for (i=0; i<=n-1; i++)
+    for (j=0; j<=n-1; j++) {
+      Y[i*n+j]=a0*X0[i*n+j] + a1*X1[i*n+j] + a2*X2[i*n+j]
+	+ 2.0*b00*u0[i]*u0[j]
+	+ 2.0*b11*u1[i]*u1[j]
+	+ 2.0*b22*u2[i]*u2[j]
+	+ b01*u0[i]*u1[j] + b01*u1[i]*u0[j] 
+	+ b02*u0[i]*u2[j] + b02*u2[i]*u0[j]
+	+ b12*u1[i]*u2[j] + b12*u2[i]*u1[j];
+    }
 
+) @*/
 
 /*@ end @*/
 /*@ end @*/

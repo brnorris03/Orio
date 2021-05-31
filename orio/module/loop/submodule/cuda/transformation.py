@@ -37,7 +37,7 @@ class Transformation(object):
         ivarLists = [x for x in tinfo.ivar_decls if len(x[4])>0]
         ivarListLengths = list(set(reduce(lambda acc,item: acc+item[4], ivarLists, [])))
         if len(ivarListLengths) > 1:
-           raise(('orio.module.loop.submodule.cuda.transformation: streaming for different-length arrays is not supported'))
+           raise Exception('orio.module.loop.submodule.cuda.transformation: streaming for different-length arrays is not supported')
       
       # ---------------------------------------------------------------------
       # analysis results; initial values are at defaults
@@ -233,7 +233,7 @@ class Transformation(object):
           # x is a tuple of the form (is_static, is_managed, dtype, id_name, ddims, rhs)
           aidtinfo = [x for x in self.tinfo.ivar_decls if x[3] == aid]
           if len(aidtinfo) == 0:
-            raise Exception('orio.module.loop.submodule.cuda.transformation: %s: unknown input variable argument: "%s"' % aid)
+            raise Exception('orio.module.loop.submodule.cuda.transformation.createMallocs: unknown input variable argument: "%s"' % aid)
           else:
             aidtinfo = aidtinfo[0]
           aidbytes = BinOpExp(IdentExp(aidtinfo[4][0]), FunCallExp(IdentExp('sizeof'), [IdentExp(aidtinfo[2])]), BinOpExp.MUL)

@@ -1,8 +1,18 @@
-#
 # Implementation of the ml search algorithm
 # Primary author: Prasanna Balaprakash (pbalapra@mcs.anl.gov)
 # Bug fixes, updates: Boyana Norris (brnorris03@gmail.com)
 #
+# The ML model that is used is extra tree regressor. 
+# https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesRegressor.html
+#
+# The main limitation: it is a local search method (only exploitation not much exploration). 
+# The quality of the local solution will depend on the initialization. 
+# One way to overcome this is to specify the use_z3=True (in the tuning spec)  when using this method.
+#
+# Assumption: The search space is discrete (integer/categorical parameters) 
+# (not real, which is the case for most of the autotuning problems).
+
+
 
 import sys, time
 import math

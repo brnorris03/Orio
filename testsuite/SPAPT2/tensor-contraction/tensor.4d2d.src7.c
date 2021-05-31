@@ -1,12 +1,12 @@
 /*@ begin PerfTuning (        
-  def build {    
+  def build {
     arg build_command = 'nvcc -arch=sm_75 @CFLAGS';
   }
    
   def performance_counter {
     arg repetitions = 3;
   }
-  
+
   def performance_params {
     param thread_count[]  = range(32,1025,32);	# threads per block
     param block_count[]  = range(108,1081,108);	# grid.x; multiples of # SMs, 108 for A100
@@ -20,45 +20,47 @@
     arg algorithm = 'Randomlocal';
     arg total_runs = 10000;
   }
-   
+
   def input_params {
-    let SIZE = 10000;
-    param MSIZE = SIZE;
-    param NSIZE = SIZE;
-    param M = SIZE;
-    param N = SIZE;
+    param VSIZE = 500;
+    param OSIZE = 25;
+    param V = 500;
+    param O = 25;
   }
 
   def input_vars {
-    decl int m = M;
-    decl int n = N;
-    decl static double a[M*N] = random;
-    decl static double y_1[N] = random;
-    decl static double y_2[M] = random;
-    decl static double x1[M] = 0;
-    decl static double x2[N] = 0;
+    decl int v = V;
+    decl int o = O;
+    decl dynamic double A2[V*O] = random;
+    decl dynamic double T[V*O*O*O] = random;
+    decl dynamic double R[V*V*O*O] = 0;
   }
+
+  def validation {
+    arg validation_file = 'validation.c';
+  }
+
 ) @*/
 
 #define max(x,y)    ((x) > (y)? (x) : (y))
 #define min(x,y)    ((x) < (y)? (x) : (y))
 
-/*@ begin Loop(
 
-  transform CUDA(threadCount=thread_count,
+/*@ begin Loop(
+ transform CUDA(threadCount=thread_count,
                  blockCount=block_count,
                  cacheBlocks=cache_blocks,
                  preferL1Size=preferred_L1_cache,
                  unrollInner=inner_loop_unroll_fact)
-  for (i=0;i<=m-1;i++)
-    for (j=0;j<=n-1;j++) { 
-      x1[i]=x1[i] + a[i*n+j] * y_1[j]; 
-      x2[j]=x2[j] + a[i*n+j] * y_2[i]; 
-    } 
+  for(i=0; i<=v-1; i++) 
+    for(j=0; j<=v-1; j++) 
+      for(k=0; k<=o-1; k++) 
+        for(l=0; l<=o-1; l++) 
+	  for(m=0; m<=o-1; m++) 
+	    R[i*V*O*O+j*O*O+k*O+l] = R[i*V*O*O+j*O*O+k*O+l] + T[i*O*O*O+m*O*O+k*O+l] * A2[j*O+m];
+
 ) @*/
 
-
 /*@ end @*/
 /*@ end @*/
-
 
