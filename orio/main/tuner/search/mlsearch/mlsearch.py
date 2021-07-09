@@ -163,6 +163,7 @@ class Mlsearch(orio.main.tuner.search.search.Search):
 
             perf_costs = {}
             perf_cost = self.MAXFLOAT
+            mean_perf_cost = perf_cost
             try:
                 perf_costs = self.getPerfCosts([coord])
             except Exception as e:
