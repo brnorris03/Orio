@@ -10,7 +10,7 @@ void FormFunction2D(double lambda, int m, int n, double* X, double *F) {
           param CFLAGS[] = ['', '-O1', '-O2', '-O3'];
         }
         def build {
-          arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
+          arg build_command = 'nvcc -arch=sm_75 @CFLAGS';
         }
         def input_params {
           param lambda = 6;

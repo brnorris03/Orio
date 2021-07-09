@@ -25,6 +25,7 @@ class Globals:
             self.error_post = "\x1B[00m"
             self.metadata = {'loop_transformations':[]}
             self.counter = 0
+            self.cmdline = cmdline
 
             # TODO -- these do not belong here, need to be in a module
             self.funcDec = ''           #Added by Axel Y. Rivera (UofU)

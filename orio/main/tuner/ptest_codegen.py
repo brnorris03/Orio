@@ -345,14 +345,20 @@ const char *__wattprof_conf_file = "1_conf.rnp";
         else:
             init_code = 'void %s() {\n%s\n}\n' % (self.init_func_name, self.init_code)
 
-        init_code += 'int main (int argc, char *argv[]) {\n'
-        # Default timing code
-        begin_inner_measure_code = 'orio_t_start = getClock();'
-        end_inner_measure_code = '''
+        if Globals().language != 'cuda':
+            init_code += 'int main (int argc, char *argv[]) {\n'
+
+            # Default timing code
+            begin_inner_measure_code = 'orio_t_start = getClock();'
+            end_inner_measure_code = '''
     orio_t_end = getClock();
     orio_t = orio_t_end - orio_t_start;
     printf("{'/*@ coordinate @*/' : %g}\\\\n", orio_t);
     '''
+        else:
+            begin_inner_measure_code = ''
+            end_inner_measure_code = ''
+
         begin_outer_measure_code = ''
         end_outer_measure_code = ''
         if self.power:

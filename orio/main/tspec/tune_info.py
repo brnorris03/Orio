@@ -485,7 +485,7 @@ class TuningInfoGen:
     # -----------------------------------------------------------
 
     def __genSearchInfo(self, stmt_seq, def_line_no):
-        '''To generate information about the search technique used to explore the search space'''
+        """Generate information about the search technique used to explore the search space"""
 
         # all expected argument names
         ALGO = 'algorithm'
@@ -502,10 +502,20 @@ class TuningInfoGen:
         search_use_z3 = False
         search_opts = []
 
+        cmdline_params = Globals().cmdline.get('search')
+        if cmdline_params:  # Handle the command-line --search option
+            parts = cmdline_params.split(';')
+            stmt_seq = [('arg', 0, (ALGO,0), (parts[0],0))]
+            for p in parts[1:]:
+                if p.find('=') < 0:
+                    err('orio.main.tspec.tune_info: --search command-line argument contains an invalid option: %s' % p)
+                lhs,rhs=p.strip().split('=')
+                stmt_seq.append(('arg', 0, (lhs,0), (eval(rhs),0)))
+             
         # iterate over each statement
         for stmt in stmt_seq:
 
-            # get the statement keyword and its line number
+            # get the tuning spec statement keyword and its line number
             keyw = stmt[0]
             line_no = stmt[1]
 
@@ -956,7 +966,7 @@ class TuningInfoGen:
         build_info = {'build_cmd': 'gcc -O3', 'libs': ''}
         pcount_info = ('basic timer', 5, None, None)
         power_info = ('none', 5, None, None)
-        search_info = ('Exhaustive', -1, -1, False, [])
+        search_info = ('Exhaustive', -1, -1, False, False, [])
         pparam_info = ([], [])
         cmdline_info = ([], [])
         iparam_info = ([], [])
@@ -1045,7 +1055,7 @@ class TuningInfoGen:
                 (search_algo, search_time_limit,
                  search_total_runs, search_use_z3, search_resume,
                  search_opts) = self.__genSearchInfo(body_stmt_seq, line_no)
-                default_s_algo, default_s_tlimit, default_s_truns, default_s_resume, _ = search_info
+                default_s_algo, default_s_tlimit, default_s_truns, search_use_z3, default_s_resume, _ = search_info
                 if search_algo == None:
                     search_algo = default_s_algo
                 if search_time_limit == None:

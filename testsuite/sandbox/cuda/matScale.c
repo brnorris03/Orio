@@ -11,7 +11,7 @@ void MatScale_SeqDIA(double* A, double a) {
           param CFLAGS[] = ['', '-use_fast_math', '-Xptxas -dlcm=cg'];
         }
         def build {
-          arg build_command = 'nvcc -arch=sm_20 @CFLAGS';
+          arg build_command = 'nvcc -arch=sm_75 @CFLAGS';
         }
         def input_params {
           param N[] = [1000];
