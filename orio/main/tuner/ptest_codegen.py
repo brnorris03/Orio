@@ -542,6 +542,7 @@ class PerfTestCodeGenFortran:
         for is_static, is_managed, vt, vname, vdims, rhs in input_decls:
             
             if vt in ['single','double']: vtype = 'real(%s)' % vt
+            elif vt == 'complex': vtype = 'cuComplex'
             elif vt == 'int': vtype = 'integer'
             else: vtype = vt
             

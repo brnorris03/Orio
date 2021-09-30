@@ -5,7 +5,7 @@ void MatMatMult(double* A, double* B, double* C, int n) {
         param thread_count[]  = range(32,1025,32);	# threads per block
         param block_count[]  = range(108,1081,108);	# grid.x; multiples of # SMs, 108 for A100
         param inner_loop_unroll_fact[] = range(1,33);
-	param cache_blocks[] = [False, True];		
+	    param cache_blocks[] = [False, True];
         param preferred_L1_cache[]  = [16,32,48];
         param stream_count[] = range(1,31);
         param CFLAGS[] = ['-O3','-use_fast_math'];
@@ -22,8 +22,8 @@ void MatMatMult(double* A, double* B, double* C, int n) {
     }
 
     def search {
-        arg algorithm = 'Randomlocal';
-        arg total_runs = 10000;
+        arg algorithm = 'Mlsearch';
+        arg total_runs = 100;
     }
 
     def build {
@@ -44,7 +44,7 @@ int n = M;
 /*@ begin Loop(
   transform CUDA(threadCount=thread_count,
                  blockCount=block_count,
-		 cacheBlocks=cache_blocks,
+		         cacheBlocks=cache_blocks,
                  preferL1Size=preferred_L1_cache,
                  unrollInner=inner_loop_unroll_fact,
                  streamCount=stream_count)
