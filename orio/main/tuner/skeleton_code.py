@@ -403,6 +403,7 @@ SEQ_DEFAULT_CUDA = r'''
 #include <time.h>
 #include <unistd.h>
 #include <cuda.h>
+#include <thrust/complex.h>
 
 /*@ global @*/
 /*@ external @*/

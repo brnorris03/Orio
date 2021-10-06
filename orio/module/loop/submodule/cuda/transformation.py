@@ -83,7 +83,8 @@ class Transformation(object):
 
         'sizeofDbl': FunCallExp(IdentExp('sizeof'), [IdentExp('double')]),
         'sizeofFlt': FunCallExp(IdentExp('sizeof'), [IdentExp('float')]),
-        
+        'sizeofCmpl': FunCallExp(IdentExp('sizeof'), [IdentExp('complex')]),
+
         'prefix': 'orcu_',
         'dev':    'dev_'
       }
@@ -116,7 +117,8 @@ class Transformation(object):
         hostDecls = [ExpStmt(FunCallExp(IdentExp('cudaDeviceSynchronize'), []))]
       hostDecls += [
         Comment('declare variables'),
-        VarDecl('double', ['*'+x[1] for x in self.model['idents']])
+ #       VarDecl('double', ['*'+x[1] for x in self.model['idents']])
+        VarDecl('thrust::complex<double>', ['*'+x[1] for x in self.model['idents']])
       ]
       if len(intarrays)>0:
         hostDecls += [VarDecl('int', ['*'+x[1] for x in intarrays])]
@@ -694,7 +696,8 @@ class Transformation(object):
         kernelParams += [FieldDecl('int', x) for x in self.model['intscalars']]
         kernelParams += [FieldDecl('int*', x) for x in intarrays]
         kernelParams += [FieldDecl('double', x) for x in scalar_ids]
-        kernelParams += [FieldDecl('double*', x) for x in lbi]
+        #kernelParams += [FieldDecl('double*', x) for x in lbi]
+        kernelParams += [FieldDecl('thrust::complex<double>*', x) for x in lbi]
 
         collectLhsExprs = lambda n: [n.lhs] if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN else []
         loop_lhs_exprs = loop_lib.collectNode(collectLhsExprs, loop_body)
@@ -1007,7 +1010,8 @@ class Transformation(object):
               baseExpr = addRemTemplate(baseExpr, NumLitExp(offset, NumLitExp.INT))
 
             # the first thread within a block stores the results for the entire block
-            kernelParams += [FieldDecl('double*', reducts)]
+            #            kernelParams += [FieldDecl('double*', reducts)]
+            kernelParams += [FieldDecl('thrust::complex<double>*', reducts)]
             reduceStmts += [
               ExpStmt(FunCallExp(IdentExp('__syncthreads'),[])),
               IfStmt(BinOpExp(threadIdx, self.cs['int0'], BinOpExp.EQ),
