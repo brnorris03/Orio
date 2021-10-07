@@ -30,6 +30,7 @@ class Transformation(object):
       self.dataOnDevice = targs['dataOnDevice']
       self.unrollInner  = targs['unrollInner']
       self.preferL1Size = targs['preferL1Size']
+      self.dtypes       = {}
       
       self.tinfo = tinfo
       if self.tinfo is not None and self.streamCount > 1:
@@ -38,7 +39,9 @@ class Transformation(object):
         ivarListLengths = list(set(reduce(lambda acc,item: acc+item[4], ivarLists, [])))
         if len(ivarListLengths) > 1:
            raise Exception('orio.module.loop.submodule.cuda.transformation: streaming for different-length arrays is not supported')
-      
+      if self.tinfo is not None:
+        self.dtypes = { x[3]:x[2] for x in tinfo.ivar_decls }
+
       # ---------------------------------------------------------------------
       # analysis results; initial values are at defaults
       self.model = {
@@ -115,11 +118,16 @@ class Transformation(object):
         hostDecls = [ExpStmt(FunCallExp(IdentExp('cudaThreadSynchronize'), []))]
       else:
         hostDecls = [ExpStmt(FunCallExp(IdentExp('cudaDeviceSynchronize'), []))]
+      # Handle variables with different datatypes. This dictionary is not really necessary
+      # but then we can generate one line per datatype
+      devvars = {}
+      for dt in ['double', 'float', 'thrust::complex<double>', 'thrust::complex<float>' ]:
+          devvars[dt] = [ (x[0], x[1]) for x in self.model['idents'] if self.dtypes[x[0]] == dt ]
       hostDecls += [
         Comment('declare variables'),
- #       VarDecl('double', ['*'+x[1] for x in self.model['idents']])
-        VarDecl('thrust::complex<double>', ['*'+x[1] for x in self.model['idents']])
       ]
+      hostDecls += [ VarDecl( t, ['*'+x[1] for x in devvars[t]] ) for t in devvars if not devvars[t] == [] ] 
+   
       if len(intarrays)>0:
         hostDecls += [VarDecl('int', ['*'+x[1] for x in intarrays])]
       hostDecls += [
@@ -697,7 +705,7 @@ class Transformation(object):
         kernelParams += [FieldDecl('int*', x) for x in intarrays]
         kernelParams += [FieldDecl('double', x) for x in scalar_ids]
         #kernelParams += [FieldDecl('double*', x) for x in lbi]
-        kernelParams += [FieldDecl('thrust::complex<double>*', x) for x in lbi]
+        kernelParams += [FieldDecl( self.dtypes[x]+'*', x) for x in lbi]
 
         collectLhsExprs = lambda n: [n.lhs] if isinstance(n, BinOpExp) and n.op_type == BinOpExp.EQ_ASGN else []
         loop_lhs_exprs = loop_lib.collectNode(collectLhsExprs, loop_body)
@@ -793,8 +801,9 @@ class Transformation(object):
             for var in array_ids:
                 sharedVar = 'shared_' + var
                 kernelStmts += [
+                    # Handle different dataypes for shared_var
                     # __shared__ double shared_var[threadCount];
-                    VarDecl('__shared__ double ', [sharedVar + '[' + str(self.threadCount) + ']'])
+                    VarDecl('__shared__ ', self.dtypes[var] , ' ', [sharedVar + '[' + str(self.threadCount) + ']'])
                 ]
                 sharedVarExp = ArrayRefExp(IdentExp(sharedVar), threadIdx)
                 varExp       = ArrayRefExp(IdentExp(var), index_id)
@@ -826,12 +835,15 @@ class Transformation(object):
                     loop_body3 = loop_lib.rewriteNode(rrLhsExprs, loop_body3)
                     cacheWrites += [ExpStmt(BinOpExp(varExp, sharedVarExp, BinOpExp.EQ_ASGN))]
 
+        # TODO: Handle different dataypes for the reduction
         if len(ktempdbls) > 0:
           if self.model['isReduction']:
             for temp in ktempdbls:
-                kernelStmts += [VarDeclInit('double', IdentExp(temp), self.cs['int0'])]
+              #  kernelStmts += [VarDeclInit('double', IdentExp(temp), self.cs['int0'])]
+                kernelStmts += [VarDeclInit(self.dtypes['blkdata'], IdentExp(temp), self.cs['int0'])]
           else:
-            kernelStmts += [VarDecl('double', [IdentExp(x) for x in ktempdbls])]
+         #   kernelStmts += [VarDecl('double', [IdentExp(x) for x in ktempdbls])]
+              kernelStmts += [VarDecl(self.dtypes['blkdata'], [IdentExp(x) for x in ktempdbls])]
         if len(ktempints) > 0:
             kernelStmts += [VarDecl('int', [IdentExp(x) for x in ktempints])]
 
@@ -1011,7 +1023,8 @@ class Transformation(object):
 
             # the first thread within a block stores the results for the entire block
             #            kernelParams += [FieldDecl('double*', reducts)]
-            kernelParams += [FieldDecl('thrust::complex<double>*', reducts)]
+            #            kernelParams += [FieldDecl('thrust::complex<double>*', reducts)]
+            kernelParams += [FieldDecl( self.dtypes[x]+'*', reducts ) ]
             reduceStmts += [
               ExpStmt(FunCallExp(IdentExp('__syncthreads'),[])),
               IfStmt(BinOpExp(threadIdx, self.cs['int0'], BinOpExp.EQ),
@@ -1074,10 +1087,12 @@ class Transformation(object):
         #--------------------------------------------------
         # begin multi-stage reduction kernel
         if self.model['isReduction']:
-          redkernParams = [FieldDecl('int', size), FieldDecl('double*', reducts)]
-          
+       #   redkernParams = [FieldDecl('int', size), FieldDecl('double*', reducts)]
+          redkernParams = [ FieldDecl('int', size), FieldDecl( self.dtypes[x]+'*', reducts ) ]
+
           tcount = self.threadCount
-          redKernStmts += [VarDecl('__shared__ double', [blkdata+'['+str(tcount)+']'])]
+#          redKernStmts += [VarDecl('__shared__ double', [blkdata+'['+str(tcount)+']'])]
+          redKernStmts += [VarDecl('__shared__ '+ self.dtypes[blkdata], [blkdata+'['+str(tcount)+']'])]
           #redKernStmts += [VarDecl('__shared__ double', [blkdata+'['+str(self.devProps['maxThreadsPerBlock'])+']'])]
           redKernStmts += [IfStmt(BinOpExp(tidIdent, sizeIdent, BinOpExp.LT),
                                   ExpStmt(BinOpExp(ArrayRefExp(blkdataIdent, threadIdx),

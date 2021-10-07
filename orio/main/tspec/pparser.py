@@ -299,13 +299,12 @@ def p_type(p):
              | FLOAT
              | DOUBLE
              | MACRO
+             | DOUBLECOMPLEX
     '''
-    p[0] = [(p[1], p.lineno(1))]
-
-def p_type(p):
-    ''' type : DOUBLECOMPLEX
-    '''
-    p[0] = [("thrust::complex<double>", p.lineno(1))]
+    if p[1] == "doublecomplex":
+        p[0] = [("thrust::complex<double>", p.lineno(1))]
+    else:
+        p[0] = [(p[1], p.lineno(1))]
 
 #----------------------------------------------------------------------------------------------------------------------
 # optional array brackets
