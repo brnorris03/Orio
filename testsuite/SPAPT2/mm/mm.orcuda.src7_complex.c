@@ -1,4 +1,4 @@
-void MatMatMult(complex* A, complex* B, complex* C, int n) {
+void MatMatMult(std::complex<double>* A, std::complex<double>* B, std::complex<double>* C, int n) {
 
 /*@ begin PerfTuning (
     def performance_params {
