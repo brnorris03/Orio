@@ -131,8 +131,9 @@ class AST(graph.Graph):
 
 class ASTNode(graph.Vertex):
 
-    def __init__(self, line_no = ''):
+    def __init__(self, name, line_no=''):
         '''Create an abstract syntax tree node'''
+        super().__init__(name)
         self.line_no = line_no           # may be null (i.e. empty string)
         self.filename = ''
         
@@ -441,6 +442,7 @@ class TransformStmt(Stmt):
 # ==========================================================
 class ASTEdge(graph.DirEdge):
     def __init__(self, v1, v2, graph=None, name=None):
+        super().__init__(name, v1, v2)
         if name is None:
             # generate as unique a name as possible
             name = v1.name + ':' + v2.name
@@ -453,4 +455,5 @@ class ASTEdge(graph.DirEdge):
             if v2.name not in list(graph.v.keys()): graph.add_v(v2)
             if self.name not in list(graph.e.keys()): graph.add_e(self)
 
-        pass        
+
+
