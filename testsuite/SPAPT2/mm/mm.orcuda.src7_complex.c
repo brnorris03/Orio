@@ -16,9 +16,9 @@ void MatMatMult(std::complex<double>* A, std::complex<double>* B, std::complex<d
     }
 
     def input_vars {
-        decl static doublecomplex A[M * M] = random;
-        decl static doublecomplex B[M * M] = random;
-        decl static doublecomplex C[M * M] = 0;
+        decl static complex_double A[M * M] = random;
+        decl static complex_double B[M * M] = random;
+        decl static complex_double C[M * M] = 0;
     }
 
     def search {
