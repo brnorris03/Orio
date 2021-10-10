@@ -1,0 +1,10 @@
+name: orio
+channels:
+  - defaults
+dependencies:
+  - pandas
+  - scikit-learn
+  - pytest
+
+# To use:
+# conda env create -f orio.yml

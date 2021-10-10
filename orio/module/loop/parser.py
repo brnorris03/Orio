@@ -566,11 +566,11 @@ def p_primary_expression_6(p):
     val = float(p[1])
     p[0] = ast.NumLitExp(val, ast.NumLitExp.CCONST_D, line_no=str(p.lineno(1) + __start_line_no - 1))
 
-def p_primary_expression_6(p):
+def p_primary_expression_7(p):
     'primary_expression : SCONST_D'
     p[0] = ast.StringLitExp(p[1], line_no=str(p.lineno(1) + __start_line_no - 1))
 
-def p_primary_expression_7(p):
+def p_primary_expression_8(p):
     '''primary_expression : LPAREN expression RPAREN'''
     p[0] = ast.ParenthExp(p[2], line_no=str(p.lineno(1) + __start_line_no - 1))
 

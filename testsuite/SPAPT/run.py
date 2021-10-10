@@ -5,7 +5,7 @@
 
 
 gcc_arch = 'znver2'  # skylake-avx512
-gcc_arch = 'skylake-avx512'
+#gcc_arch = 'skylake-avx512'
 icc_arch = 'skylake'
 
 kernels = ['adi', 'atax', 'bicgkernel', 'correlation', 'covariance', 'dgemv3', 'fdtd',
@@ -62,6 +62,9 @@ def run(dry_run=True):
     wdir = outdir
     if not os.path.isabs(outdir):
         wdir = os.path.join(spaptdir,outdir)
+
+    print("gcc version:")
+    os.system('gcc -v')
   
     for search,maxruns in search_methods:
         print("Search method:", search)
