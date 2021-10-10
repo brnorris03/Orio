@@ -21,9 +21,14 @@ reserved = ['IF', 'ELSE', 'FOR', 'TRANSFORM', 'NOT', 'AND', 'OR', 'GOTO', 'CONST
 
 tokens = reserved + [
 
-    # literals (identifier, integer constant, float constant, string constant)
-    'ID', 'ICONST', 'FCONST', 'SCONST_D', 'SCONST_S',
+    # literals (identifier, integer constant, float constant, double constant)
+    'ID', 'ICONST', 'FCONST', 'DCONST',
 
+    # complex double constant, complex float constant
+    'CCONST_D', 'CCONST_F',
+
+    # String constan with double quotes, string constant with single quotes
+    'SCONST_D', 'SCONST_S',
     # operators (+,-,*,/,%,||,&&,!,<,<=,>,>=,==,!=)
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
     'LOR', 'LAND', 'LNOT',
@@ -104,8 +109,18 @@ def t_ID(t):
 # integer literal
 t_ICONST     = r'\d+'
 
-# floating literal
-t_FCONST     = r'((\d+)(\.\d*)([eE](\+|-)?(\d+))? | (\d+)[eE](\+|-)?(\d+))'
+# floating literal, this is the default if no precision is indicated
+t_FCONST     = r'((\d+)(\.\d*)([eE](\+|-)?(\d+))?[fF]? | (\d+)[eE](\+|-)?(\d+))[fF]?'
+
+# double-precision floating literal
+t_DCONST     = r'((\d+)(\.\d*)([eE](\+|-)?(\d+))?[dD] | (\d+)[eE](\+|-)?(\d+))[dD]'
+
+# complex float literal, e.g., 1.0f+0.0i or just 1.0+0.0i;
+# this is the default if no precision is indicated
+t_CCONST_F   = r'(\d+)(\.\d*)[fF]?\s*\+\s*(\d+)(\.\d*)i'
+
+# complex double literal, e.g., 1.0d+0.0i
+t_CCONST_D   = r'(\d+)(\.\d*)[dD]\s*\+\s*(\d+)(\.\d*)i'
 
 # string literal (with double quotes)
 t_SCONST_D   = r'\"([^\\\n]|(\\.))*?\"'
@@ -537,10 +552,25 @@ def p_primary_expression_3(p):
     p[0] = ast.NumLitExp(val, ast.NumLitExp.FLOAT, line_no=str(p.lineno(1) + __start_line_no - 1))
 
 def p_primary_expression_4(p):
+    'primary_expression : DCONST'
+    val = float(p[1])
+    p[0] = ast.NumLitExp(val, ast.NumLitExp.DOUBLE, line_no=str(p.lineno(1) + __start_line_no - 1))
+
+def p_primary_expression_4(p):
+    'primary_expression : CCONST_F'
+    val = float(p[1])
+    p[0] = ast.NumLitExp(val, ast.NumLitExp.CCONST_F, line_no=str(p.lineno(1) + __start_line_no - 1))
+
+def p_primary_expression_5(p):
+    'primary_expression : CCONST_D'
+    val = float(p[1])
+    p[0] = ast.NumLitExp(val, ast.NumLitExp.CCONST_D, line_no=str(p.lineno(1) + __start_line_no - 1))
+
+def p_primary_expression_6(p):
     'primary_expression : SCONST_D'
     p[0] = ast.StringLitExp(p[1], line_no=str(p.lineno(1) + __start_line_no - 1))
 
-def p_primary_expression_5(p):
+def p_primary_expression_7(p):
     '''primary_expression : LPAREN expression RPAREN'''
     p[0] = ast.ParenthExp(p[2], line_no=str(p.lineno(1) + __start_line_no - 1))
 
@@ -744,7 +774,7 @@ def getParser(start_line_no):
 
     # create the lexer and parser
     lexer = orio.tool.ply.lex.lex()
-    parser = orio.tool.ply.yacc.yacc(method='LALR', debug=0, optimize=1, write_tables=0)
+    parser = orio.tool.ply.yacc.yacc(method='LALR', debug=0, optimize=1, write_tables=1)
 
     # return the parser
     return parser

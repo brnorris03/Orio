@@ -103,6 +103,9 @@ class NumLitExp(Exp):
 
     INT = 1
     FLOAT = 2
+    DOUBLE = 3
+    CCONST_F = 4
+    CCONST_D = 5
     
     def __init__(self, val, lit_type, line_no = '', parent = None, meta={}):
         '''Create a numeric literal'''

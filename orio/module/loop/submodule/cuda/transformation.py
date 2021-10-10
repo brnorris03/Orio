@@ -83,7 +83,9 @@ class Transformation(object):
 
         'sizeofDbl': FunCallExp(IdentExp('sizeof'), [IdentExp('double')]),
         'sizeofFlt': FunCallExp(IdentExp('sizeof'), [IdentExp('float')]),
-        
+        'sizeofDblCmplx': FunCallExp(IdentExp('sizeof'), [IdentExp('complex double')]),
+        'sizeofFltCmplx': FunCallExp(IdentExp('sizeof'), [IdentExp('complex float')]),
+
         'prefix': 'orcu_',
         'dev':    'dev_'
       }

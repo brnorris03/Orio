@@ -7,7 +7,10 @@ and improvements from Kosta Gaitanis (gaitanis@tele.ucl.ac.be).  Please see the
 license file for legal information.'''
 
 '''Modified for backward compatibility with Python 2.3 by Boyana Norris
-(norris@mcs.anl.gov).'''
+(norris@mcs.anl.gov).
+
+Modified for Python 3 by Boyana Norris (norris@cs.uoregon.edu).
+'''
 
 __version__ = '0.4.1'
 __author__ = 'Robert Dick and Kosta Gaitanis'
@@ -16,13 +19,7 @@ __author_email__ = 'dickrp@ece.northwestern.edu and gaitanis@tele.ucl.ac.be'
 import struct
 from orio.tool.graphlib import delegate
 
-# The following four lines borrowed from Gregory R. Warnes's fpconst
-# (until it's standard in Python distributions).
-if struct.pack('i',1)[0] != '\x01':
-    PosInf = struct.unpack('d', '\x7F\xF0\x00\x00\x00\x00\x00\x00')[0]
-else:
-    PosInf = struct.unpack('d', '\x00\x00\x00\x00\x00\x00\xf0\x7f')[0]
-
+PosInf = float('inf')
 
 class GraphError(Exception):
     '''Exception for graph errors.'''
