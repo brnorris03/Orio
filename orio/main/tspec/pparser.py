@@ -11,10 +11,8 @@ import orio.main.util.globals as g
 keywords = [
     'def', 'arg', 'param', 'decl', 'let', 'spec', 'constraint', 'option',
     'build', 'build_command', 'prebuild_command', 'postbuild_command', 'postrun_command', 'batch_command', 'status_command', 'num_procs', 'libs',
-    'input_params', 'input_vars', 'static', 'dynamic', 'managed',
-    'void', 'char', 'short', 'int', 'long', 'float', 'double',
-    'thrust::complex<double>', 'thrust::complex<float>',
-    '__device__',
+    'input_params', 'input_vars', 'static', 'dynamic', 'managed', 'void', 'char', 'short', 'int', 'long',
+    'float', 'double', 'complex_float', 'complex_double', '__device__',
     'performance_params', 'performance_counter', 'power', 'cmdline_params', 'method', 'repetitions',
     'search', 'time_limit', 'total_runs', 'use_z3', 'resume', 'algorithm',
     'init_file', 'decl_file',
@@ -301,6 +299,8 @@ def p_type(p):
              | LONG
              | FLOAT
              | DOUBLE
+             | COMPLEX_FLOAT
+             | COMPLEX_DOUBLE
              | MACRO
     '''
     p[0] = [(p[1], p.lineno(1))]

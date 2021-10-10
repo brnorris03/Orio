@@ -404,6 +404,10 @@ SEQ_DEFAULT_CUDA = r'''
 #include <unistd.h>
 #include <cuda.h>
 
+#include <thrust/complex.h>
+#define complex_double thrust::complex<double>
+#define complex_float thrust::complex<float>
+
 /*@ global @*/
 /*@ external @*/
 

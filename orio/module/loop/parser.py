@@ -556,12 +556,12 @@ def p_primary_expression_4(p):
     val = float(p[1])
     p[0] = ast.NumLitExp(val, ast.NumLitExp.DOUBLE, line_no=str(p.lineno(1) + __start_line_no - 1))
 
-def p_primary_expression_4(p):
+def p_primary_expression_5(p):
     'primary_expression : CCONST_F'
     val = float(p[1])
     p[0] = ast.NumLitExp(val, ast.NumLitExp.CCONST_F, line_no=str(p.lineno(1) + __start_line_no - 1))
 
-def p_primary_expression_5(p):
+def p_primary_expression_6(p):
     'primary_expression : CCONST_D'
     val = float(p[1])
     p[0] = ast.NumLitExp(val, ast.NumLitExp.CCONST_D, line_no=str(p.lineno(1) + __start_line_no - 1))
@@ -774,7 +774,7 @@ def getParser(start_line_no):
 
     # create the lexer and parser
     lexer = orio.tool.ply.lex.lex()
-    parser = orio.tool.ply.yacc.yacc(method='LALR', debug=0, optimize=1, write_tables=1)
+    parser = orio.tool.ply.yacc.yacc(method='LALR', debug=0, optimize=1, write_tables=0)
 
     # return the parser
     return parser
