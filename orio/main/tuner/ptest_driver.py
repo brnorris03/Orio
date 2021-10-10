@@ -469,9 +469,12 @@ class PerfTestDriver:
                         os.unlink(fname)
                 except:
                     err('orio.main.tuner.ptest_driver: cannot delete file: %s' % fname)
+            if self.language == 'cuda' or self.language == 'opencl':
+                if os.path.exists( self.original_obj_name ):
+                    os.unlink( self.original_obj_name )
             self.first = False
 
-        for fname in [self.exe_name, self.src_name]:
+        for fname in [self.exe_name, self.src_name, self.obj_name]:
             try:
                 if fname and os.path.exists(fname):
                     os.unlink(fname)
