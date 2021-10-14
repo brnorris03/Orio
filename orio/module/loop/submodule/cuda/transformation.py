@@ -257,6 +257,15 @@ class Transformation(object):
     
         # memcopy rhs arrays device to host
         if aid in self.model['rhs_arrays']:
+          if aidtinfo[2] == "double":
+            sizeof = self.cs['sizeofDbl']
+          if aidtinfo[2] == "float":
+            sizeof = self.cs['sizeofFlt']
+          if aidtinfo[2] == "complex_double":
+            sizeof = self.cs['sizeofDblCmplx']
+          if aidtinfo[2] == "complex_float":
+            sizeof = self.cs['sizeofFltCmplx']
+
           if self.streamCount > 1:
             mallocs += [
               ExpStmt(FunCallExp(IdentExp('cudaHostRegister'),
@@ -270,7 +279,7 @@ class Transformation(object):
               ExpStmt(FunCallExp(IdentExp('cudaMemcpyAsync'),
                                  [BinOpExp(IdentExp(daid),      self.cs['soffset'], BinOpExp.ADD),
                                   BinOpExp(IdentExp(aid),       self.cs['soffset'], BinOpExp.ADD),
-                                  BinOpExp(self.cs['chunklen'], self.cs['sizeofDbl'], BinOpExp.MUL),
+                                  BinOpExp(self.cs['chunklen'], sizeof, BinOpExp.MUL),
                                   IdentExp('cudaMemcpyHostToDevice'),
                                   ArrayRefExp(IdentExp('stream'), self.cs['istream']) ]))
             ]
@@ -278,7 +287,7 @@ class Transformation(object):
               ExpStmt(FunCallExp(IdentExp('cudaMemcpyAsync'),
                                  [BinOpExp(IdentExp(daid),      self.cs['soffset'], BinOpExp.ADD),
                                   BinOpExp(IdentExp(aid),       self.cs['soffset'], BinOpExp.ADD),
-                                  BinOpExp(self.cs['chunkrem'], self.cs['sizeofDbl'], BinOpExp.MUL),
+                                  BinOpExp(self.cs['chunkrem'], sizeof, BinOpExp.MUL),
                                   IdentExp('cudaMemcpyHostToDevice'),
                                   ArrayRefExp(IdentExp('stream'), self.cs['istream']) ]))
             ]
@@ -343,7 +352,7 @@ class Transformation(object):
           ExpStmt(FunCallExp(IdentExp('cudaMalloc'),
                              [UnaryExp(IdentExp(self.cs['dev'] + self.model['lhss'][0]), UnaryExp.ADDRESSOF),
                               BinOpExp(ParenthExp(BinOpExp(self.cs['gridx'], self.cs['int1'], BinOpExp.ADD)),
-                                       self.cs['sizeofDbl'],
+                                       sizeof,
                                        BinOpExp.MUL)
                               ]))]
 
@@ -373,7 +382,7 @@ class Transformation(object):
             ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
                                [UnaryExp(IdentExp(rsid),UnaryExp.ADDRESSOF),
                                 IdentExp(rsid),
-                                self.cs['sizeofDbl'],
+                                sizeof,
                                 IdentExp('cudaMemcpyDeviceToHost')
                                 ]))]
         res_array_ids  = [x for x in self.model['arrays'] if x[0] == var]
@@ -383,7 +392,7 @@ class Transformation(object):
               ExpStmt(FunCallExp(IdentExp('cudaMemcpyAsync'),
                                  [BinOpExp(IdentExp(raid),  self.cs['soffset'], BinOpExp.ADD),
                                   BinOpExp(IdentExp(draid), self.cs['soffset'], BinOpExp.ADD),
-                                  BinOpExp(self.cs['chunklen'], self.cs['sizeofDbl'], BinOpExp.MUL),
+                                  BinOpExp(self.cs['chunklen'], sizeof, BinOpExp.MUL),
                                   IdentExp('cudaMemcpyDeviceToHost'),
                                   ArrayRefExp(IdentExp('stream'), self.cs['istream'])
                                   ]))]
@@ -391,7 +400,7 @@ class Transformation(object):
               ExpStmt(FunCallExp(IdentExp('cudaMemcpyAsync'),
                                  [BinOpExp(IdentExp(raid),  self.cs['soffset'], BinOpExp.ADD),
                                   BinOpExp(IdentExp(draid), self.cs['soffset'], BinOpExp.ADD),
-                                  BinOpExp(self.cs['chunkrem'], self.cs['sizeofDbl'], BinOpExp.MUL),
+                                  BinOpExp(self.cs['chunkrem'], sizeof, BinOpExp.MUL),
                                   IdentExp('cudaMemcpyDeviceToHost'),
                                   ArrayRefExp(IdentExp('stream'), self.cs['istream'])
                                   ]))]
@@ -420,7 +429,7 @@ class Transformation(object):
           ExpStmt(FunCallExp(IdentExp('cudaMemcpy'),
                              [UnaryExp(IdentExp(self.model['lhss'][0]),UnaryExp.ADDRESSOF),
                               IdentExp(self.cs['dev'] + self.model['lhss'][0]),
-                              self.cs['sizeofDbl'],
+                              sizeof,
                               IdentExp('cudaMemcpyDeviceToHost')
                               ]))]
       # -------------------------------------------------
